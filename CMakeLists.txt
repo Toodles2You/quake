@@ -17,7 +17,7 @@ set(CMAKE_SHARED_MODULE_PREFIX_CXX "")
 # Project config                                                #
 #===============================================================#
 
-project(quakeworld VERSION 2.3.3 LANGUAGES C)
+project(quakeworld VERSION 2.4.0 LANGUAGES C)
 
 set(QUAKE_FLAGS
     -Dstricmp=strcasecmp
@@ -33,7 +33,7 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     )
 endif()
 
-set(QUAKE_DIRS QW/qcommon QW/client QW/server)
+set(QUAKE_DIRS qw/qcommon qw/client qw/server)
 
 set(QUAKE_LIBRARIES m)
 
@@ -42,76 +42,76 @@ set(QUAKE_LIBRARIES m)
 #===============================================================#
 
 set(QCOMMON_SRC
-    QW/qcommon/cmd.c
-    QW/qcommon/common.c
-    QW/qcommon/crc.c
-    QW/qcommon/cvar.c
-    QW/qcommon/mathlib.c
-    QW/qcommon/md4.c
-    QW/qcommon/zone.c
-    QW/qcommon/pmove.c
-    QW/qcommon/pmovetst.c
-    QW/qcommon/net_chan.c
-    QW/qcommon/net_udp.c
+    qw/qcommon/cmd.c
+    qw/qcommon/common.c
+    qw/qcommon/crc.c
+    qw/qcommon/cvar.c
+    qw/qcommon/mathlib.c
+    qw/qcommon/md4.c
+    qw/qcommon/zone.c
+    qw/qcommon/pmove.c
+    qw/qcommon/pmovetst.c
+    qw/qcommon/net_chan.c
+    qw/qcommon/net_udp.c
 )
 
 set(CLIENT_SRC
-    QW/client/cl_demo.c
-    QW/client/cl_ents.c
-    QW/client/cl_input.c
-    QW/client/cl_main.c
-    QW/client/cl_parse.c
-    QW/client/cl_pred.c
-    QW/client/cl_tent.c
-    QW/client/cl_cam.c
-    QW/client/console.c
-    QW/client/keys.c
-    QW/client/menu.c
-    QW/client/nonintel.c
-    QW/client/r_part.c
-    QW/client/sbar.c
-    QW/client/skin.c
-    QW/client/snd_dma.c
-    QW/client/snd_mem.c
-    QW/client/snd_mix.c
-    QW/client/view.c
-    QW/client/wad.c
-    QW/client/cd_linux.c
-    QW/client/sys_linux.c
-    QW/client/snd_linux.c
-    QW/client/gl_draw.c
-    QW/client/gl_mesh.c
-    QW/client/gl_model.c
-    QW/client/gl_ngraph.c
-    QW/client/gl_refrag.c
-    QW/client/gl_rlight.c
-    QW/client/gl_rmain.c
-    QW/client/gl_rmisc.c
-    QW/client/gl_rsurf.c
-    QW/client/gl_screen.c
-    QW/client/gl_vidlinuxglx.c
-    QW/client/gl_warp.c
-    QW/client/math.s
-    QW/client/snd_mixa.s
-    QW/client/sys_dosa.s
+    qw/client/cl_demo.c
+    qw/client/cl_ents.c
+    qw/client/cl_input.c
+    qw/client/cl_main.c
+    qw/client/cl_parse.c
+    qw/client/cl_pred.c
+    qw/client/cl_tent.c
+    qw/client/cl_cam.c
+    qw/client/console.c
+    qw/client/keys.c
+    qw/client/menu.c
+    qw/client/nonintel.c
+    qw/client/r_part.c
+    qw/client/sbar.c
+    qw/client/skin.c
+    qw/client/snd_dma.c
+    qw/client/snd_mem.c
+    qw/client/snd_mix.c
+    qw/client/view.c
+    qw/client/wad.c
+    qw/client/cd_linux.c
+    qw/client/sys_linux.c
+    qw/client/snd_linux.c
+    qw/client/gl_draw.c
+    qw/client/gl_mesh.c
+    qw/client/gl_model.c
+    qw/client/gl_ngraph.c
+    qw/client/gl_refrag.c
+    qw/client/gl_rlight.c
+    qw/client/gl_rmain.c
+    qw/client/gl_rmisc.c
+    qw/client/gl_rsurf.c
+    qw/client/gl_screen.c
+    qw/client/gl_vidlinuxglx.c
+    qw/client/gl_warp.c
+    qw/client/math.s
+    qw/client/snd_mixa.s
+    qw/client/sys_dosa.s
 )
 
 set(SERVER_SRC
-    QW/server/pr_cmds.c 
-    QW/server/pr_edict.c
-    QW/server/pr_exec.c
-    QW/server/sv_init.c
-    QW/server/sv_main.c
-    QW/server/sv_nchan.c
-    QW/server/sv_ents.c
-    QW/server/sv_send.c
-    QW/server/sv_move.c
-    QW/server/sv_phys.c
-    QW/server/sv_user.c
-    QW/server/sv_ccmds.c
-    QW/server/world.c
-    QW/server/sys_unix.c
-    QW/server/model.c
+    qw/server/pr_cmds.c 
+    qw/server/pr_edict.c
+    qw/server/pr_exec.c
+    qw/server/sv_init.c
+    qw/server/sv_main.c
+    qw/server/sv_nchan.c
+    qw/server/sv_ents.c
+    qw/server/sv_send.c
+    qw/server/sv_move.c
+    qw/server/sv_phys.c
+    qw/server/sv_user.c
+    qw/server/sv_ccmds.c
+    qw/server/world.c
+    qw/server/sys_unix.c
+    qw/server/model.c
 )
 
 #===============================================================#
