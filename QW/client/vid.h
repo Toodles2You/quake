@@ -17,6 +17,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+
+#ifndef _VID_H
+#define _VID_H
+
 // vid.h -- video driver defs
 
 #define VID_CBITS	6
@@ -90,3 +94,4 @@ void VID_UnlockBuffer (void);
 qboolean VID_Is8bit(void);
 #endif
 
+#endif /* _VID_H */

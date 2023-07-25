@@ -17,6 +17,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+
+#ifndef _SYS_H
+#define _SYS_H
+
 // sys.h -- non-portable functions
 
 //
@@ -69,3 +73,4 @@ void Sys_LowFPPrecision (void);
 void Sys_HighFPPrecision (void);
 void Sys_SetFPCW (void);
 
+#endif /* _SYS_H */

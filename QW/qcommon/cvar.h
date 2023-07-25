@@ -17,6 +17,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+
+#ifndef _CVAR_H
+#define _CVAR_H
+
 // cvar.h
 
 /*
@@ -95,3 +99,5 @@ void 	Cvar_WriteVariables (FILE *f);
 cvar_t *Cvar_FindVar (char *var_name);
 
 extern cvar_t	*cvar_vars;
+
+#endif /* _CVAR_H */

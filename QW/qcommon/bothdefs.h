@@ -18,6 +18,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
 
+#ifndef _BOTHDEFS_H
+#define _BOTHDEFS_H
+
 // defs common to client and server
 
 #define GLQUAKE_VERSION 1.00
@@ -155,3 +158,4 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define	PRINT_HIGH			2		// critical messages
 #define	PRINT_CHAT			3		// chat messages
 
+#endif /* _BOTHDEFS_H */

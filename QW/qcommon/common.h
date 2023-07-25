@@ -17,6 +17,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+
+#ifndef _COMMON_H
+#define _COMMON_H
+
 // comndef.h  -- general definitions
 
 typedef unsigned char 		byte;
@@ -220,3 +224,5 @@ byte	COM_BlockSequenceCheckByte (byte *base, int length, int sequence, unsigned 
 byte	COM_BlockSequenceCRCByte (byte *base, int length, int sequence);
 
 int build_number( void );
+
+#endif /* _COMMON_H */

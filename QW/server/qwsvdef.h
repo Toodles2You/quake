@@ -17,6 +17,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+
+#ifndef _QWSVDEF_H
+#define _QWSVDEF_H
+
 // quakedef.h -- primary header for server
 
 #define	QUAKE_GAME			// as opposed to utilities
@@ -93,3 +97,4 @@ void SV_Init (quakeparms_t *parms);
 void Con_Printf (char *fmt, ...);
 void Con_DPrintf (char *fmt, ...);
 
+#endif /* _QWSVDEF_H */

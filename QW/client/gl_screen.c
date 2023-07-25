@@ -105,8 +105,6 @@ int                     scr_fullupdate;
 int                     clearconsole;
 int                     clearnotify;
 
-int                     sb_lines;
-
 viddef_t        vid;                            // global video state
 
 vrect_t         scr_vrect;
@@ -780,7 +778,7 @@ int MipColor(int r, int g, int b)
 }
 
 // from gl_draw.c
-byte		*draw_chars;				// 8*8 graphic characters
+extern byte		*draw_chars;				// 8*8 graphic characters
 
 void SCR_DrawCharToSnap (int num, byte *dest, int width)
 {

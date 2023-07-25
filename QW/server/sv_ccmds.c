@@ -734,7 +734,7 @@ SV_Gamedir_f
 Sets the gamedir and path to a different directory.
 ================
 */
-char	gamedirfile[MAX_OSPATH];
+extern char	gamedirfile[];
 void SV_Gamedir_f (void)
 {
 	char			*dir;

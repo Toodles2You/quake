@@ -17,6 +17,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+
+#ifndef _PROTOCOL_H
+#define _PROTOCOL_H
+
 // protocol.h -- communications protocols
 
 #define	PROTOCOL_VERSION	28
@@ -280,3 +284,4 @@ typedef struct usercmd_s
 	byte	impulse;
 } usercmd_t;
 
+#endif /* _PROTOCOL_H */

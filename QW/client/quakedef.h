@@ -17,6 +17,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+
+#ifndef _QUAKEDEF_H
+#define _QUAKEDEF_H
+
 // quakedef.h -- primary header for client
 
 #define	QUAKE_GAME			// as opposed to utilities
@@ -140,3 +144,4 @@ void Host_ShutdownServer (qboolean crash);
 extern qboolean		msg_suppress_1;		// suppresses resolution and cache size console output
 										//  an fullscreen DIB focus gain/loss
 
+#endif /* _QUAKEDEF_H */

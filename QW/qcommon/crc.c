@@ -19,7 +19,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 /* crc.c */
 
-#include "quakedef.h"
 #include "crc.h"
 
 // this is a 16 bit, non-reflected CRC using the polynomial 0x1021
@@ -70,7 +69,7 @@ void CRC_Init(unsigned short *crcvalue)
 	*crcvalue = CRC_INIT_VALUE;
 }
 
-void CRC_ProcessByte(unsigned short *crcvalue, byte data)
+void CRC_ProcessByte(unsigned short *crcvalue, unsigned char data)
 {
 	*crcvalue = (*crcvalue << 8) ^ crctable[(*crcvalue >> 8) ^ data];
 }
@@ -80,7 +79,7 @@ unsigned short CRC_Value(unsigned short crcvalue)
 	return crcvalue ^ CRC_XOR_VALUE;
 }
 
-unsigned short CRC_Block (byte *start, int count)
+unsigned short CRC_Block (unsigned char *start, int count)
 {
 	unsigned short	crc;
 

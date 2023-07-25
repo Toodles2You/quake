@@ -17,6 +17,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+
+#ifndef _CLIENT_H
+#define _CLIENT_H
+
 // client.h
 
 
@@ -513,3 +517,5 @@ void	Skin_NextDownload (void);
 
 #define RSSHOT_WIDTH 320
 #define RSSHOT_HEIGHT 200
+
+#endif /* _CLIENT_H */

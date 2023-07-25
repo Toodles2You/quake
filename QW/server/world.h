@@ -17,6 +17,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+
+#ifndef _WORLD_H
+#define _WORLD_H
+
 // world.h
 
 typedef struct
@@ -91,3 +95,5 @@ trace_t SV_Move (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int type, e
 
 
 edict_t	*SV_TestPlayerPosition (edict_t *ent, vec3_t origin);
+
+#endif /* _WORLD_H */

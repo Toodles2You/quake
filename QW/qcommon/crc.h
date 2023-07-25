@@ -17,9 +17,15 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+
+#ifndef _CRC_H
+#define _CRC_H
+
 /* crc.h */
 
 void CRC_Init(unsigned short *crcvalue);
-void CRC_ProcessByte(unsigned short *crcvalue, byte data);
+void CRC_ProcessByte(unsigned short *crcvalue, unsigned char data);
 unsigned short CRC_Value(unsigned short crcvalue);
-unsigned short CRC_Block (byte *start, int count);
+unsigned short CRC_Block (unsigned char *start, int count);
+
+#endif /* _CRC_H */

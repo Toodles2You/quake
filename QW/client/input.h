@@ -17,6 +17,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+
+#ifndef _INPUT_H
+#define _INPUT_H
+
 // input.h -- external (non-keyboard) input devices
 
 void IN_Init (void);
@@ -32,3 +36,4 @@ void IN_Move (usercmd_t *cmd);
 void IN_ModeChanged (void);
 // called whenever screen dimensions change
 
+#endif /* _INPUT_H */

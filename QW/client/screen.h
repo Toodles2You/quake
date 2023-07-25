@@ -17,6 +17,10 @@ along with this program; if not, write to the Free Software
 Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 */
+
+#ifndef _SCREEN_H
+#define _SCREEN_H
+
 // screen.h
 
 void SCR_Init (void);
@@ -48,6 +52,10 @@ extern cvar_t scr_viewsize;
 extern	int			scr_copytop;
 extern	int			scr_copyeverything;
 
-qboolean	scr_skipupdate;
+#if defined(_WIN32) || !defined(GLQUAKE)
+extern qboolean		scr_skipupdate;
+#endif
 
-qboolean	block_drawing;
+extern qboolean		block_drawing;
+
+#endif /* _SCREEN_H */
