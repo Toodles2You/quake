@@ -41,6 +41,66 @@ set(QUAKE_LIBRARIES m)
 # Source files                                                  #
 #===============================================================#
 
+set(QUAKE_SRC
+    nq/cl_demo.c
+    nq/cl_input.c
+    nq/cl_main.c
+    nq/cl_parse.c
+    nq/cl_tent.c
+    nq/chase.c
+    nq/cmd.c
+    nq/common.c
+    nq/console.c
+    nq/crc.c
+    nq/cvar.c
+    nq/gl_draw.c
+    nq/gl_mesh.c
+    nq/gl_model.c
+    nq/gl_refrag.c
+    nq/gl_rlight.c
+    nq/gl_rmain.c
+    nq/gl_rmisc.c
+    nq/gl_rsurf.c
+    nq/gl_screen.c
+    nq/gl_test.c
+    nq/gl_vidlinuxglx.c
+    nq/gl_warp.c
+    nq/host.c
+    nq/host_cmd.c
+    nq/keys.c
+    nq/menu.c
+    nq/mathlib.c
+    nq/net_dgrm.c
+    nq/net_loop.c
+    nq/net_main.c
+    nq/net_vcr.c
+    nq/net_udp.c
+    nq/net_bsd.c
+    nq/pr_cmds.c
+    nq/pr_edict.c
+    nq/pr_exec.c
+    nq/r_part.c
+    nq/sbar.c
+    nq/sv_main.c
+    nq/sv_phys.c
+    nq/sv_move.c
+    nq/sv_user.c
+    nq/zone.c
+    nq/view.c
+    nq/wad.c
+    nq/world.c
+    nq/cd_linux.c
+    nq/sys_linux.c
+    nq/snd_dma.c
+    nq/snd_mem.c
+    nq/snd_mix.c
+    nq/snd_linux.c
+    nq/math.s
+    nq/worlda.s
+    nq/snd_mixa.s
+    nq/sys_dosa.s
+)
+
 set(QCOMMON_SRC
     qw/qcommon/cmd.c
     qw/qcommon/common.c
@@ -115,7 +175,23 @@ set(SERVER_SRC
 )
 
 #===============================================================#
-# Client                                                        #
+# Quake                                                         #
+#===============================================================#
+
+add_executable(quake
+    ${QUAKE_SRC}
+)
+
+target_compile_definitions(quake PRIVATE GLQUAKE)
+
+target_compile_options(quake PRIVATE ${QUAKE_FLAGS})
+
+target_include_directories(quake PRIVATE ${QUAKE_DIRS})
+
+target_link_libraries(quake PRIVATE ${QUAKE_LIBRARIES} GL X11 Xext dl)
+
+#===============================================================#
+# QuakeWorld client                                             #
 #===============================================================#
 
 add_executable(qwcl
@@ -129,10 +205,10 @@ target_compile_options(qwcl PRIVATE ${QUAKE_FLAGS})
 
 target_include_directories(qwcl PRIVATE ${QUAKE_DIRS})
 
-target_link_libraries(qwcl PRIVATE ${QUAKE_LIBRARIES} GL X11 Xext)
+target_link_libraries(qwcl PRIVATE ${QUAKE_LIBRARIES} GL X11 Xext dl)
 
 #===============================================================#
-# Dedicated server                                              #
+# QuakeWorld dedicated server                                   #
 #===============================================================#
 
 add_executable(qwsv

@@ -25,6 +25,8 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <stdio.h>
 #include <signal.h>
 
+#include <dlfcn.h>
+
 #include "quakedef.h"
 
 #include <GL/glx.h>
@@ -85,6 +87,9 @@ const char *gl_vendor;
 const char *gl_renderer;
 const char *gl_version;
 const char *gl_extensions;
+
+void (*qglColorTableEXT) (int, int, int, int, int, const void*);
+void (*qgl3DfxSetPaletteEXT) (GLuint *);
 
 qboolean is8bit = false;
 qboolean isPermedia = false;
@@ -527,66 +532,59 @@ void GL_EndRendering (void)
 
 qboolean VID_Is8bit(void)
 {
-	// return is8bit;
-	return false;
+	return is8bit;
 }
-
-#ifdef GL_EXT_SHARED
-void VID_Init8bitPalette() 
-{
-	/*
-	// Check for 8bit Extensions and initialize them.
-	int i;
-	char thePalette[256*3];
-	char *oldPalette, *newPalette;
-
-	if (strstr(gl_extensions, "GL_EXT_shared_texture_palette") == NULL)
-		return;
-
-	Con_SafePrintf("8-bit GL extensions enabled.\n");
-	glEnable( GL_SHARED_TEXTURE_PALETTE_EXT );
-	oldPalette = (char *) d_8to24table; //d_8to24table3dfx;
-	newPalette = thePalette;
-	for (i=0;i<256;i++) {
-		*newPalette++ = *oldPalette++;
-		*newPalette++ = *oldPalette++;
-		*newPalette++ = *oldPalette++;
-		oldPalette++;
-	}
-	glColorTableEXT(GL_SHARED_TEXTURE_PALETTE_EXT, GL_RGB, 256, GL_RGB, GL_UNSIGNED_BYTE, (void *) thePalette);
-	is8bit = true;
-	*/
-}
-
-#else
-// extern void gl3DfxSetPaletteEXT(GLuint *pal);
 
 void VID_Init8bitPalette(void) 
 {
-	/*
 	// Check for 8bit Extensions and initialize them.
 	int i;
-	GLubyte table[256][4];
-	char *oldpal;
+	void *prjobj;
 
-	if (strstr(gl_extensions, "3DFX_set_global_palette") == NULL)
+	if ((prjobj = dlopen(NULL, RTLD_LAZY)) == NULL) {
+		Con_Printf("Unable to open symbol list for main program.\n");
 		return;
-
-	Con_SafePrintf("8-bit GL extensions enabled.\n");
-	glEnable( GL_SHARED_TEXTURE_PALETTE_EXT );
-	oldpal = (char *) d_8to24table; //d_8to24table3dfx;
-	for (i=0;i<256;i++) {
-		table[i][2] = *oldpal++;
-		table[i][1] = *oldpal++;
-		table[i][0] = *oldpal++;
-		table[i][3] = 255;
-		oldpal++;
 	}
-	gl3DfxSetPaletteEXT((GLuint *)table);
-	is8bit = true;
-	*/
+
+	if (strstr(gl_extensions, "3DFX_set_global_palette") &&
+		(qgl3DfxSetPaletteEXT = dlsym(prjobj, "gl3DfxSetPaletteEXT")) != NULL) {
+		GLubyte table[256][4];
+		char *oldpal;
+
+		Con_SafePrintf("8-bit GL extensions enabled.\n");
+		glEnable( GL_SHARED_TEXTURE_PALETTE_EXT );
+		oldpal = (char *) d_8to24table; //d_8to24table3dfx;
+		for (i=0;i<256;i++) {
+			table[i][2] = *oldpal++;
+			table[i][1] = *oldpal++;
+			table[i][0] = *oldpal++;
+			table[i][3] = 255;
+			oldpal++;
+		}
+		qgl3DfxSetPaletteEXT((GLuint *)table);
+		is8bit = true;
+
+	} else if (strstr(gl_extensions, "GL_EXT_shared_texture_palette") &&
+		(qglColorTableEXT = dlsym(prjobj, "glColorTableEXT")) != NULL) {
+		char thePalette[256*3];
+		char *oldPalette, *newPalette;
+
+		Con_SafePrintf("8-bit GL extensions enabled.\n");
+		glEnable( GL_SHARED_TEXTURE_PALETTE_EXT );
+		oldPalette = (char *) d_8to24table; //d_8to24table3dfx;
+		newPalette = thePalette;
+		for (i=0;i<256;i++) {
+			*newPalette++ = *oldPalette++;
+			*newPalette++ = *oldPalette++;
+			*newPalette++ = *oldPalette++;
+			oldPalette++;
+		}
+		qglColorTableEXT(GL_SHARED_TEXTURE_PALETTE_EXT, GL_RGB, 256, GL_RGB, GL_UNSIGNED_BYTE, (void *) thePalette);
+		is8bit = true;
+	}
+	
+	dlclose(prjobj);
 }
-#endif
 
 void VID_Init(unsigned char *palette)
 {

@@ -34,8 +34,10 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <X11/keysym.h>
 #include <X11/cursorfont.h>
 
+#ifdef USE_DGA
 #include <X11/extensions/xf86dga.h>
 #include <X11/extensions/xf86vmode.h>
+#endif
 
 #define WARP_WIDTH              320
 #define WARP_HEIGHT             200
@@ -66,17 +68,19 @@ static cvar_t in_mouse = {"in_mouse", "1", false};
 static cvar_t in_dgamouse = {"in_dgamouse", "1", false};
 static cvar_t m_filter = {"m_filter", "0"};
 
-qboolean dgamouse = false;
-qboolean vidmode_ext = false;
-
 static int win_x, win_y;
 
 static int scr_width, scr_height;
+
+#ifdef USE_DGA
+static qboolean dgamouse = false;
+static qboolean vidmode_ext = false;
 
 static XF86VidModeModeInfo **vidmodes;
 static int default_dotclock_vidmode;
 static int num_vidmodes;
 static qboolean vidmode_active = false;
+#endif
 
 /*-----------------------------------------------------------------------*/
 
@@ -282,7 +286,9 @@ static void install_grabs(void)
 				 None,
 				 CurrentTime);
 
-	if (in_dgamouse.value) {
+#ifdef USE_DGA
+	if (in_dgamouse.value)
+	{
 		int MajorVersion, MinorVersion;
 
 		if (!XF86DGAQueryVersion(dpy, &MajorVersion, &MinorVersion)) { 
@@ -294,7 +300,10 @@ static void install_grabs(void)
 			XF86DGADirectVideo(dpy, DefaultScreen(dpy), XF86DGADirectMouse);
 			XWarpPointer(dpy, None, win, 0, 0, 0, 0, 0, 0);
 		}
-	} else {
+	}
+	else
+#endif
+	{
 		XWarpPointer(dpy, None, win,
 					 0, 0, 0, 0,
 					 vid.width / 2, vid.height / 2);
@@ -315,10 +324,13 @@ static void uninstall_grabs(void)
 	if (!dpy || !win)
 		return;
 
-	if (dgamouse) {
+#ifdef USE_DGA
+	if (dgamouse)
+	{
 		dgamouse = false;
 		XF86DGADirectVideo(dpy, DefaultScreen(dpy), 0);
 	}
+#endif
 
 	XUngrabPointer(dpy, CurrentTime);
 	XUngrabKeyboard(dpy, CurrentTime);
@@ -352,11 +364,14 @@ static void HandleEvents(void)
 
 		case MotionNotify:
 			if (mouse_active) {
-				if (dgamouse) {
+#ifdef USE_DGA
+				if (dgamouse)
+				{
 					mx += (event.xmotion.x + win_x) * 2;
 					my += (event.xmotion.y + win_y) * 2;
-				} 
+				}
 				else 
+#endif
 				{
 					mx += ((int)event.xmotion.x - mwx) * 2;
 					my += ((int)event.xmotion.y - mwy) * 2;
@@ -448,11 +463,15 @@ void VID_Shutdown(void)
 			glXDestroyContext(dpy, ctx);
 		if (win)
 			XDestroyWindow(dpy, win);
+#ifdef USE_DGA
 		if (vidmode_active)
 			XF86VidModeSwitchToMode(dpy, scrnum, vidmodes[0]);
+#endif
 		XCloseDisplay(dpy);
 	}
+#ifdef USE_DGA
 	vidmode_active = false;
+#endif
 	dpy = NULL;
 	win = 0;
 	ctx = NULL;
@@ -579,7 +598,7 @@ void GL_Init (void)
 	gl_version = glGetString (GL_VERSION);
 	Con_Printf ("GL_VERSION: %s\n", gl_version);
 	gl_extensions = glGetString (GL_EXTENSIONS);
-	Con_Printf ("GL_EXTENSIONS: %s\n", gl_extensions);
+	// Con_Printf ("GL_EXTENSIONS: %s\n", gl_extensions);
 
 //	Con_Printf ("%s %s\n", gl_renderer, gl_version);
 
@@ -789,6 +808,7 @@ void VID_Init(unsigned char *palette)
 	scrnum = DefaultScreen(dpy);
 	root = RootWindow(dpy, scrnum);
 
+#ifdef USE_DGA
 	// Get video mode list
 	MajorVersion = MinorVersion = 0;
 	if (!XF86VidModeQueryVersion(dpy, &MajorVersion, &MinorVersion)) { 
@@ -797,6 +817,7 @@ void VID_Init(unsigned char *palette)
 		Con_Printf("Using XFree86-VidModeExtension Version %d.%d\n", MajorVersion, MinorVersion);
 		vidmode_ext = true;
 	}
+#endif
 
 	visinfo = glXChooseVisual(dpy, scrnum, attrib);
 	if (!visinfo) {
@@ -804,6 +825,7 @@ void VID_Init(unsigned char *palette)
 		exit(1);
 	}
 
+#ifdef USE_DGA
 	if (vidmode_ext) {
 		int best_fit, best_dist, dist, x, y;
 		
@@ -842,19 +864,24 @@ void VID_Init(unsigned char *palette)
 				fullscreen = 0;
 		}
 	}
+#endif /* USE_DGA */
 
 	/* window attributes */
 	attr.background_pixel = 0;
 	attr.border_pixel = 0;
 	attr.colormap = XCreateColormap(dpy, root, visinfo->visual, AllocNone);
 	attr.event_mask = X_MASK;
-	if (vidmode_active) {
+#ifdef USE_DGA
+	if (vidmode_active)
+	{
 		mask = CWBackPixel | CWColormap | CWSaveUnder | CWBackingStore | 
 			CWEventMask | CWOverrideRedirect;
 		attr.override_redirect = True;
 		attr.backing_store = NotUseful;
 		attr.save_under = False;
-	} else
+	}
+	else
+#endif
 		mask = CWBackPixel | CWBorderPixel | CWColormap | CWEventMask;
 
 	win = XCreateWindow(dpy, root, 0, 0, width, height,
@@ -862,7 +889,9 @@ void VID_Init(unsigned char *palette)
 						visinfo->visual, mask, &attr);
 	XMapWindow(dpy, win);
 
-	if (vidmode_active) {
+#ifdef USE_DGA
+	if (vidmode_active)
+	{
 		XMoveWindow(dpy, win, 0, 0);
 		XRaiseWindow(dpy, win);
 		XWarpPointer(dpy, None, win, 0, 0, 0, 0, 0, 0);
@@ -870,6 +899,7 @@ void VID_Init(unsigned char *palette)
 		// Move the viewport to top left
 		XF86VidModeSetViewPort(dpy, scrnum, 0, 0);
 	}
+#endif
 
 	XFlush(dpy);
 
@@ -935,7 +965,11 @@ void IN_Commands (void)
 	if (!dpy || !win)
 		return;
 
+#ifdef USE_DGA
 	if (vidmode_active || key_dest == key_game)
+#else
+	if (key_dest == key_game)
+#endif
 		IN_ActivateMouse();
 	else
 		IN_DeactivateMouse ();
