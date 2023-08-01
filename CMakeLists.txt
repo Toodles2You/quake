@@ -13,6 +13,9 @@ set(CMAKE_SHARED_MODULE_PREFIX_C "")
 set(CMAKE_SHARED_LIBRARY_PREFIX_CXX "")
 set(CMAKE_SHARED_MODULE_PREFIX_CXX "")
 
+find_package(PkgConfig REQUIRED)
+pkg_check_modules(SDL REQUIRED sdl2)
+
 #===============================================================#
 # Project config                                                #
 #===============================================================#
@@ -63,10 +66,11 @@ set(QUAKE_SRC
     nq/gl_rsurf.c
     nq/gl_screen.c
     nq/gl_test.c
-    nq/gl_vidlinuxglx.c
+    nq/gl_vidsdl.c
     nq/gl_warp.c
     nq/host.c
     nq/host_cmd.c
+    nq/in_sdl.c
     nq/keys.c
     nq/menu.c
     nq/mathlib.c
@@ -94,7 +98,7 @@ set(QUAKE_SRC
     nq/snd_dma.c
     nq/snd_mem.c
     nq/snd_mix.c
-    nq/snd_linux.c
+    nq/snd_sdl.c
     nq/math.s
     nq/worlda.s
     nq/snd_mixa.s
@@ -186,9 +190,11 @@ target_compile_definitions(quake PRIVATE GLQUAKE)
 
 target_compile_options(quake PRIVATE ${QUAKE_FLAGS})
 
-target_include_directories(quake PRIVATE ${QUAKE_DIRS})
+target_include_directories(quake PRIVATE ${QUAKE_DIRS} ${SDL_INCLUDE_DIRS})
 
-target_link_libraries(quake PRIVATE ${QUAKE_LIBRARIES} GL X11 Xext dl)
+target_link_directories(quake PRIVATE ${SDL_LIBRARY_DIRS})
+
+target_link_libraries(quake PRIVATE ${QUAKE_LIBRARIES} ${SDL_LIBRARIES} GL dl)
 
 #===============================================================#
 # QuakeWorld client                                             #
