@@ -502,7 +502,11 @@ qboolean Host_FilterTime (float time)
 {
 	realtime += time;
 
-	if (!cls.timedemo && realtime - oldrealtime < 1.0/72.0)
+	float fps = cl_maxfps.value;
+	if (fps < 30.0)
+		fps = 30.0;
+
+	if (!cls.timedemo && realtime - oldrealtime < 1.0/fps)
 		return false;		// framerate is too high
 
 	host_frametime = realtime - oldrealtime;
