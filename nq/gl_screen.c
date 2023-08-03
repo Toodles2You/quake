@@ -1,5 +1,8 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 1996-2001 Id Software, Inc.
+Copyright (C) 2002-2009 John Fitzgibbons and others
+Copyright (C) 2007-2008 Kristian Duske
+Copyright (C) 2010-2014 QuakeSpasm developers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -222,24 +225,41 @@ void SCR_CheckDrawCenterString (void)
 
 /*
 ====================
-CalcFov
+AdaptFovx
+Adapt a 4:3 horizontal FOV to the current screen size using the "Hor+" scaling:
+2.0 * atan(width / height * 3.0 / 4.0 * tan(fov_x / 2.0))
 ====================
 */
-float CalcFov (float fov_x, float width, float height)
+float AdaptFovx (float fov_x, float width, float height)
 {
-        float   a;
-        float   x;
+	float	a, x;
 
-        if (fov_x < 1 || fov_x > 179)
-                Sys_Error ("Bad fov: %f", fov_x);
+	if (fov_x < 1 || fov_x > 179)
+		Sys_Error ("Bad fov: %f", fov_x);
 
-        x = width/tan(fov_x/360*M_PI);
+	if ((x = height / width) == 0.75)
+		return fov_x;
+	a = atan(0.75 / x * tan(fov_x / 360 * M_PI));
+	a = a * 360 / M_PI;
+	return a;
+}
 
-        a = atan (height/x);
+/*
+====================
+CalcFovy
+====================
+*/
+float CalcFovy (float fov_x, float width, float height)
+{
+	float	a, x;
 
-        a = a*360/M_PI;
+	if (fov_x < 1 || fov_x > 179)
+		Sys_Error ("Bad fov: %f", fov_x);
 
-        return a;
+	x = width / tan(fov_x / 360 * M_PI);
+	a = atan(height / x);
+	a = a * 360 / M_PI;
+	return a;
 }
 
 /*
@@ -324,8 +344,8 @@ static void SCR_CalcRefdef (void)
 	else 
 		r_refdef.vrect.y = (h - r_refdef.vrect.height)/2;
 
-	r_refdef.fov_x = scr_fov.value;
-	r_refdef.fov_y = CalcFov (r_refdef.fov_x, r_refdef.vrect.width, r_refdef.vrect.height);
+	r_refdef.fov_x = AdaptFovx (scr_fov.value, vid.width, vid.height);
+	r_refdef.fov_y = CalcFovy (r_refdef.fov_x, r_refdef.vrect.width, r_refdef.vrect.height);
 
 	scr_vrect = r_refdef.vrect;
 }

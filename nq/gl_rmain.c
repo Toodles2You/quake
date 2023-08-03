@@ -1,5 +1,7 @@
 /*
-Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 1996-2001 Id Software, Inc.
+Copyright (C) 2002-2009 John Fitzgibbons and others
+Copyright (C) 2010-2014 QuakeSpasm developers
 
 This program is free software; you can redistribute it and/or
 modify it under the terms of the GNU General Public License
@@ -766,36 +768,46 @@ int SignbitsForPlane (mplane_t *out)
 }
 
 
+/*
+===============
+TurnVector -- johnfitz
+
+turn forward towards side on the plane defined by forward and side
+if angle = 90, the result will be equal to side
+assumes side and forward are perpendicular, and normalized
+to turn away from side, use a negative angle
+===============
+*/
+void TurnVector (vec3_t out, const vec3_t forward, const vec3_t side, float angle)
+{
+	float scale_forward, scale_side;
+
+	scale_forward = cos( DEG2RAD( angle ) );
+	scale_side = sin( DEG2RAD( angle ) );
+
+	out[0] = scale_forward*forward[0] + scale_side*side[0];
+	out[1] = scale_forward*forward[1] + scale_side*side[1];
+	out[2] = scale_forward*forward[2] + scale_side*side[2];
+}
+
+/*
+===============
+R_SetFrustum -- johnfitz -- rewritten
+===============
+*/
 void R_SetFrustum (void)
 {
 	int		i;
 
-	if (r_refdef.fov_x == 90) 
-	{
-		// front side is visible
-
-		VectorAdd (vpn, vright, frustum[0].normal);
-		VectorSubtract (vpn, vright, frustum[1].normal);
-
-		VectorAdd (vpn, vup, frustum[2].normal);
-		VectorSubtract (vpn, vup, frustum[3].normal);
-	}
-	else
-	{
-		// rotate VPN right by FOV_X/2 degrees
-		RotatePointAroundVector( frustum[0].normal, vup, vpn, -(90-r_refdef.fov_x / 2 ) );
-		// rotate VPN left by FOV_X/2 degrees
-		RotatePointAroundVector( frustum[1].normal, vup, vpn, 90-r_refdef.fov_x / 2 );
-		// rotate VPN up by FOV_X/2 degrees
-		RotatePointAroundVector( frustum[2].normal, vright, vpn, 90-r_refdef.fov_y / 2 );
-		// rotate VPN down by FOV_X/2 degrees
-		RotatePointAroundVector( frustum[3].normal, vright, vpn, -( 90 - r_refdef.fov_y / 2 ) );
-	}
+	TurnVector(frustum[0].normal, vpn, vright, r_refdef.fov_x/2 - 90); //left plane
+	TurnVector(frustum[1].normal, vpn, vright, 90 - r_refdef.fov_x/2); //right plane
+	TurnVector(frustum[2].normal, vpn, vup, 90 - r_refdef.fov_y/2); //bottom plane
+	TurnVector(frustum[3].normal, vpn, vup, r_refdef.fov_y/2 - 90); //top plane
 
 	for (i=0 ; i<4 ; i++)
 	{
 		frustum[i].type = PLANE_ANYZ;
-		frustum[i].dist = DotProduct (r_origin, frustum[i].normal);
+		frustum[i].dist = DotProduct (r_origin, frustum[i].normal); //FIXME: shouldn't this always be zero?
 		frustum[i].signbits = SignbitsForPlane (&frustum[i]);
 	}
 }
@@ -840,21 +852,15 @@ void R_SetupFrame (void)
 
 }
 
-
-void MYgluPerspective( GLdouble fovy, GLdouble aspect,
-		     GLdouble zNear, GLdouble zFar )
+void R_SetPerspective(GLdouble fovx, GLdouble fovy, GLdouble zNear, GLdouble zFar)
 {
-   GLdouble xmin, xmax, ymin, ymax;
+	GLdouble xmax, ymax;
 
-   ymax = zNear * tan( fovy * M_PI / 360.0 );
-   ymin = -ymax;
+	xmax = zNear * tan(fovx * M_PI / 360.0);
+	ymax = zNear * tan(fovy * M_PI / 360.0);
 
-   xmin = ymin * aspect;
-   xmax = ymax * aspect;
-
-   glFrustum( xmin, xmax, ymin, ymax, zNear, zFar );
+	glFrustum(-xmax, xmax, -ymax, ymax, zNear, zFar);
 }
-
 
 /*
 =============
@@ -863,7 +869,6 @@ R_SetupGL
 */
 void R_SetupGL (void)
 {
-	float	screenaspect;
 	float	yfov;
 	int		i;
 	extern	int glwidth, glheight;
@@ -899,9 +904,8 @@ void R_SetupGL (void)
 	}
 
 	glViewport (glx + x, gly + y2, w, h);
-    screenaspect = (float)r_refdef.vrect.width/r_refdef.vrect.height;
-//	yfov = 2*atan((float)r_refdef.vrect.height/r_refdef.vrect.width)*180/M_PI;
-    MYgluPerspective (r_refdef.fov_y,  screenaspect,  4,  4096);
+
+	R_SetPerspective(r_refdef.fov_x, r_refdef.fov_y, 4, 4096);
 
 	if (mirror)
 	{
