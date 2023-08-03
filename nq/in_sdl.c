@@ -42,6 +42,7 @@ static vec2_t old_mouse;
 static cvar_t in_mouse = {"in_mouse", "1", false};
 static cvar_t m_rawinput = {"m_rawinput", "1", false};
 static cvar_t m_filter = {"m_filter", "0"};
+static cvar_t m_look = {"m_look", "1"};
 
 static int IN_TranslateKey(SDL_KeyboardEvent *k)
 {
@@ -301,6 +302,7 @@ void IN_Init()
     Cvar_RegisterVariable(&in_mouse);
     Cvar_RegisterVariable(&m_rawinput);
     Cvar_RegisterVariable(&m_filter);
+    Cvar_RegisterVariable(&m_look);
     Cmd_AddCommand("force_centerview", Force_CenterView_f);
 }
 
@@ -312,7 +314,7 @@ void IN_Shutdown()
 static void IN_ActivateGrabs()
 {
 	SDL_ShowCursor(SDL_DISABLE);
-	SDL_SetWindowMouseGrab(window, SDL_TRUE);
+	/* SDL_SetWindowMouseGrab(window, SDL_TRUE); */
 
 	if (m_rawinput.value && SDL_SetRelativeMouseMode(SDL_TRUE) == 0)
 	{
@@ -324,7 +326,7 @@ static void IN_ActivateGrabs()
         mouse_state &= ~MOUSE_RELATIVE;
 	}
 
-	SDL_SetWindowKeyboardGrab(window, SDL_TRUE);
+	/* SDL_SetWindowKeyboardGrab(window, SDL_TRUE); */
 
     mouse_state |= MOUSE_ACTIVE;
     mouse[0] = mouse[1] = 0;
@@ -332,14 +334,14 @@ static void IN_ActivateGrabs()
 
 static void IN_DeactivateGrabs()
 {
-	SDL_SetWindowKeyboardGrab(window, SDL_FALSE);
+	/* SDL_SetWindowKeyboardGrab(window, SDL_FALSE); */
 
 	if (mouse_state & MOUSE_RELATIVE)
 	{
 		SDL_SetRelativeMouseMode(SDL_FALSE);
 	}
 
-	SDL_SetWindowMouseGrab(window, SDL_FALSE);
+	/* SDL_SetWindowMouseGrab(window, SDL_FALSE); */
 	SDL_ShowCursor(SDL_ENABLE);
 
     mouse_state &= ~(MOUSE_ACTIVE | MOUSE_RELATIVE);
@@ -353,7 +355,7 @@ void IN_Commands()
     if (!(mouse_state & MOUSE_AVAILABLE))
         return;
 
-    if (key_dest == key_game)
+    if (in_mouse.value && key_dest == key_game)
     {
         if (!(mouse_state & MOUSE_ACTIVE))
             IN_ActivateGrabs();
@@ -382,7 +384,7 @@ void IN_Move(usercmd_t *cmd)
     mouse[0] *= sensitivity.value;
     mouse[1] *= sensitivity.value;
 
-    qboolean looking = (in_mlook.state & 1);
+    qboolean looking = m_look.value || (in_mlook.state & 1);
     qboolean strafing = (in_strafe.state & 1);
 
     // add mouse X/Y movement to cmd
