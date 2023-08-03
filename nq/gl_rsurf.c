@@ -196,7 +196,7 @@ store:
 				t >>= 7;
 				if (t > 255)
 					t = 255;
-				dest[3] = 255-t;
+				dest[3] = t;
 				dest += 4;
 			}
 		}
@@ -213,7 +213,7 @@ store:
 				t >>= 7;
 				if (t > 255)
 					t = 255;
-				dest[j] = 255-t;
+				dest[j] = t;
 			}
 		}
 		break;
@@ -685,12 +685,12 @@ void R_BlendLightmaps (void)
 	glDepthMask (0);		// don't bother writing Z
 
 	if (gl_lightmap_format == GL_LUMINANCE)
-		glBlendFunc (GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
+		glBlendFunc (GL_ZERO, GL_SRC_COLOR);
 	else if (gl_lightmap_format == GL_INTENSITY)
 	{
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		glColor4f (0,0,0,1);
-		glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glBlendFunc (GL_SRC_ALPHA, GL_SRC_ALPHA);
 	}
 
 	if (!r_lightmap.value)
