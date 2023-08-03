@@ -60,6 +60,7 @@ int		texels;
 typedef struct
 {
 	int		texnum;
+	int		brightnum;
 	char	identifier[64];
 	int		width, height;
 	qboolean	mipmap;
@@ -152,12 +153,13 @@ int	scrap_uploads;
 void Scrap_Upload (void)
 {
 	int		texnum;
+	int		scrapnum;
 
 	scrap_uploads++;
 
 	for (texnum=0 ; texnum<MAX_SCRAPS ; texnum++) {
-		GL_Bind(scrap_texnum + texnum);
-		GL_Upload8 (scrap_texels[texnum], BLOCK_WIDTH, BLOCK_HEIGHT, false, true);
+		scrapnum = scrap_texnum + texnum;
+		GL_Upload8 (&scrapnum, NULL, scrap_texels[texnum], BLOCK_WIDTH, BLOCK_HEIGHT, false, true);
 	}
 	scrap_dirty = false;
 }
@@ -399,7 +401,7 @@ void Draw_Init (void)
 			draw_chars[i] = 255;	// proper transparent color
 
 	// now turn them into textures
-	char_texture = GL_LoadTexture ("charset", 128, 128, draw_chars, false, true);
+	GL_LoadTexture (&char_texture, NULL, "charset", 128, 128, draw_chars, false, true);
 
 	start = Hunk_LowMark();
 
@@ -458,7 +460,7 @@ void Draw_Init (void)
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
 
 	gl = (glpic_t *)conback->data;
-	gl->texnum = GL_LoadTexture ("conback", conback->width, conback->height, ncdata, false, false);
+	GL_LoadTexture (&gl->texnum, NULL, "conback", conback->width, conback->height, ncdata, false, false);
 	gl->sl = 0;
 	gl->sh = 1;
 	gl->tl = 0;
@@ -1183,23 +1185,43 @@ done: ;
 	}
 }
 
-int gl_brightnum;
-
 /*
 ===============
 GL_Upload8
 ===============
 */
-void GL_Upload8 (byte *data, int width, int height,  qboolean mipmap, qboolean alpha)
+void GL_Upload8 (
+	int* gl_texturenum,
+	int* gl_brightnum,
+	byte *data,
+	int width,
+	int height,
+	qboolean mipmap,
+	qboolean alpha
+)
 {
-static	unsigned	trans[640*480];		// FIXME, temporary
-static	unsigned	bright[640*480];
-	int			i, s;
+	/* Toodles TODO: Find a better way to allocate memory. */
+	unsigned	trans[640 * 480 * 2];
+	int			i;
 	qboolean	noalpha;
 	qboolean	nobright = true;
 	int			p;
 
-	s = width*height;
+	int s = width*height;
+	
+	/*
+	int pixels = s * sizeof(unsigned int);
+	
+	if (gl_brightnum != NULL)
+		pixels *= 2;
+	*/
+
+	unsigned int *remap = &trans[0];
+	unsigned int *brightmap = NULL;
+	
+	if (gl_brightnum != NULL)
+		brightmap = remap + s;
+	
 	// if there are no transparent pixels, make it a 3 component
 	// texture even if it was specified as otherwise
 	if (alpha)
@@ -1210,16 +1232,19 @@ static	unsigned	bright[640*480];
 			p = data[i];
 			if (p == 255)
 				noalpha = false;
-			trans[i] = d_8to24table[p];
-			bright[i] = trans[i];
-			if (p < 224)
+			remap[i] = d_8to24table[p];
+			
+			if (gl_brightnum != NULL)
 			{
-				((byte *)&bright[i])[3] = 0;
-			}
-			else
-			{
-				((byte *)&bright[i])[3] = 255;
-				nobright = false;
+				brightmap[i] = remap[i];
+
+				if (p < 224) {
+					((byte *)&brightmap[i])[3] = 0;
+				}
+				else {
+					((byte *)&brightmap[i])[3] = 255;
+					nobright = false;
+				}
 			}
 		}
 
@@ -1233,37 +1258,45 @@ static	unsigned	bright[640*480];
 		for (i=0 ; i<s ; i++)
 		{
 			p = data[i];
-			trans[i] = d_8to24table[p];
-			bright[i] = trans[i];
-			if (p < 224)
+			remap[i] = d_8to24table[p];
+
+			if (gl_brightnum != NULL)
 			{
-				((byte *)&bright[i])[3] = 0;
-			}
-			else
-			{
-				((byte *)&bright[i])[3] = 255;
-				nobright = false;
+				brightmap[i] = remap[i];
+
+				if (p < 224) {
+					((byte *)&brightmap[i])[3] = 0;
+				}
+				else {
+					((byte *)&brightmap[i])[3] = 255;
+					nobright = false;
+				}
 			}
 		}
 	}
 
  	if (VID_Is8bit() && !alpha && (data!=scrap_texels[0])) {
  		GL_Upload8_EXT (data, width, height, mipmap, alpha);
- 		return;
+ 		goto done;
 	}
-	GL_Upload32 (trans, width, height, mipmap, alpha);
 
-	if (!nobright)
+	GL_Bind (*gl_texturenum);
+	GL_Upload32 (remap, width, height, mipmap, alpha);
+
+	if (nobright)
 	{
-		gl_brightnum = texture_extension_number + 1;
-		GL_Bind (gl_brightnum);
-		GL_Upload32 (bright, width, height, false, true);
-		texture_extension_number++;
+		if (gl_brightnum != NULL)
+			*gl_brightnum = 0;
 	}
 	else
 	{
-		gl_brightnum = 0;
+		GL_Bind (*gl_brightnum);
+		GL_Upload32 (brightmap, width, height, false, true);
+
+		GL_Bind (*gl_texturenum);
 	}
+
+done:;
 }
 
 /*
@@ -1271,7 +1304,16 @@ static	unsigned	bright[640*480];
 GL_LoadTexture
 ================
 */
-int GL_LoadTexture (char *identifier, int width, int height, byte *data, qboolean mipmap, qboolean alpha)
+void GL_LoadTexture (
+	int *gl_texturenum,
+	int *gl_brightnum, 
+	char *identifier,
+	int width,
+	int height,
+	byte *data,
+	qboolean mipmap,
+	qboolean alpha
+)
 {
 	qboolean	noalpha;
 	int			i, p, s;
@@ -1286,7 +1328,13 @@ int GL_LoadTexture (char *identifier, int width, int height, byte *data, qboolea
 			{
 				if (width != glt->width || height != glt->height)
 					Sys_Error ("GL_LoadTexture: cache mismatch");
-				return gltextures[i].texnum;
+
+				(*gl_texturenum) = gltextures[i].texnum;
+
+				if (gl_brightnum != NULL)
+					(*gl_brightnum) = gltextures[i].brightnum;
+
+				return;
 			}
 		}
 	}
@@ -1296,20 +1344,22 @@ int GL_LoadTexture (char *identifier, int width, int height, byte *data, qboolea
 	}
 
 	strcpy (glt->identifier, identifier);
-	glt->texnum = texture_extension_number;
 	glt->width = width;
 	glt->height = height;
 	glt->mipmap = mipmap;
 
-	GL_Bind(glt->texnum );
-
-	GL_Upload8 (data, width, height, mipmap, alpha);
-
+	(*gl_texturenum) = texture_extension_number;
 	texture_extension_number++;
 
-	GL_Bind(glt->texnum );
+	if (gl_brightnum != NULL) {
+		(*gl_brightnum) = texture_extension_number;
+		texture_extension_number++;
+	}
 
-	return glt->texnum;
+	GL_Upload8 (gl_texturenum, gl_brightnum, data, width, height, mipmap, alpha);
+
+	glt->texnum = (*gl_texturenum);
+	glt->brightnum = (gl_brightnum != NULL) ? (*gl_brightnum) : 0;
 }
 
 /*
@@ -1319,7 +1369,9 @@ GL_LoadPicTexture
 */
 int GL_LoadPicTexture (qpic_t *pic)
 {
-	return GL_LoadTexture ("", pic->width, pic->height, pic->data, false, true);
+	int gl_texturenum = 0;
+	GL_LoadTexture (&gl_texturenum, NULL, "", pic->width, pic->height, pic->data, false, true);
+	return gl_texturenum;
 }
 
 /****************************************/
