@@ -534,6 +534,37 @@ void Draw_Character (int x, int y, int num)
 	glEnd ();
 }
 
+void Draw_Crosshair (int x, int y)
+{
+	int row, col;
+	float frow, fcol, size;
+
+	int num = '+' & 255;
+
+	if (y <= -8)
+		return; // totally off screen
+
+	row = num >> 4;
+	col = num & 15;
+
+	size = 0.0625;
+	frow = row * size;
+	fcol = col * size;
+
+	GL_Bind (char_texture);
+
+	glBegin (GL_QUADS);
+	glTexCoord2f (fcol, frow);
+	glVertex2f (x - 4, y - 4);
+	glTexCoord2f (fcol + size, frow);
+	glVertex2f (x + 4, y - 4);
+	glTexCoord2f (fcol + size, frow + size);
+	glVertex2f (x + 4, y + 4);
+	glTexCoord2f (fcol, frow + size);
+	glVertex2f (x - 4, y + 4);
+	glEnd ();
+}
+
 /*
 ================
 Draw_String

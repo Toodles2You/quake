@@ -263,6 +263,32 @@ float CalcFovy (float fov_x, float width, float height)
 	return a;
 }
 
+static void SCR_CalcVrect(int vid_width, int vid_height, int sbar_height, float size, qboolean full, vrect_t *vrect)
+{
+	vrect->width = vid_width * size;
+
+	if (vrect->width < 96)
+	{
+		size = 96.0 / vrect->width;
+		vrect->width = 96; /* Minimum for icons. */
+	}
+
+	vrect->height = vid_height * size;
+
+	if (vrect->height > sbar_height)
+		vrect->height = sbar_height;
+
+	if (vrect->height > vid_height)
+		vrect->height = vid_height;
+
+	vrect->x = (vid_width - vrect->width) / 2;
+
+	if (full)
+		vrect->y = 0;
+	else
+		vrect->y = (sbar_height - vrect->height) / 2;
+}
+
 /*
 =================
 SCR_CalcRefdef
@@ -328,25 +354,10 @@ static void SCR_CalcRefdef (void)
 	}
 	size /= 100.0;
 
-	h = vid.height - sb_lines;
-
-	r_refdef.vrect.width = vid.width * size;
-	if (r_refdef.vrect.width < 96)
-	{
-		size = 96.0 / r_refdef.vrect.width;
-		r_refdef.vrect.width = 96;	// min for icons
-	}
-
-	r_refdef.vrect.height = vid.height * size;
-	if (r_refdef.vrect.height > vid.height - sb_lines)
-		r_refdef.vrect.height = vid.height - sb_lines;
-	if (r_refdef.vrect.height > vid.height)
-			r_refdef.vrect.height = vid.height;
-	r_refdef.vrect.x = (vid.width - r_refdef.vrect.width)/2;
-	if (full)
-		r_refdef.vrect.y = 0;
-	else 
-		r_refdef.vrect.y = (h - r_refdef.vrect.height)/2;
+	if (cl_sbar.value == 1 && scr_viewsize.value >= 100)
+		SCR_CalcVrect(vid.width, vid.height, vid.height, size, full, &r_refdef.vrect);
+	else
+		SCR_CalcVrect(vid.width, vid.height, vid.height - sb_lines, size, full, &r_refdef.vrect);
 
 	r_refdef.fov_x = AdaptFovx (scr_fov.value, vid.width, vid.height);
 	r_refdef.fov_y = CalcFovy (r_refdef.fov_x, r_refdef.vrect.width, r_refdef.vrect.height);
@@ -904,8 +915,17 @@ void SCR_UpdateScreen (void)
 		vid.recalc_refdef = true;
 	}
 
+	if (oldsbar != cl_sbar.value)
+	{
+		oldsbar = cl_sbar.value;
+		vid.recalc_refdef = true;
+	}
+
 	if (vid.recalc_refdef)
 		SCR_CalcRefdef ();
+	
+	if (sb_lines && cl_sbar.value == 1 && scr_viewsize.value >= 100)
+		Sbar_Changed ();
 
 //
 // do 3D refresh drawing, and then update the screen
@@ -945,7 +965,7 @@ void SCR_UpdateScreen (void)
 	else
 	{
 		if (crosshair.value)
-			Draw_Character (scr_vrect.x + scr_vrect.width/2, scr_vrect.y + scr_vrect.height/2, '+');
+			Draw_Crosshair (scr_vrect.x + scr_vrect.width/2, scr_vrect.y + scr_vrect.height/2);
 		
 		SCR_DrawRam ();
 		SCR_DrawNet ();
