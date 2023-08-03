@@ -605,11 +605,14 @@ void DrawGLWaterPoly (glpoly_t *p)
 	{
 		glTexCoord2f (v[3], v[4]);
 
+		/*
 		nv[0] = v[0] + 8*sin(v[1]*0.05+realtime)*sin(v[2]*0.05+realtime);
 		nv[1] = v[1] + 8*sin(v[0]*0.05+realtime)*sin(v[2]*0.05+realtime);
 		nv[2] = v[2];
 
 		glVertex3fv (nv);
+		*/
+		glVertex3fv (v);
 	}
 	glEnd ();
 }
@@ -629,11 +632,14 @@ void DrawGLWaterPolyLightmap (glpoly_t *p)
 	{
 		glTexCoord2f (v[5], v[6]);
 
+		/*
 		nv[0] = v[0] + 8*sin(v[1]*0.05+realtime)*sin(v[2]*0.05+realtime);
 		nv[1] = v[1] + 8*sin(v[0]*0.05+realtime)*sin(v[2]*0.05+realtime);
 		nv[2] = v[2];
 
 		glVertex3fv (nv);
+		*/
+		glVertex3fv (v);
 	}
 	glEnd ();
 }
@@ -690,6 +696,7 @@ void R_BlendLightmaps (void)
 	if (!r_lightmap.value)
 	{
 		glEnable (GL_BLEND);
+    	glStencilFunc (GL_NOTEQUAL, 1, 0xFF);
 	}
 
 	for (i=0 ; i<MAX_LIGHTMAPS ; i++)
@@ -734,6 +741,7 @@ void R_BlendLightmaps (void)
 		}
 	}
 
+	glStencilFunc (GL_ALWAYS, 0, 0xFF);
 	glDisable (GL_BLEND);
 	if (gl_lightmap_format == GL_LUMINANCE)
 		glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
@@ -776,10 +784,37 @@ void R_RenderBrushPoly (msurface_t *fa)
 		return;
 	}
 
+	glStencilMask (0xFF);
+
 	if (fa->flags & SURF_UNDERWATER)
 		DrawGLWaterPoly (fa->polys);
 	else
 		DrawGLPoly (fa->polys);
+
+	if (t->gl_brightnum)
+	{
+		glColorMask (GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
+		glEnable (GL_ALPHA_TEST);
+		glDepthMask (0);
+		
+		glStencilMask (0xFF);
+		glStencilFunc (GL_ALWAYS, 1, 0xFF);
+		
+		GL_Bind (t->gl_brightnum);
+
+		if (fa->flags & SURF_UNDERWATER)
+			DrawGLWaterPoly (fa->polys);
+		else
+			DrawGLPoly (fa->polys);
+
+		glStencilFunc (GL_ALWAYS, 0, 0xFF);
+		
+		glDepthMask (1);
+		glDisable (GL_ALPHA_TEST);
+		glColorMask (GL_TRUE, GL_TRUE, GL_TRUE, GL_TRUE);
+	}
+
+	glStencilMask (0);
 
 	// add the poly to the proper lightmap chain
 
@@ -1127,7 +1162,7 @@ void R_DrawBrushModel (entity_t *e)
 
 // calculate dynamic lighting for bmodel if it's not an
 // instanced model
-	if (clmodel->firstmodelsurface != 0 && !gl_flashblend.value)
+	if (clmodel->firstmodelsurface != 0 && gl_flashblend.value == 0)
 	{
 		for (k=0 ; k<MAX_DLIGHTS ; k++)
 		{
@@ -1144,6 +1179,8 @@ void R_DrawBrushModel (entity_t *e)
 e->angles[0] = -e->angles[0];	// stupid quake bug
 	R_RotateForEntity (e);
 e->angles[0] = -e->angles[0];	// stupid quake bug
+
+    glEnable(GL_STENCIL_TEST);
 
 	//
 	// draw texture
@@ -1167,6 +1204,8 @@ e->angles[0] = -e->angles[0];	// stupid quake bug
 	}
 
 	R_BlendLightmaps ();
+
+    glDisable(GL_STENCIL_TEST);
 
 	glPopMatrix ();
 }
@@ -1329,11 +1368,15 @@ void R_DrawWorld (void)
 	R_ClearSkyBox ();
 #endif
 
+    glEnable(GL_STENCIL_TEST);
+
 	R_RecursiveWorldNode (cl.worldmodel->nodes);
 
 	DrawTextureChains ();
 
 	R_BlendLightmaps ();
+
+    glDisable(GL_STENCIL_TEST);
 
 #ifdef QUAKE2
 	R_DrawSkyBox ();

@@ -330,6 +330,7 @@ model_t *Mod_ForName (char *name, qboolean crash)
 
 byte	*mod_base;
 
+extern int gl_brightnum;
 
 /*
 =================
@@ -387,9 +388,8 @@ void Mod_LoadTextures (lump_t *l)
 			R_InitSky (tx);
 		else
 		{
-			texture_mode = GL_LINEAR_MIPMAP_NEAREST; //_LINEAR;
-			tx->gl_texturenum = GL_LoadTexture (mt->name, tx->width, tx->height, (byte *)(tx+1), true, false);
-			texture_mode = GL_LINEAR;
+			tx->gl_texturenum = GL_LoadTexture (mt->name, tx->width, tx->height, (byte *)(tx+1), true, false);			
+			tx->gl_brightnum = gl_brightnum;
 		}
 	}
 
@@ -1445,6 +1445,11 @@ void *Mod_LoadAllSkins (int numskins, daliasskintype_t *pskintype)
 			pheader->gl_texturenum[i][3] =
 				GL_LoadTexture (name, pheader->skinwidth, 
 				pheader->skinheight, (byte *)(pskintype + 1), true, false);
+			pheader->gl_brightnum[i][0] =
+			pheader->gl_brightnum[i][1] =
+			pheader->gl_brightnum[i][2] =
+			pheader->gl_brightnum[i][3] =
+				gl_brightnum;
 			pskintype = (daliasskintype_t *)((byte *)(pskintype+1) + s);
 		} else {
 			// animating skin group.  yuck.
@@ -1467,12 +1472,18 @@ void *Mod_LoadAllSkins (int numskins, daliasskintype_t *pskintype)
 					pheader->gl_texturenum[i][j&3] = 
 						GL_LoadTexture (name, pheader->skinwidth, 
 						pheader->skinheight, (byte *)(pskintype), true, false);
+					pheader->gl_brightnum[i][j&3] =
+						gl_brightnum;
 					pskintype = (daliasskintype_t *)((byte *)(pskintype) + s);
 			}
 			k = j;
 			for (/* */; j < 4; j++)
+			{
 				pheader->gl_texturenum[i][j&3] = 
 				pheader->gl_texturenum[i][j - k]; 
+				pheader->gl_brightnum[i][j&3] = 
+				pheader->gl_brightnum[i][j - k]; 
+			}
 		}
 	}
 

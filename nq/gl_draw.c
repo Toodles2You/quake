@@ -51,8 +51,8 @@ int		gl_lightmap_format = 4;
 int		gl_solid_format = 3;
 int		gl_alpha_format = 4;
 
-int		gl_filter_min = GL_LINEAR_MIPMAP_NEAREST;
-int		gl_filter_max = GL_LINEAR;
+int		gl_filter_min = GL_NEAREST_MIPMAP_LINEAR;
+int		gl_filter_max = GL_NEAREST;
 
 
 int		texels;
@@ -454,8 +454,8 @@ void Draw_Init (void)
 	ncdata = cb->data;
 #endif
 
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_max);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
 
 	gl = (glpic_t *)conback->data;
 	gl->texnum = GL_LoadTexture ("conback", conback->width, conback->height, ncdata, false, false);
@@ -682,8 +682,8 @@ void Draw_TransPicTranslate (int x, int y, qpic_t *pic, byte *translation)
 
 	glTexImage2D (GL_TEXTURE_2D, 0, gl_alpha_format, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, trans);
 
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_max);
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
 
 	glColor3f (1,1,1);
 	glBegin (GL_QUADS);
@@ -1073,6 +1073,12 @@ texels += scaled_width * scaled_height;
 done: ;
 #endif
 
+	float aniso = 4.0;
+	float max_aniso;
+	glGetFloatv(GL_MAX_TEXTURE_MAX_ANISOTROPY, &max_aniso);
+	if (aniso > max_aniso)
+		aniso = max_aniso;
+	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAX_ANISOTROPY, aniso);
 
 	if (mipmap)
 	{
@@ -1177,6 +1183,8 @@ done: ;
 	}
 }
 
+int gl_brightnum;
+
 /*
 ===============
 GL_Upload8
@@ -1185,8 +1193,10 @@ GL_Upload8
 void GL_Upload8 (byte *data, int width, int height,  qboolean mipmap, qboolean alpha)
 {
 static	unsigned	trans[640*480];		// FIXME, temporary
+static	unsigned	bright[640*480];
 	int			i, s;
 	qboolean	noalpha;
+	qboolean	nobright = true;
 	int			p;
 
 	s = width*height;
@@ -1201,6 +1211,16 @@ static	unsigned	trans[640*480];		// FIXME, temporary
 			if (p == 255)
 				noalpha = false;
 			trans[i] = d_8to24table[p];
+			bright[i] = trans[i];
+			if (p < 224)
+			{
+				((byte *)&bright[i])[3] = 0;
+			}
+			else
+			{
+				((byte *)&bright[i])[3] = 255;
+				nobright = false;
+			}
 		}
 
 		if (alpha && noalpha)
@@ -1210,12 +1230,20 @@ static	unsigned	trans[640*480];		// FIXME, temporary
 	{
 		if (s&3)
 			Sys_Error ("GL_Upload8: s&3");
-		for (i=0 ; i<s ; i+=4)
+		for (i=0 ; i<s ; i++)
 		{
-			trans[i] = d_8to24table[data[i]];
-			trans[i+1] = d_8to24table[data[i+1]];
-			trans[i+2] = d_8to24table[data[i+2]];
-			trans[i+3] = d_8to24table[data[i+3]];
+			p = data[i];
+			trans[i] = d_8to24table[p];
+			bright[i] = trans[i];
+			if (p < 224)
+			{
+				((byte *)&bright[i])[3] = 0;
+			}
+			else
+			{
+				((byte *)&bright[i])[3] = 255;
+				nobright = false;
+			}
 		}
 	}
 
@@ -1224,6 +1252,18 @@ static	unsigned	trans[640*480];		// FIXME, temporary
  		return;
 	}
 	GL_Upload32 (trans, width, height, mipmap, alpha);
+
+	if (!nobright)
+	{
+		gl_brightnum = texture_extension_number + 1;
+		GL_Bind (gl_brightnum);
+		GL_Upload32 (bright, width, height, false, true);
+		texture_extension_number++;
+	}
+	else
+	{
+		gl_brightnum = 0;
+	}
 }
 
 /*
@@ -1261,13 +1301,15 @@ int GL_LoadTexture (char *identifier, int width, int height, byte *data, qboolea
 	glt->height = height;
 	glt->mipmap = mipmap;
 
-	GL_Bind(texture_extension_number );
+	GL_Bind(glt->texnum );
 
 	GL_Upload8 (data, width, height, mipmap, alpha);
 
 	texture_extension_number++;
 
-	return texture_extension_number-1;
+	GL_Bind(glt->texnum );
+
+	return glt->texnum;
 }
 
 /*

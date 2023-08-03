@@ -31,7 +31,6 @@ enum {
     WARP_HEIGHT = 200,
 };
 
-int texture_mode = GL_LINEAR;
 int texture_extension_number = 1;
 float gldepthmin, gldepthmax;
 
@@ -224,8 +223,8 @@ void GL_Init()
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glShadeModel(GL_FLAT);
 
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_NEAREST);
-    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_NEAREST);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_min);
+    glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_S, GL_REPEAT);
     glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_WRAP_T, GL_REPEAT);
 
@@ -233,6 +232,13 @@ void GL_Init()
 
     //	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
     glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+    
+    glEnable (GL_STENCIL_TEST);
+    glStencilOp (GL_KEEP, GL_KEEP, GL_REPLACE);
+    glStencilFunc (GL_ALWAYS, 0, 0xFF);
+	glStencilMask (0xFF);
+    glClearStencil (0);
+    glStencilMask (0);
 }
 
 /*
@@ -459,7 +465,7 @@ static void VID_CheckParms(int *width, int *height, qboolean *fullscreen)
     }
     else
     {
-        vid.conheight = vid.conwidth * 3 / 4;
+        vid.conheight = vid.conwidth * (*height) / (*width);
     }
 }
 
@@ -500,11 +506,15 @@ void VID_Init(unsigned char *palette)
         || SDL_GL_SetAttribute(SDL_GL_BLUE_SIZE, 1) < 0
         || SDL_GL_SetAttribute(SDL_GL_ALPHA_SIZE, 1) < 0
         || SDL_GL_SetAttribute(SDL_GL_DOUBLEBUFFER, SDL_TRUE) < 0
-        || SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 1) < 0)
+        || SDL_GL_SetAttribute(SDL_GL_DEPTH_SIZE, 1) < 0
+        || SDL_GL_SetAttribute(SDL_GL_STENCIL_SIZE, 1) < 0)
     {
         fprintf(stderr, "Error couldn't set window attributes: %s\n", SDL_GetError());
         exit(1);
     }
+
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
+    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
 
     window = SDL_CreateWindow(
         "Quake",

@@ -94,7 +94,7 @@ cvar_t	gl_texsort = {"gl_texsort","1"};
 cvar_t	gl_smoothmodels = {"gl_smoothmodels","1"};
 cvar_t	gl_affinemodels = {"gl_affinemodels","0"};
 cvar_t	gl_polyblend = {"gl_polyblend","1"};
-cvar_t	gl_flashblend = {"gl_flashblend","1"};
+cvar_t	gl_flashblend = {"gl_flashblend","0"};
 cvar_t	gl_playermip = {"gl_playermip","0"};
 cvar_t	gl_nocolors = {"gl_nocolors","0"};
 cvar_t	gl_keeptjunctions = {"gl_keeptjunctions","0"};
@@ -271,7 +271,7 @@ float	r_avertexnormals[NUMVERTEXNORMALS][3] = {
 };
 
 vec3_t	shadevector;
-float	shadelight, ambientlight;
+float	shadelight;
 
 // precalculated dot products for quantized angles
 #define SHADEDOT_QUANT 16
@@ -288,7 +288,7 @@ int	lastposenum;
 GL_DrawAliasFrame
 =============
 */
-void GL_DrawAliasFrame (aliashdr_t *paliashdr, int posenum)
+void GL_DrawAliasFrame (aliashdr_t *paliashdr, int posenum, qboolean shade)
 {
 	float	s, t;
 	float 	l;
@@ -328,8 +328,15 @@ lastposenum = posenum;
 			order += 2;
 
 			// normals and vertexes come from the frame list
-			l = shadedots[verts->lightnormalindex] * shadelight;
-			glColor3f (l, l, l);
+			if (shade)
+			{
+				l = shadedots[verts->lightnormalindex] * shadelight;
+				glColor3f (l, l, l);
+			}
+			else
+			{
+				glColor3f (1, 1, 1);
+			}
 			glVertex3f (verts->v[0], verts->v[1], verts->v[2]);
 			verts++;
 		} while (--count);
@@ -414,7 +421,7 @@ R_SetupAliasFrame
 
 =================
 */
-void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr)
+void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr, qboolean shade)
 {
 	int				pose, numposes;
 	float			interval;
@@ -434,7 +441,7 @@ void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr)
 		pose += (int)(cl.time / interval) % numposes;
 	}
 
-	GL_DrawAliasFrame (paliashdr, pose);
+	GL_DrawAliasFrame (paliashdr, pose, shade);
 }
 
 
@@ -475,11 +482,11 @@ void R_DrawAliasModel (entity_t *e)
 	// get lighting information
 	//
 
-	ambientlight = shadelight = R_LightPoint (currententity->origin);
+	shadelight = R_LightPoint (currententity->origin);
 
 	// allways give the gun some light
-	if (e == &cl.viewent && ambientlight < 24)
-		ambientlight = shadelight = 24;
+	if (e == &cl.viewent && shadelight < 24)
+		shadelight = 24;
 
 	for (lnum=0 ; lnum<MAX_DLIGHTS ; lnum++)
 	{
@@ -491,7 +498,6 @@ void R_DrawAliasModel (entity_t *e)
 			add = cl_dlights[lnum].radius - Length(dist);
 
 			if (add > 0) {
-				ambientlight += add;
 				//ZOID models should be affected by dlights as well
 				shadelight += add;
 			}
@@ -499,21 +505,18 @@ void R_DrawAliasModel (entity_t *e)
 	}
 
 	// clamp lighting so it doesn't overbright as much
-	if (ambientlight > 128)
-		ambientlight = 128;
-	if (ambientlight + shadelight > 192)
-		shadelight = 192 - ambientlight;
+	if (shadelight > 192)
+		shadelight = 192;
 
 	// ZOID: never allow players to go totally black
 	i = currententity - cl_entities;
-	if (i >= 1 && i<=cl.maxclients /* && !strcmp (currententity->model->name, "progs/player.mdl") */)
-		if (ambientlight < 8)
-			ambientlight = shadelight = 8;
+	if (i >= 1 && i <= cl.maxclients)
+		if (shadelight < 8)
+			shadelight = 8;
 
 	// HACK HACK HACK -- no fullbright colors, so make torches full light
-	if (!strcmp (clmodel->name, "progs/flame2.mdl")
-		|| !strcmp (clmodel->name, "progs/flame.mdl") )
-		ambientlight = shadelight = 256;
+	if (!Q_strncasecmp(clmodel->name, "progs/flame", 11))
+		shadelight = 256;
 
 	shadedots = r_avertexnormal_dots[((int)(e->angles[1] * (SHADEDOT_QUANT / 360.0))) & (SHADEDOT_QUANT - 1)];
 	shadelight = shadelight / 200.0;
@@ -564,16 +567,38 @@ void R_DrawAliasModel (entity_t *e)
 	if (gl_smoothmodels.value)
 		glShadeModel (GL_SMOOTH);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	
+	qboolean affine = (gl_affinemodels.value != 0);
 
-	if (gl_affinemodels.value)
+	if (affine)
 		glHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
 
-	R_SetupAliasFrame (currententity->frame, paliashdr);
+	R_SetupAliasFrame (currententity->frame, paliashdr, true);
+
+	glShadeModel (GL_FLAT);
+	
+	if (paliashdr->gl_brightnum[currententity->skinnum][anim] != 0)
+	{
+    	GL_Bind(paliashdr->gl_brightnum[currententity->skinnum][anim]);
+
+		if (!affine)
+		{
+			glHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
+			affine = true;
+		}
+		
+		glEnable(GL_ALPHA_TEST);
+		glDepthMask (0);
+
+		R_SetupAliasFrame (currententity->frame, paliashdr, false);
+
+		glDepthMask (1);
+		glDisable(GL_ALPHA_TEST);
+	}
 
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
-	glShadeModel (GL_FLAT);
-	if (gl_affinemodels.value)
+	if (affine)
 		glHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
 	glPopMatrix ();
@@ -648,14 +673,6 @@ R_DrawViewModel
 */
 void R_DrawViewModel (void)
 {
-	float		ambient[4], diffuse[4];
-	int			j;
-	int			lnum;
-	vec3_t		dist;
-	float		add;
-	dlight_t	*dl;
-	int			ambientlight, shadelight;
-
 	if (!r_drawviewmodel.value)
 		return;
 
@@ -677,33 +694,6 @@ void R_DrawViewModel (void)
 	currententity = &cl.viewent;
 	if (!currententity->model)
 		return;
-
-	j = R_LightPoint (currententity->origin);
-
-	if (j < 24)
-		j = 24;		// allways give some light on gun
-	ambientlight = j;
-	shadelight = j;
-
-// add dynamic lights		
-	for (lnum=0 ; lnum<MAX_DLIGHTS ; lnum++)
-	{
-		dl = &cl_dlights[lnum];
-		if (!dl->radius)
-			continue;
-		if (!dl->radius)
-			continue;
-		if (dl->die < cl.time)
-			continue;
-
-		VectorSubtract (currententity->origin, dl->origin, dist);
-		add = dl->radius - Length(dist);
-		if (add > 0)
-			ambientlight += add;
-	}
-
-	ambient[0] = ambient[1] = ambient[2] = ambient[3] = (float)ambientlight / 128;
-	diffuse[0] = diffuse[1] = diffuse[2] = diffuse[3] = (float)shadelight / 128;
 
 	// hack the depth range to prevent view model from poking into walls
 	glDepthRange (gldepthmin, gldepthmin + 0.3*(gldepthmax-gldepthmin));
