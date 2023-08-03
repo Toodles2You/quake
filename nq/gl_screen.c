@@ -82,9 +82,10 @@ int			scr_copyeverything;
 float		scr_con_current;
 float		scr_conlines;		// lines of console to display
 
-float		oldscreensize, oldfov;
+float		oldscreensize, oldfov, oldvmfov, olddrawvm, oldsbar;
 cvar_t		scr_viewsize = {"viewsize","100", true};
 cvar_t		scr_fov = {"fov","90"};	// 10 - 170
+cvar_t		scr_viewmodelfov = {"viewmodel_fov","90"};
 cvar_t		scr_conspeed = {"scr_conspeed","300"};
 cvar_t		scr_centertime = {"scr_centertime","2"};
 cvar_t		scr_showram = {"showram","1"};
@@ -274,7 +275,6 @@ static void SCR_CalcRefdef (void)
 {
 	vrect_t		vrect;
 	float		size;
-	int		h;
 	qboolean		full = false;
 
 
@@ -297,6 +297,10 @@ static void SCR_CalcRefdef (void)
 		Cvar_Set ("fov","10");
 	if (scr_fov.value > 170)
 		Cvar_Set ("fov","170");
+	if (scr_viewmodelfov.value < 10)
+		Cvar_Set ("viewmodel_fov","10");
+	if (scr_viewmodelfov.value > 170)
+		Cvar_Set ("viewmodel_fov","170");
 
 // intermission is always full screen	
 	if (cl.intermission)
@@ -348,6 +352,12 @@ static void SCR_CalcRefdef (void)
 	r_refdef.fov_y = CalcFovy (r_refdef.fov_x, r_refdef.vrect.width, r_refdef.vrect.height);
 
 	scr_vrect = r_refdef.vrect;
+
+	if (!r_drawviewmodel.value)
+		return;
+
+	r_refdef.vm_fov_x = AdaptFovx (scr_viewmodelfov.value, vid.width, vid.height);
+	r_refdef.vm_fov_y = CalcFovy (r_refdef.vm_fov_x, r_refdef.vrect.width, r_refdef.vrect.height);
 }
 
 
@@ -389,6 +399,7 @@ void SCR_Init (void)
 {
 
 	Cvar_RegisterVariable (&scr_fov);
+	Cvar_RegisterVariable (&scr_viewmodelfov);
 	Cvar_RegisterVariable (&scr_viewsize);
 	Cvar_RegisterVariable (&scr_conspeed);
 	Cvar_RegisterVariable (&scr_showram);
@@ -872,6 +883,18 @@ void SCR_UpdateScreen (void)
 	if (oldfov != scr_fov.value)
 	{
 		oldfov = scr_fov.value;
+		vid.recalc_refdef = true;
+	}
+
+	if (oldvmfov != scr_viewmodelfov.value)
+	{
+		oldvmfov = scr_viewmodelfov.value;
+		vid.recalc_refdef = true;
+	}
+
+	if (olddrawvm != r_drawviewmodel.value)
+	{
+		olddrawvm = r_drawviewmodel.value;
 		vid.recalc_refdef = true;
 	}
 

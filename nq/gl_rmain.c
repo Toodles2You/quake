@@ -74,6 +74,7 @@ int		d_lightstylevalue[256];	// 8.8 fraction of base light value
 
 
 void R_MarkLeaves (void);
+void R_SetupGL (float fov_x, float fov_y, vrect_t* vrect);
 
 cvar_t	r_norefresh = {"r_norefresh","0"};
 cvar_t	r_drawentities = {"r_drawentities","1"};
@@ -695,10 +696,14 @@ void R_DrawViewModel (void)
 	if (!currententity->model)
 		return;
 
+	R_SetupGL (r_refdef.vm_fov_x, r_refdef.vm_fov_y, &r_refdef.vrect);
+
 	// hack the depth range to prevent view model from poking into walls
 	glDepthRange (gldepthmin, gldepthmin + 0.3*(gldepthmax-gldepthmin));
 	R_DrawAliasModel (currententity);
 	glDepthRange (gldepthmin, gldepthmax);
+
+	R_SetupGL (r_refdef.fov_x, r_refdef.fov_y, &r_refdef.vrect);
 }
 
 
@@ -857,7 +862,7 @@ void R_SetPerspective(GLdouble fovx, GLdouble fovy, GLdouble zNear, GLdouble zFa
 R_SetupGL
 =============
 */
-void R_SetupGL (void)
+void R_SetupGL (float fov_x, float fov_y, vrect_t* vrect)
 {
 	float	yfov;
 	int		i;
@@ -869,10 +874,10 @@ void R_SetupGL (void)
 	//
 	glMatrixMode(GL_PROJECTION);
     glLoadIdentity ();
-	x = r_refdef.vrect.x * glwidth/vid.width;
-	x2 = (r_refdef.vrect.x + r_refdef.vrect.width) * glwidth/vid.width;
-	y = (vid.height-r_refdef.vrect.y) * glheight/vid.height;
-	y2 = (vid.height - (r_refdef.vrect.y + r_refdef.vrect.height)) * glheight/vid.height;
+	x = vrect->x * glwidth/vid.width;
+	x2 = (vrect->x + vrect->width) * glwidth/vid.width;
+	y = (vid.height-vrect->y) * glheight/vid.height;
+	y2 = (vid.height - (vrect->y + vrect->height)) * glheight/vid.height;
 
 	// fudge around because of frac screen scale
 	if (x > 0)
@@ -895,7 +900,7 @@ void R_SetupGL (void)
 
 	glViewport (glx + x, gly + y2, w, h);
 
-	R_SetPerspective(r_refdef.fov_x, r_refdef.fov_y, 4, 4096);
+	R_SetPerspective(fov_x, fov_y, 4, 4096);
 
 	if (mirror)
 	{
@@ -946,7 +951,7 @@ void R_RenderScene (void)
 
 	R_SetFrustum ();
 
-	R_SetupGL ();
+	R_SetupGL (r_refdef.fov_x, r_refdef.fov_y, &r_refdef.vrect);
 
 	R_MarkLeaves ();	// done here so we know if we're in water
 
