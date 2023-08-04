@@ -93,12 +93,13 @@ set(QUAKE_SRC
     nq/view.c
     nq/wad.c
     nq/world.c
-    nq/cd_linux.c
+    nq/cd_vorbis.c
     nq/sys_linux.c
     nq/snd_dma.c
     nq/snd_mem.c
     nq/snd_mix.c
     nq/snd_sdl.c
+    nq/stb_vorbis.c
     nq/math.s
     nq/worlda.s
     nq/snd_mixa.s
