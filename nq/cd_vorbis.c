@@ -32,7 +32,13 @@ typedef enum
     CD_PLAYING = 2,
     CD_LOOPING = 4,
     CD_PAUSED = 8,
+    CD_FADING_IN = 16,
+    CD_FADING_OUT = 32,
+    CD_FADING_MASK = (CD_FADING_IN | CD_FADING_OUT),
+    CD_PLAYING_MASK = (CD_PLAYING | CD_PAUSED | CD_LOOPING | CD_FADING_MASK),
 } cdstate_t;
+
+static cvar_t bgmfade = {"bgmfade", "0.5", false};
 
 static cdstate_t cd_state;
 
@@ -46,7 +52,44 @@ static FILE *trackfile;
 static int trackrate;
 static int trackchannels;
 
+static double fadetime;
+static byte queuenum;
+static qboolean queuelooping;
+
 static byte remap[100];
+
+static void CDAudio_ForceStop()
+{
+    if (!(cd_state & CD_ENABLED))
+        return;
+    
+    SNDDMA_BeginPainting();
+
+    if (vorbis)
+    {
+        stb_vorbis_close(vorbis);
+        fclose(trackfile);
+        vorbis = NULL;
+    }
+
+    cd_state &= ~CD_PLAYING_MASK;
+
+    SNDDMA_Submit();
+}
+
+static void CDAudio_FadeIn(float time)
+{
+    fadetime = realtime + time;
+    cd_state &= ~CD_FADING_OUT;
+    cd_state |= CD_FADING_IN;
+}
+
+static void CDAudio_FadeOut(float time)
+{
+    fadetime = realtime + time;
+    cd_state &= ~CD_FADING_IN;
+    cd_state |= CD_FADING_OUT;
+}
 
 void CDAudio_Play(byte track, qboolean looping)
 {
@@ -65,8 +108,19 @@ void CDAudio_Play(byte track, qboolean looping)
     {
         if (tracknum == track)
             return;
-        CDAudio_Stop();
+        
+        if (bgmfade.value > 0.0)
+        {
+            if (queuenum == track)
+                return;
+            
+            queuenum = track;
+            CDAudio_FadeOut(bgmfade.value);
+            return;
+        }
     }
+
+    CDAudio_ForceStop();
 
     sprintf(trackname, trackdir, track);
 
@@ -78,12 +132,15 @@ void CDAudio_Play(byte track, qboolean looping)
         return;
     }
 
+    SNDDMA_BeginPainting();
+
     int error;
     vorbis = stb_vorbis_open_file(trackfile, false, &error, NULL);
 
     if (vorbis == NULL || stb_vorbis_seek_start(vorbis) < 0)
     {
         Con_Printf("CDAudio: %s is not a valid audio file (%i)\n", trackname, error);
+        SNDDMA_Submit();
         return;
     }
 
@@ -92,7 +149,10 @@ void CDAudio_Play(byte track, qboolean looping)
     trackrate = (info.sample_rate / shm->speed);
 
     if (trackrate <= 0)
+    {
+        SNDDMA_Submit();
         return;
+    }
 
     if (shm->channels == 1)
         trackrate *= 2;
@@ -111,24 +171,25 @@ void CDAudio_Play(byte track, qboolean looping)
         cd_state |= CD_LOOPING;
     else
         cd_state &= ~CD_LOOPING;
+    
+    cd_state &= ~CD_FADING_MASK;
 
     tracknum = track;
     cd_state |= CD_PLAYING;
+    fadetime = realtime + 1;
+
+    SNDDMA_Submit();
 }
 
 void CDAudio_Stop()
 {
-    if (!(cd_state & CD_ENABLED) || !(cd_state & CD_PLAYING))
-        return;
-
-    if (vorbis)
+    if (bgmfade.value > 0.0 && !(cd_state & CD_FADING_OUT))
     {
-        stb_vorbis_close(vorbis);
-        fclose(trackfile);
-        vorbis = NULL;
+        CDAudio_FadeOut(bgmfade.value);
+        return;
     }
 
-    cd_state &= ~(CD_PLAYING | CD_PAUSED | CD_LOOPING);
+    CDAudio_ForceStop();
 }
 
 void CDAudio_Pause()
@@ -162,14 +223,14 @@ static void CD_f()
     }
     else if (Q_strcasecmp(command, "off") == 0)
     {
-        CDAudio_Stop();
+        CDAudio_ForceStop();
         cd_state &= ~CD_ENABLED;
     }
     else if (Q_strcasecmp(command, "reset") == 0)
     {
         cd_state |= CD_ENABLED;
 
-        CDAudio_Stop();
+        CDAudio_ForceStop();
         
         for (n = 1; n < 100; n++)
             remap[n] = n;
@@ -215,7 +276,7 @@ static void CD_f()
     }
     else if (Q_strcasecmp(command, "eject") == 0)
     {
-        CDAudio_Stop();
+        CDAudio_ForceStop();
     }
     else if (Q_strcasecmp(command, "info") == 0)
     {
@@ -232,6 +293,20 @@ static void CD_f()
 
 void CDAudio_Update()
 {
+    if (!(cd_state & CD_ENABLED))
+        return;
+
+    if (!(cd_state & CD_PLAYING))
+    {
+        CDAudio_ForceStop();
+        
+        if (queuenum > 0)
+        {
+            CDAudio_Play(queuenum, queuelooping);
+            queuenum = 0;
+            queuelooping = false;
+        }
+    }
 }
 
 int CDAudio_Init()
@@ -264,9 +339,12 @@ int CDAudio_Init()
     for (n = 1; n < 100; n++)
         remap[n] = n;
 
+    tracknum = 0;
+    queuenum = 0;
     cd_state |= CD_ENABLED;
 
     Cmd_AddCommand("cd", CD_f);
+    Cvar_RegisterVariable(&bgmfade);
 
     Con_Printf("CD Audio Initialized\n");
 
@@ -275,6 +353,8 @@ int CDAudio_Init()
 
 void CDAudio_Shutdown()
 {
+    SNDDMA_BeginPainting();
+    
     if (bgm_buffer)
     {
         free(bgm_buffer);
@@ -284,8 +364,10 @@ void CDAudio_Shutdown()
     if (!(cd_state & CD_ENABLED))
         return;
 
-    CDAudio_Stop();
+    CDAudio_ForceStop();
     cd_state = 0;
+
+    SNDDMA_Submit();
 }
 
 void CDAudio_Paint(void* out, int idx, int count)
@@ -318,15 +400,47 @@ void CDAudio_Paint(void* out, int idx, int count)
         else
         {
             count = recv;
-            CDAudio_Stop();
+            cd_state &= ~CD_PLAYING_MASK;
         }
     }
+
+    if (count <= 0)
+        return;
 
     short *inptr = (short *)bgm_buffer;
     int out_mask = shm->samples - 1;
     int step = trackrate;
     int bgm_vol = bgmvolume.value * 256;
     int val;
+
+    if (cd_state & CD_FADING_OUT)
+    {
+        float scale = (fadetime - realtime) / 0.5;
+
+        if (scale <= 0.0) {
+            scale = 0.0;
+            cd_state &= ~CD_PLAYING_MASK;
+        }
+        else if (scale >= 1.0) {
+            scale = 1.0;
+        }
+        
+        bgm_vol *= scale;
+    }
+    else if (cd_state & CD_FADING_IN)
+    {
+        float scale = 1.0 - ((fadetime - realtime) / 0.5);
+
+        if (scale <= 0.0) {
+            scale = 0.0;
+        }
+        else if (scale >= 1.0) {
+            scale = 1.0;
+            cd_state &= ~CD_FADING_IN;
+        }
+        
+        bgm_vol *= scale;
+    }
 
     if (shm->samplebits == 16)
     {

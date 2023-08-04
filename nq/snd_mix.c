@@ -125,7 +125,6 @@ void S_TransferStereo16 (int endtime)
 
 	// write a linear blast of samples
 		Snd_WriteLinearBlastStereo16 ();
-		CDAudio_Paint(snd_out, 0, snd_linear_count);
 
 		snd_p += snd_linear_count;
 		lpaintedtime += (snd_linear_count>>1);
@@ -141,8 +140,6 @@ void S_TransferPaintBuffer(int endtime)
 {
 	int 	out_idx;
 	int 	count;
-	int		first_idx;
-	int 	frame_count;
 	int 	out_mask;
 	int 	*p;
 	int 	step;
@@ -163,11 +160,9 @@ void S_TransferPaintBuffer(int endtime)
 	}
 	
 	p = (int *) paintbuffer;
-	frame_count = (endtime - paintedtime) * shm->channels;
-	count = frame_count;
+	count = (endtime - paintedtime) * shm->channels;
 	out_mask = shm->samples - 1; 
-	first_idx = paintedtime * shm->channels & out_mask;
-	out_idx = first_idx;
+	out_idx = paintedtime * shm->channels & out_mask;
 	step = 3 - shm->channels;
 	snd_vol = volume.value*256;
 
@@ -216,7 +211,6 @@ void S_TransferPaintBuffer(int endtime)
 			out[out_idx] = val;
 			out_idx = (out_idx + 1) & out_mask;
 		}
-		CDAudio_Paint(out, first_idx, frame_count);
 	}
 	else if (shm->samplebits == 8)
 	{
@@ -232,7 +226,6 @@ void S_TransferPaintBuffer(int endtime)
 			out[out_idx] = (val>>8) + 128;
 			out_idx = (out_idx + 1) & out_mask;
 		}
-		CDAudio_Paint(out, first_idx, frame_count);
 	}
 
 #ifdef _WIN32

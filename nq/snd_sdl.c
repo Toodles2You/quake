@@ -55,6 +55,7 @@ static void SNDDMA_DataCallback(void* user, byte* stream, int len)
     }
 
     memcpy(stream, shm->buffer + pos, len1);
+    CDAudio_Paint(stream, 0, len1);
 
     if (len2 <= 0)
     {
@@ -63,6 +64,7 @@ static void SNDDMA_DataCallback(void* user, byte* stream, int len)
     else
     {
         memcpy(stream + len1, shm->buffer, len2);
+        CDAudio_Paint(stream, len1, len2);
         shm->samplepos = len2 / samplesize;
     }
 
@@ -233,17 +235,28 @@ qboolean SNDDMA_Init()
     return true;
 }
 
-int SNDDMA_GetDMAPos()
+qboolean SNDDMA_BeginPainting()
 {
     if (!snd_inited)
-        return 0;
+        return false;
     
     SDL_LockAudioDevice(device);
+
+    return true;
+}
+
+int SNDDMA_GetDMAPos()
+{
+    if (!SNDDMA_BeginPainting())
+        return 0;
     
     return shm->samplepos;
 }
 
 void SNDDMA_Submit()
 {
+    if (!snd_inited)
+        return;
+    
     SDL_UnlockAudioDevice(device);
 }
