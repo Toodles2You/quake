@@ -355,7 +355,10 @@ void IN_Commands()
     if (!(mouse_state & MOUSE_AVAILABLE))
         return;
 
-    if (in_mouse.value && key_dest == key_game)
+    if (in_mouse.value
+        && cls.state == ca_connected
+        && !cls.demoplayback
+        && key_dest == key_game)
     {
         if (!(mouse_state & MOUSE_ACTIVE))
             IN_ActivateGrabs();
