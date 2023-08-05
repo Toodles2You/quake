@@ -931,7 +931,7 @@ void CL_ParseServerMessage (void)
 			if ( (cls.demoplayback || cls.demorecording) && (cls.forcetrack != -1) )
 				CDAudio_Play ((byte)cls.forcetrack, true);
 			else
-				CDAudio_Play ((byte)cl.cdtrack, true);
+				CDAudio_Play ((byte)cl.cdtrack, cl.looptrack);
 			break;
 
 		case svc_intermission:

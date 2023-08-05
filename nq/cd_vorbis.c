@@ -98,9 +98,9 @@ void CDAudio_Play(byte track, qboolean looping)
 
     track = remap[track];
 
-    if (track < 1)
+    if (track < 0)
     {
-        Con_DPrintf("CDAudio: Bad track number %u\n", track);
+        CDAudio_Stop();
         return;
     }
 
@@ -232,7 +232,7 @@ static void CD_f()
 
         CDAudio_ForceStop();
         
-        for (n = 1; n < 100; n++)
+        for (n = 0; n < 100; n++)
             remap[n] = n;
     }
     else if (Q_strcasecmp(command, "remap") == 0)
@@ -243,7 +243,7 @@ static void CD_f()
         {
             Con_Printf("CDAudio:\n");
 
-            for (n = 1; n < 100; n++)
+            for (n = 0; n < 100; n++)
             {
                 if (remap[n] != n)
                     Con_Printf("  %u -> %u\n", n, remap[n]);
@@ -251,7 +251,7 @@ static void CD_f()
             return;
         }
         
-        for (n = 1; n <= ret; n++)
+        for (n = 0; n <= ret; n++)
             remap[n] = Q_atoi(Cmd_Argv(n + 1));
     }
     else if (Q_strcasecmp(command, "play") == 0)
@@ -336,7 +336,7 @@ int CDAudio_Init()
         return -1;
     }
 
-    for (n = 1; n < 100; n++)
+    for (n = 0; n < 100; n++)
         remap[n] = n;
 
     tracknum = 0;
