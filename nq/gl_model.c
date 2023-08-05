@@ -30,7 +30,7 @@ char	loadname[32];	// for hunk tags
 void Mod_LoadSpriteModel (model_t *mod, void *buffer);
 void Mod_LoadBrushModel (model_t *mod, void *buffer);
 void Mod_LoadAliasModel (model_t *mod, void *buffer);
-model_t *Mod_LoadModel (model_t *mod, qboolean crash);
+model_t *Mod_LoadModel (model_t *mod, qboolean crash, qboolean world);
 
 byte	mod_novis[MAX_MAP_LEAFS/8];
 
@@ -66,7 +66,7 @@ void *Mod_Extradata (model_t *mod)
 	if (r)
 		return r;
 
-	Mod_LoadModel (mod, true);
+	Mod_LoadModel (mod, true, false);
 	
 	if (!mod->cache.data)
 		Sys_Error ("Mod_Extradata: caching failed");
@@ -234,7 +234,7 @@ Mod_LoadModel
 Loads a model into the cache
 ==================
 */
-model_t *Mod_LoadModel (model_t *mod, qboolean crash)
+model_t *Mod_LoadModel (model_t *mod, qboolean crash, qboolean world)
 {
 	void	*d;
 	unsigned *buf;
@@ -284,6 +284,7 @@ model_t *Mod_LoadModel (model_t *mod, qboolean crash)
 
 // call the apropriate loader
 	mod->needload = false;
+	mod->world = world;
 	
 	switch (LittleLong(*(unsigned *)buf))
 	{
@@ -310,13 +311,13 @@ Mod_ForName
 Loads in a model for the given name
 ==================
 */
-model_t *Mod_ForName (char *name, qboolean crash)
+model_t *Mod_ForName (char *name, qboolean crash, qboolean world)
 {
 	model_t	*mod;
 	
 	mod = Mod_FindName (name);
 	
-	return Mod_LoadModel (mod, crash);
+	return Mod_LoadModel (mod, crash, world);
 }
 
 
@@ -328,7 +329,7 @@ model_t *Mod_ForName (char *name, qboolean crash)
 ===============================================================================
 */
 
-byte	*mod_base;
+static byte	*mod_base;
 
 /*
 =================
@@ -526,6 +527,25 @@ void Mod_LoadVisibility (lump_t *l)
 	memcpy (loadmodel->visdata, mod_base + l->fileofs, l->filelen);
 }
 
+static void Mod_ReadWorldPairs (byte* data)
+{
+	char k[MAX_KEY], v[MAX_VALUE];
+	memset(k, 0, MAX_KEY);
+	memset(v, 0, MAX_VALUE);
+
+	if (!COM_BeginReadPairs(&data))
+	{
+		return;
+	}
+
+	char *token, *next;
+	char *wad;
+
+	while (COM_ReadPair(&data, k, v))
+	{
+		Con_DSafePrintf("\t\"%s\" = \"%s\"\n", k, v);
+	}
+}
 
 /*
 =================
@@ -534,13 +554,15 @@ Mod_LoadEntities
 */
 void Mod_LoadEntities (lump_t *l)
 {
-	if (!l->filelen)
+	if (!loadmodel->world || !l->filelen)
 	{
 		loadmodel->entities = NULL;
 		return;
 	}
 	loadmodel->entities = Hunk_AllocName ( l->filelen, loadname);	
 	memcpy (loadmodel->entities, mod_base + l->fileofs, l->filelen);
+
+	Mod_ReadWorldPairs(loadmodel->entities);
 }
 
 
@@ -1172,6 +1194,7 @@ void Mod_LoadBrushModel (model_t *mod, void *buffer)
 
 // load into heap
 	
+	Mod_LoadEntities (&header->lumps[LUMP_ENTITIES]);
 	Mod_LoadVertexes (&header->lumps[LUMP_VERTEXES]);
 	Mod_LoadEdges (&header->lumps[LUMP_EDGES]);
 	Mod_LoadSurfedges (&header->lumps[LUMP_SURFEDGES]);
@@ -1185,7 +1208,6 @@ void Mod_LoadBrushModel (model_t *mod, void *buffer)
 	Mod_LoadLeafs (&header->lumps[LUMP_LEAFS]);
 	Mod_LoadNodes (&header->lumps[LUMP_NODES]);
 	Mod_LoadClipnodes (&header->lumps[LUMP_CLIPNODES]);
-	Mod_LoadEntities (&header->lumps[LUMP_ENTITIES]);
 	Mod_LoadSubmodels (&header->lumps[LUMP_MODELS]);
 
 	Mod_MakeHull0 ();

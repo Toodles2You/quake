@@ -367,6 +367,8 @@ typedef struct model_s
 //
 // brush model
 //
+	qboolean	world;
+	
 	int			firstmodelsurface, nummodelsurfaces;
 
 	int			numsubmodels;
@@ -422,7 +424,7 @@ typedef struct model_s
 
 void	Mod_Init (void);
 void	Mod_ClearAll (void);
-model_t *Mod_ForName (char *name, qboolean crash);
+model_t *Mod_ForName (char *name, qboolean crash, qboolean world);
 void	*Mod_Extradata (model_t *mod);	// handles caching
 void	Mod_TouchModel (char *name);
 

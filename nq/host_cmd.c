@@ -1696,7 +1696,7 @@ void Host_Viewmodel_f (void)
 	if (!e)
 		return;
 
-	m = Mod_ForName (Cmd_Argv(1), false);
+	m = Mod_ForName (Cmd_Argv(1), false, false);
 	if (!m)
 	{
 		Con_Printf ("Can't load %s\n", Cmd_Argv(1));

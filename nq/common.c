@@ -207,6 +207,17 @@ int Q_strlen (char *str)
 	return count;
 }
 
+char *Q_strchr(char *s, char c)
+{
+    while (*s)
+	{
+		if (*s == c)
+			return s;
+		++s;
+	}
+    return 0;
+}
+
 char *Q_strrchr(char *s, char c)
 {
     int len = Q_strlen(s);
@@ -287,6 +298,38 @@ int Q_strncasecmp (char *s1, char *s2, int n)
 int Q_strcasecmp (char *s1, char *s2)
 {
 	return Q_strncasecmp (s1, s2, 99999);
+}
+
+char *Q_strstr(char *s1, char *s2)
+{
+	char* haystack;
+	char* needle;
+
+	while (s1 = Q_strchr(s1, *s2))
+	{
+		haystack = s1;
+		needle = s2;
+
+		do
+		{
+			if (!*needle)
+				return s1;
+
+			if (!*haystack)
+				return 0;
+
+			haystack++;
+			needle++;
+		}
+		while (*haystack == *needle);
+		
+		s1++;
+
+		if (!*s1)
+			return 0;
+	}
+
+	return 0;
 }
 
 int Q_atoi (char *str)
@@ -808,7 +851,7 @@ char *COM_SkipPath (char *pathname)
 	last = pathname;
 	while (*pathname)
 	{
-		if (*pathname=='/')
+		if (*pathname=='/' || *pathname=='\\')
 			last = pathname+1;
 		pathname++;
 	}
@@ -978,6 +1021,67 @@ skipwhite:
 	return data;
 }
 
+/*
+===============
+COM_BeginReadPairs
+===============
+*/
+qboolean COM_BeginReadPairs (byte **data)
+{
+	*data = COM_Parse(*data);
+
+	if (!(*data))
+		return false;
+	
+	if (com_token[0] != '{')
+		return false;
+	
+	return true;
+}
+
+/*
+===============
+COM_ReadPair
+===============
+*/
+qboolean COM_ReadPair (byte **data, char *key, char *value)
+{
+	*data = COM_Parse(*data);
+	
+	if (com_token[0] == '}')
+	{
+		return false;
+	}
+
+	if (!(*data))
+	{
+		Sys_Error("COM_ReadPair: EOF without closing brace.");
+	}
+
+	Q_strcpy(key, com_token);
+
+	int n = Q_strlen(key);
+
+	while (n && key[n - 1] == ' ')
+	{
+		key[n - 1] = 0;
+		n--;
+	}
+
+	*data = COM_Parse(*data);
+	if (!(*data))
+	{
+		Sys_Error("COM_ReadPair: EOF without closing brace.");
+	}
+
+	if (com_token[0] == '}')
+	{
+		Sys_Error("COM_ReadPair: Closing brace without data.");
+	}
+	
+	Q_strcpy(value, com_token);
+	return true;
+}
 
 /*
 ================

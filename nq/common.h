@@ -127,12 +127,14 @@ int Q_memcmp (void *m1, void *m2, int count);
 void Q_strcpy (char *dest, char *src);
 void Q_strncpy (char *dest, char *src, int count);
 int Q_strlen (char *str);
+char *Q_strchr (char *s, char c);
 char *Q_strrchr (char *s, char c);
 void Q_strcat (char *dest, char *src);
 int Q_strcmp (char *s1, char *s2);
 int Q_strncmp (char *s1, char *s2, int count);
 int Q_strcasecmp (char *s1, char *s2);
 int Q_strncasecmp (char *s1, char *s2, int n);
+char *Q_strstr(char *s1, char *s2);
 int	Q_atoi (char *str);
 float Q_atof (char *str);
 
@@ -142,6 +144,8 @@ extern	char		com_token[1024];
 extern	qboolean	com_eof;
 
 char *COM_Parse (char *data);
+qboolean COM_BeginReadPairs (byte **data);
+qboolean COM_ReadPair (byte **data, char *key, char *value);
 
 
 extern	int		com_argc;

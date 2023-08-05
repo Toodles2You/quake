@@ -462,6 +462,33 @@ void Con_SafePrintf (char *fmt, ...)
 
 
 /*
+================
+Con_DSafePrintf
+
+A Con_Printf that only shows up if the "developer" cvar is set
+================
+*/
+void Con_DSafePrintf (char *fmt, ...)
+{
+	va_list		argptr;
+	char		msg[MAXPRINTMSG];
+	int			temp;
+		
+	if (!developer.value)
+		return;			// don't confuse non-developers with techie stuff...
+
+	va_start (argptr,fmt);
+	vsprintf (msg,fmt,argptr);
+	va_end (argptr);
+
+	temp = scr_disabled_for_loading;
+	scr_disabled_for_loading = true;
+	Con_SafePrintf ("%s", msg);
+	scr_disabled_for_loading = temp;
+}
+
+
+/*
 ==============================================================================
 
 DRAWING

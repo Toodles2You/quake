@@ -1127,7 +1127,7 @@ void SV_SpawnServer (char *server)
 	
 	strcpy (sv.name, server);
 	sprintf (sv.modelname,"maps/%s.bsp", server);
-	sv.worldmodel = Mod_ForName (sv.modelname, false);
+	sv.worldmodel = Mod_ForName (sv.modelname, false, true);
 	if (!sv.worldmodel)
 	{
 		Con_Printf ("Couldn't spawn server %s\n", sv.modelname);
@@ -1148,7 +1148,7 @@ void SV_SpawnServer (char *server)
 	for (i=1 ; i<sv.worldmodel->numsubmodels ; i++)
 	{
 		sv.model_precache[1+i] = localmodels[i];
-		sv.models[i+1] = Mod_ForName (localmodels[i], false);
+		sv.models[i+1] = Mod_ForName (localmodels[i], false, false);
 	}
 
 //
