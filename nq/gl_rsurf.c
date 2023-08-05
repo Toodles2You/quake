@@ -696,7 +696,11 @@ void R_BlendLightmaps (void)
 	if (!r_lightmap.value)
 	{
 		glEnable (GL_BLEND);
-    	glStencilFunc (GL_NOTEQUAL, 1, 0xFF);
+	}
+
+	if (r_luminescent.value)
+	{
+		glStencilFunc (GL_NOTEQUAL, 1, 0xFF);
 	}
 
 	for (i=0 ; i<MAX_LIGHTMAPS ; i++)
@@ -791,7 +795,7 @@ void R_RenderBrushPoly (msurface_t *fa)
 	else
 		DrawGLPoly (fa->polys);
 
-	if (t->gl_brightnum)
+	if (r_luminescent.value && t->gl_brightnum)
 	{
 		glColorMask (GL_FALSE, GL_FALSE, GL_FALSE, GL_FALSE);
 		glEnable (GL_ALPHA_TEST);
@@ -1642,7 +1646,6 @@ void GL_BuildLightmaps (void)
 {
 	int		i, j;
 	model_t	*m;
-	extern qboolean isPermedia;
 
 	memset (allocated, 0, sizeof(allocated));
 

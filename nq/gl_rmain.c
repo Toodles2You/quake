@@ -87,6 +87,7 @@ cvar_t	r_mirroralpha = {"r_mirroralpha","1"};
 cvar_t	r_wateralpha = {"r_wateralpha","1"};
 cvar_t	r_dynamic = {"r_dynamic","1"};
 cvar_t	r_novis = {"r_novis","0"};
+cvar_t	r_luminescent = {"r_luminescent","1"};
 
 cvar_t	gl_finish = {"gl_finish","0"};
 cvar_t	gl_clear = {"gl_clear","0"};
@@ -578,7 +579,7 @@ void R_DrawAliasModel (entity_t *e)
 
 	glShadeModel (GL_FLAT);
 	
-	if (paliashdr->gl_brightnum[currententity->skinnum][anim] != 0)
+	if (r_luminescent.value && paliashdr->gl_brightnum[currententity->skinnum][anim] != 0)
 	{
     	GL_Bind(paliashdr->gl_brightnum[currententity->skinnum][anim]);
 
