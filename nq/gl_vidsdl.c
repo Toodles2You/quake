@@ -267,67 +267,6 @@ void GL_EndRendering()
     SDL_GL_SwapWindow(window);
 }
 
-qboolean VID_Is8bit()
-{
-    return is8bit;
-}
-
-static void VID_Init8bitPalette()
-{
-    // Check for 8bit Extensions and initialize them.
-    int i;
-    void *prjobj;
-
-    if ((prjobj = dlopen(NULL, RTLD_LAZY)) == NULL)
-    {
-        Con_Printf("Unable to open symbol list for main program.\n");
-        return;
-    }
-
-    if (strstr(gl_extensions, "3DFX_set_global_palette") &&
-        (qgl3DfxSetPaletteEXT = dlsym(prjobj, "gl3DfxSetPaletteEXT")) != NULL)
-    {
-        GLubyte table[256][4];
-        char *oldpal;
-
-        Con_SafePrintf("8-bit GL extensions enabled.\n");
-        glEnable(GL_SHARED_TEXTURE_PALETTE_EXT);
-        oldpal = (char *)d_8to24table; // d_8to24table3dfx;
-        for (i = 0; i < 256; i++)
-        {
-            table[i][2] = *oldpal++;
-            table[i][1] = *oldpal++;
-            table[i][0] = *oldpal++;
-            table[i][3] = 255;
-            oldpal++;
-        }
-        qgl3DfxSetPaletteEXT((GLuint *)table);
-        is8bit = true;
-    }
-    else if (strstr(gl_extensions, "GL_EXT_shared_texture_palette") &&
-             (qglColorTableEXT = dlsym(prjobj, "glColorTableEXT")) != NULL)
-    {
-        char thePalette[256 * 3];
-        char *oldPalette, *newPalette;
-
-        Con_SafePrintf("8-bit GL extensions enabled.\n");
-        glEnable(GL_SHARED_TEXTURE_PALETTE_EXT);
-        oldPalette = (char *)d_8to24table; // d_8to24table3dfx;
-        newPalette = thePalette;
-        for (i = 0; i < 256; i++)
-        {
-            *newPalette++ = *oldPalette++;
-            *newPalette++ = *oldPalette++;
-            *newPalette++ = *oldPalette++;
-            oldPalette++;
-        }
-        qglColorTableEXT(GL_SHARED_TEXTURE_PALETTE_EXT, GL_RGB, 256, GL_RGB, GL_UNSIGNED_BYTE, (void *)thePalette);
-        is8bit = true;
-    }
-
-    dlclose(prjobj);
-}
-
 static void VID_CheckGamma(unsigned char *pal)
 {
     float f, inf;
@@ -558,7 +497,6 @@ void VID_Init(unsigned char *palette)
 
     VID_CheckGamma(palette);
     VID_SetPalette(palette);
-    VID_Init8bitPalette();
 
     Con_SafePrintf("Video mode %dx%d initialized.\n", width, height);
 
