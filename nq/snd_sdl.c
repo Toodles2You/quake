@@ -83,17 +83,6 @@ void SNDDMA_Shutdown()
     }
     
     SDL_QuitSubSystem(SDL_INIT_AUDIO);
-    
-    if (shm)
-    {
-        if (shm->buffer)
-        {
-            free(shm->buffer);
-            shm->buffer = NULL;
-        }
-        
-        shm = NULL;
-    }
 }
 
 static void SNDDMA_CheckParms(SDL_AudioSpec *desired)
@@ -219,7 +208,7 @@ qboolean SNDDMA_Init()
 
     samplesize = shm->samplebits / 8;
     buffersize = shm->samples * samplesize;
-    shm->buffer = calloc(buffersize, 1);
+    shm->buffer = Hunk_AllocName(buffersize, "shm");
 
     if (!shm->buffer)
     {

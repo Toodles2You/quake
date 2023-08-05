@@ -328,7 +328,7 @@ int CDAudio_Init()
         trackdir[sizeof(trackdir) - 1] = 0;
     }
 
-    bgm_buffer = calloc((size_t)bgmbuffer.value, sizeof(*bgm_buffer));
+    bgm_buffer = Hunk_AllocName((int)bgmbuffer.value * sizeof(*bgm_buffer), "bgm");
 
     if (!bgm_buffer)
     {
@@ -354,12 +354,6 @@ int CDAudio_Init()
 void CDAudio_Shutdown()
 {
     SNDDMA_BeginPainting();
-    
-    if (bgm_buffer)
-    {
-        free(bgm_buffer);
-        bgm_buffer = NULL;
-    }
     
     if (!(cd_state & CD_ENABLED))
         return;
