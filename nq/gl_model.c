@@ -24,6 +24,14 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 #include "quakedef.h"
 
+const vec3_t
+hull_sizes[MAX_MAP_HULLS][2] =
+	{{0, 0, 0},	{0, 0, 0}},
+	{{-16, -16, -24}, {16, 16, 32}},
+	{{-32, -32, -24}, {32, 32, 64}},
+	{{-16, -16, -12}, {16, 16, 16}},
+};
+
 model_t	*loadmodel;
 char	loadname[32];	// for hunk tags
 
@@ -987,29 +995,17 @@ void Mod_LoadClipnodes (lump_t *l)
 	loadmodel->clipnodes = out;
 	loadmodel->numclipnodes = count;
 
-	hull = &loadmodel->hulls[1];
-	hull->clipnodes = out;
-	hull->firstclipnode = 0;
-	hull->lastclipnode = count-1;
-	hull->planes = loadmodel->planes;
-	hull->clip_mins[0] = -16;
-	hull->clip_mins[1] = -16;
-	hull->clip_mins[2] = -24;
-	hull->clip_maxs[0] = 16;
-	hull->clip_maxs[1] = 16;
-	hull->clip_maxs[2] = 32;
+	for (i = 1; i < MAX_MAP_HULLS; i++)
+	{
+		hull = &loadmodel->hulls[i];
+		hull->clipnodes = out;
+		hull->firstclipnode = 0;
+		hull->lastclipnode = count - 1;
+		hull->planes = loadmodel->planes;
 
-	hull = &loadmodel->hulls[2];
-	hull->clipnodes = out;
-	hull->firstclipnode = 0;
-	hull->lastclipnode = count-1;
-	hull->planes = loadmodel->planes;
-	hull->clip_mins[0] = -32;
-	hull->clip_mins[1] = -32;
-	hull->clip_mins[2] = -24;
-	hull->clip_maxs[0] = 32;
-	hull->clip_maxs[1] = 32;
-	hull->clip_maxs[2] = 64;
+			VectorCopy (hull_sizes[i][0], hull->clip_mins);
+			VectorCopy (hull_sizes[i][1], hull->clip_maxs);
+	}
 
 	for (i=0 ; i<count ; i++, out++, in++)
 	{
