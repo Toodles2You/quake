@@ -367,7 +367,7 @@ void R_DrawSequentialPoly (msurface_t *s)
 	if (s->flags & SURF_DRAWSKY)
 	{
 		GL_Bind (solidskytexture);
-		speedscale = realtime*8;
+		speedscale = cl.time*8;
 		speedscale -= (int)speedscale;
 
 		EmitSkyPolys (s);
@@ -375,7 +375,7 @@ void R_DrawSequentialPoly (msurface_t *s)
 		glEnable (GL_BLEND);
 		glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 		GL_Bind (alphaskytexture);
-		speedscale = realtime*16;
+		speedscale = cl.time*16;
 		speedscale -= (int)speedscale;
 		EmitSkyPolys (s);
 		if (gl_lightmap_format == GL_LUMINANCE)
@@ -510,14 +510,14 @@ void R_DrawSequentialPoly (msurface_t *s)
 	{
 		GL_DisableMultitexture();
 		GL_Bind (solidskytexture);
-		speedscale = realtime*8;
+		speedscale = cl.time*8;
 		speedscale -= (int)speedscale & ~127;
 
 		EmitSkyPolys (s);
 
 		glEnable (GL_BLEND);
 		GL_Bind (alphaskytexture);
-		speedscale = realtime*16;
+		speedscale = cl.time*16;
 		speedscale -= (int)speedscale & ~127;
 		EmitSkyPolys (s);
 
@@ -559,8 +559,8 @@ void R_DrawSequentialPoly (msurface_t *s)
 			qglMTexCoord2fSGIS (TEXTURE0_SGIS, v[3], v[4]);
 			qglMTexCoord2fSGIS (TEXTURE1_SGIS, v[5], v[6]);
 
-			nv[0] = v[0] + 8*sin(v[1]*0.05+realtime)*sin(v[2]*0.05+realtime);
-			nv[1] = v[1] + 8*sin(v[0]*0.05+realtime)*sin(v[2]*0.05+realtime);
+			nv[0] = v[0] + 8*sin(v[1]*0.05+cl.time)*sin(v[2]*0.05+cl.time);
+			nv[1] = v[1] + 8*sin(v[0]*0.05+cl.time)*sin(v[2]*0.05+cl.time);
 			nv[2] = v[2];
 
 			glVertex3fv (nv);
@@ -606,8 +606,8 @@ void DrawGLWaterPoly (glpoly_t *p)
 		glTexCoord2f (v[3], v[4]);
 
 		/*
-		nv[0] = v[0] + 8*sin(v[1]*0.05+realtime)*sin(v[2]*0.05+realtime);
-		nv[1] = v[1] + 8*sin(v[0]*0.05+realtime)*sin(v[2]*0.05+realtime);
+		nv[0] = v[0] + 8*sin(v[1]*0.05+cl.time)*sin(v[2]*0.05+cl.time);
+		nv[1] = v[1] + 8*sin(v[0]*0.05+cl.time)*sin(v[2]*0.05+cl.time);
 		nv[2] = v[2];
 
 		glVertex3fv (nv);
@@ -633,8 +633,8 @@ void DrawGLWaterPolyLightmap (glpoly_t *p)
 		glTexCoord2f (v[5], v[6]);
 
 		/*
-		nv[0] = v[0] + 8*sin(v[1]*0.05+realtime)*sin(v[2]*0.05+realtime);
-		nv[1] = v[1] + 8*sin(v[0]*0.05+realtime)*sin(v[2]*0.05+realtime);
+		nv[0] = v[0] + 8*sin(v[1]*0.05+cl.time)*sin(v[2]*0.05+cl.time);
+		nv[1] = v[1] + 8*sin(v[0]*0.05+cl.time)*sin(v[2]*0.05+cl.time);
 		nv[2] = v[2];
 
 		glVertex3fv (nv);
