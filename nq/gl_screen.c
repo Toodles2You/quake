@@ -558,6 +558,8 @@ void SCR_SetUpToDrawConsole (void)
 	}
 	else if (key_dest == key_console)
 		scr_conlines = vid.height/2;	// half screen
+	else if (key_dest == key_menu)
+		scr_conlines = scr_con_current = 0;
 	else
 		scr_conlines = 0;				// none visible
 	

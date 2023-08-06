@@ -269,6 +269,31 @@ static void IN_HandleEvent(SDL_Event* event, qboolean* warp_mouse)
         Key_Event(K_MWHEELUP + dir, false);
         break;
     }
+    case SDL_QUIT:
+    {
+        Sys_Quit();
+        break;
+    }
+    case SDL_WINDOWEVENT:
+    {
+        switch (event->window.event)
+        {
+        case SDL_WINDOWEVENT_FOCUS_LOST:
+            
+            if (cls.state == ca_connected
+                && !cls.demoplayback
+                && key_dest == key_game)
+            {
+                M_ToggleMenu_f();
+            }
+
+            S_BlockSound();
+            break;
+        case SDL_WINDOWEVENT_FOCUS_GAINED:
+            S_UnblockSound();
+            break;
+        }
+    }
     }
 }
 

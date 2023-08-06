@@ -25,6 +25,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <SDL2/SDL.h>
 
 static qboolean snd_inited = false;
+static qboolean snd_locked = false;
 
 static int buffersize;
 static int samplesize;
@@ -209,6 +210,7 @@ qboolean SNDDMA_Init()
     samplesize = shm->samplebits / 8;
     buffersize = shm->samples * samplesize;
     shm->buffer = Hunk_AllocName(buffersize, "shm");
+    memset(shm->buffer, 0, buffersize);
 
     if (!shm->buffer)
     {
@@ -217,9 +219,10 @@ qboolean SNDDMA_Init()
         return false;
     }
 
-    SDL_PauseAudioDevice(device, SDL_FALSE);
-
     snd_inited = true;
+    
+    SNDDMA_BeginPainting();
+    SDL_PauseAudioDevice(device, SDL_FALSE);
     
     return true;
 }
@@ -229,7 +232,11 @@ qboolean SNDDMA_BeginPainting()
     if (!snd_inited)
         return false;
     
+    if (snd_locked)
+        return true;
+    
     SDL_LockAudioDevice(device);
+    snd_locked = true;
 
     return true;
 }
@@ -244,8 +251,25 @@ int SNDDMA_GetDMAPos()
 
 void SNDDMA_Submit()
 {
-    if (!snd_inited)
+    if (!snd_inited || !snd_locked)
         return;
     
     SDL_UnlockAudioDevice(device);
+    snd_locked = false;
+}
+
+void S_BlockSound()
+{
+    if (!snd_inited)
+        return;
+    
+    SDL_PauseAudioDevice(device, SDL_TRUE);
+}
+
+void S_UnblockSound()
+{
+    if (!snd_inited)
+        return;
+    
+    SDL_PauseAudioDevice(device, SDL_FALSE);
 }
