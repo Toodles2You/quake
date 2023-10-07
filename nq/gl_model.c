@@ -26,6 +26,16 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 const vec3_t
 hull_sizes[MAX_MAP_HULLS][2] =
+{
+	{{0, 0, 0}, {0, 0, 0}},
+	{{-16, -16, -36}, {16, 16, 36}},
+	{{-32, -32, -36}, {32, 32, 36}},
+	{{-16, -16, -18}, {16, 16, 18}},
+};
+
+const vec3_t
+quake_hull_sizes[MAX_MAP_HULLS][2] =
+{
 	{{0, 0, 0},	{0, 0, 0}},
 	{{-16, -16, -24}, {16, 16, 32}},
 	{{-32, -32, -24}, {32, 32, 64}},
@@ -340,6 +350,7 @@ model_t *Mod_ForName (char *name, qboolean crash, qboolean world)
 */
 
 static byte	*mod_base;
+static int mod_version;
 static qboolean mod_needsky;
 
 static texture_t* Mod_LoadMiptex(miptex_t* mt)
@@ -375,6 +386,11 @@ static texture_t* Mod_LoadMiptex(miptex_t* mt)
 	int pixels = mt->width * mt->height / 64 * 85;
 	int txsize = pixels;
 
+	if (mod_version != BSPQUAKE)
+	{
+		txsize += sizeof(unsigned short) + 768;
+	}
+
 	texture_t* tx = Hunk_AllocName(sizeof(texture_t) + txsize, loadname);
 
 	memcpy(tx->name, mt->name, sizeof(tx->name));
@@ -401,10 +417,19 @@ static texture_t* Mod_LoadMiptex(miptex_t* mt)
 	int bytes;
 	int* brightnum = NULL;
 
+	if (mod_version != BSPQUAKE)
+	{
+		pal = (byte *)(tx + 1) + pixels + sizeof(unsigned short);
+		colors = *((unsigned short *)pal - 1);
+		bytes = 3;
+	}
+	else
+	{
 		pal = (byte *)d_8to24table;
 		colors = 256;
 		bytes = 4;
 		brightnum = &tx->gl_brightnum;
+	}
 
 	if (mod_needsky && !Q_strncmp(tx->name,"sky",3))
 	{
@@ -936,7 +961,7 @@ void Mod_LoadFaces (lump_t *l)
 			continue;
 		}
 		
-		if (!Q_strncmp(out->texinfo->texture->name,"*",1))		// turbulent
+		if (out->texinfo->texture->name[0] == '*' || out->texinfo->texture->name[0] == '!')		// turbulent
 		{
 			out->flags |= (SURF_DRAWTURB | SURF_DRAWTILED);
 			for (i=0 ; i<2 ; i++)
@@ -1077,6 +1102,11 @@ void Mod_LoadLeafs (lump_t *l)
 				out->firstmarksurface[j]->flags |= SURF_UNDERWATER;
 		}
 	}	
+
+	if (mod_version == BSPQUAKE)
+		S_AmbientOn ();
+	else
+		S_AmbientOff ();
 }
 
 /*
@@ -1107,8 +1137,16 @@ void Mod_LoadClipnodes (lump_t *l)
 		hull->lastclipnode = count - 1;
 		hull->planes = loadmodel->planes;
 
+		if (mod_version == BSPQUAKE)
+		{
+			VectorCopy (quake_hull_sizes[i][0], hull->clip_mins);
+			VectorCopy (quake_hull_sizes[i][1], hull->clip_maxs);
+		}
+		else
+		{
 			VectorCopy (hull_sizes[i][0], hull->clip_mins);
 			VectorCopy (hull_sizes[i][1], hull->clip_maxs);
+		}
 	}
 
 	for (i=0 ; i<count ; i++, out++, in++)
@@ -1282,11 +1320,27 @@ void Mod_LoadBrushModel (model_t *mod, void *buffer)
 	
 	header = (dheader_t *)buffer;
 
-	i = LittleLong (header->version);
-	if (i != BSPVERSION)
-		Sys_Error ("Mod_LoadBrushModel: %s has wrong version number (%i should be %i)", mod->name, i, BSPVERSION);
+	mod_version = LittleLong (header->version);
 	
+	if (mod_version == BSPVERSION)
+	{
+		d_lightmap_bytes = 3;
+	}
+	else if (mod_version == BSPQUAKE)
+	{
 		d_lightmap_bytes = 1;
+	}
+	else
+	{
+		Sys_Error(
+			"Mod_LoadBrushModel: %s has wrong version number \
+			(%i should be %i or %i)",
+			mod->name,
+			mod_version,
+			BSPVERSION,
+			BSPQUAKE
+		);
+	}
 
 	mod_needsky = true;
 

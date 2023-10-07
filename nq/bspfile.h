@@ -30,11 +30,10 @@ enum
 	MAX_MAP_HULLS,
 };
 
-#define	MAX_MAP_MODELS		256
+#define	MAX_MAP_MODELS		512
 #define	MAX_MAP_BRUSHES		4096
 #define	MAX_MAP_ENTITIES	1024
-#define	MAX_MAP_ENTSTRING	65536
-
+#define	MAX_MAP_ENTSTRING	131072
 #define	MAX_MAP_PLANES		32767
 #define	MAX_MAP_NODES		32767		// because negative shorts are contents
 #define	MAX_MAP_CLIPNODES	32767		//
@@ -42,13 +41,13 @@ enum
 #define	MAX_MAP_VERTS		65535
 #define	MAX_MAP_FACES		65535
 #define	MAX_MAP_MARKSURFACES 65535
-#define	MAX_MAP_TEXINFO		4096
+#define	MAX_MAP_TEXINFO		8192
 #define	MAX_MAP_EDGES		256000
 #define	MAX_MAP_SURFEDGES	512000
 #define	MAX_MAP_TEXTURES	512
-#define	MAX_MAP_MIPTEX		0x200000
-#define	MAX_MAP_LIGHTING	0x100000
-#define	MAX_MAP_VISIBILITY	0x100000
+#define	MAX_MAP_MIPTEX		2097152
+#define	MAX_MAP_LIGHTING	2097152
+#define	MAX_MAP_VISIBILITY	2097152
 
 #define	MAX_MAP_PORTALS		65536
 
@@ -59,9 +58,8 @@ enum
 
 //=============================================================================
 
-
-#define BSPVERSION	29
-#define	TOOLVERSION	2
+#define BSPVERSION	30
+#define BSPQUAKE	29
 
 typedef struct
 {

@@ -207,6 +207,7 @@ typedef struct
 } hull_t;
 
 extern const vec3_t hull_sizes[MAX_MAP_HULLS][2];
+extern const vec3_t quake_hull_sizes[MAX_MAP_HULLS][2];
 
 /*
 ==============================================================================
