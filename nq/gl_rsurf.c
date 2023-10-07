@@ -1368,9 +1368,7 @@ void R_DrawWorld (void)
 
 	glColor3f (1,1,1);
 	memset (lightmap_polys, 0, sizeof(lightmap_polys));
-#ifdef QUAKE2
 	R_ClearSkyBox ();
-#endif
 
     glEnable(GL_STENCIL_TEST);
 
@@ -1382,9 +1380,7 @@ void R_DrawWorld (void)
 
     glDisable(GL_STENCIL_TEST);
 
-#ifdef QUAKE2
 	R_DrawSkyBox ();
-#endif
 }
 
 

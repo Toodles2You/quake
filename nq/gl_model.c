@@ -551,7 +551,12 @@ static void Mod_ReadWorldPairs (byte* data)
 
 	while (COM_ReadPair(&data, k, v))
 	{
-		Con_DSafePrintf("\t\"%s\" = \"%s\"\n", k, v);
+		Con_DSafePrintf("\"%s\" = \"%s\"\n", k, v);
+		if (!Q_strcasecmp("skyname", k) || !Q_strcasecmp("sky", k))
+		{
+			R_LoadSkys(v);
+			continue;
+		}
 	}
 }
 

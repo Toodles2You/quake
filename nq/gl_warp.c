@@ -33,6 +33,8 @@ msurface_t	*warpface;
 
 extern cvar_t gl_subdivide_size;
 
+static qboolean skyanimated;
+
 void BoundPoly (int numverts, float *verts, vec3_t mins, vec3_t maxs)
 {
 	int		i, j;
@@ -295,13 +297,12 @@ void EmitBothSkyLayers (msurface_t *fa)
 	glDisable (GL_BLEND);
 }
 
-#ifndef QUAKE2
 /*
 =================
-R_DrawSkyChain
+R_DrawAnimatedSkyChain
 =================
 */
-void R_DrawSkyChain (msurface_t *s)
+void R_DrawAnimatedSkyChain (msurface_t *s)
 {
 	msurface_t	*fa;
 
@@ -326,8 +327,6 @@ void R_DrawSkyChain (msurface_t *s)
 	glDisable (GL_BLEND);
 }
 
-#endif
-
 /*
 =================================================================
 
@@ -336,106 +335,7 @@ void R_DrawSkyChain (msurface_t *s)
 =================================================================
 */
 
-#ifdef QUAKE2
-
-
 #define	SKY_TEX		2000
-
-/*
-=================================================================
-
-  PCX Loading
-
-=================================================================
-*/
-
-typedef struct
-{
-    char	manufacturer;
-    char	version;
-    char	encoding;
-    char	bits_per_pixel;
-    unsigned short	xmin,ymin,xmax,ymax;
-    unsigned short	hres,vres;
-    unsigned char	palette[48];
-    char	reserved;
-    char	color_planes;
-    unsigned short	bytes_per_line;
-    unsigned short	palette_type;
-    char	filler[58];
-    unsigned 	data;			// unbounded
-} pcx_t;
-
-byte	*pcx_rgb;
-
-/*
-============
-LoadPCX
-============
-*/
-void LoadPCX (FILE *f)
-{
-	pcx_t	*pcx, pcxbuf;
-	byte	palette[768];
-	byte	*pix;
-	int		x, y;
-	int		dataByte, runLength;
-	int		count;
-
-//
-// parse the PCX file
-//
-	fread (&pcxbuf, 1, sizeof(pcxbuf), f);
-
-	pcx = &pcxbuf;
-
-	if (pcx->manufacturer != 0x0a
-		|| pcx->version != 5
-		|| pcx->encoding != 1
-		|| pcx->bits_per_pixel != 8
-		|| pcx->xmax >= 320
-		|| pcx->ymax >= 256)
-	{
-		Con_Printf ("Bad pcx file\n");
-		return;
-	}
-
-	// seek to palette
-	fseek (f, -768, SEEK_END);
-	fread (palette, 1, 768, f);
-
-	fseek (f, sizeof(pcxbuf) - 4, SEEK_SET);
-
-	count = (pcx->xmax+1) * (pcx->ymax+1);
-	pcx_rgb = malloc( count * 4);
-
-	for (y=0 ; y<=pcx->ymax ; y++)
-	{
-		pix = pcx_rgb + 4*y*(pcx->xmax+1);
-		for (x=0 ; x<=pcx->ymax ; )
-		{
-			dataByte = fgetc(f);
-
-			if((dataByte & 0xC0) == 0xC0)
-			{
-				runLength = dataByte & 0x3F;
-				dataByte = fgetc(f);
-			}
-			else
-				runLength = 1;
-
-			while(runLength-- > 0)
-			{
-				pix[0] = palette[dataByte*3];
-				pix[1] = palette[dataByte*3+1];
-				pix[2] = palette[dataByte*3+2];
-				pix[3] = 255;
-				pix += 4;
-				x++;
-			}
-		}
-	}
-}
 
 /*
 =========================================================
@@ -455,7 +355,6 @@ typedef struct _TargaHeader {
 
 
 TargaHeader		targa_header;
-byte			*targa_rgba;
 
 int fgetLittleShort (FILE *f)
 {
@@ -485,7 +384,7 @@ int fgetLittleLong (FILE *f)
 LoadTGA
 =============
 */
-void LoadTGA (FILE *fin)
+qboolean LoadTGA (FILE *fin, byte *targa_rgba)
 {
 	int				columns, rows, numPixels;
 	byte			*pixbuf;
@@ -507,17 +406,21 @@ void LoadTGA (FILE *fin)
 
 	if (targa_header.image_type!=2 
 		&& targa_header.image_type!=10) 
-		Sys_Error ("LoadTGA: Only type 2 and 10 targa RGB images supported\n");
+	{	
+		Con_Printf ("LoadTGA: Only type 2 and 10 targa RGB images supported\n");
+		return false;
+	}
 
 	if (targa_header.colormap_type !=0 
 		|| (targa_header.pixel_size!=32 && targa_header.pixel_size!=24))
-		Sys_Error ("Texture_LoadTGA: Only 32 or 24 bit images supported (no colormaps)\n");
+	{	
+		Con_Printf ("Texture_LoadTGA: Only 32 or 24 bit images supported (no colormaps)\n");
+		return false;
+	}
 
 	columns = targa_header.width;
 	rows = targa_header.height;
 	numPixels = columns * rows;
-
-	targa_rgba = malloc (numPixels*4);
 	
 	if (targa_header.id_length != 0)
 		fseek(fin, targa_header.id_length, SEEK_CUR);  // skip TARGA image comment
@@ -631,6 +534,7 @@ void LoadTGA (FILE *fin)
 	}
 	
 	fclose(fin);
+	return true;
 }
 
 /*
@@ -639,34 +543,35 @@ R_LoadSkys
 ==================
 */
 char	*suf[6] = {"rt", "bk", "lf", "ft", "up", "dn"};
-void R_LoadSkys (void)
+void R_LoadSkys (const char* skyname)
 {
 	int		i;
 	FILE	*f;
-	char	name[64];
+	char	name[MAX_QPATH];
+
+	skyanimated = false;
+
+	int mark = Hunk_LowMark ();
+	byte *targa_rgba = Hunk_Alloc (256 * 256 * 4);
 
 	for (i=0 ; i<6 ; i++)
 	{
 		GL_Bind (SKY_TEX + i);
-		sprintf (name, "gfx/env/bkgtst%s.tga", suf[i]);
+		sprintf (name, "gfx/env/%s%s.tga", skyname, suf[i]);
 		COM_FOpenFile (name, &f);
-		if (!f)
+		if (!f || !LoadTGA (f, targa_rgba))
 		{
 			Con_Printf ("Couldn't load %s\n", name);
 			continue;
 		}
-		LoadTGA (f);
-//		LoadPCX (f);
 
 		glTexImage2D (GL_TEXTURE_2D, 0, gl_solid_format, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, targa_rgba);
-//		glTexImage2D (GL_TEXTURE_2D, 0, gl_solid_format, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, pcx_rgb);
 
-		free (targa_rgba);
-//		free (pcx_rgb);
-
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_max);
+		glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
 	}
+
+	Hunk_FreeToLowMark (mark);
 }
 
 
@@ -894,6 +799,12 @@ R_DrawSkyChain
 */
 void R_DrawSkyChain (msurface_t *s)
 {
+	if (skyanimated)
+	{
+		R_DrawAnimatedSkyChain (s);
+		return;
+	}
+
 	msurface_t	*fa;
 
 	int		i;
@@ -901,7 +812,6 @@ void R_DrawSkyChain (msurface_t *s)
 	glpoly_t	*p;
 
 	c_sky = 0;
-	GL_Bind(solidskytexture);
 
 	// calculate vertex values for sky box
 
@@ -981,6 +891,9 @@ R_DrawSkyBox
 int	skytexorder[6] = {0,2,1,3,4,5};
 void R_DrawSkyBox (void)
 {
+	if (skyanimated)
+		return;
+	
 	int		i, j, k;
 	vec3_t	v;
 	float	s, t;
@@ -1019,9 +932,6 @@ glEnable (GL_DEPTH_TEST);
 #endif
 }
 
-
-#endif
-
 //===============================================================
 
 /*
@@ -1039,7 +949,8 @@ void R_InitSky (texture_t *mt)
 	unsigned	transpix;
 	int			r, g, b;
 	unsigned	*rgba;
-	extern	int			skytexturenum;
+
+	skyanimated = true;
 
 	src = (byte *)mt + mt->offsets[0];
 
