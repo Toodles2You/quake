@@ -1092,6 +1092,90 @@ done: ;
 	}
 }
 
+static unsigned int *GL_GetPixel (unsigned int *data, int width, int height, int x, int y)
+{
+	x %= width;
+	y %= height;
+	return data + (x + (y * width));
+}
+
+static vec2_t vec_resample[] =
+{
+	{-1, 0},
+	{-1, -1},
+	{0, -1},
+	{1, -1},
+	{1, 0},
+	{1, 1},
+	{0, 1},
+	{-1, 1},
+};
+
+/*
+===============
+GL_ResampleAlphaTexture
+
+Toodles: Blends transparent pixels with neighboring opaque pixels.
+Prevents bleeding of the (usually bright blue) alpha color when mipmapping & filtering.
+It isn't efficient but, it works.
+===============
+*/
+void GL_ResampleAlphaTexture (unsigned int *data, int width, int height)
+{
+	int i, j;
+	unsigned int resample[3];
+	unsigned int samples;
+	byte *pixel;
+	byte *sample;
+	int s = width * height;
+	int x, y;
+
+	for (i = 0; i < s; i++)
+	{
+		pixel = (byte *)(data + i);
+
+		if (pixel[3] != 0)
+			continue;
+		
+		x = i % width;
+		y = i / width;
+		samples = 0;
+
+		resample[0] = resample[1] = resample[2] = 0;
+		
+		for (j = 0; j < (sizeof(vec_resample) / sizeof(vec_resample[0])); j++)
+		{
+			sample =
+			(byte *)GL_GetPixel (
+				data,
+				width,
+				height,
+				x + vec_resample[j][0],
+				y + vec_resample[j][1]
+			);
+			
+			if (sample[3] == 0)
+				continue;
+			
+			samples++;
+
+			resample[0] += sample[0];
+			resample[1] += sample[1];
+			resample[2] += sample[2];
+		}
+		
+		if (samples == 0)
+		{
+			pixel[0] = pixel[1] = pixel[2] = 0;
+			continue;
+		}
+		
+		pixel[0] = resample[0] / samples;
+		pixel[1] = resample[1] / samples;
+		pixel[2] = resample[2] / samples;
+	}
+}
+
 /*
 ===============
 GL_Upload8
@@ -1180,6 +1264,11 @@ void GL_Upload8 (
 		}
 	}
 
+	if (alpha)
+	{
+		GL_ResampleAlphaTexture (remap, width, height);
+	}
+
 	GL_Bind (*gl_texturenum);
 	GL_Upload32 (remap, width, height, mipmap, alpha);
 
@@ -1190,6 +1279,8 @@ void GL_Upload8 (
 	}
 	else
 	{
+		GL_ResampleAlphaTexture (brightmap, width, height);
+
 		GL_Bind (*gl_brightnum);
 		GL_Upload32 (brightmap, width, height, false, true);
 

@@ -235,8 +235,8 @@ void GL_Init()
     
     glEnable (GL_STENCIL_TEST);
     glStencilOp (GL_KEEP, GL_KEEP, GL_REPLACE);
-    glStencilFunc (GL_ALWAYS, 0, 0xFF);
-	glStencilMask (0xFF);
+    glStencilFunc (GL_ALWAYS, 0, 1);
+	glStencilMask (1);
     glClearStencil (0);
     glStencilMask (0);
 }

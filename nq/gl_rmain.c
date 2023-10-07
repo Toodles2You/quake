@@ -87,6 +87,7 @@ cvar_t	r_mirroralpha = {"r_mirroralpha","1"};
 cvar_t	r_wateralpha = {"r_wateralpha","1"};
 cvar_t	r_dynamic = {"r_dynamic","1"};
 cvar_t	r_novis = {"r_novis","0"};
+cvar_t	r_fence = {"r_fence","1"};
 cvar_t	r_luminescent = {"r_luminescent","1"};
 
 cvar_t	gl_finish = {"gl_finish","0"};
@@ -571,9 +572,13 @@ void R_DrawAliasModel (entity_t *e)
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	
 	qboolean affine = (gl_affinemodels.value != 0);
+	qboolean fence = (r_fence.value != 0);
 
 	if (affine)
 		glHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
+	
+	if (fence)
+		glEnable(GL_ALPHA_TEST);
 
 	R_SetupAliasFrame (currententity->frame, paliashdr, true);
 
@@ -589,17 +594,23 @@ void R_DrawAliasModel (entity_t *e)
 			affine = true;
 		}
 		
-		glEnable(GL_ALPHA_TEST);
+		if (!fence)
+		{
+			glEnable(GL_ALPHA_TEST);
+			fence = true;
+		}
 		glDepthMask (0);
 
 		R_SetupAliasFrame (currententity->frame, paliashdr, false);
 
 		glDepthMask (1);
-		glDisable(GL_ALPHA_TEST);
 	}
 
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
+	if (fence)
+		glDisable(GL_ALPHA_TEST);
+	
 	if (affine)
 		glHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 

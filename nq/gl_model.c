@@ -900,6 +900,11 @@ void Mod_LoadFaces (lump_t *l)
 			continue;
 		}
 
+		if (out->texinfo->texture->name[0] == '{')
+		{
+			out->flags |= SURF_DRAWFENCE;
+			continue;
+		}
 	}
 }
 

@@ -676,16 +676,22 @@ void R_BlendLightmaps (void)
 	glpoly_t	*p;
 	float		*v;
 	glRect_t	*theRect;
+	GLuint		depthfunc;
 
 	if (r_fullbright.value)
 		return;
 	if (!gl_texsort.value)
 		return;
-
+	
+	/* Toodles: This ensures fence textures only have light rendered on solid pixels. */
+	glGetIntegerv (GL_DEPTH_FUNC, &depthfunc);
+	glDepthFunc (GL_EQUAL);
 	glDepthMask (0);		// don't bother writing Z
 
-	if (gl_lightmap_format == GL_LUMINANCE)
+	if (gl_lightmap_format == GL_LUMINANCE || gl_lightmap_format == GL_RGBA)
+	{
 		glBlendFunc (GL_ZERO, GL_SRC_COLOR);
+	}
 	else if (gl_lightmap_format == GL_INTENSITY)
 	{
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
@@ -700,7 +706,7 @@ void R_BlendLightmaps (void)
 
 	if (r_luminescent.value)
 	{
-		glStencilFunc (GL_NOTEQUAL, 1, 0xFF);
+		glStencilFunc (GL_NOTEQUAL, 1, 1);
 	}
 
 	for (i=0 ; i<MAX_LIGHTMAPS ; i++)
@@ -745,10 +751,12 @@ void R_BlendLightmaps (void)
 		}
 	}
 
-	glStencilFunc (GL_ALWAYS, 0, 0xFF);
+	glStencilFunc (GL_ALWAYS, 0, 1);
 	glDisable (GL_BLEND);
-	if (gl_lightmap_format == GL_LUMINANCE)
+	if (gl_lightmap_format == GL_LUMINANCE || gl_lightmap_format == GL_RGBA)
+	{
 		glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+	}
 	else if (gl_lightmap_format == GL_INTENSITY)
 	{
 		glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
@@ -756,6 +764,7 @@ void R_BlendLightmaps (void)
 	}
 
 	glDepthMask (1);		// back to normal Z buffering
+	glDepthFunc (depthfunc);
 }
 
 /*
@@ -788,7 +797,12 @@ void R_RenderBrushPoly (msurface_t *fa)
 		return;
 	}
 
-	glStencilMask (0xFF);
+	glStencilMask (1);
+	
+	if ((fa->flags & SURF_DRAWFENCE) && r_fence.value)
+	{
+		glEnable (GL_ALPHA_TEST);
+	}
 
 	if (fa->flags & SURF_UNDERWATER)
 		DrawGLWaterPoly (fa->polys);
@@ -801,8 +815,8 @@ void R_RenderBrushPoly (msurface_t *fa)
 		glEnable (GL_ALPHA_TEST);
 		glDepthMask (0);
 		
-		glStencilMask (0xFF);
-		glStencilFunc (GL_ALWAYS, 1, 0xFF);
+		glStencilMask (1);
+		glStencilFunc (GL_ALWAYS, 1, 1);
 		
 		GL_Bind (t->gl_brightnum);
 
@@ -811,7 +825,7 @@ void R_RenderBrushPoly (msurface_t *fa)
 		else
 			DrawGLPoly (fa->polys);
 
-		glStencilFunc (GL_ALWAYS, 0, 0xFF);
+		glStencilFunc (GL_ALWAYS, 0, 1);
 		
 		glDepthMask (1);
 		glDisable (GL_ALPHA_TEST);
