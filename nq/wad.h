@@ -72,4 +72,9 @@ lumpinfo_t	*W_GetLumpinfo (char *name);
 void	*W_GetLumpName (char *name);
 void	*W_GetLumpNum (int num);
 
+void		W_LoadMapWadFile(char *filename);
+qboolean	W_LoadMapMiptexInfo(char *name, void* dst);
+qboolean	W_LoadMapMiptexData(void* dst);
+void		W_FreeMapWadFiles();
+
 void SwapPic (qpic_t *pic);

@@ -344,7 +344,19 @@ static qboolean mod_needsky;
 
 static texture_t* Mod_LoadMiptex(miptex_t* mt)
 {
+	miptex_t info;
 	int i;
+
+	qboolean external = (mt->offsets[0] == 0);
+
+	if (external)
+	{
+		if (!W_LoadMapMiptexInfo(mt->name, &info))
+		{
+			return r_notexture_mip;
+		}
+		mt = &info;
+	}
 
 	mt->width = LittleLong(mt->width);
 	mt->height = LittleLong(mt->height);
@@ -375,7 +387,14 @@ static texture_t* Mod_LoadMiptex(miptex_t* mt)
 		tx->offsets[i] = mt->offsets[i] + sizeof(texture_t) - sizeof(miptex_t);
 	}
 	
+	if (external)
+	{
+		W_LoadMapMiptexData(tx + 1);
+	}
+	else
+	{
 		memcpy(tx + 1, mt + 1, txsize);
+	}
 
 	byte* pal;
 	int colors;
@@ -540,6 +559,8 @@ void Mod_LoadTextures (lump_t *l)
 				tx2->alternate_anims = anims[0];
 		}
 	}
+
+	W_FreeMapWadFiles ();
 }
 
 /*
@@ -597,6 +618,23 @@ static void Mod_ReadWorldPairs (byte* data)
 		{
 			mod_needsky = false;
 			R_LoadSkys(v);
+			continue;
+		}
+		else if (!Q_strcasecmp("wad", k))
+		{
+			token = v;
+			while (true)
+			{
+				next = Q_strchr(token, ';');
+				if (next)
+					*next = '\0';
+
+				W_LoadMapWadFile(COM_SkipPath(token));
+
+				if (!next)
+					break;
+				token = next + 1;
+			}
 			continue;
 		}
 		else if (!Q_strcasecmp("maxrange", k))
