@@ -850,10 +850,11 @@ void MakeSkyVec (float s, float t, int axis)
 {
 	vec3_t		v, b;
 	int			j, k;
+	int			zmax = (int)r_zmax.value >> 1;
 
-	b[0] = s*2048;
-	b[1] = t*2048;
-	b[2] = 2048;
+	b[0] = s*zmax;
+	b[1] = t*zmax;
+	b[2] = zmax;
 
 	for (j=0 ; j<3 ; j++)
 	{

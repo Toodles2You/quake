@@ -588,6 +588,7 @@ static void Mod_ReadWorldPairs (byte* data)
 
 	char *token, *next;
 	char *wad;
+	float zmax = 4096;
 
 	while (COM_ReadPair(&data, k, v))
 	{
@@ -598,7 +599,14 @@ static void Mod_ReadWorldPairs (byte* data)
 			R_LoadSkys(v);
 			continue;
 		}
+		else if (!Q_strcasecmp("maxrange", k))
+		{
+			zmax = atof(v);
+			continue;
+		}
 	}
+
+	Cvar_SetValue("r_zmax", zmax);
 }
 
 /*

@@ -190,6 +190,7 @@ void R_Init (void)
 	Cvar_RegisterVariable (&r_speeds);
 	Cvar_RegisterVariable (&r_fence);
 	Cvar_RegisterVariable (&r_luminescent);
+	Cvar_RegisterVariable (&r_zmax);
 
 	Cvar_RegisterVariable (&gl_finish);
 	Cvar_RegisterVariable (&gl_clear);

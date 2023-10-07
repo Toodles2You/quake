@@ -89,6 +89,7 @@ cvar_t	r_dynamic = {"r_dynamic","1"};
 cvar_t	r_novis = {"r_novis","0"};
 cvar_t	r_fence = {"r_fence","1"};
 cvar_t	r_luminescent = {"r_luminescent","1"};
+cvar_t	r_zmax = {"r_zmax","4096"};
 
 cvar_t	gl_finish = {"gl_finish","0"};
 cvar_t	gl_clear = {"gl_clear","0"};
@@ -899,7 +900,7 @@ void R_SetupGL (float fov_x, float fov_y, vrect_t* vrect)
 
 	glViewport (glx + x, gly + y2, w, h);
 
-	R_SetPerspective(fov_x, fov_y, 4, 4096);
+	R_SetPerspective(fov_x, fov_y, 4, r_zmax.value);
 
 	if (mirror)
 	{
