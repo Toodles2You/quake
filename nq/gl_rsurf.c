@@ -29,10 +29,11 @@ int			skytexturenum;
 
 
 int		lightmap_bytes;		// 1, 2, or 4
+int		d_lightmap_bytes;
 
 int		lightmap_textures;
 
-unsigned		blocklights[18*18];
+unsigned		blocklights[18*18*3];
 
 #define	BLOCK_WIDTH		128
 #define	BLOCK_HEIGHT	128
@@ -71,7 +72,7 @@ void R_AddDynamicLights (msurface_t *surf)
 	int			sd, td;
 	float		dist, rad, minlight;
 	vec3_t		impact, local;
-	int			s, t;
+	int			s, t, k;
 	int			i;
 	int			smax, tmax;
 	mtexinfo_t	*tex;
@@ -121,7 +122,12 @@ void R_AddDynamicLights (msurface_t *surf)
 				else
 					dist = td + (sd>>1);
 				if (dist < minlight)
-					blocklights[t*smax + s] += (rad - dist)*256;
+				{
+					for (k=0 ; k<d_lightmap_bytes ; k++)
+					{
+						blocklights[d_lightmap_bytes * (t*smax + s) + k] += (rad - dist)*256;
+					}
+				}
 			}
 		}
 	}
@@ -139,7 +145,7 @@ void R_BuildLightMap (msurface_t *surf, byte *dest, int stride)
 {
 	int			smax, tmax;
 	int			t;
-	int			i, j, size;
+	int			i, j, k, size;
 	byte		*lightmap;
 	unsigned	scale;
 	int			maps;
@@ -156,13 +162,13 @@ void R_BuildLightMap (msurface_t *surf, byte *dest, int stride)
 // set to full bright if no light data
 	if (r_fullbright.value || !cl.worldmodel->lightdata)
 	{
-		for (i=0 ; i<size ; i++)
+		for (i=0 ; i<size * d_lightmap_bytes ; i++)
 			blocklights[i] = 255*256;
 		goto store;
 	}
 
 // clear to no light
-	for (i=0 ; i<size ; i++)
+	for (i=0 ; i<size * d_lightmap_bytes ; i++)
 		blocklights[i] = 0;
 
 // add all the lightmaps
@@ -172,9 +178,9 @@ void R_BuildLightMap (msurface_t *surf, byte *dest, int stride)
 		{
 			scale = d_lightstylevalue[surf->styles[maps]];
 			surf->cached_light[maps] = scale;	// 8.8 fraction
-			for (i=0 ; i<size ; i++)
+			for (i=0 ; i<size * d_lightmap_bytes ; i++)
 				blocklights[i] += lightmap[i] * scale;
-			lightmap += size;	// skip to next lightmap
+			lightmap += size * d_lightmap_bytes;	// skip to next lightmap
 		}
 
 // add all the dynamic lights
@@ -188,16 +194,39 @@ store:
 	case GL_RGBA:
 		stride -= (smax<<2);
 		bl = blocklights;
-		for (i=0 ; i<tmax ; i++, dest += stride)
+		if (d_lightmap_bytes == 1)
 		{
-			for (j=0 ; j<smax ; j++)
+			for (i=0 ; i<tmax ; i++, dest += stride)
 			{
-				t = *bl++;
-				t >>= 7;
-				if (t > 255)
-					t = 255;
-				dest[3] = t;
-				dest += 4;
+				for (j=0 ; j<smax ; j++)
+				{
+					t = *bl++;
+					t >>= 7;
+					if (t > 255)
+						t = 255;
+					dest[0] = dest[1] = dest[2] = t;
+					dest[3] = 255;
+					dest += 4;
+				}
+			}
+		}
+		else
+		{
+			for (i=0 ; i<tmax ; i++, dest += stride)
+			{
+				for (j=0 ; j<smax ; j++)
+				{
+					for (k=0 ; k<3 ; k++)
+					{
+						t = *bl++;
+						t >>= 7;
+						if (t > 255)
+							t = 255;
+						dest[k] = t;
+					}
+					dest[3] = 255;
+					dest += 4;
+				}
 			}
 		}
 		break;
@@ -205,15 +234,37 @@ store:
 	case GL_LUMINANCE:
 	case GL_INTENSITY:
 		bl = blocklights;
-		for (i=0 ; i<tmax ; i++, dest += stride)
+		if (d_lightmap_bytes == 1)
 		{
-			for (j=0 ; j<smax ; j++)
+			for (i=0 ; i<tmax ; i++, dest += stride)
 			{
-				t = *bl++;
-				t >>= 7;
-				if (t > 255)
-					t = 255;
-				dest[j] = t;
+				for (j=0 ; j<smax ; j++)
+				{
+					t = *bl++;
+					t >>= 7;
+					if (t > 255)
+						t = 255;
+					dest[j] = t;
+				}
+			}
+		}
+		else
+		{
+			for (i=0 ; i<tmax ; i++, dest += stride)
+			{
+				for (j=0 ; j<smax ; j++)
+				{
+					unsigned int total = 0;
+					for (k=0 ; k<3 ; k++)
+					{
+						t = *bl++;
+						t >>= 7;
+						if (t > 255)
+							t = 255;
+						total += t;
+					}
+					dest[j] = 255 * (total / (float)(255 * 3));
+				}
 			}
 		}
 		break;
@@ -1667,10 +1718,7 @@ void GL_BuildLightmaps (void)
 		texture_extension_number += MAX_LIGHTMAPS;
 	}
 
-	gl_lightmap_format = GL_LUMINANCE;
-	// default differently on the Permedia
-	if (isPermedia)
-		gl_lightmap_format = GL_RGBA;
+	gl_lightmap_format = GL_RGBA;
 
 	if (COM_CheckParm ("-lm_1"))
 		gl_lightmap_format = GL_LUMINANCE;

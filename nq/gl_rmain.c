@@ -274,7 +274,7 @@ float	r_avertexnormals[NUMVERTEXNORMALS][3] = {
 };
 
 vec3_t	shadevector;
-float	shadelight;
+vec3_t	shadelight;
 
 // precalculated dot products for quantized angles
 #define SHADEDOT_QUANT 16
@@ -294,7 +294,7 @@ GL_DrawAliasFrame
 void GL_DrawAliasFrame (aliashdr_t *paliashdr, int posenum, qboolean shade)
 {
 	float	s, t;
-	float 	l;
+	vec3_t 	l;
 	int		i, j;
 	int		index;
 	trivertx_t	*v, *verts;
@@ -333,8 +333,10 @@ lastposenum = posenum;
 			// normals and vertexes come from the frame list
 			if (shade)
 			{
-				l = shadedots[verts->lightnormalindex] * shadelight;
-				glColor3f (l, l, l);
+				l[0] = shadedots[verts->lightnormalindex] * shadelight[0];
+				l[1] = shadedots[verts->lightnormalindex] * shadelight[1];
+				l[2] = shadedots[verts->lightnormalindex] * shadelight[2];
+				glColor3fv (l);
 			}
 			else
 			{
@@ -485,11 +487,7 @@ void R_DrawAliasModel (entity_t *e)
 	// get lighting information
 	//
 
-	shadelight = R_LightPoint (currententity->origin);
-
-	// allways give the gun some light
-	if (e == &cl.viewent && shadelight < 24)
-		shadelight = 24;
+	R_LightPoint (currententity->origin, shadelight);
 
 	for (lnum=0 ; lnum<MAX_DLIGHTS ; lnum++)
 	{
@@ -501,28 +499,17 @@ void R_DrawAliasModel (entity_t *e)
 			add = cl_dlights[lnum].radius - Length(dist);
 
 			if (add > 0) {
-				//ZOID models should be affected by dlights as well
-				shadelight += add;
+				shadelight[0] += add;
+				shadelight[1] += add;
+				shadelight[2] += add;
 			}
 		}
 	}
 
-	// clamp lighting so it doesn't overbright as much
-	if (shadelight > 192)
-		shadelight = 192;
-
-	// ZOID: never allow players to go totally black
-	i = currententity - cl_entities;
-	if (i >= 1 && i <= cl.maxclients)
-		if (shadelight < 8)
-			shadelight = 8;
-
-	// HACK HACK HACK -- no fullbright colors, so make torches full light
-	if (!Q_strncasecmp(clmodel->name, "progs/flame", 11))
-		shadelight = 256;
-
 	shadedots = r_avertexnormal_dots[((int)(e->angles[1] * (SHADEDOT_QUANT / 360.0))) & (SHADEDOT_QUANT - 1)];
-	shadelight = shadelight / 200.0;
+	shadelight[0] = shadelight[0] / 200.0;
+	shadelight[1] = shadelight[1] / 200.0;
+	shadelight[2] = shadelight[2] / 200.0;
 	
 	an = e->angles[1]/180*M_PI;
 	shadevector[0] = cos(-an);

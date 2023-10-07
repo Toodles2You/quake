@@ -32,6 +32,8 @@ hull_sizes[MAX_MAP_HULLS][2] =
 	{{-16, -16, -12}, {16, 16, 16}},
 };
 
+extern int d_lightmap_bytes;
+
 model_t	*loadmodel;
 char	loadname[32];	// for hunk tags
 
@@ -1230,6 +1232,8 @@ void Mod_LoadBrushModel (model_t *mod, void *buffer)
 	i = LittleLong (header->version);
 	if (i != BSPVERSION)
 		Sys_Error ("Mod_LoadBrushModel: %s has wrong version number (%i should be %i)", mod->name, i, BSPVERSION);
+	
+		d_lightmap_bytes = 1;
 
 	mod_needsky = true;
 

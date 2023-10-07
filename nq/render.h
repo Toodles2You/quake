@@ -145,6 +145,7 @@ void R_LavaSplash (vec3_t org);
 void R_TeleportSplash (vec3_t org);
 
 void R_PushDlights (void);
+void R_LightPoint (vec3_t p, vec3_t dest);
 
 
 //

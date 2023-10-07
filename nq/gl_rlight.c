@@ -230,26 +230,28 @@ LIGHT SAMPLING
 =============================================================================
 */
 
+extern int		lightmap_bytes;
+extern int		d_lightmap_bytes;
+
 mplane_t		*lightplane;
 vec3_t			lightspot;
 
-int RecursiveLightPoint (mnode_t *node, vec3_t start, vec3_t end)
+qboolean RecursiveLightPoint (mnode_t *node, vec3_t start, vec3_t end, vec3_t dest)
 {
-	int			r;
 	float		front, back, frac;
 	int			side;
 	mplane_t	*plane;
 	vec3_t		mid;
 	msurface_t	*surf;
 	int			s, t, ds, dt;
-	int			i;
+	int			i, k;
 	mtexinfo_t	*tex;
 	byte		*lightmap;
 	unsigned	scale;
 	int			maps;
 
 	if (node->contents < 0)
-		return -1;		// didn't hit anything
+		return false;		// didn't hit anything
 	
 // calculate mid point
 
@@ -260,7 +262,7 @@ int RecursiveLightPoint (mnode_t *node, vec3_t start, vec3_t end)
 	side = front < 0;
 	
 	if ( (back < 0) == side)
-		return RecursiveLightPoint (node->children[side], start, end);
+		return RecursiveLightPoint (node->children[side], start, end, dest);
 	
 	frac = front / (front-back);
 	mid[0] = start[0] + (end[0] - start[0])*frac;
@@ -268,12 +270,11 @@ int RecursiveLightPoint (mnode_t *node, vec3_t start, vec3_t end)
 	mid[2] = start[2] + (end[2] - start[2])*frac;
 	
 // go down front side	
-	r = RecursiveLightPoint (node->children[side], start, mid);
-	if (r >= 0)
-		return r;		// hit something
+	if (RecursiveLightPoint (node->children[side], start, mid, dest))
+		return true;		// hit something
 		
 	if ( (back < 0) == side )
-		return -1;		// didn't hit anuthing
+		return false;		// didn't hit anuthing
 		
 // check for impact on this node
 	VectorCopy (mid, lightspot);
@@ -301,54 +302,79 @@ int RecursiveLightPoint (mnode_t *node, vec3_t start, vec3_t end)
 			continue;
 
 		if (!surf->samples)
-			return 0;
+		{
+			dest[0] = dest[1] = dest[2] = 0;
+			return true;
+		}
 
 		ds >>= 4;
 		dt >>= 4;
 
 		lightmap = surf->samples;
-		r = 0;
-		if (lightmap)
+		dest[0] = dest[1] = dest[2] = 0;
+
+		lightmap += d_lightmap_bytes * (dt * ((surf->extents[0]>>4)+1) + ds);
+
+		for (maps = 0 ; maps < MAXLIGHTMAPS && surf->styles[maps] != 255 ;
+				maps++)
 		{
-
-			lightmap += dt * ((surf->extents[0]>>4)+1) + ds;
-
-			for (maps = 0 ; maps < MAXLIGHTMAPS && surf->styles[maps] != 255 ;
-					maps++)
+			scale = d_lightstylevalue[surf->styles[maps]];
+			if (d_lightmap_bytes == 1)
 			{
-				scale = d_lightstylevalue[surf->styles[maps]];
-				r += *lightmap * scale;
-				lightmap += ((surf->extents[0]>>4)+1) *
-						((surf->extents[1]>>4)+1);
+				dest[0] += *lightmap * scale;
+				dest[1] += *lightmap * scale;
+				dest[2] += *lightmap * scale;
 			}
-			
-			r >>= 8;
+			else
+			{
+				for (k=0; k < 3; k++)
+				{
+					dest[k] += lightmap[k] * scale;
+				}
+			}
+			lightmap += d_lightmap_bytes *
+					(((surf->extents[0]>>4)+1) *
+					((surf->extents[1]>>4)+1));
 		}
 		
-		return r;
+		dest[0] = (float)((int)dest[0] >> 8);
+		dest[1] = (float)((int)dest[1] >> 8);
+		dest[2] = (float)((int)dest[2] >> 8);
+		
+		return true;
 	}
 
 // go down back side
-	return RecursiveLightPoint (node->children[!side], mid, end);
+	return RecursiveLightPoint (node->children[!side], mid, end, dest);
 }
 
-int R_LightPoint (vec3_t p)
+void R_LightPoint (vec3_t p, vec3_t dest)
 {
 	vec3_t		end;
 	int			r;
 	
 	if (!cl.worldmodel->lightdata)
-		return 255;
+	{
+		dest[0] = dest[1] = dest[2] = 255;
+		return;
+	}
 	
 	end[0] = p[0];
 	end[1] = p[1];
 	end[2] = p[2] - 2048;
 	
-	r = RecursiveLightPoint (cl.worldmodel->nodes, p, end);
-	
-	if (r == -1)
-		r = 0;
-
-	return r;
+	if (RecursiveLightPoint (cl.worldmodel->nodes, p, end, dest))
+	{
+		if (lightmap_bytes == 1 && d_lightmap_bytes == 3)
+		{
+			float scale = dest[0] + dest[1] + dest[2];
+			scale /= (float)(255 * 3);
+			dest[0] = dest[1] = dest[2] = (int)(scale * 255);
+		}
+	}
+	else
+	{
+		dest[0] = dest[1] = dest[2] = 0;
+	}
 }
 
