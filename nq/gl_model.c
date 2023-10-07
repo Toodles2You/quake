@@ -338,6 +338,75 @@ model_t *Mod_ForName (char *name, qboolean crash, qboolean world)
 */
 
 static byte	*mod_base;
+static qboolean mod_needsky;
+
+static texture_t* Mod_LoadMiptex(miptex_t* mt)
+{
+	int i;
+
+	mt->width = LittleLong(mt->width);
+	mt->height = LittleLong(mt->height);
+
+	if ((mt->width & 15) || (mt->height & 15))
+	{
+		Con_DPrintf("Texture %s is not 16 aligned", mt->name);
+		return r_notexture_mip;
+	}
+
+	for (i = 0; i < MIPLEVELS; i++)
+	{
+		mt->offsets[i] = LittleLong(mt->offsets[i]);
+	}
+
+	int pixels = mt->width * mt->height / 64 * 85;
+	int txsize = pixels;
+
+	texture_t* tx = Hunk_AllocName(sizeof(texture_t) + txsize, loadname);
+
+	memcpy(tx->name, mt->name, sizeof(tx->name));
+
+	tx->width = mt->width;
+	tx->height = mt->height;
+
+	for (i = 0; i < MIPLEVELS; i++)
+	{
+		tx->offsets[i] = mt->offsets[i] + sizeof(texture_t) - sizeof(miptex_t);
+	}
+	
+		memcpy(tx + 1, mt + 1, txsize);
+
+	byte* pal;
+	int colors;
+	int bytes;
+	int* brightnum = NULL;
+
+		pal = (byte *)d_8to24table;
+		colors = 256;
+		bytes = 4;
+		brightnum = &tx->gl_brightnum;
+
+	if (mod_needsky && !Q_strncmp(tx->name,"sky",3))
+	{
+		R_InitSky(tx);
+		return tx;
+	}
+
+	GL_LoadTexture(
+		&tx->gl_texturenum,
+		brightnum,
+		tx->name,
+		tx->width,
+		tx->height,
+		(byte *)(tx + 1),
+		bytes,
+		colors,
+		pal,
+		true,
+		tx->name[0] == '{'
+	);
+
+	return tx;
+}
 
 /*
 =================
@@ -369,43 +438,12 @@ void Mod_LoadTextures (lump_t *l)
 	{
 		m->dataofs[i] = LittleLong(m->dataofs[i]);
 		if (m->dataofs[i] == -1)
-			continue;
-		mt = (miptex_t *)((byte *)m + m->dataofs[i]);
-		mt->width = LittleLong (mt->width);
-		mt->height = LittleLong (mt->height);
-		for (j=0 ; j<MIPLEVELS ; j++)
-			mt->offsets[j] = LittleLong (mt->offsets[j]);
-		
-		if ( (mt->width & 15) || (mt->height & 15) )
-			Sys_Error ("Texture %s is not 16 aligned", mt->name);
-		pixels = mt->width*mt->height/64*85;
-		tx = Hunk_AllocName (sizeof(texture_t) +pixels, loadname );
-		loadmodel->textures[i] = tx;
-
-		memcpy (tx->name, mt->name, sizeof(tx->name));
-		tx->width = mt->width;
-		tx->height = mt->height;
-		for (j=0 ; j<MIPLEVELS ; j++)
-			tx->offsets[j] = mt->offsets[j] + sizeof(texture_t) - sizeof(miptex_t);
-		// the pixels immediately follow the structures
-		memcpy ( tx+1, mt+1, pixels);
-		
-
-		if (!Q_strncmp(mt->name,"sky",3))	
-			R_InitSky (tx);
-		else
 		{
-			GL_LoadTexture (
-				&tx->gl_texturenum,
-				&tx->gl_brightnum,
-				mt->name,
-				tx->width,
-				tx->height,
-				(byte *)(tx+1),
-				true,
-				false
-			);
+			loadmodel->textures[i] = r_notexture_mip;
+			continue;
 		}
+		// Con_Printf("%s\n", ((miptex_t *)((byte *)m + m->dataofs[i]))->name);
+		loadmodel->textures[i] = Mod_LoadMiptex((byte *)m + m->dataofs[i]);
 	}
 
 //
@@ -554,6 +592,7 @@ static void Mod_ReadWorldPairs (byte* data)
 		Con_DSafePrintf("\"%s\" = \"%s\"\n", k, v);
 		if (!Q_strcasecmp("skyname", k) || !Q_strcasecmp("sky", k))
 		{
+			mod_needsky = false;
 			R_LoadSkys(v);
 			continue;
 		}
@@ -1187,6 +1226,8 @@ void Mod_LoadBrushModel (model_t *mod, void *buffer)
 	if (i != BSPVERSION)
 		Sys_Error ("Mod_LoadBrushModel: %s has wrong version number (%i should be %i)", mod->name, i, BSPVERSION);
 
+	mod_needsky = true;
+
 // swap all the lumps
 	mod_base = (byte *)header;
 
@@ -1477,8 +1518,11 @@ void *Mod_LoadAllSkins (int numskins, daliasskintype_t *pskintype)
 				pheader->skinwidth,
 				pheader->skinheight,
 				(byte *)(pskintype + 1),
+				4,
+				256,
+				d_8to24table,
 				true,
-				false
+				true
 			);
 			
 			pheader->gl_texturenum[i][0] =
@@ -1520,8 +1564,11 @@ void *Mod_LoadAllSkins (int numskins, daliasskintype_t *pskintype)
 							pheader->skinwidth, 
 							pheader->skinheight,
 							(byte *)(pskintype),
+							4,
+							256,
+							d_8to24table,
 							true,
-							false
+							true
 						);
 
 					pskintype = (daliasskintype_t *)((byte *)(pskintype) + s);
@@ -1753,6 +1800,9 @@ void * Mod_LoadSpriteFrame (void * pin, mspriteframe_t **ppframe, int framenum)
 		width,
 		height,
 		(byte *)(pinframe + 1),
+		4,
+		256,
+		d_8to24table,
 		true,
 		true
 	);

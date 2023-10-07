@@ -157,7 +157,7 @@ void Scrap_Upload (void)
 
 	for (texnum=0 ; texnum<MAX_SCRAPS ; texnum++) {
 		scrapnum = scrap_texnum + texnum;
-		GL_Upload8 (&scrapnum, NULL, scrap_texels[texnum], BLOCK_WIDTH, BLOCK_HEIGHT, false, true);
+		GL_Upload8 (&scrapnum, NULL, scrap_texels[texnum], BLOCK_WIDTH, BLOCK_HEIGHT, (byte *)d_8to24table, 4, 256, false, true);
 	}
 	scrap_dirty = false;
 }
@@ -399,7 +399,7 @@ void Draw_Init (void)
 			draw_chars[i] = 255;	// proper transparent color
 
 	// now turn them into textures
-	GL_LoadTexture (&char_texture, NULL, "charset", 128, 128, draw_chars, false, true);
+	GL_LoadTexture (&char_texture, NULL, "charset", 128, 128, draw_chars, 4, 256, d_8to24table, false, true);
 
 	start = Hunk_LowMark();
 
@@ -458,7 +458,7 @@ void Draw_Init (void)
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
 
 	gl = (glpic_t *)conback->data;
-	GL_LoadTexture (&gl->texnum, NULL, "conback", conback->width, conback->height, ncdata, false, false);
+	GL_LoadTexture (&gl->texnum, NULL, "conback", conback->width, conback->height, ncdata, 4, 256, d_8to24table, false, false);
 	gl->sl = 0;
 	gl->sh = 1;
 	gl->tl = 0;
@@ -937,37 +937,6 @@ void GL_ResampleTexture (unsigned *in, int inwidth, int inheight, unsigned *out,
 
 /*
 ================
-GL_Resample8BitTexture -- JACK
-================
-*/
-void GL_Resample8BitTexture (unsigned char *in, int inwidth, int inheight, unsigned char *out,  int outwidth, int outheight)
-{
-	int		i, j;
-	unsigned	char *inrow;
-	unsigned	frac, fracstep;
-
-	fracstep = inwidth*0x10000/outwidth;
-	for (i=0 ; i<outheight ; i++, out += outwidth)
-	{
-		inrow = in + inwidth*(i*inheight/outheight);
-		frac = fracstep >> 1;
-		for (j=0 ; j<outwidth ; j+=4)
-		{
-			out[j] = inrow[frac>>16];
-			frac += fracstep;
-			out[j+1] = inrow[frac>>16];
-			frac += fracstep;
-			out[j+2] = inrow[frac>>16];
-			frac += fracstep;
-			out[j+3] = inrow[frac>>16];
-			frac += fracstep;
-		}
-	}
-}
-
-
-/*
-================
 GL_MipMap
 
 Operates in place, quartering the size of the texture
@@ -1134,6 +1103,9 @@ void GL_Upload8 (
 	byte *data,
 	int width,
 	int height,
+	byte *pal,
+	int bytes,
+	int colors,
 	qboolean mipmap,
 	qboolean alpha
 )
@@ -1146,19 +1118,12 @@ void GL_Upload8 (
 	int			p;
 
 	int s = width*height;
-	
-	/*
-	int pixels = s * sizeof(unsigned int);
-	
-	if (gl_brightnum != NULL)
-		pixels *= 2;
-	*/
 
 	unsigned int *remap = &trans[0];
-	unsigned int *brightmap = NULL;
-	
-	if (gl_brightnum != NULL)
-		brightmap = remap + s;
+	unsigned int *brightmap = remap + s;
+
+	if (s & 3)
+		Sys_Error ("GL_Upload8: s&3");
 	
 	// if there are no transparent pixels, make it a 3 component
 	// texture even if it was specified as otherwise
@@ -1168,9 +1133,12 @@ void GL_Upload8 (
 		for (i=0 ; i<s ; i++)
 		{
 			p = data[i];
-			if (p == 255)
+			((byte*)&remap[i])[3] = 255;
+			if (p == (colors - 1)) {
 				noalpha = false;
-			remap[i] = d_8to24table[p];
+				((byte*)&remap[i])[3] = 0;
+			}
+			memcpy(remap + i, pal + p * bytes, bytes);
 			
 			if (gl_brightnum != NULL)
 			{
@@ -1191,12 +1159,11 @@ void GL_Upload8 (
 	}
 	else
 	{
-		if (s&3)
-			Sys_Error ("GL_Upload8: s&3");
 		for (i=0 ; i<s ; i++)
 		{
 			p = data[i];
-			remap[i] = d_8to24table[p];
+			((byte*)&remap[i])[3] = 255;
+			memcpy(remap + i, pal + p * bytes, bytes);
 
 			if (gl_brightnum != NULL)
 			{
@@ -1228,8 +1195,6 @@ void GL_Upload8 (
 
 		GL_Bind (*gl_texturenum);
 	}
-
-done:;
 }
 
 /*
@@ -1244,6 +1209,9 @@ void GL_LoadTexture (
 	int width,
 	int height,
 	byte *data,
+	int bytes,
+	int colors,
+	byte *pal,
 	qboolean mipmap,
 	qboolean alpha
 )
@@ -1289,7 +1257,7 @@ void GL_LoadTexture (
 		texture_extension_number++;
 	}
 
-	GL_Upload8 (gl_texturenum, gl_brightnum, data, width, height, mipmap, alpha);
+	GL_Upload8 (gl_texturenum, gl_brightnum, data, width, height, pal, bytes, colors, mipmap, alpha);
 
 	glt->texnum = (*gl_texturenum);
 	glt->brightnum = (gl_brightnum != NULL) ? (*gl_brightnum) : 0;
@@ -1303,7 +1271,7 @@ GL_LoadPicTexture
 int GL_LoadPicTexture (qpic_t *pic)
 {
 	int gl_texturenum = 0;
-	GL_LoadTexture (&gl_texturenum, NULL, "", pic->width, pic->height, pic->data, false, true);
+	GL_LoadTexture (&gl_texturenum, NULL, "", pic->width, pic->height, pic->data, 4, 256, d_8to24table, false, true);
 	return gl_texturenum;
 }
 

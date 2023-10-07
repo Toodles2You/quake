@@ -64,6 +64,9 @@ void GL_Upload8 (
 	byte *data,
 	int width,
 	int height,
+	byte *pal,
+	int bytes,
+	int colors,
 	qboolean mipmap,
 	qboolean alpha
 );
@@ -74,6 +77,9 @@ void GL_LoadTexture (
 	int width,
 	int height,
 	byte *data,
+	int bytes,
+	int colors,
+	byte *pal,
 	qboolean mipmap,
 	qboolean alpha
 );
