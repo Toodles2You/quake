@@ -910,6 +910,13 @@ void Mod_LoadFaces (lump_t *l)
 			continue;
 		}
 
+		if (Q_strstr(out->texinfo->texture->name, "trigger"))
+		{
+			out->flags |= SURF_NODRAW;
+			out->samples = NULL;
+			continue;
+		}
+
 		if (out->texinfo->texture->name[0] == '{')
 		{
 			out->flags |= SURF_DRAWFENCE;

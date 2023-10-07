@@ -1256,6 +1256,9 @@ e->angles[0] = -e->angles[0];	// stupid quake bug
 	//
 	for (i=0 ; i<clmodel->nummodelsurfaces ; i++, psurf++)
 	{
+		if (psurf->flags & SURF_NODRAW)
+			continue;
+		
 	// find which side of the node we are on
 		pplane = psurf->plane;
 
@@ -1377,6 +1380,9 @@ void R_RecursiveWorldNode (mnode_t *node)
 		{
 			for ( ; c ; c--, surf++)
 			{
+				if (surf->flags & SURF_NODRAW)
+					continue;
+
 				if (surf->visframe != r_framecount)
 					continue;
 
@@ -1682,7 +1688,7 @@ void GL_CreateSurfaceLightmap (msurface_t *surf)
 	int		smax, tmax, s, t, l, i;
 	byte	*base;
 
-	if (surf->flags & (SURF_DRAWSKY|SURF_DRAWTURB))
+	if (surf->flags & (SURF_DRAWSKY|SURF_DRAWTURB|SURF_NODRAW))
 		return;
 
 	smax = (surf->extents[0]>>4)+1;
