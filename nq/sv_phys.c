@@ -1323,10 +1323,11 @@ void SV_Physics_Toss (edict_t *ent)
 // stop if on ground
 	if (trace.plane.normal[2] > 0.7)
 	{		
+		/* Slope bounce fix from Spike! */
 #ifdef QUAKE2
-		if (ent->v.velocity[2] < 60 || (ent->v.movetype != MOVETYPE_BOUNCE && ent->v.movetype != MOVETYPE_BOUNCEMISSILE))
+		if (DotProduct(trace.plane.normal, ent->v.velocity) || (ent->v.movetype != MOVETYPE_BOUNCE && ent->v.movetype != MOVETYPE_BOUNCEMISSILE))
 #else
-		if (ent->v.velocity[2] < 60 || ent->v.movetype != MOVETYPE_BOUNCE)
+		if (DotProduct(trace.plane.normal, ent->v.velocity) < 60 || ent->v.movetype != MOVETYPE_BOUNCE)
 #endif
 		{
 			ent->v.flags = (int)ent->v.flags | FL_ONGROUND;
