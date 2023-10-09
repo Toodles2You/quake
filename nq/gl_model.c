@@ -422,6 +422,11 @@ static texture_t* Mod_LoadMiptex(miptex_t* mt)
 		pal = (byte *)(tx + 1) + pixels + sizeof(unsigned short);
 		colors = *((unsigned short *)pal - 1);
 		bytes = 3;
+
+		if (tx->name[0] == '~' || (tx->name[0] == '+' && tx->name[1] != 'A' && tx->name[2] == '~'))
+		{
+			brightnum = &tx->gl_brightnum;
+		}
 	}
 	else
 	{
