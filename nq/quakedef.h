@@ -291,6 +291,7 @@ extern	cvar_t		developer;
 
 extern	qboolean	host_initialized;		// true if into command execution
 extern	double		host_frametime;
+extern	cvar_t		host_timescale;
 extern	byte		*host_basepal;
 extern	byte		*host_colormap;
 extern	int			host_framecount;	// incremented every frame, never reset
