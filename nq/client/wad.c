@@ -20,11 +20,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "quakedef.h"
 
-int			wad_numlumps;
-lumpinfo_t	*wad_lumps;
-byte		*wad_base;
-
-void SwapPic (qpic_t *pic);
+static int			wad_numlumps;
+static lumpinfo_t	*wad_lumps;
+static byte			*wad_base;
 
 /*
 ==================
@@ -94,7 +92,7 @@ void W_LoadWadFile (char *filename)
 		lump_p->size = LittleLong(lump_p->size);
 		W_CleanupName (lump_p->name, lump_p->name);
 		if (lump_p->type == TYP_QPIC)
-			SwapPic ( (qpic_t *)(wad_base + lump_p->filepos));
+			W_SwapPic ( (qpic_t *)(wad_base + lump_p->filepos));
 	}
 }
 
@@ -313,7 +311,7 @@ automatic byte swapping
 =============================================================================
 */
 
-void SwapPic (qpic_t *pic)
+void W_SwapPic (qpic_t *pic)
 {
 	pic->width = LittleLong(pic->width);
 	pic->height = LittleLong(pic->height);	

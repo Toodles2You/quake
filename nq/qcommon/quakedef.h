@@ -150,6 +150,7 @@ typedef struct
 
 
 #include "wad.h"
+#include "wadlib.h"
 #include "draw.h"
 #include "cvar.h"
 #include "screen.h"

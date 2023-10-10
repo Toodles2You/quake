@@ -244,7 +244,7 @@ qpic_t	*Draw_CachePic (char *path)
 	dat = (qpic_t *)COM_LoadTempFile (path);	
 	if (!dat)
 		Sys_Error ("Draw_CachePic: failed to load %s", path);
-	SwapPic (dat);
+	W_SwapPic (dat);
 
 	// HACK HACK HACK --- we need to keep the bytes for
 	// the translatable player picture just for the menu
@@ -399,7 +399,7 @@ void Draw_Init (void)
 	cb = (qpic_t *)COM_LoadTempFile ("gfx/conback.lmp");	
 	if (!cb)
 		Sys_Error ("Couldn't load gfx/conback.lmp");
-	SwapPic (cb);
+	W_SwapPic (cb);
 
 	// hack the version number directly into the pic
 	ver = QUAKE_VERSION;
