@@ -967,10 +967,6 @@ void R_RenderScene (void)
 
 	R_DrawParticles ();
 
-#ifdef GLTEST
-	Test_Draw ();
-#endif
-
 }
 
 

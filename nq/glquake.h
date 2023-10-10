@@ -19,37 +19,11 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 // disable data conversion warnings
 
-#pragma warning(disable : 4244)     // MIPS
-#pragma warning(disable : 4136)     // X86
-#pragma warning(disable : 4051)     // ALPHA
-  
-#ifdef _WIN32
-#include <windows.h>
-#endif
-
 #include <GL/gl.h>
 #include <GL/glu.h>
 
 void GL_BeginRendering (int *x, int *y, int *width, int *height);
 void GL_EndRendering (void);
-
-
-#ifdef _WIN32
-// Function prototypes for the Texture Object Extension routines
-typedef GLboolean (APIENTRY *ARETEXRESFUNCPTR)(GLsizei, const GLuint *,
-                    const GLboolean *);
-typedef void (APIENTRY *BINDTEXFUNCPTR)(GLenum, GLuint);
-typedef void (APIENTRY *DELTEXFUNCPTR)(GLsizei, const GLuint *);
-typedef void (APIENTRY *GENTEXFUNCPTR)(GLsizei, GLuint *);
-typedef GLboolean (APIENTRY *ISTEXFUNCPTR)(GLuint);
-typedef void (APIENTRY *PRIORTEXFUNCPTR)(GLsizei, const GLuint *,
-                    const GLclampf *);
-typedef void (APIENTRY *TEXSUBIMAGEPTR)(int, int, int, int, int, int, int, int, void *);
-
-extern	BINDTEXFUNCPTR bindTexFunc;
-extern	DELTEXFUNCPTR delTexFunc;
-extern	TEXSUBIMAGEPTR TexSubImage2DFunc;
-#endif
 
 extern	int texture_extension_number;
 extern	int gl_filter_min;
@@ -95,15 +69,6 @@ typedef struct
 extern glvert_t glv;
 
 extern	int glx, gly, glwidth, glheight;
-
-#ifdef _WIN32
-extern	PROC glArrayElementEXT;
-extern	PROC glColorPointerEXT;
-extern	PROC glTexturePointerEXT;
-extern	PROC glVertexPointerEXT;
-#endif
-
-// r_local.h -- private refresh defs
 
 #define ALIAS_BASE_SIZE_RATIO		(1.0 / 11.0)
 					// normalizing factor so player model works out to about
@@ -156,7 +121,6 @@ typedef enum {
 	pt_static, pt_grav, pt_slowgrav, pt_fire, pt_explode, pt_explode2, pt_blob, pt_blob2
 } ptype_t;
 
-// !!! if this is changed, it must be changed in d_ifacea.h too !!!
 typedef struct particle_s
 {
 // driver-usable fields
@@ -263,7 +227,7 @@ void GL_Bind (int texnum);
 #define    TEXTURE0_SGIS				0x835E
 #define    TEXTURE1_SGIS				0x835F
 
-#if !defined(_WIN32) && !defined(APIENTRY)
+#ifndef APIENTRY
 #define APIENTRY /* */
 #endif
 

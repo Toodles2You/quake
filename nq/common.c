@@ -1127,9 +1127,7 @@ void COM_CheckRegistered (void)
 
 	if (h == -1)
 	{
-#if WINDED
-	Sys_Error ("This dedicated server requires a full registered copy of Quake");
-#endif
+		/* Sys_Error ("This dedicated server requires a full registered copy of Quake"); */
 		Con_Printf ("Playing shareware version.\n");
 		if (com_modified)
 			Sys_Error ("You must have the registered version to use modified games");
@@ -1287,17 +1285,6 @@ char    *va(char *format, ...)
 	return string;  
 }
 
-
-/// just for debugging
-int     memsearch (byte *start, int count, int search)
-{
-	int             i;
-	
-	for (i=0 ; i<count ; i++)
-		if (start[i] == search)
-			return i;
-	return -1;
-}
 
 /*
 =============================================================================
@@ -1541,7 +1528,7 @@ int COM_FindFile (char *filename, int *handle, FILE **file)
 				strcpy (cachepath, netpath);
 			else
 			{	
-#if defined(_WIN32)
+#ifdef QUAKE_WINDOWS
 				if ((strlen(netpath) < 2) || (netpath[1] != ':'))
 					sprintf (cachepath,"%s%s", com_cachedir, netpath);
 				else
@@ -1846,7 +1833,7 @@ void COM_InitFilesystem (void)
 
 //
 // -basedir <path>
-// Overrides the system supplied base directory (under GAMENAME)
+// Overrides the system supplied base directory (under QUAKE_BASEDIR)
 //
 	i = COM_CheckParm ("-basedir");
 	if (i && i < com_argc-1)
@@ -1881,9 +1868,9 @@ void COM_InitFilesystem (void)
 		com_cachedir[0] = 0;
 
 //
-// start up with GAMENAME by default (id1)
+// start up with QUAKE_BASEDIR by default
 //
-	COM_AddGameDirectory (va("%s/"GAMENAME, basedir) );
+	COM_AddGameDirectory (va("%s/"QUAKE_BASEDIR, basedir) );
 
 	if (COM_CheckParm ("-rogue"))
 		COM_AddGameDirectory (va("%s/rogue", basedir) );

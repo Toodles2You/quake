@@ -39,7 +39,7 @@ static mstate_t mouse_state;
 static vec2_t mouse;
 static vec2_t old_mouse;
 
-static cvar_t in_mouse = {"in_mouse", "1", false};
+cvar_t in_mouse = {"in_mouse", "1", false};
 static cvar_t m_rawinput = {"m_rawinput", "1", false};
 static cvar_t m_filter = {"m_filter", "0"};
 static cvar_t m_look = {"m_look", "1"};

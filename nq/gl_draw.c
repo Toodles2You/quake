@@ -76,11 +76,7 @@ void GL_Bind (int texnum)
 	if (currenttexture == texnum)
 		return;
 	currenttexture = texnum;
-#ifdef _WIN32
-	bindTexFunc (GL_TEXTURE_2D, texnum);
-#else
 	glBindTexture(GL_TEXTURE_2D, texnum);
-#endif
 }
 
 
@@ -371,7 +367,7 @@ void Draw_Init (void)
 	qpic_t	*cb;
 	byte	*dest, *src;
 	int		x, y;
-	char	ver[40];
+	char*	ver;
 	glpic_t	*gl;
 	int		start;
 	byte	*ncdata;
@@ -409,13 +405,9 @@ void Draw_Init (void)
 	SwapPic (cb);
 
 	// hack the version number directly into the pic
-#if defined(__linux__)
-	sprintf (ver, "(Linux %2.2f, gl %4.2f) %4.2f", (float)LINUX_VERSION, (float)GLQUAKE_VERSION, (float)VERSION);
-#else
-	sprintf (ver, "(gl %4.2f) %4.2f", (float)GLQUAKE_VERSION, (float)VERSION);
-#endif
-	dest = cb->data + 320*186 + 320 - 11 - 8*strlen(ver);
-	y = strlen(ver);
+	ver = QUAKE_VERSION;
+	dest = cb->data + 320*186 + 320 - 11 - 8*(sizeof(QUAKE_VERSION)-1);
+	y = sizeof(QUAKE_VERSION)-1;
 	for (x=0 ; x<y ; x++)
 		Draw_CharToConback (ver[x], dest+(x<<3));
 

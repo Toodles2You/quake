@@ -131,9 +131,6 @@ void Sys_Quit (void)
 
 void Sys_Init(void)
 {
-#if id386
-	Sys_SetFPCW();
-#endif
 }
 
 void Sys_Error (char *error, ...)
@@ -341,16 +338,6 @@ char *Sys_ConsoleInput(void)
 	return NULL;
 }
 
-#if !id386
-void Sys_HighFPPrecision (void)
-{
-}
-
-void Sys_LowFPPrecision (void)
-{
-}
-#endif
-
 int main (int c, char **v)
 {
 
@@ -371,11 +358,7 @@ int main (int c, char **v)
 	parms.argc = com_argc;
 	parms.argv = com_argv;
 
-#ifdef GLQUAKE
 	parms.memsize = 16*1024*1024;
-#else
-	parms.memsize = 8*1024*1024;
-#endif
 
 	j = COM_CheckParm("-mem");
 	if (j)
@@ -396,7 +379,7 @@ int main (int c, char **v)
 		nostdout = 1;
 	else {
 		fcntl(0, F_SETFL, fcntl (0, F_GETFL, 0) | FNDELAY);
-		printf ("Linux Quake -- Version %0.3f\n", LINUX_VERSION);
+		printf ("Linux Quake -- Version "QUAKE_VERSION"\n");
 	}
 
     oldtime = Sys_FloatTime () - 0.1;

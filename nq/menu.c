@@ -19,9 +19,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 */
 #include "quakedef.h"
 
-#ifdef _WIN32
-#include "winquake.h"
-#endif
 
 void (*vid_menudrawfn)(void);
 void (*vid_menukeyfn)(int key);
@@ -913,11 +910,7 @@ void M_Net_Draw (void)
 	}
 	else
 	{
-#ifdef _WIN32
-		p = NULL;
-#else
 		p = Draw_CachePic ("gfx/dim_modm.lmp");
-#endif
 	}
 
 	if (p)
@@ -931,11 +924,7 @@ void M_Net_Draw (void)
 	}
 	else
 	{
-#ifdef _WIN32
-		p = NULL;
-#else
 		p = Draw_CachePic ("gfx/dim_drct.lmp");
-#endif
 	}
 
 	if (p)
@@ -1092,11 +1081,7 @@ void M_AdjustSliders (int dir)
 		Cvar_SetValue ("sensitivity", sensitivity.value);
 		break;
 	case 6:	// music volume
-#ifdef _WIN32
-		bgmvolume.value += dir * 1.0;
-#else
 		bgmvolume.value += dir * 0.1;
-#endif
 		if (bgmvolume.value < 0)
 			bgmvolume.value = 0;
 		if (bgmvolume.value > 1)
@@ -3030,9 +3015,7 @@ void M_Draw (void)
 		if (scr_con_current)
 		{
 			Draw_ConsoleBackground (vid.height);
-			VID_UnlockBuffer ();
 			S_ExtraUpdate ();
-			VID_LockBuffer ();
 		}
 		else
 			Draw_FadeScreen ();
@@ -3128,9 +3111,7 @@ void M_Draw (void)
 		m_entersound = false;
 	}
 
-	VID_UnlockBuffer ();
 	S_ExtraUpdate ();
-	VID_LockBuffer ();
 }
 
 

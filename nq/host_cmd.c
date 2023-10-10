@@ -75,7 +75,7 @@ void Host_Status_f (void)
 		print = SV_ClientPrintf;
 
 	print ("host:    %s\n", Cvar_VariableString ("hostname"));
-	print ("version: %4.2f\n", VERSION);
+	print ("version: %4.2f\n", QUAKE_VERSION);
 	if (tcpipAvailable)
 		print ("tcp/ip:  %s\n", my_tcpip_address);
 	if (ipxAvailable)
@@ -948,7 +948,7 @@ void Host_Name_f (void)
 	
 void Host_Version_f (void)
 {
-	Con_Printf ("Version %4.2f\n", VERSION);
+	Con_Printf ("Version "QUAKE_VERSION"\n");
 	Con_Printf ("Exe: "__TIME__" "__DATE__"\n");
 }
 
@@ -1325,6 +1325,12 @@ void Host_Spawn_f (void)
 			Sys_Printf ("%s entered the game\n", host_client->name);
 
 		PR_ExecuteProgram (pr_global_struct->PutClientInServer);	
+		
+		/* Toodles FIXME: Hack for testing. */
+		VectorCopy (sv.worldmodel->hulls[HULL_STAND].clip_mins, sv_player->v.mins);
+		VectorCopy (sv.worldmodel->hulls[HULL_STAND].clip_maxs, sv_player->v.maxs);
+		VectorSubtract (sv_player->v.maxs, sv_player->v.mins, sv_player->v.size);
+		sv_player->v.view_ofs[2] = 28;
 	}
 
 

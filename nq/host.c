@@ -20,7 +20,6 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // host.c -- coordinates spawning and killing of local servers
 
 #include "quakedef.h"
-#include "r_local.h"
 
 /*
 
@@ -68,8 +67,8 @@ cvar_t	teamplay = {"teamplay","0",false,true};
 cvar_t	samelevel = {"samelevel","0"};
 cvar_t	noexit = {"noexit","0",false,true};
 
-#ifdef QUAKE2
-cvar_t	developer = {"developer","1"};	// should be 0 for release!
+#ifndef NDEBUG
+cvar_t	developer = {"developer","1"};
 #else
 cvar_t	developer = {"developer","0"};
 #endif
@@ -79,8 +78,6 @@ cvar_t	deathmatch = {"deathmatch","0"};			// 0, 1, or 2
 cvar_t	coop = {"coop","0"};			// 0 or 1
 
 cvar_t	pausable = {"pausable","1"};
-
-cvar_t	temp1 = {"temp1","0"};
 
 
 /*
@@ -229,8 +226,6 @@ void Host_InitLocal (void)
 	Cvar_RegisterVariable (&coop);
 
 	Cvar_RegisterVariable (&pausable);
-
-	Cvar_RegisterVariable (&temp1);
 
 	Host_FindMaxClients ();
 	
@@ -893,32 +888,15 @@ void Host_Init (quakeparms_t *parms)
 		if (!host_colormap)
 			Sys_Error ("Couldn't load gfx/colormap.lmp");
 
-#ifndef _WIN32 // on non win32, mouse comes before video for security reasons
 		IN_Init ();
-#endif
 		VID_Init (host_basepal);
-
 		Draw_Init ();
 		SCR_Init ();
 		R_Init ();
-#ifndef	_WIN32
-	// on Win32, sound initialization has to come before video initialization, so we
-	// can put up a popup if the sound hardware is in use
 		S_Init ();
-#else
-
-#ifdef	GLQUAKE
-	// FIXME: doesn't use the new one-window approach yet
-		S_Init ();
-#endif
-
-#endif	// _WIN32
 		CDAudio_Init ();
 		Sbar_Init ();
 		CL_Init ();
-#ifdef _WIN32 // on non win32, mouse comes before video for security reasons
-		IN_Init ();
-#endif
 	}
 
 	Cbuf_InsertText ("exec quake.rc\n");

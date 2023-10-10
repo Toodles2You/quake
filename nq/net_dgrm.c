@@ -20,14 +20,9 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 // net_dgrm.c
 
 // This is enables a simple IP banning mechanism
-#define BAN_TEST
 
-#ifdef BAN_TEST
-#if defined(_WIN32)
+#ifdef QUAKE_WINDOWS
 #include <windows.h>
-#elif defined (NeXT)
-#include <sys/socket.h>
-#include <arpa/inet.h>
 #else
 #define AF_INET 		2	/* internet */
 struct in_addr
@@ -50,7 +45,6 @@ struct sockaddr_in
 char *inet_ntoa(struct in_addr in);
 unsigned long inet_addr(const char *cp);
 #endif
-#endif	// BAN_TEST
 
 #include "quakedef.h"
 #include "net_dgrm.h"
@@ -98,7 +92,6 @@ char *StrAddr (struct qsockaddr *addr)
 #endif
 
 
-#ifdef BAN_TEST
 unsigned long banAddr = 0x00000000;
 unsigned long banMask = 0xffffffff;
 
@@ -155,7 +148,6 @@ void NET_Ban_f (void)
 			break;
 	}
 }
-#endif
 
 
 int Datagram_SendMessage (qsocket_t *sock, sizebuf_t *data)
@@ -511,258 +503,6 @@ void NET_Stats_f (void)
 }
 
 
-static qboolean testInProgress = false;
-static int		testPollCount;
-static int		testDriver;
-static int		testSocket;
-
-static void Test_Poll(void);
-PollProcedure	testPollProcedure = {NULL, 0.0, Test_Poll};
-
-static void Test_Poll(void)
-{
-	struct qsockaddr clientaddr;
-	int		control;
-	int		len;
-	char	name[32];
-	char	address[64];
-	int		colors;
-	int		frags;
-	int		connectTime;
-	byte	playerNumber;
-
-	net_landriverlevel = testDriver;
-
-	while (1)
-	{
-		len = dfunc.Read (testSocket, net_message.data, net_message.maxsize, &clientaddr);
-		if (len < sizeof(int))
-			break;
-
-		net_message.cursize = len;
-
-		MSG_BeginReading ();
-		control = BigLong(*((int *)net_message.data));
-		MSG_ReadLong();
-		if (control == -1)
-			break;
-		if ((control & (~NETFLAG_LENGTH_MASK)) !=  NETFLAG_CTL)
-			break;
-		if ((control & NETFLAG_LENGTH_MASK) != len)
-			break;
-
-		if (MSG_ReadByte() != CCREP_PLAYER_INFO)
-			Sys_Error("Unexpected repsonse to Player Info request\n");
-
-		playerNumber = MSG_ReadByte();
-		Q_strcpy(name, MSG_ReadString());
-		colors = MSG_ReadLong();
-		frags = MSG_ReadLong();
-		connectTime = MSG_ReadLong();
-		Q_strcpy(address, MSG_ReadString());
-
-		Con_Printf("%s\n  frags:%3i  colors:%u %u  time:%u\n  %s\n", name, frags, colors >> 4, colors & 0x0f, connectTime / 60, address);
-	}
-
-	testPollCount--;
-	if (testPollCount)
-	{
-		SchedulePollProcedure(&testPollProcedure, 0.1);
-	}
-	else
-	{
-		dfunc.CloseSocket(testSocket);
-		testInProgress = false;
-	}
-}
-
-static void Test_f (void)
-{
-	char	*host;
-	int		n;
-	int		max = MAX_SCOREBOARD;
-	struct qsockaddr sendaddr;
-
-	if (testInProgress)
-		return;
-
-	host = Cmd_Argv (1);
-
-	if (host && hostCacheCount)
-	{
-		for (n = 0; n < hostCacheCount; n++)
-			if (Q_strcasecmp (host, hostcache[n].name) == 0)
-			{
-				if (hostcache[n].driver != myDriverLevel)
-					continue;
-				net_landriverlevel = hostcache[n].ldriver;
-				max = hostcache[n].maxusers;
-				Q_memcpy(&sendaddr, &hostcache[n].addr, sizeof(struct qsockaddr));
-				break;
-			}
-		if (n < hostCacheCount)
-			goto JustDoIt;
-	}
-
-	for (net_landriverlevel = 0; net_landriverlevel < net_numlandrivers; net_landriverlevel++)
-	{
-		if (!net_landrivers[net_landriverlevel].initialized)
-			continue;
-
-		// see if we can resolve the host name
-		if (dfunc.GetAddrFromName(host, &sendaddr) != -1)
-			break;
-	}
-	if (net_landriverlevel == net_numlandrivers)
-		return;
-
-JustDoIt:
-	testSocket = dfunc.OpenSocket(0);
-	if (testSocket == -1)
-		return;
-
-	testInProgress = true;
-	testPollCount = 20;
-	testDriver = net_landriverlevel;
-
-	for (n = 0; n < max; n++)
-	{
-		SZ_Clear(&net_message);
-		// save space for the header, filled in later
-		MSG_WriteLong(&net_message, 0);
-		MSG_WriteByte(&net_message, CCREQ_PLAYER_INFO);
-		MSG_WriteByte(&net_message, n);
-		*((int *)net_message.data) = BigLong(NETFLAG_CTL | 	(net_message.cursize & NETFLAG_LENGTH_MASK));
-		dfunc.Write (testSocket, net_message.data, net_message.cursize, &sendaddr);
-	}
-	SZ_Clear(&net_message);
-	SchedulePollProcedure(&testPollProcedure, 0.1);
-}
-
-
-static qboolean test2InProgress = false;
-static int		test2Driver;
-static int		test2Socket;
-
-static void Test2_Poll(void);
-PollProcedure	test2PollProcedure = {NULL, 0.0, Test2_Poll};
-
-static void Test2_Poll(void)
-{
-	struct qsockaddr clientaddr;
-	int		control;
-	int		len;
-	char	name[256];
-	char	value[256];
-
-	net_landriverlevel = test2Driver;
-	name[0] = 0;
-
-	len = dfunc.Read (test2Socket, net_message.data, net_message.maxsize, &clientaddr);
-	if (len < sizeof(int))
-		goto Reschedule;
-
-	net_message.cursize = len;
-
-	MSG_BeginReading ();
-	control = BigLong(*((int *)net_message.data));
-	MSG_ReadLong();
-	if (control == -1)
-		goto Error;
-	if ((control & (~NETFLAG_LENGTH_MASK)) !=  NETFLAG_CTL)
-		goto Error;
-	if ((control & NETFLAG_LENGTH_MASK) != len)
-		goto Error;
-
-	if (MSG_ReadByte() != CCREP_RULE_INFO)
-		goto Error;
-
-	Q_strcpy(name, MSG_ReadString());
-	if (name[0] == 0)
-		goto Done;
-	Q_strcpy(value, MSG_ReadString());
-
-	Con_Printf("%-16.16s  %-16.16s\n", name, value);
-
-	SZ_Clear(&net_message);
-	// save space for the header, filled in later
-	MSG_WriteLong(&net_message, 0);
-	MSG_WriteByte(&net_message, CCREQ_RULE_INFO);
-	MSG_WriteString(&net_message, name);
-	*((int *)net_message.data) = BigLong(NETFLAG_CTL | (net_message.cursize & NETFLAG_LENGTH_MASK));
-	dfunc.Write (test2Socket, net_message.data, net_message.cursize, &clientaddr);
-	SZ_Clear(&net_message);
-
-Reschedule:
-	SchedulePollProcedure(&test2PollProcedure, 0.05);
-	return;
-
-Error:
-	Con_Printf("Unexpected repsonse to Rule Info request\n");
-Done:
-	dfunc.CloseSocket(test2Socket);
-	test2InProgress = false;
-	return;
-}
-
-static void Test2_f (void)
-{
-	char	*host;
-	int		n;
-	struct qsockaddr sendaddr;
-
-	if (test2InProgress)
-		return;
-
-	host = Cmd_Argv (1);
-
-	if (host && hostCacheCount)
-	{
-		for (n = 0; n < hostCacheCount; n++)
-			if (Q_strcasecmp (host, hostcache[n].name) == 0)
-			{
-				if (hostcache[n].driver != myDriverLevel)
-					continue;
-				net_landriverlevel = hostcache[n].ldriver;
-				Q_memcpy(&sendaddr, &hostcache[n].addr, sizeof(struct qsockaddr));
-				break;
-			}
-		if (n < hostCacheCount)
-			goto JustDoIt;
-	}
-
-	for (net_landriverlevel = 0; net_landriverlevel < net_numlandrivers; net_landriverlevel++)
-	{
-		if (!net_landrivers[net_landriverlevel].initialized)
-			continue;
-
-		// see if we can resolve the host name
-		if (dfunc.GetAddrFromName(host, &sendaddr) != -1)
-			break;
-	}
-	if (net_landriverlevel == net_numlandrivers)
-		return;
-
-JustDoIt:
-	test2Socket = dfunc.OpenSocket(0);
-	if (test2Socket == -1)
-		return;
-
-	test2InProgress = true;
-	test2Driver = net_landriverlevel;
-
-	SZ_Clear(&net_message);
-	// save space for the header, filled in later
-	MSG_WriteLong(&net_message, 0);
-	MSG_WriteByte(&net_message, CCREQ_RULE_INFO);
-	MSG_WriteString(&net_message, "");
-	*((int *)net_message.data) = BigLong(NETFLAG_CTL | (net_message.cursize & NETFLAG_LENGTH_MASK));
-	dfunc.Write (test2Socket, net_message.data, net_message.cursize, &sendaddr);
-	SZ_Clear(&net_message);
-	SchedulePollProcedure(&test2PollProcedure, 0.05);
-}
-
-
 int Datagram_Init (void)
 {
 	int i;
@@ -783,11 +523,7 @@ int Datagram_Init (void)
 		net_landrivers[i].controlSock = csock;
 		}
 
-#ifdef BAN_TEST
 	Cmd_AddCommand ("ban", NET_Ban_f);
-#endif
-	Cmd_AddCommand ("test", Test_f);
-	Cmd_AddCommand ("test2", Test2_f);
 
 	return 0;
 }
@@ -984,7 +720,6 @@ static qsocket_t *_Datagram_CheckNewConnections (void)
 		return NULL;
 	}
 
-#ifdef BAN_TEST
 	// check for a ban
 	if (clientaddr.sa_family == AF_INET)
 	{
@@ -1003,7 +738,6 @@ static qsocket_t *_Datagram_CheckNewConnections (void)
 			return NULL;
 		}
 	}
-#endif
 
 	// see if this guy is already connected
 	for (s = net_activeSockets; s; s = s->next)

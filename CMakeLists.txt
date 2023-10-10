@@ -20,7 +20,21 @@ pkg_check_modules(SDL REQUIRED sdl2)
 # Project config                                                #
 #===============================================================#
 
-project(quakeworld VERSION 2.4.0 LANGUAGES C)
+project(Quake VERSION 1.0.9 LANGUAGES C)
+
+set(QUAKE_VERSION ${CMAKE_PROJECT_VERSION} CACHE STRING "Quake version.")
+set(QUAKE_BASEDIR "id1" CACHE STRING "Quake base game directory.")
+
+set(QUAKE_DEFS
+    QUAKE_VERSION="${QUAKE_VERSION}"
+    QUAKE_BASEDIR="${QUAKE_BASEDIR}"
+)
+
+if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
+    list(APPEND QUAKE_DEFS QUAKE_LINUX)
+elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
+    list(APPEND QUAKE_DEFS QUAKE_WINDOWS)
+endif()
 
 set(QUAKE_FLAGS
     -Dstricmp=strcasecmp
@@ -36,7 +50,7 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     )
 endif()
 
-set(QUAKE_DIRS qw/qcommon qw/client qw/server)
+set(QUAKE_DIRS)
 
 set(QUAKE_LIBRARIES m)
 
@@ -65,7 +79,6 @@ set(QUAKE_SRC
     nq/gl_rmisc.c
     nq/gl_rsurf.c
     nq/gl_screen.c
-    nq/gl_test.c
     nq/gl_vidsdl.c
     nq/gl_warp.c
     nq/host.c
@@ -83,7 +96,7 @@ set(QUAKE_SRC
     nq/pr_cmds.c
     nq/pr_edict.c
     nq/pr_exec.c
-    nq/r_part.c
+    nq/part.c
     nq/sbar.c
     nq/sv_main.c
     nq/sv_phys.c
@@ -100,10 +113,6 @@ set(QUAKE_SRC
     nq/snd_mix.c
     nq/snd_sdl.c
     nq/stb_vorbis.c
-    nq/math.s
-    nq/worlda.s
-    nq/snd_mixa.s
-    nq/sys_dosa.s
 )
 
 set(QCOMMON_SRC
@@ -187,7 +196,7 @@ add_executable(quake
     ${QUAKE_SRC}
 )
 
-target_compile_definitions(quake PRIVATE GLQUAKE)
+target_compile_definitions(quake PRIVATE ${QUAKE_DEFS})
 
 target_compile_options(quake PRIVATE ${QUAKE_FLAGS})
 
