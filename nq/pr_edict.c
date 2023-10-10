@@ -865,7 +865,6 @@ if (!strcmp(com_token, "light"))
 		key = ED_FindField (keyname);
 		if (!key)
 		{
-			Con_Printf ("'%s' is not a field\n", keyname);
 			continue;
 		}
 
@@ -963,8 +962,11 @@ void ED_LoadFromFile (char *data)
 
 		if (!func)
 		{
-			Con_Printf ("No spawn function for:\n");
-			ED_Print (ent);
+			Con_SafePrintf(
+				"No spawn function for EDICT %i: \"%s\"\n",
+				NUM_FOR_EDICT(ent),
+				PR_GetString(ent->v.classname)
+			);
 			ED_Free (ent);
 			continue;
 		}
