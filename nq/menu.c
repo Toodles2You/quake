@@ -1025,11 +1025,7 @@ again:
 //=============================================================================
 /* OPTIONS MENU */
 
-#ifdef _WIN32
 #define	OPTIONS_ITEMS	14
-#else
-#define	OPTIONS_ITEMS	13
-#endif
 
 #define	SLIDER_RANGE	10
 
@@ -1040,13 +1036,6 @@ void M_Menu_Options_f (void)
 	key_dest = key_menu;
 	m_state = m_options;
 	m_entersound = true;
-
-#ifdef _WIN32
-	if ((options_cursor == 13) && (modestate != MS_WINDOWED))
-	{
-		options_cursor = 0;
-	}
-#endif
 }
 
 
@@ -1110,23 +1099,21 @@ void M_AdjustSliders (int dir)
 		}
 		break;
 
-	case 9:	// invert mouse
+	case 9:	// in_mouse
+		Cvar_SetValue ("in_mouse", !in_mouse.value);
+		break;
+
+	case 10:	// invert mouse
 		Cvar_SetValue ("m_pitch", -m_pitch.value);
 		break;
 
-	case 10:	// lookspring
+	case 11:	// lookspring
 		Cvar_SetValue ("lookspring", !lookspring.value);
 		break;
 
-	case 11:	// lookstrafe
+	case 12:	// lookstrafe
 		Cvar_SetValue ("lookstrafe", !lookstrafe.value);
 		break;
-
-#ifdef _WIN32
-	case 13:	// _windowed_mouse
-		Cvar_SetValue ("_windowed_mouse", !_windowed_mouse.value);
-		break;
-#endif
 	}
 }
 
@@ -1196,25 +1183,20 @@ void M_Options_Draw (void)
 	M_Print (16, 96,  "            Always Run");
 	M_DrawCheckbox (220, 96, cl_forwardspeed.value > 200);
 
-	M_Print (16, 104, "          Invert Mouse");
-	M_DrawCheckbox (220, 104, m_pitch.value < 0);
+	M_Print (16, 104, "             Use Mouse");
+	M_DrawCheckbox (220, 104, in_mouse.value);
 
-	M_Print (16, 112, "            Lookspring");
-	M_DrawCheckbox (220, 112, lookspring.value);
+	M_Print (16, 112, "          Invert Mouse");
+	M_DrawCheckbox (220, 112, m_pitch.value < 0);
 
-	M_Print (16, 120, "            Lookstrafe");
-	M_DrawCheckbox (220, 120, lookstrafe.value);
+	M_Print (16, 120, "            Lookspring");
+	M_DrawCheckbox (220, 120, lookspring.value);
+
+	M_Print (16, 128, "            Lookstrafe");
+	M_DrawCheckbox (220, 128, lookstrafe.value);
 
 	if (vid_menudrawfn)
-		M_Print (16, 128, "         Video Options");
-
-#ifdef _WIN32
-	if (modestate == MS_WINDOWED)
-	{
-		M_Print (16, 136, "             Use Mouse");
-		M_DrawCheckbox (220, 136, _windowed_mouse.value);
-	}
-#endif
+		M_Print (16, 136, "         Video Options");
 
 // cursor
 	M_DrawCharacter (200, 32 + options_cursor*8, 12+((int)(realtime*4)&1));
@@ -1243,7 +1225,7 @@ void M_Options_Key (int k)
 		case 2:
 			Cbuf_AddText ("exec default.cfg\n");
 			break;
-		case 12:
+		case 13:
 			M_Menu_Video_f ();
 			break;
 		default:
@@ -1275,23 +1257,13 @@ void M_Options_Key (int k)
 		break;
 	}
 
-	if (options_cursor == 12 && vid_menudrawfn == NULL)
-	{
-		if (k == K_UPARROW)
-			options_cursor = 11;
-		else
-			options_cursor = 0;
-	}
-
-#ifdef _WIN32
-	if ((options_cursor == 13) && (modestate != MS_WINDOWED))
+	if (options_cursor == 13 && vid_menudrawfn == NULL)
 	{
 		if (k == K_UPARROW)
 			options_cursor = 12;
 		else
 			options_cursor = 0;
 	}
-#endif
 }
 
 //=============================================================================
