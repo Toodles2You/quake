@@ -1764,12 +1764,8 @@ void GL_BuildLightmaps (void)
 		for (i=0 ; i<m->numsurfaces ; i++)
 		{
 			GL_CreateSurfaceLightmap (m->surfaces + i);
-			if ( m->surfaces[i].flags & SURF_DRAWTURB )
+			if ( m->surfaces[i].flags & (SURF_DRAWTURB | SURF_DRAWSKY) )
 				continue;
-#ifndef QUAKE2
-			if ( m->surfaces[i].flags & SURF_DRAWSKY )
-				continue;
-#endif
 			BuildSurfaceDisplayList (m->surfaces + i);
 		}
 	}

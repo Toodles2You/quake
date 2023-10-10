@@ -279,11 +279,7 @@ void Host_Map_f (void)
 
 	svs.serverflags = 0;			// haven't completed an episode yet
 	strcpy (name, Cmd_Argv(1));
-#ifdef QUAKE2
 	SV_SpawnServer (name, NULL);
-#else
-	SV_SpawnServer (name);
-#endif
 	if (!sv.active)
 		return;
 	
@@ -310,7 +306,6 @@ Goes to a new map, taking all clients along
 */
 void Host_Changelevel_f (void)
 {
-#ifdef QUAKE2
 	char	level[MAX_QPATH];
 	char	_startspot[MAX_QPATH];
 	char	*startspot;
@@ -328,7 +323,9 @@ void Host_Changelevel_f (void)
 
 	strcpy (level, Cmd_Argv(1));
 	if (Cmd_Argc() == 2)
+	{
 		startspot = NULL;
+	}
 	else
 	{
 		strcpy (_startspot, Cmd_Argv(2));
@@ -337,23 +334,6 @@ void Host_Changelevel_f (void)
 
 	SV_SaveSpawnparms ();
 	SV_SpawnServer (level, startspot);
-#else
-	char	level[MAX_QPATH];
-
-	if (Cmd_Argc() != 2)
-	{
-		Con_Printf ("changelevel <levelname> : continue game on a new level\n");
-		return;
-	}
-	if (!sv.active || cls.demoplayback)
-	{
-		Con_Printf ("Only the server may changelevel\n");
-		return;
-	}
-	SV_SaveSpawnparms ();
-	strcpy (level, Cmd_Argv(1));
-	SV_SpawnServer (level);
-#endif
 }
 
 /*
@@ -366,9 +346,7 @@ Restarts the current server for a dead player
 void Host_Restart_f (void)
 {
 	char	mapname[MAX_QPATH];
-#ifdef QUAKE2
 	char	startspot[MAX_QPATH];
-#endif
 
 	if (cls.demoplayback || !sv.active)
 		return;
@@ -377,12 +355,8 @@ void Host_Restart_f (void)
 		return;
 	strcpy (mapname, sv.name);	// must copy out, because it gets cleared
 								// in sv_spawnserver
-#ifdef QUAKE2
 	strcpy(startspot, sv.startspot);
 	SV_SpawnServer (mapname, startspot);
-#else
-	SV_SpawnServer (mapname);
-#endif
 }
 
 /*
@@ -612,22 +586,17 @@ void Host_Loadgame_f (void)
 	current_skill = (int)(tfloat + 0.1);
 	Cvar_SetValue ("skill", (float)current_skill);
 
-#ifdef QUAKE2
 	Cvar_SetValue ("deathmatch", 0);
 	Cvar_SetValue ("coop", 0);
 	Cvar_SetValue ("teamplay", 0);
-#endif
 
 	fscanf (f, "%s\n",mapname);
 	fscanf (f, "%f\n",&time);
 
 	CL_Disconnect_f ();
 	
-#ifdef QUAKE2
 	SV_SpawnServer (mapname, NULL);
-#else
-	SV_SpawnServer (mapname);
-#endif
+
 	if (!sv.active)
 	{
 		Con_Printf ("Couldn't load map\n");
@@ -706,7 +675,6 @@ void Host_Loadgame_f (void)
 	}
 }
 
-#ifdef QUAKE2
 void SaveGamestate()
 {
 	char	name[256];
@@ -897,7 +865,6 @@ void Host_Changelevel2_f (void)
 	if (LoadGamestate (level, startspot))
 		SV_SpawnServer (level, startspot);
 }
-#endif
 
 
 //============================================================================
@@ -951,58 +918,6 @@ void Host_Version_f (void)
 	Con_Printf ("Version "QUAKE_VERSION"\n");
 	Con_Printf ("Exe: "__TIME__" "__DATE__"\n");
 }
-
-#ifdef IDGODS
-void Host_Please_f (void)
-{
-	client_t *cl;
-	int			j;
-	
-	if (cmd_source != src_command)
-		return;
-
-	if ((Cmd_Argc () == 3) && Q_strcmp(Cmd_Argv(1), "#") == 0)
-	{
-		j = Q_atof(Cmd_Argv(2)) - 1;
-		if (j < 0 || j >= svs.maxclients)
-			return;
-		if (!svs.clients[j].active)
-			return;
-		cl = &svs.clients[j];
-		if (cl->privileged)
-		{
-			cl->privileged = false;
-			cl->edict->v.flags = (int)cl->edict->v.flags & ~(FL_GODMODE|FL_NOTARGET);
-			cl->edict->v.movetype = MOVETYPE_WALK;
-			noclip_anglehack = false;
-		}
-		else
-			cl->privileged = true;
-	}
-
-	if (Cmd_Argc () != 2)
-		return;
-
-	for (j=0, cl = svs.clients ; j<svs.maxclients ; j++, cl++)
-	{
-		if (!cl->active)
-			continue;
-		if (Q_strcasecmp(cl->name, Cmd_Argv(1)) == 0)
-		{
-			if (cl->privileged)
-			{
-				cl->privileged = false;
-				cl->edict->v.flags = (int)cl->edict->v.flags & ~(FL_GODMODE|FL_NOTARGET);
-				cl->edict->v.movetype = MOVETYPE_WALK;
-				noclip_anglehack = false;
-			}
-			else
-				cl->privileged = true;
-			break;
-		}
-	}
-}
-#endif
 
 
 void Host_Say(qboolean teamonly)
@@ -1892,17 +1807,12 @@ void Host_InitCommands (void)
 	Cmd_AddCommand ("map", Host_Map_f);
 	Cmd_AddCommand ("restart", Host_Restart_f);
 	Cmd_AddCommand ("changelevel", Host_Changelevel_f);
-#ifdef QUAKE2
 	Cmd_AddCommand ("changelevel2", Host_Changelevel2_f);
-#endif
 	Cmd_AddCommand ("connect", Host_Connect_f);
 	Cmd_AddCommand ("reconnect", Host_Reconnect_f);
 	Cmd_AddCommand ("name", Host_Name_f);
 	Cmd_AddCommand ("noclip", Host_Noclip_f);
 	Cmd_AddCommand ("version", Host_Version_f);
-#ifdef IDGODS
-	Cmd_AddCommand ("please", Host_Please_f);
-#endif
 	Cmd_AddCommand ("say", Host_Say_f);
 	Cmd_AddCommand ("say_team", Host_Say_Team_f);
 	Cmd_AddCommand ("tell", Host_Tell_f);
