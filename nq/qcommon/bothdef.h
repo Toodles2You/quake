@@ -29,6 +29,8 @@ enum
 #define MAX_MSGLEN 8000   // max length of a reliable message
 #define MAX_DATAGRAM 1024 // max length of unreliable message
 
+#define	MAXPRINTMSG	4096
+
 //===========================================
 // per-level limits
 
@@ -194,7 +196,7 @@ enum
 #include "../qcommon/protocol.h"
 #include "../qcommon/cmd.h"
 #include "../qcommon/crc.h"
-#include "../qcommon/model.h"
+#include "../qcommon/cmodel.h"
 #include "../qcommon/host.h"
 
 #endif /* !_BOTHDEF_H */

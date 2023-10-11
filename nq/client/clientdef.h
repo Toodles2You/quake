@@ -20,6 +20,7 @@
 #include "view.h"
 #include "menu.h"
 #include "cdaudio.h"
+#include "gl_model.h"
 #include "glquake.h"
 
 extern bool noclip_anglehack;

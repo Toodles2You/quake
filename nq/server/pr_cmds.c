@@ -235,7 +235,7 @@ void PF_setmodel ()
 {
 	edict_t	*e;
 	char	*m, **check;
-	model_t	*mod;
+	cmodel_t	*mod;
 	int		i;
 
 	e = G_EDICT(OFS_PARM0);
@@ -253,7 +253,7 @@ void PF_setmodel ()
 	e->v.model = PR_SetString(m);
 	e->v.modelindex = i; //SV_ModelIndex (m);
 
-	mod = sv.models[ (int)e->v.modelindex];  // Mod_ForName (m, true);
+	mod = sv.models[ (int)e->v.modelindex];  // CMod_ForName (m, true);
 	
 	if (mod)
 		SetMinMaxSize (e, mod->mins, mod->maxs, true);
@@ -658,7 +658,7 @@ int PF_newcheckclient (int check)
 	int		i;
 	byte	*pvs;
 	edict_t	*ent;
-	mleaf_t	*leaf;
+	cleaf_t	*leaf;
 	vec3_t	org;
 
 // cycle to the next one
@@ -696,8 +696,8 @@ int PF_newcheckclient (int check)
 
 // get the PVS for the entity
 	VectorAdd (ent->v.origin, ent->v.view_ofs, org);
-	leaf = Mod_PointInLeaf (org, sv.worldmodel);
-	pvs = Mod_LeafPVS (leaf, sv.worldmodel);
+	leaf = CMod_PointInLeaf (org, sv.worldmodel);
+	pvs = CMod_LeafPVS (leaf, sv.worldmodel);
 	memcpy (checkpvs, pvs, (sv.worldmodel->numleafs+7)>>3 );
 
 	return i;
@@ -723,7 +723,7 @@ int c_invis, c_notvis;
 void PF_checkclient ()
 {
 	edict_t	*ent, *self;
-	mleaf_t	*leaf;
+	cleaf_t	*leaf;
 	int		l;
 	vec3_t	view;
 	
@@ -745,7 +745,7 @@ void PF_checkclient ()
 // if current entity can't possibly see the check entity, return 0
 	self = PROG_TO_EDICT(pr_global_struct->self);
 	VectorAdd (self->v.origin, self->v.view_ofs, view);
-	leaf = Mod_PointInLeaf (view, sv.worldmodel);
+	leaf = CMod_PointInLeaf (view, sv.worldmodel);
 	l = (leaf - sv.worldmodel->leafs) - 1;
 	if ( (l<0) || !(checkpvs[l>>3] & (1<<(l&7)) ) )
 	{
@@ -1018,7 +1018,7 @@ void PF_precache_model ()
 		if (!sv.model_precache[i])
 		{
 			sv.model_precache[i] = s;
-			sv.models[i] = Mod_ForName (s, true, false);
+			sv.models[i] = CMod_ForName (s, true, false);
 			return;
 		}
 		if (!strcmp(sv.model_precache[i], s))

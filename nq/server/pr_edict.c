@@ -961,7 +961,7 @@ void ED_LoadFromFile (char *data)
 
 		if (!func)
 		{
-			Con_SafePrintf(
+			Con_Printf(
 				"No spawn function for EDICT %i: \"%s\"\n",
 				NUM_FOR_EDICT(ent),
 				PR_GetString(ent->v.classname)

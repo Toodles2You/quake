@@ -1230,6 +1230,8 @@ void R_DrawBrushModel (entity_t *e)
 
 // calculate dynamic lighting for bmodel if it's not an
 // instanced model
+	/*! Toodles FIXME: */
+#if 0
 	if (clmodel->firstmodelsurface != 0 && gl_flashblend.value == 0)
 	{
 		for (k=0 ; k<MAX_DLIGHTS ; k++)
@@ -1239,9 +1241,10 @@ void R_DrawBrushModel (entity_t *e)
 				continue;
 
 			R_MarkLights (&cl_dlights[k], 1<<k,
-				clmodel->nodes + clmodel->hulls[0].firstclipnode);
+				clmodel->nodes + clmodel->hulls[HULL_POINT].firstclipnode);
 		}
 	}
+#endif
 
     glPushMatrix ();
 e->angles[0] = -e->angles[0];	// stupid quake bug
@@ -1481,7 +1484,7 @@ void R_MarkLeaves ()
 		memset (solid, 0xff, (cl.worldmodel->numleafs+7)>>3);
 	}
 	else
-		vis = Mod_LeafPVS (r_viewleaf, cl.worldmodel);
+		vis = CMod_LeafPVS (r_viewleaf, cl.worldcmodel);
 		
 	for (i=0 ; i<cl.worldmodel->numleafs ; i++)
 	{

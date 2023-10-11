@@ -917,7 +917,7 @@ void Host_Name_f ()
 void Host_Version_f ()
 {
 	Con_Printf ("Version "QUAKE_VERSION"\n");
-	Con_Printf ("Exe: "__TIME__" "__DATE__"\n");
+	Con_Printf ("Build: "__TIME__" "__DATE__"\n");
 }
 
 

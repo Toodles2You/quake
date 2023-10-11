@@ -2,9 +2,7 @@
 #ifndef _MODEL_H
 #define _MODEL_H
 
-#include "bspfile.h"
-#include "modelgen.h"
-#include "spritegn.h"
+#include "../qcommon/cmodel.h"
 
 /*
 
@@ -29,23 +27,6 @@ typedef struct
 {
 	vec3_t position;
 } mvertex_t;
-
-enum
-{
-	SIDE_FRONT = 0,
-	SIDE_BACK,
-	SIDE_ON,
-};
-
-// plane_t structure
-typedef struct mplane_s
-{
-	vec3_t normal;
-	float dist;
-	byte type;	   // for texture axis selection and fast side tests
-	byte signbits; // signx + signy<<1 + signz<<1
-	byte pad[2];
-} mplane_t;
 
 typedef struct texture_s
 {
@@ -83,7 +64,6 @@ typedef struct
 typedef struct
 {
 	float vecs[2][4];
-	float mipadjust;
 	texture_t *texture;
 	int flags;
 } mtexinfo_t;
@@ -159,27 +139,12 @@ typedef struct mleaf_s
 	struct mnode_s *parent;
 
 	// leaf specific
-	byte *compressed_vis;
 	efrag_t *efrags;
 
 	msurface_t **firstmarksurface;
 	int nummarksurfaces;
-	int key; // BSP sequence number for leaf's contents
 	byte ambient_sound_level[NUM_AMBIENTS];
 } mleaf_t;
-
-typedef struct
-{
-	dclipnode_t *clipnodes;
-	mplane_t *planes;
-	int firstclipnode;
-	int lastclipnode;
-	vec3_t clip_mins;
-	vec3_t clip_maxs;
-} hull_t;
-
-extern const vec3_t hull_sizes[MAX_MAP_HULLS][2];
-extern const vec3_t quake_hull_sizes[MAX_MAP_HULLS][2];
 
 /*
 ==============================================================================
@@ -312,13 +277,6 @@ extern trivertx_t *poseverts[MAXALIASFRAMES];
 // Whole model
 //
 
-typedef enum
-{
-	mod_brush,
-	mod_sprite,
-	mod_alias
-} modtype_t;
-
 enum
 {
 	EF_ROCKET	 = 1 << 0, // leave a trail
@@ -340,19 +298,10 @@ typedef struct model_s
 	int numframes;
 	synctype_t synctype;
 
-	int flags;
-
-	//
-	// volume occupied by the model graphics
-	//
 	vec3_t mins, maxs;
 	float radius;
 
-	//
-	// solid volume for clipping
-	//
-	bool clipbox;
-	vec3_t clipmins, clipmaxs;
+	int flags;
 
 	//
 	// brush model
@@ -388,20 +337,13 @@ typedef struct model_s
 	int numsurfedges;
 	int *surfedges;
 
-	int numclipnodes;
-	dclipnode_t *clipnodes;
-
 	int nummarksurfaces;
 	msurface_t **marksurfaces;
-
-	hull_t hulls[MAX_MAP_HULLS];
 
 	int numtextures;
 	texture_t **textures;
 
-	byte *visdata;
 	byte *lightdata;
-	char *entities;
 
 	//
 	// additional model data
@@ -418,8 +360,5 @@ void Mod_ClearAll();
 model_t *Mod_ForName(char *name, bool crash, bool world);
 void *Mod_Extradata(model_t *mod); // handles caching
 void Mod_TouchModel(char *name);
-
-mleaf_t *Mod_PointInLeaf(float *p, model_t *model);
-byte *Mod_LeafPVS(mleaf_t *leaf, model_t *model);
 
 #endif /* !_MODEL_H */

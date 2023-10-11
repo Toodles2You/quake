@@ -127,7 +127,7 @@ testing object's origin to get a point to use with the returned hull.
 */
 hull_t *SV_HullForEntity (edict_t *ent, vec3_t mins, vec3_t maxs, vec3_t offset)
 {
-	model_t		*model;
+	cmodel_t	*model;
 	vec3_t		size;
 	vec3_t		hullmins, hullmaxs;
 	hull_t		*hull;
@@ -145,11 +145,11 @@ hull_t *SV_HullForEntity (edict_t *ent, vec3_t mins, vec3_t maxs, vec3_t offset)
 
 		VectorSubtract (maxs, mins, size);
 		if (size[0] < 3)
-			hull = &model->hulls[0];
+			hull = &model->hulls[HULL_POINT];
 		else if (size[0] <= 32)
-			hull = &model->hulls[1];
+			hull = &model->hulls[HULL_STAND];
 		else
-			hull = &model->hulls[2];
+			hull = &model->hulls[HULL_LARGE];
 
 // calculate an offset value to center the origin
 		VectorSubtract (hull->clip_mins, mins, offset);
@@ -324,10 +324,10 @@ SV_FindTouchedLeafs
 
 ===============
 */
-void SV_FindTouchedLeafs (edict_t *ent, mnode_t *node)
+void SV_FindTouchedLeafs (edict_t *ent, cnode_t *node)
 {
 	mplane_t	*splitplane;
-	mleaf_t		*leaf;
+	cleaf_t		*leaf;
 	int			sides;
 	int			leafnum;
 
@@ -341,7 +341,7 @@ void SV_FindTouchedLeafs (edict_t *ent, mnode_t *node)
 		if (ent->num_leafs == MAX_ENT_LEAFS)
 			return;
 
-		leaf = (mleaf_t *)node;
+		leaf = (cleaf_t *)node;
 		leafnum = leaf - sv.worldmodel->leafs - 1;
 
 		ent->leafnums[ent->num_leafs] = leafnum;
@@ -520,7 +520,7 @@ int SV_PointContents (vec3_t p)
 {
 	int		cont;
 
-	cont = SV_HullPointContents (&sv.worldmodel->hulls[0], 0, p);
+	cont = SV_HullPointContents (&sv.worldmodel->hulls[HULL_POINT], 0, p);
 	if (cont <= CONTENTS_CURRENT_0 && cont >= CONTENTS_CURRENT_DOWN)
 		cont = CONTENTS_WATER;
 	return cont;
@@ -528,7 +528,7 @@ int SV_PointContents (vec3_t p)
 
 int SV_TruePointContents (vec3_t p)
 {
-	return SV_HullPointContents (&sv.worldmodel->hulls[0], 0, p);
+	return SV_HullPointContents (&sv.worldmodel->hulls[HULL_POINT], 0, p);
 }
 
 //===========================================================================

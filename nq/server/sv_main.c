@@ -191,7 +191,7 @@ void SV_SendServerinfo (client_t *client)
 	char			message[2048];
 
 	MSG_WriteByte (&client->message, svc_print);
-	sprintf (message, "%c\nVERSION "QUAKE_VERSION" SERVER (%i CRC)", 2, pr_crc);
+	sprintf (message, "%c\nVERSION "QUAKE_VERSION" SERVER (%i CRC)\n", 2, pr_crc);
 	MSG_WriteString (&client->message,message);
 
 	MSG_WriteByte (&client->message, svc_serverinfo);
@@ -358,7 +358,7 @@ crosses a waterline.
 int		fatbytes;
 byte	fatpvs[MAX_MAP_LEAFS/8];
 
-void SV_AddToFatPVS (vec3_t org, mnode_t *node)
+void SV_AddToFatPVS (vec3_t org, cnode_t *node)
 {
 	int		i;
 	byte	*pvs;
@@ -372,7 +372,7 @@ void SV_AddToFatPVS (vec3_t org, mnode_t *node)
 		{
 			if (node->contents != CONTENTS_SOLID)
 			{
-				pvs = Mod_LeafPVS ( (mleaf_t *)node, sv.worldmodel);
+				pvs = CMod_LeafPVS ( (cleaf_t *)node, sv.worldmodel);
 				for (i=0 ; i<fatbytes ; i++)
 					fatpvs[i] |= pvs[i];
 			}
@@ -1021,7 +1021,6 @@ SV_SpawnServer
 This is called at the start of each level
 ================
 */
-extern float		scr_centertime_off;
 
 void SV_SpawnServer (char *server, char *startspot)
 {
@@ -1030,8 +1029,9 @@ void SV_SpawnServer (char *server, char *startspot)
 
 	// let's not have any servers with no name
 	if (hostname.string[0] == 0)
+	{
 		Cvar_Set ("hostname", "UNNAMED");
-	scr_centertime_off = 0;
+	}
 
 	Con_DPrintf ("SpawnServer: %s\n",server);
 	svs.changelevel_issued = false;		// now safe to issue another
@@ -1103,7 +1103,7 @@ void SV_SpawnServer (char *server, char *startspot)
 	
 	strcpy (sv.name, server);
 	sprintf (sv.modelname,"maps/%s.bsp", server);
-	sv.worldmodel = Mod_ForName (sv.modelname, false, true);
+	sv.worldmodel = CMod_ForName (sv.modelname, false, true);
 	if (!sv.worldmodel)
 	{
 		Con_Printf ("Couldn't spawn server %s\n", sv.modelname);
@@ -1124,7 +1124,7 @@ void SV_SpawnServer (char *server, char *startspot)
 	for (i=1 ; i<sv.worldmodel->numsubmodels ; i++)
 	{
 		sv.model_precache[1+i] = localmodels[i];
-		sv.models[i+1] = Mod_ForName (localmodels[i], false, false);
+		sv.models[i+1] = CMod_ForName (localmodels[i], false, false);
 	}
 
 //

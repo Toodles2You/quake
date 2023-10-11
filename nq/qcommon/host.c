@@ -474,6 +474,7 @@ not reinitialize anything.
 void Host_ClearMemory ()
 {
 	Con_DPrintf ("Clearing memory\n");
+	CMod_ClearAll ();
 	Mod_ClearAll ();
 	if (host_hunklevel)
 		Hunk_FreeToLowMark (host_hunklevel);
@@ -869,11 +870,12 @@ void Host_Init (quakeparms_t *parms)
 	Con_Init ();	
 	M_Init ();	
 	PR_Init ();
+	CMod_Init ();
 	Mod_Init ();
 	NET_Init ();
 	SV_Init ();
 
-	Con_Printf ("Exe: "__TIME__" "__DATE__"\n");
+	Con_Printf ("Build: "__TIME__" "__DATE__"\n");
 	Con_Printf ("%4.1f megabyte heap\n",parms->memsize/ (1024*1024.0));
 	
 	R_InitTextures ();		// needed even for dedicated servers

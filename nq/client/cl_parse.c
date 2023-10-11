@@ -292,6 +292,10 @@ void CL_ParseServerInfo ()
 			Con_Printf("Model %s not found\n", model_precache[i]);
 			return;
 		}
+		if (i == 1)
+		{
+			cl.worldcmodel = CMod_ForName (model_precache[i], false, true);
+		}
 		CL_KeepaliveMessage ();
 	}
 
