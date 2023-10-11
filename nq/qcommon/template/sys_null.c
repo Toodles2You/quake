@@ -1,4 +1,4 @@
-#include "quakedef.h"
+#include "bothdef.h"
 #include "errno.h"
 
 /*
@@ -12,7 +12,7 @@ FILE IO
 #define MAX_HANDLES             10
 FILE    *sys_handles[MAX_HANDLES];
 
-int             findhandle (void)
+int             findhandle ()
 {
 	int             i;
 	
@@ -150,12 +150,12 @@ void Sys_Printf (char *fmt, ...)
 	va_end (argptr);
 }
 
-void Sys_Quit (void)
+void Sys_Quit ()
 {
 	exit (0);
 }
 
-double Sys_FloatTime (void)
+double Sys_FloatTime ()
 {
 	static double t;
 	
@@ -164,24 +164,24 @@ double Sys_FloatTime (void)
 	return t;
 }
 
-char *Sys_ConsoleInput (void)
+char *Sys_ConsoleInput ()
 {
 	return NULL;
 }
 
-void Sys_Sleep (void)
+void Sys_Sleep ()
 {
 }
 
-void Sys_SendKeyEvents (void)
+void Sys_SendKeyEvents ()
 {
 }
 
-void Sys_HighFPPrecision (void)
+void Sys_HighFPPrecision ()
 {
 }
 
-void Sys_LowFPPrecision (void)
+void Sys_LowFPPrecision ()
 {
 }
 

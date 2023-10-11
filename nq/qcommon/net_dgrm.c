@@ -43,7 +43,8 @@ char *inet_ntoa(struct in_addr in);
 unsigned long inet_addr(const char *cp);
 #endif
 
-#include "quakedef.h"
+#include "../client/clientdef.h"
+#include "../server/serverdef.h"
 #include "net_dgrm.h"
 
 // these two macros are to make the code more readable
@@ -71,7 +72,7 @@ struct
 
 extern int m_return_state;
 extern int m_state;
-extern qboolean m_return_onerror;
+extern bool m_return_onerror;
 extern char m_return_reason[32];
 
 
@@ -92,7 +93,7 @@ char *StrAddr (struct qsockaddr *addr)
 unsigned long banAddr = 0x00000000;
 unsigned long banMask = 0xffffffff;
 
-void NET_Ban_f (void)
+void NET_Ban_f ()
 {
 	char	addrStr [32];
 	char	maskStr [32];
@@ -100,7 +101,7 @@ void NET_Ban_f (void)
 
 	if (cmd_source == src_command)
 	{
-		if (!sv.active)
+		if (!Host_IsLocalGame ())
 		{
 			Cmd_ForwardToServer ();
 			return;
@@ -260,7 +261,7 @@ int ReSendMessage (qsocket_t *sock)
 }
 
 
-qboolean Datagram_CanSendMessage (qsocket_t *sock)
+bool Datagram_CanSendMessage (qsocket_t *sock)
 {
 	if (sock->sendNext)
 		SendMessageNext (sock);
@@ -269,7 +270,7 @@ qboolean Datagram_CanSendMessage (qsocket_t *sock)
 }
 
 
-qboolean Datagram_CanSendUnreliableMessage (qsocket_t *sock)
+bool Datagram_CanSendUnreliableMessage (qsocket_t *sock)
 {
 	return true;
 }
@@ -460,7 +461,7 @@ void PrintStats(qsocket_t *s)
 	Con_Printf("\n");
 }
 
-void NET_Stats_f (void)
+void NET_Stats_f ()
 {
 	qsocket_t	*s;
 
@@ -500,7 +501,7 @@ void NET_Stats_f (void)
 }
 
 
-int Datagram_Init (void)
+int Datagram_Init ()
 {
 	int i;
 	int csock;
@@ -526,7 +527,7 @@ int Datagram_Init (void)
 }
 
 
-void Datagram_Shutdown (void)
+void Datagram_Shutdown ()
 {
 	int i;
 
@@ -550,7 +551,7 @@ void Datagram_Close (qsocket_t *sock)
 }
 
 
-void Datagram_Listen (qboolean state)
+void Datagram_Listen (bool state)
 {
 	int i;
 
@@ -560,7 +561,7 @@ void Datagram_Listen (qboolean state)
 }
 
 
-static qsocket_t *_Datagram_CheckNewConnections (void)
+static qsocket_t *_Datagram_CheckNewConnections ()
 {
 	struct qsockaddr clientaddr;
 	struct qsockaddr newaddr;
@@ -819,7 +820,7 @@ static qsocket_t *_Datagram_CheckNewConnections (void)
 	return sock;
 }
 
-qsocket_t *Datagram_CheckNewConnections (void)
+qsocket_t *Datagram_CheckNewConnections ()
 {
 	qsocket_t *ret = NULL;
 
@@ -831,7 +832,7 @@ qsocket_t *Datagram_CheckNewConnections (void)
 }
 
 
-static void _Datagram_SearchForHosts (qboolean xmit)
+static void _Datagram_SearchForHosts (bool xmit)
 {
 	int		ret;
 	int		n;
@@ -930,7 +931,7 @@ static void _Datagram_SearchForHosts (qboolean xmit)
 	}
 }
 
-void Datagram_SearchForHosts (qboolean xmit)
+void Datagram_SearchForHosts (bool xmit)
 {
 	for (net_landriverlevel = 0; net_landriverlevel < net_numlandrivers; net_landriverlevel++)
 	{

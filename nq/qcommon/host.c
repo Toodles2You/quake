@@ -18,7 +18,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "../client/clientdef.h"
+#include "../server/serverdef.h"
 
 /*
 
@@ -33,7 +34,7 @@ Memory is cleared / released when a server or client begins, not when they end.
 
 quakeparms_t host_parms;
 
-qboolean	host_initialized;		// true if into command execution
+bool	host_initialized;		// true if into command execution
 
 double		host_frametime;
 double		host_time;
@@ -94,7 +95,7 @@ void Host_EndGame (char *message, ...)
 	va_end (argptr);
 	Con_DPrintf ("Host_EndGame: %s\n",string);
 	
-	if (sv.active)
+	if (Host_IsLocalGame ())
 		Host_ShutdownServer (false);
 
 	if (cls.state == ca_dedicated)
@@ -119,7 +120,7 @@ void Host_Error (char *error, ...)
 {
 	va_list		argptr;
 	char		string[1024];
-	static	qboolean inerror = false;
+	static	bool inerror = false;
 	
 	if (inerror)
 		Sys_Error ("Host_Error: recursively entered");
@@ -132,7 +133,7 @@ void Host_Error (char *error, ...)
 	va_end (argptr);
 	Con_Printf ("Host_Error: %s\n",string);
 	
-	if (sv.active)
+	if (Host_IsLocalGame ())
 		Host_ShutdownServer (false);
 
 	if (cls.state == ca_dedicated)
@@ -151,7 +152,7 @@ void Host_Error (char *error, ...)
 Host_FindMaxClients
 ================
 */
-void	Host_FindMaxClients (void)
+void	Host_FindMaxClients ()
 {
 	int		i;
 
@@ -203,7 +204,7 @@ void	Host_FindMaxClients (void)
 Host_InitLocal
 ======================
 */
-void Host_InitLocal (void)
+void Host_InitLocal ()
 {
 	Host_InitCommands ();
 	
@@ -239,13 +240,13 @@ Host_WriteConfiguration
 Writes key bindings and archived cvars to config.cfg
 ===============
 */
-void Host_WriteConfiguration (void)
+void Host_WriteConfiguration ()
 {
 	FILE	*f;
 
 // dedicated servers initialize the host but don't parse and set the
 // config.cfg cvars
-	if (host_initialized & !isDedicated)
+	if (host_initialized & cls.state != ca_dedicated)
 	{
 		f = fopen (va("%s/config.cfg",com_gamedir), "w");
 		if (!f)
@@ -336,7 +337,7 @@ Called when the player is getting totally kicked off the host
 if (crash = true), don't bother sending signofs
 =====================
 */
-void SV_DropClient (qboolean crash)
+void SV_DropClient (bool crash)
 {
 	int		saveSelf;
 	int		i;
@@ -398,7 +399,7 @@ Host_ShutdownServer
 This only happens at the end of a game, not between levels
 ==================
 */
-void Host_ShutdownServer(qboolean crash)
+void Host_ShutdownServer(bool crash)
 {
 	int		i;
 	int		count;
@@ -406,7 +407,7 @@ void Host_ShutdownServer(qboolean crash)
 	char		message[4];
 	double	start;
 
-	if (!sv.active)
+	if (!Host_IsLocalGame ())
 		return;
 
 	sv.active = false;
@@ -470,10 +471,9 @@ This clears all the memory used by both the client and server, but does
 not reinitialize anything.
 ================
 */
-void Host_ClearMemory (void)
+void Host_ClearMemory ()
 {
 	Con_DPrintf ("Clearing memory\n");
-	D_FlushCaches ();
 	Mod_ClearAll ();
 	if (host_hunklevel)
 		Hunk_FreeToLowMark (host_hunklevel);
@@ -494,7 +494,7 @@ Host_FilterTime
 Returns false if the time is too short to run a frame
 ===================
 */
-qboolean Host_FilterTime (float time)
+bool Host_FilterTime (float time)
 {
 	realtime += time;
 
@@ -534,7 +534,7 @@ Host_GetConsoleCommands
 Add them exactly as if they had been typed at the console
 ===================
 */
-void Host_GetConsoleCommands (void)
+void Host_GetConsoleCommands ()
 {
 	char	*cmd;
 
@@ -556,7 +556,7 @@ Host_ServerFrame
 */
 #ifdef FPS_20
 
-void _Host_ServerFrame (void)
+void _Host_ServerFrame ()
 {
 // run the world state	
 	pr_global_struct->frametime = host_frametime;
@@ -570,7 +570,7 @@ void _Host_ServerFrame (void)
 		SV_Physics ();
 }
 
-void Host_ServerFrame (void)
+void Host_ServerFrame ()
 {
 	float	save_host_frametime;
 	float	temp_host_frametime;
@@ -602,7 +602,7 @@ void Host_ServerFrame (void)
 
 #else
 
-void Host_ServerFrame (void)
+void Host_ServerFrame ()
 {
 // run the world state	
 	pr_global_struct->frametime = host_frametime;
@@ -664,7 +664,7 @@ void _Host_Frame (float time)
 	NET_Poll();
 
 // if running the server locally, make intentions now
-	if (sv.active)
+	if (Host_IsLocalGame ())
 		CL_SendCmd ();
 	
 //-------------------
@@ -676,7 +676,7 @@ void _Host_Frame (float time)
 // check for commands typed to the host
 	Host_GetConsoleCommands ();
 	
-	if (sv.active)
+	if (Host_IsLocalGame ())
 		Host_ServerFrame ();
 
 //-------------------
@@ -687,7 +687,7 @@ void _Host_Frame (float time)
 
 // if running the server remotely, send intentions now after
 // the incoming messages have been read
-	if (!sv.active)
+	if (!Host_IsLocalGame ())
 		CL_SendCmd ();
 
 	host_time += host_frametime;
@@ -917,9 +917,9 @@ FIXME: this is a callback from Sys_Quit and Sys_Error.  It would be better
 to run quit through here before the final handoff to the sys code.
 ===============
 */
-void Host_Shutdown(void)
+void Host_Shutdown()
 {
-	static qboolean isdown = false;
+	static bool isdown = false;
 	
 	if (isdown)
 	{
@@ -942,5 +942,15 @@ void Host_Shutdown(void)
 	{
 		VID_Shutdown();
 	}
+}
+
+bool Host_IsLocalGame()
+{
+	return sv.active;
+}
+
+bool Host_IsLocalClient()
+{
+	return Host_IsLocalGame () && cls.state != ca_dedicated;
 }
 

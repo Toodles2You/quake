@@ -18,8 +18,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "bothdef.h"
 
+#define MAX_NUM_ARGVS	50
 #define NUM_SAFE_ARGVS  7
 
 static char     *largv[MAX_NUM_ARGVS + NUM_SAFE_ARGVS + 1];
@@ -31,15 +32,13 @@ static char     *safeargvs[NUM_SAFE_ARGVS] =
 cvar_t  registered = {"registered","0"};
 cvar_t  cmdline = {"cmdline","0", false, true};
 
-qboolean        com_modified;   // set true if using non-id files
+bool        com_modified;   // set true if using non-id files
 
-qboolean		proghack;
+bool		proghack;
 
 int             static_registered = 1;  // only for startup check, then set
 
-qboolean		msg_suppress_1 = 0;
-
-void COM_InitFilesystem (void);
+void COM_InitFilesystem ();
 
 // if a packfile directory differs from this, it is assumed to be hacked
 #define PAK0_COUNT              339
@@ -52,7 +51,7 @@ char	**com_argv;
 #define CMDLINE_LENGTH	256
 char	com_cmdline[CMDLINE_LENGTH];
 
-qboolean		standard_quake = true, rogue, hipnotic;
+bool		standard_quake = true, rogue, hipnotic;
 
 // this graphic needs to be in the pak file to use registered features
 unsigned short pop[] =
@@ -473,7 +472,7 @@ float Q_atof (char *str)
 ============================================================================
 */
 
-qboolean        bigendien;
+bool        bigendien;
 
 short   (*BigShort) (short l);
 short   (*LittleShort) (short l);
@@ -637,16 +636,16 @@ void MSG_WriteAngle (sizebuf_t *sb, float f)
 // reading functions
 //
 int                     msg_readcount;
-qboolean        msg_badread;
+bool        msg_badread;
 
-void MSG_BeginReading (void)
+void MSG_BeginReading ()
 {
 	msg_readcount = 0;
 	msg_badread = false;
 }
 
 // returns -1 and sets msg_badread if no more characters are available
-int MSG_ReadChar (void)
+int MSG_ReadChar ()
 {
 	int     c;
 	
@@ -662,7 +661,7 @@ int MSG_ReadChar (void)
 	return c;
 }
 
-int MSG_ReadByte (void)
+int MSG_ReadByte ()
 {
 	int     c;
 	
@@ -678,7 +677,7 @@ int MSG_ReadByte (void)
 	return c;
 }
 
-int MSG_ReadShort (void)
+int MSG_ReadShort ()
 {
 	int     c;
 	
@@ -696,7 +695,7 @@ int MSG_ReadShort (void)
 	return c;
 }
 
-int MSG_ReadLong (void)
+int MSG_ReadLong ()
 {
 	int     c;
 	
@@ -716,7 +715,7 @@ int MSG_ReadLong (void)
 	return c;
 }
 
-float MSG_ReadFloat (void)
+float MSG_ReadFloat ()
 {
 	union
 	{
@@ -736,7 +735,7 @@ float MSG_ReadFloat (void)
 	return dat.f;   
 }
 
-char *MSG_ReadString (void)
+char *MSG_ReadString ()
 {
 	static char     string[2048];
 	int             l,c;
@@ -756,12 +755,12 @@ char *MSG_ReadString (void)
 	return string;
 }
 
-float MSG_ReadCoord (void)
+float MSG_ReadCoord ()
 {
 	return MSG_ReadShort() * (1.0/8);
 }
 
-float MSG_ReadAngle (void)
+float MSG_ReadAngle ()
 {
 	return MSG_ReadChar() * (360.0/256);
 }
@@ -1025,7 +1024,7 @@ skipwhite:
 COM_BeginReadPairs
 ===============
 */
-qboolean COM_BeginReadPairs (byte **data)
+bool COM_BeginReadPairs (byte **data)
 {
 	*data = COM_Parse(*data);
 
@@ -1043,7 +1042,7 @@ qboolean COM_BeginReadPairs (byte **data)
 COM_ReadPair
 ===============
 */
-qboolean COM_ReadPair (byte **data, char *key, char *value)
+bool COM_ReadPair (byte **data, char *key, char *value)
 {
 	*data = COM_Parse(*data);
 	
@@ -1115,7 +1114,7 @@ Immediately exits out if an alternate game was attempted to be started without
 being registered.
 ================
 */
-void COM_CheckRegistered (void)
+void COM_CheckRegistered ()
 {
 	int             h;
 	unsigned short  check[128];
@@ -1147,7 +1146,7 @@ void COM_CheckRegistered (void)
 }
 
 
-void COM_Path_f (void);
+void COM_Path_f ();
 
 
 /*
@@ -1157,7 +1156,7 @@ COM_InitArgv
 */
 void COM_InitArgv (int argc, char **argv)
 {
-	qboolean        safe;
+	bool        safe;
 	int             i, j, n;
 
 // reconstitute the command line for the cmdline externally visible cvar
@@ -1350,7 +1349,7 @@ COM_Path_f
 
 ============
 */
-void COM_Path_f (void)
+void COM_Path_f ()
 {
 	searchpath_t    *s;
 	
@@ -1824,7 +1823,7 @@ void COM_AddGameDirectory (char *dir)
 COM_InitFilesystem
 ================
 */
-void COM_InitFilesystem (void)
+void COM_InitFilesystem ()
 {
 	int             i, j;
 	char    basedir[MAX_OSPATH];

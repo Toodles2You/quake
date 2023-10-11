@@ -20,12 +20,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "clientdef.h"
 
 #include <SDL2/SDL.h>
 
-static qboolean snd_inited = false;
-static qboolean snd_locked = false;
+static bool snd_inited = false;
+static bool snd_locked = false;
 
 static int buffersize;
 static int samplesize;
@@ -149,7 +149,7 @@ static void SNDDMA_CheckParms(SDL_AudioSpec *desired)
     }
 }
 
-qboolean SNDDMA_Init()
+bool SNDDMA_Init()
 {
     if (snd_inited)
         return true;
@@ -227,7 +227,7 @@ qboolean SNDDMA_Init()
     return true;
 }
 
-qboolean SNDDMA_BeginPainting()
+bool SNDDMA_BeginPainting()
 {
     if (!snd_inited)
         return false;

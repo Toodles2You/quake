@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "serverdef.h"
 
 /*
 
@@ -64,7 +64,7 @@ Set up the planes and clipnodes so that the six floats of a bounding box
 can just be stored out and get a proper hull_t structure.
 ===================
 */
-void SV_InitBoxHull (void)
+void SV_InitBoxHull ()
 {
 	int		i;
 	int		side;
@@ -243,7 +243,7 @@ SV_ClearWorld
 
 ===============
 */
-void SV_ClearWorld (void)
+void SV_ClearWorld ()
 {
 	SV_InitBoxHull ();
 	
@@ -368,7 +368,7 @@ SV_LinkEdict
 
 ===============
 */
-void SV_LinkEdict (edict_t *ent, qboolean touch_triggers)
+void SV_LinkEdict (edict_t *ent, bool touch_triggers)
 {
 	areanode_t	*node;
 
@@ -570,7 +570,7 @@ SV_RecursiveHullCheck
 
 ==================
 */
-qboolean SV_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, vec3_t p1, vec3_t p2, trace_t *trace)
+bool SV_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, vec3_t p1, vec3_t p2, trace_t *trace)
 {
 	dclipnode_t	*node;
 	mplane_t	*plane;

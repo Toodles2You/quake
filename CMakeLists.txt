@@ -53,7 +53,7 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     endif()
 endif()
 
-set(QUAKE_DIRS include nq/qcommon nq/client nq/server)
+set(QUAKE_DIRS include)
 
 set(QUAKE_LIBRARIES m)
 
@@ -69,6 +69,7 @@ set(QCOMMON_SRC
     nq/qcommon/host_cmd.c
     nq/qcommon/host.c
     nq/qcommon/mathlib.c
+    nq/qcommon/model.c
     nq/qcommon/net_bsd.c
     nq/qcommon/net_dgrm.c
     nq/qcommon/net_loop.c
@@ -90,7 +91,6 @@ set(CLIENT_SRC
     nq/client/console.c
     nq/client/gl_draw.c
     nq/client/gl_mesh.c
-    nq/client/gl_model.c
     nq/client/gl_refrag.c
     nq/client/gl_rlight.c
     nq/client/gl_rmain.c

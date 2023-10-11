@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include <math.h>
-#include "quakedef.h"
+#include "bothdef.h"
 
 void Sys_Error (char *error, ...);
 
@@ -106,7 +106,7 @@ BOPS_Error
 Split out like this for ASM to call.
 ==================
 */
-void BOPS_Error (void)
+void BOPS_Error ()
 {
 	Sys_Error ("BoxOnPlaneSide:  Bad signbits");
 }

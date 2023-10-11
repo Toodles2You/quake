@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "clientdef.h"
 
 mnode_t	*r_pefragtopnode;
 

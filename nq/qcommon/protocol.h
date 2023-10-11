@@ -1,56 +1,68 @@
 
-#define	PROTOCOL_VERSION	15
+#ifndef _PROTOCOL_H
+#define _PROTOCOL_H
 
+#define PROTOCOL_VERSION 15
+
+enum
+{
 // if the high bit of the servercmd is set, the low bits are fast update flags:
-#define	U_MOREBITS	(1<<0)
-#define	U_ORIGIN1	(1<<1)
-#define	U_ORIGIN2	(1<<2)
-#define	U_ORIGIN3	(1<<3)
-#define	U_ANGLE2	(1<<4)
-#define	U_NOLERP	(1<<5)		// don't interpolate movement
-#define	U_FRAME		(1<<6)
-#define U_SIGNAL	(1<<7)		// just differentiates from other updates
+    U_MOREBITS      = 1 << 0,
+    U_ORIGIN1       = 1 << 1,
+    U_ORIGIN2       = 1 << 2,
+    U_ORIGIN3       = 1 << 3,
+    U_ANGLE2        = 1 << 4,
+    U_NOLERP        = 1 << 5, // don't interpolate movement
+    U_FRAME         = 1 << 6,
+    U_SIGNAL        = 1 << 7, // just differentiates from other updates
 
 // svc_update can pass all of the fast update bits, plus more
-#define	U_ANGLE1	(1<<8)
-#define	U_ANGLE3	(1<<9)
-#define	U_MODEL		(1<<10)
-#define	U_COLORMAP	(1<<11)
-#define	U_SKIN		(1<<12)
-#define	U_EFFECTS	(1<<13)
-#define	U_LONGENTITY	(1<<14)
+    U_ANGLE1        = 1 << 8,
+    U_ANGLE3        = 1 << 9,
+    U_MODEL         = 1 << 10,
+    U_COLORMAP      = 1 << 11,
+    U_SKIN          = 1 << 12,
+    U_EFFECTS       = 1 << 13,
+    U_LONGENTITY    = 1 << 14,
 
-
-#define	SU_VIEWHEIGHT	(1<<0)
-#define	SU_IDEALPITCH	(1<<1)
-#define	SU_PUNCH1		(1<<2)
-#define	SU_PUNCH2		(1<<3)
-#define	SU_PUNCH3		(1<<4)
-#define	SU_VELOCITY1	(1<<5)
-#define	SU_VELOCITY2	(1<<6)
-#define	SU_VELOCITY3	(1<<7)
-//define	SU_AIMENT		(1<<8)  AVAILABLE BIT
-#define	SU_ITEMS		(1<<9)
-#define	SU_ONGROUND		(1<<10)		// no data follows, the bit is it
-#define	SU_INWATER		(1<<11)		// no data follows, the bit is it
-#define	SU_WEAPONFRAME	(1<<12)
-#define	SU_ARMOR		(1<<13)
-#define	SU_WEAPON		(1<<14)
+    SU_VIEWHEIGHT   = 1 << 0,
+    SU_IDEALPITCH   = 1 << 1,
+    SU_PUNCH1       = 1 << 2,
+    SU_PUNCH2       = 1 << 3,
+    SU_PUNCH3       = 1 << 4,
+    SU_VELOCITY1    = 1 << 5,
+    SU_VELOCITY2    = 1 << 6,
+    SU_VELOCITY3    = 1 << 7,
+    SU_AIMENT       = 1 << 8,
+    SU_ITEMS        = 1 << 9,
+    SU_ONGROUND     = 1 << 10, // no data follows, the bit is it
+    SU_INWATER      = 1 << 11, // no data follows, the bit is it
+    SU_WEAPONFRAME  = 1 << 12,
+    SU_ARMOR        = 1 << 13,
+    SU_WEAPON       = 1 << 14,
+};
 
 // a sound with no channel is a local only sound
-#define	SND_VOLUME		(1<<0)		// a byte
-#define	SND_ATTENUATION	(1<<1)		// a byte
-#define	SND_LOOPING		(1<<2)		// a long
+enum
+{
+    SND_VOLUME      = 1 << 0, // a byte
+    SND_ATTENUATION = 1 << 1, // a byte
+    SND_LOOPING     = 1 << 2, // a long
+};
 
+#define DEFAULT_SOUND_PACKET_VOLUME 255
+#define DEFAULT_SOUND_PACKET_ATTENUATION 1.0
 
 // defaults for clientinfo messages
-#define	DEFAULT_VIEWHEIGHT	22
-
+#define DEFAULT_VIEWHEIGHT 22
 
 // game types sent by serverinfo
 // these determine which intermission screen plays
-#define	GAME_COOP			0
-#define	GAME_DEATHMATCH		1
+enum
+{
+    GAME_COOP = 0,
+    GAME_DEATHMATCH,
+};
 
 //==================
 // note that there are some defs.qc that mirror to these numbers
@@ -60,83 +72,111 @@
 //
 // server to client
 //
-#define	svc_bad				0
-#define	svc_nop				1
-#define	svc_disconnect		2
-#define	svc_updatestat		3	// [byte] [long]
-#define	svc_version			4	// [long] server version
-#define	svc_setview			5	// [short] entity number
-#define	svc_sound			6	// <see code>
-#define	svc_time			7	// [float] server time
-#define	svc_print			8	// [string] null terminated string
-#define	svc_stufftext		9	// [string] stuffed into client's console buffer
-								// the string should be \n terminated
-#define	svc_setangle		10	// [angle3] set the view angle to this absolute value
-	
-#define	svc_serverinfo		11	// [long] version
-						// [string] signon string
-						// [string]..[0]model cache
-						// [string]...[0]sounds cache
-#define	svc_lightstyle		12	// [byte] [string]
-#define	svc_updatename		13	// [byte] [string]
-#define	svc_updatefrags		14	// [byte] [short]
-#define	svc_clientdata		15	// <shortbits + data>
-#define	svc_stopsound		16	// <see code>
-#define	svc_updatecolors	17	// [byte] [byte]
-#define	svc_particle		18	// [vec3] <variable>
-#define	svc_damage			19
-	
-#define	svc_spawnstatic		20
-//	svc_spawnbinary		21
-#define	svc_spawnbaseline	22
-	
-#define	svc_temp_entity		23
+enum
+{
+    svc_bad = 0,
+    svc_nop,
+    svc_disconnect,
+    svc_updatestat, // [byte] [long]
+    svc_version, // [long] server version
+    svc_setview, // [short] entity number
+    svc_sound, // <see code>
+    svc_time, // [float] server time
+    svc_print, // [string] null terminated string
+    svc_stufftext, // [string] stuffed into client's console buffer
+                     // the string should be \n terminated
+    svc_setangle, // [angle3] set the view angle to this absolute value
 
-#define	svc_setpause		24	// [byte] on / off
-#define	svc_signonnum		25	// [byte]  used for the signon sequence
+    svc_serverinfo,// [long] version
+                            // [string] signon string
+                            // [string]..[0]model cache
+                            // [string]...[0]sounds cache
+    svc_lightstyle, // [byte] [string]
+    svc_updatename, // [byte] [string]
+    svc_updatefrags, // [byte] [short]
+    svc_clientdata, // <shortbits + data>
+    svc_stopsound, // <see code>
+    svc_updatecolors, // [byte] [byte]
+    svc_particle, // [vec3] <variable>
+    svc_damage,
 
-#define	svc_centerprint		26	// [string] to put in center of the screen
+    svc_spawnstatic,
+    svc_spawnbinary,
+    svc_spawnbaseline,
 
-#define	svc_killedmonster	27
-#define	svc_foundsecret		28
+    svc_temp_entity,
 
-#define	svc_spawnstaticsound	29	// [coord3] [byte] samp [byte] vol [byte] aten
+    svc_setpause, // [byte] on / off
+    svc_signonnum, // [byte]  used for the signon sequence
 
-#define	svc_intermission	30		// [string] music
-#define	svc_finale			31		// [string] music [string] text
+    svc_centerprint, // [string] to put in center of the screen
 
-#define	svc_cdtrack			32		// [byte] track [byte] looptrack
-#define svc_sellscreen		33
+    svc_killedmonster,
+    svc_foundsecret,
 
-#define svc_cutscene		34
+    svc_spawnstaticsound, // [coord3] [byte] samp [byte] vol [byte] aten
+
+    svc_intermission, // [string] music
+    svc_finale, // [string] music [string] text
+
+    svc_cdtrack, // [byte] track [byte] looptrack
+    svc_sellscreen,
+
+    svc_cutscene,
+};
 
 //
 // client to server
 //
-#define	clc_bad			0
-#define	clc_nop 		1
-#define	clc_disconnect	2
-#define	clc_move		3			// [usercmd_t]
-#define	clc_stringcmd	4		// [string] message
-
+enum
+{
+    clc_bad = 0,
+    clc_nop,
+    clc_disconnect,
+    clc_move, // [usercmd_t]
+    clc_stringcmd, // [string] message
+};
 
 //
 // temp entity events
 //
-#define	TE_SPIKE			0
-#define	TE_SUPERSPIKE		1
-#define	TE_GUNSHOT			2
-#define	TE_EXPLOSION		3
-#define	TE_TAREXPLOSION		4
-#define	TE_LIGHTNING1		5
-#define	TE_LIGHTNING2		6
-#define	TE_WIZSPIKE			7
-#define	TE_KNIGHTSPIKE		8
-#define	TE_LIGHTNING3		9
-#define	TE_LAVASPLASH		10
-#define	TE_TELEPORT			11
-#define TE_EXPLOSION2		12
+enum
+{
+    TE_SPIKE = 0,
+    TE_SUPERSPIKE,
+    TE_GUNSHOT,
+    TE_EXPLOSION,
+    TE_TAREXPLOSION,
+    TE_LIGHTNING1,
+    TE_LIGHTNING2,
+    TE_WIZSPIKE,
+    TE_KNIGHTSPIKE,
+    TE_LIGHTNING3,
+    TE_LAVASPLASH,
+    TE_TELEPORT,
+    TE_EXPLOSION2,
+    TE_BEAM,
+};
 
-// PGM 01/21/97 
-#define TE_BEAM				13
-// PGM 01/21/97 
+typedef struct
+{
+    vec3_t viewangles;
+
+    // intended velocities
+    float forwardmove;
+    float sidemove;
+    float upmove;
+} usercmd_t;
+
+typedef struct
+{
+    vec3_t origin;
+    vec3_t angles;
+    int modelindex;
+    int frame;
+    int colormap;
+    int skin;
+    int effects;
+} entity_state_t;
+
+#endif /* !_PROTOCOL_H */

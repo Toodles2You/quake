@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "bothdef.h"
 
 #include <sys/types.h>
 #include <sys/socket.h>
@@ -44,7 +44,7 @@ static unsigned long myAddr;
 
 //=============================================================================
 
-int UDP_Init (void)
+int UDP_Init ()
 {
 	struct hostent *local;
 	char	buff[MAXHOSTNAMELEN];
@@ -87,7 +87,7 @@ int UDP_Init (void)
 
 //=============================================================================
 
-void UDP_Shutdown (void)
+void UDP_Shutdown ()
 {
 	UDP_Listen (false);
 	UDP_CloseSocket (net_controlsocket);
@@ -95,7 +95,7 @@ void UDP_Shutdown (void)
 
 //=============================================================================
 
-void UDP_Listen (qboolean state)
+void UDP_Listen (bool state)
 {
 	// enable listening
 	if (state)
@@ -120,7 +120,7 @@ int UDP_OpenSocket (int port)
 {
 	int newsocket;
 	struct sockaddr_in address;
-	qboolean _true = true;
+	bool _true = true;
 
 	if ((newsocket = socket (PF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
 		return -1;
@@ -217,7 +217,7 @@ int UDP_Connect (int socket, struct qsockaddr *addr)
 
 //=============================================================================
 
-int UDP_CheckNewConnections (void)
+int UDP_CheckNewConnections ()
 {
 	unsigned long	available;
 

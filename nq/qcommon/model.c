@@ -21,7 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 // models are the only shared resource between a client and server running
 // on the same machine.
 
-#include "quakedef.h"
+#include "bothdef.h"
 
 const vec3_t
 hull_sizes[MAX_MAP_HULLS][2] =
@@ -41,6 +41,7 @@ quake_hull_sizes[MAX_MAP_HULLS][2] =
 	{{-16, -16, -12}, {16, 16, 16}},
 };
 
+extern unsigned d_8to24table[];
 extern int d_lightmap_bytes;
 
 model_t	*loadmodel;
@@ -49,7 +50,7 @@ char	loadname[32];	// for hunk tags
 void Mod_LoadSpriteModel (model_t *mod, void *buffer);
 void Mod_LoadBrushModel (model_t *mod, void *buffer);
 void Mod_LoadAliasModel (model_t *mod, void *buffer);
-model_t *Mod_LoadModel (model_t *mod, qboolean crash, qboolean world);
+model_t *Mod_LoadModel (model_t *mod, bool crash, bool world);
 
 byte	mod_novis[MAX_MAP_LEAFS/8];
 
@@ -64,7 +65,7 @@ cvar_t gl_subdivide_size = {"gl_subdivide_size", "128", true};
 Mod_Init
 ===============
 */
-void Mod_Init (void)
+void Mod_Init ()
 {
 	Cvar_RegisterVariable (&gl_subdivide_size);
 	memset (mod_novis, 0xff, sizeof(mod_novis));
@@ -184,7 +185,7 @@ byte *Mod_LeafPVS (mleaf_t *leaf, model_t *model)
 Mod_ClearAll
 ===================
 */
-void Mod_ClearAll (void)
+void Mod_ClearAll ()
 {
 	int		i;
 	model_t	*mod;
@@ -253,7 +254,7 @@ Mod_LoadModel
 Loads a model into the cache
 ==================
 */
-model_t *Mod_LoadModel (model_t *mod, qboolean crash, qboolean world)
+model_t *Mod_LoadModel (model_t *mod, bool crash, bool world)
 {
 	void	*d;
 	unsigned *buf;
@@ -330,7 +331,7 @@ Mod_ForName
 Loads in a model for the given name
 ==================
 */
-model_t *Mod_ForName (char *name, qboolean crash, qboolean world)
+model_t *Mod_ForName (char *name, bool crash, bool world)
 {
 	model_t	*mod;
 	
@@ -350,14 +351,14 @@ model_t *Mod_ForName (char *name, qboolean crash, qboolean world)
 
 static byte	*mod_base;
 static int mod_version;
-static qboolean mod_needsky;
+static bool mod_needsky;
 
 static texture_t* Mod_LoadMiptex(miptex_t* mt)
 {
 	miptex_t info;
 	int i;
 
-	qboolean external = (mt->offsets[0] == 0);
+	bool external = (mt->offsets[0] == 0);
 
 	if (external)
 	{
@@ -1166,7 +1167,7 @@ Mod_MakeHull0
 Deplicate the drawing hull structure as a clipping hull
 =================
 */
-void Mod_MakeHull0 (void)
+void Mod_MakeHull0 ()
 {
 	mnode_t		*in, *child;
 	dclipnode_t *out;
@@ -1527,8 +1528,6 @@ typedef struct
 {
 	short		x, y;
 } floodfill_t;
-
-extern unsigned d_8to24table[];
 
 // must be a power of 2
 #define FLOODFILL_FIFO_SIZE 0x1000
@@ -2064,7 +2063,7 @@ void Mod_LoadSpriteModel (model_t *mod, void *buffer)
 Mod_Print
 ================
 */
-void Mod_Print (void)
+void Mod_Print ()
 {
 	int		i;
 	model_t	*mod;

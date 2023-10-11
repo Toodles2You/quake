@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "clientdef.h"
 
 int			skytexturenum;
 
@@ -45,7 +45,7 @@ typedef struct glRect_s {
 } glRect_t;
 
 glpoly_t	*lightmap_polys[MAX_LIGHTMAPS];
-qboolean	lightmap_modified[MAX_LIGHTMAPS];
+bool	lightmap_modified[MAX_LIGHTMAPS];
 glRect_t	lightmap_rectchange[MAX_LIGHTMAPS];
 
 int			allocated[MAX_LIGHTMAPS][BLOCK_WIDTH];
@@ -329,11 +329,11 @@ void DrawGLWaterPolyLightmap (glpoly_t *p);
 lpMTexFUNC qglMTexCoord2fSGIS = NULL;
 lpSelTexFUNC qglSelectTextureSGIS = NULL;
 
-qboolean mtexenabled = false;
+bool mtexenabled = false;
 
 void GL_SelectTexture (GLenum target);
 
-void GL_DisableMultitexture(void) 
+void GL_DisableMultitexture() 
 {
 	if (mtexenabled) {
 		glDisable(GL_TEXTURE_2D);
@@ -342,7 +342,7 @@ void GL_DisableMultitexture(void)
 	}
 }
 
-void GL_EnableMultitexture(void) 
+void GL_EnableMultitexture() 
 {
 	if (gl_mtexable) {
 		GL_SelectTexture(TEXTURE1_SGIS);
@@ -720,7 +720,7 @@ void DrawGLPoly (glpoly_t *p)
 R_BlendLightmaps
 ================
 */
-void R_BlendLightmaps (void)
+void R_BlendLightmaps ()
 {
 	int			i, j;
 	glpoly_t	*p;
@@ -1005,7 +1005,7 @@ void R_MirrorChain (msurface_t *s)
 R_DrawWaterSurfaces
 ================
 */
-void R_DrawWaterSurfaces (void)
+void R_DrawWaterSurfaces ()
 {
 	int			i;
 	msurface_t	*s;
@@ -1054,7 +1054,7 @@ void R_DrawWaterSurfaces (void)
 R_DrawWaterSurfaces
 ================
 */
-void R_DrawWaterSurfaces (void)
+void R_DrawWaterSurfaces ()
 {
 	int			i;
 	msurface_t	*s;
@@ -1126,7 +1126,7 @@ void R_DrawWaterSurfaces (void)
 DrawTextureChains
 ================
 */
-void DrawTextureChains (void)
+void DrawTextureChains ()
 {
 	int		i;
 	msurface_t	*s;
@@ -1184,7 +1184,7 @@ void R_DrawBrushModel (entity_t *e)
 	float		dot;
 	mplane_t	*pplane;
 	model_t		*clmodel;
-	qboolean	rotated;
+	bool	rotated;
 
 	currententity = e;
 	currenttexture = -1;
@@ -1423,7 +1423,7 @@ void R_RecursiveWorldNode (mnode_t *node)
 R_DrawWorld
 =============
 */
-void R_DrawWorld (void)
+void R_DrawWorld ()
 {
 	entity_t	ent;
 	int			i;
@@ -1459,7 +1459,7 @@ void R_DrawWorld (void)
 R_MarkLeaves
 ===============
 */
-void R_MarkLeaves (void)
+void R_MarkLeaves ()
 {
 	byte	*vis;
 	mnode_t	*node;
@@ -1571,7 +1571,7 @@ void BuildSurfaceDisplayList (msurface_t *fa)
 	medge_t		*pedges, *r_pedge;
 	mplane_t	*pplane;
 	int			vertpage, newverts, newpage, lastvert;
-	qboolean	visible;
+	bool	visible;
 	float		*vec;
 	float		s, t;
 	glpoly_t	*poly;
@@ -1708,7 +1708,7 @@ Builds the lightmap texture
 with all the surfaces from all brush models
 ==================
 */
-void GL_BuildLightmaps (void)
+void GL_BuildLightmaps ()
 {
 	int		i, j;
 	model_t	*m;

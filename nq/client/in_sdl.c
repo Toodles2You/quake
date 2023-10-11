@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "clientdef.h"
 
 #include <SDL2/SDL_events.h>
 
@@ -220,7 +220,7 @@ static int IN_TranslateButton(SDL_MouseButtonEvent *b)
     return -1;
 }
 
-static void IN_HandleEvent(SDL_Event* event, qboolean* warp_mouse)
+static void IN_HandleEvent(SDL_Event* event, bool* warp_mouse)
 {
     switch (event->type)
     {
@@ -300,7 +300,7 @@ static void IN_HandleEvent(SDL_Event* event, qboolean* warp_mouse)
 void Sys_SendKeyEvents()
 {
     SDL_Event event;
-    qboolean warp_mouse = false;
+    bool warp_mouse = false;
 
     while (SDL_PollEvent(&event))
     {
@@ -412,8 +412,8 @@ void IN_Move(usercmd_t *cmd)
     mouse[0] *= sensitivity.value;
     mouse[1] *= sensitivity.value;
 
-    qboolean looking = m_look.value || (in_mlook.state & 1);
-    qboolean strafing = (in_strafe.state & 1);
+    bool looking = m_look.value || (in_mlook.state & 1);
+    bool strafing = (in_strafe.state & 1);
 
     // add mouse X/Y movement to cmd
     if (strafing || (lookstrafe.value && looking))

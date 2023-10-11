@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "bothdef.h"
 
 cvar_t	*cvar_vars;
 char	*cvar_null_string = "";
@@ -103,7 +103,7 @@ Cvar_Set
 void Cvar_Set (char *var_name, char *value)
 {
 	cvar_t	*var;
-	qboolean changed;
+	bool changed;
 	
 	var = Cvar_FindVar (var_name);
 	if (!var)
@@ -121,7 +121,7 @@ void Cvar_Set (char *var_name, char *value)
 	var->value = Q_atof (var->string);
 	if (var->server && changed)
 	{
-		if (sv.active)
+		if (Host_IsLocalGame ())
 			SV_BroadcastPrintf ("\"%s\" changed to \"%s\"\n", var->name, var->string);
 	}
 }
@@ -183,7 +183,7 @@ Cvar_Command
 Handles variable inspection and changing from the console
 ============
 */
-qboolean	Cvar_Command (void)
+bool	Cvar_Command ()
 {
 	cvar_t			*v;
 

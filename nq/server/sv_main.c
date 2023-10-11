@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "serverdef.h"
 
 server_t		sv;
 server_static_t	svs;
@@ -32,7 +32,7 @@ char	localmodels[MAX_MODELS][5];			// inline model names for precache
 SV_Init
 ===============
 */
-void SV_Init (void)
+void SV_Init ()
 {
 	int		i;
 	extern	cvar_t	sv_maxvelocity;
@@ -293,7 +293,7 @@ SV_CheckForNewClients
 
 ===================
 */
-void SV_CheckForNewClients (void)
+void SV_CheckForNewClients ()
 {
 	struct qsocket_s	*ret;
 	int				i;
@@ -339,7 +339,7 @@ SV_ClearDatagram
 
 ==================
 */
-void SV_ClearDatagram (void)
+void SV_ClearDatagram ()
 {
 	SZ_Clear (&sv.datagram);
 }
@@ -546,7 +546,7 @@ SV_CleanupEnts
 
 =============
 */
-void SV_CleanupEnts (void)
+void SV_CleanupEnts ()
 {
 	int		e;
 	edict_t	*ent;
@@ -703,7 +703,7 @@ void SV_WriteClientdataToMessage (edict_t *ent, sizebuf_t *msg)
 SV_SendClientDatagram
 =======================
 */
-qboolean SV_SendClientDatagram (client_t *client)
+bool SV_SendClientDatagram (client_t *client)
 {
 	byte		buf[MAX_DATAGRAM];
 	sizebuf_t	msg;
@@ -739,7 +739,7 @@ qboolean SV_SendClientDatagram (client_t *client)
 SV_UpdateToReliableMessages
 =======================
 */
-void SV_UpdateToReliableMessages (void)
+void SV_UpdateToReliableMessages ()
 {
 	int			i, j;
 	client_t *client;
@@ -802,7 +802,7 @@ void SV_SendNop (client_t *client)
 SV_SendClientMessages
 =======================
 */
-void SV_SendClientMessages (void)
+void SV_SendClientMessages ()
 {
 	int			i;
 	
@@ -908,7 +908,7 @@ SV_CreateBaseline
 
 ================
 */
-void SV_CreateBaseline (void)
+void SV_CreateBaseline ()
 {
 	int			i;
 	edict_t			*svent;
@@ -968,7 +968,7 @@ SV_SendReconnect
 Tell all the clients that the server is changing levels
 ================
 */
-void SV_SendReconnect (void)
+void SV_SendReconnect ()
 {
 	char	data[128];
 	sizebuf_t	msg;
@@ -980,8 +980,8 @@ void SV_SendReconnect (void)
 	MSG_WriteChar (&msg, svc_stufftext);
 	MSG_WriteString (&msg, "reconnect\n");
 	NET_SendToAll (&msg, 5);
-	
-	if (cls.state != ca_dedicated)
+
+	if (Host_IsLocalClient ())
 		Cmd_ExecuteString ("reconnect\n", src_command);
 }
 
@@ -994,7 +994,7 @@ Grabs the current state of each client for saving across the
 transition to another level
 ================
 */
-void SV_SaveSpawnparms (void)
+void SV_SaveSpawnparms ()
 {
 	int		i, j;
 
@@ -1039,7 +1039,7 @@ void SV_SpawnServer (char *server, char *startspot)
 //
 // tell all connected clients that we are going to a new level
 //
-	if (sv.active)
+	if (Host_IsLocalGame ())
 	{
 		SV_SendReconnect ();
 	}

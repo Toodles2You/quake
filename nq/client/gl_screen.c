@@ -21,7 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "clientdef.h"
 
 /*
 
@@ -86,7 +86,6 @@ cvar_t		scr_fov = {"fov","90"};	// 10 - 170
 cvar_t		scr_viewmodelfov = {"viewmodel_fov","90"};
 cvar_t		scr_conspeed = {"scr_conspeed","300"};
 cvar_t		scr_centertime = {"scr_centertime","2"};
-cvar_t		scr_showram = {"showram","1"};
 cvar_t		scr_showturtle = {"showturtle","0"};
 cvar_t		scr_showpause = {"showpause","1"};
 cvar_t		scr_printspeed = {"scr_printspeed","8"};
@@ -94,7 +93,7 @@ cvar_t		gl_triplebuffer = {"gl_triplebuffer", "1", true };
 
 extern	cvar_t	crosshair;
 
-qboolean	scr_initialized;		// ready to draw
+bool	scr_initialized;		// ready to draw
 
 qpic_t		*scr_ram;
 qpic_t		*scr_net;
@@ -109,13 +108,13 @@ viddef_t	vid;				// global video state
 
 vrect_t		scr_vrect;
 
-qboolean	scr_disabled_for_loading;
-qboolean	scr_drawloading;
+bool	scr_disabled_for_loading;
+bool	scr_drawloading;
 float		scr_disabled_time;
 
-qboolean	block_drawing;
+bool	block_drawing;
 
-void SCR_ScreenShot_f (void);
+void SCR_ScreenShot_f ();
 
 /*
 ===============================================================================
@@ -157,7 +156,7 @@ void SCR_CenterPrint (char *str)
 }
 
 
-void SCR_DrawCenterString (void)
+void SCR_DrawCenterString ()
 {
 	char	*start;
 	int		l;
@@ -204,7 +203,7 @@ void SCR_DrawCenterString (void)
 	} while (1);
 }
 
-void SCR_CheckDrawCenterString (void)
+void SCR_CheckDrawCenterString ()
 {
 	scr_copytop = 1;
 	if (scr_center_lines > scr_erase_lines)
@@ -261,7 +260,7 @@ float CalcFovy (float fov_x, float width, float height)
 	return a;
 }
 
-static void SCR_CalcVrect(int vid_width, int vid_height, int sbar_height, float size, qboolean full, vrect_t *vrect)
+static void SCR_CalcVrect(int vid_width, int vid_height, int sbar_height, float size, bool full, vrect_t *vrect)
 {
 	vrect->width = vid_width * size;
 
@@ -295,11 +294,11 @@ Must be called whenever vid changes
 Internal use only
 =================
 */
-static void SCR_CalcRefdef (void)
+static void SCR_CalcRefdef ()
 {
 	vrect_t		vrect;
 	float		size;
-	qboolean		full = false;
+	bool		full = false;
 
 
 	scr_fullupdate = 0;		// force a background redraw
@@ -377,7 +376,7 @@ SCR_SizeUp_f
 Keybinding command
 =================
 */
-void SCR_SizeUp_f (void)
+void SCR_SizeUp_f ()
 {
 	Cvar_SetValue ("viewsize",scr_viewsize.value+10);
 	vid.recalc_refdef = 1;
@@ -391,7 +390,7 @@ SCR_SizeDown_f
 Keybinding command
 =================
 */
-void SCR_SizeDown_f (void)
+void SCR_SizeDown_f ()
 {
 	Cvar_SetValue ("viewsize",scr_viewsize.value-10);
 	vid.recalc_refdef = 1;
@@ -404,14 +403,13 @@ void SCR_SizeDown_f (void)
 SCR_Init
 ==================
 */
-void SCR_Init (void)
+void SCR_Init ()
 {
 
 	Cvar_RegisterVariable (&scr_fov);
 	Cvar_RegisterVariable (&scr_viewmodelfov);
 	Cvar_RegisterVariable (&scr_viewsize);
 	Cvar_RegisterVariable (&scr_conspeed);
-	Cvar_RegisterVariable (&scr_showram);
 	Cvar_RegisterVariable (&scr_showturtle);
 	Cvar_RegisterVariable (&scr_showpause);
 	Cvar_RegisterVariable (&scr_centertime);
@@ -432,30 +430,12 @@ void SCR_Init (void)
 	scr_initialized = true;
 }
 
-
-
-/*
-==============
-SCR_DrawRam
-==============
-*/
-void SCR_DrawRam (void)
-{
-	if (!scr_showram.value)
-		return;
-
-	if (!r_cache_thrash)
-		return;
-
-	Draw_Pic (scr_vrect.x+32, scr_vrect.y, scr_ram);
-}
-
 /*
 ==============
 SCR_DrawTurtle
 ==============
 */
-void SCR_DrawTurtle (void)
+void SCR_DrawTurtle ()
 {
 	static int	count;
 	
@@ -480,7 +460,7 @@ void SCR_DrawTurtle (void)
 SCR_DrawNet
 ==============
 */
-void SCR_DrawNet (void)
+void SCR_DrawNet ()
 {
 	if (realtime - cl.last_received_message < 0.3)
 		return;
@@ -495,7 +475,7 @@ void SCR_DrawNet (void)
 DrawPause
 ==============
 */
-void SCR_DrawPause (void)
+void SCR_DrawPause ()
 {
 	qpic_t	*pic;
 
@@ -517,7 +497,7 @@ void SCR_DrawPause (void)
 SCR_DrawLoading
 ==============
 */
-void SCR_DrawLoading (void)
+void SCR_DrawLoading ()
 {
 	qpic_t	*pic;
 
@@ -539,7 +519,7 @@ void SCR_DrawLoading (void)
 SCR_SetUpToDrawConsole
 ==================
 */
-void SCR_SetUpToDrawConsole (void)
+void SCR_SetUpToDrawConsole ()
 {
 	Con_CheckResize ();
 	
@@ -591,7 +571,7 @@ void SCR_SetUpToDrawConsole (void)
 SCR_DrawConsole
 ==================
 */
-void SCR_DrawConsole (void)
+void SCR_DrawConsole ()
 {
 	if (scr_con_current)
 	{
@@ -629,7 +609,7 @@ typedef struct _TargaHeader {
 SCR_ScreenShot_f
 ================== 
 */  
-void SCR_ScreenShot_f (void) 
+void SCR_ScreenShot_f () 
 {
 	byte		*buffer;
 	char		pcxname[80]; 
@@ -690,7 +670,7 @@ SCR_BeginLoadingPlaque
 
 ================
 */
-void SCR_BeginLoadingPlaque (void)
+void SCR_BeginLoadingPlaque ()
 {
 	S_StopAllSounds (true);
 
@@ -721,7 +701,7 @@ SCR_EndLoadingPlaque
 
 ================
 */
-void SCR_EndLoadingPlaque (void)
+void SCR_EndLoadingPlaque ()
 {
 	scr_disabled_for_loading = false;
 	scr_fullupdate = 0;
@@ -731,9 +711,9 @@ void SCR_EndLoadingPlaque (void)
 //=============================================================================
 
 char	*scr_notifystring;
-qboolean	scr_drawdialog;
+bool	scr_drawdialog;
 
-void SCR_DrawNotifyString (void)
+void SCR_DrawNotifyString ()
 {
 	char	*start;
 	int		l;
@@ -810,7 +790,7 @@ SCR_BringDownConsole
 Brings the console down and fades the palettes back to normal
 ================
 */
-void SCR_BringDownConsole (void)
+void SCR_BringDownConsole ()
 {
 	int		i;
 	
@@ -823,7 +803,7 @@ void SCR_BringDownConsole (void)
 	VID_SetPalette (host_basepal);
 }
 
-void SCR_TileClear (void)
+void SCR_TileClear ()
 {
 	if (r_refdef.vrect.x > 0) {
 		// left
@@ -858,7 +838,7 @@ WARNING: be very careful calling this from elsewhere, because the refresh
 needs almost the entire 256k of stack space!
 ==================
 */
-void SCR_UpdateScreen (void)
+void SCR_UpdateScreen ()
 {
 	static float	oldscr_viewsize;
 	vrect_t		vrect;
@@ -967,7 +947,6 @@ void SCR_UpdateScreen (void)
 		if (crosshair.value)
 			Draw_Crosshair (scr_vrect.x + scr_vrect.width/2, scr_vrect.y + scr_vrect.height/2);
 		
-		SCR_DrawRam ();
 		SCR_DrawNet ();
 		SCR_DrawTurtle ();
 		SCR_DrawPause ();

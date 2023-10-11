@@ -1,14 +1,14 @@
-#include "quakedef.h"
+#include "clientdef.h"
 
-void IN_Init (void)
+void IN_Init ()
 {
 }
 
-void IN_Shutdown (void)
+void IN_Shutdown ()
 {
 }
 
-void IN_Commands (void)
+void IN_Commands ()
 {
 }
 

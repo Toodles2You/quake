@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "bothdef.h"
 
 #include "net_loop.h"
 #include "net_dgrm.h"

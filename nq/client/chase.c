@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "clientdef.h"
 
 cvar_t	chase_back = {"chase_back", "100"};
 cvar_t	chase_up = {"chase_up", "16"};
@@ -32,7 +32,7 @@ vec3_t	chase_dest;
 vec3_t	chase_dest_angles;
 
 
-void Chase_Init (void)
+void Chase_Init ()
 {
 	Cvar_RegisterVariable (&chase_back);
 	Cvar_RegisterVariable (&chase_up);
@@ -40,7 +40,7 @@ void Chase_Init (void)
 	Cvar_RegisterVariable (&chase_active);
 }
 
-void Chase_Reset (void)
+void Chase_Reset ()
 {
 	// for respawning and teleporting
 //	start position 12 units behind head
@@ -48,16 +48,19 @@ void Chase_Reset (void)
 
 void TraceLine (vec3_t start, vec3_t end, vec3_t impact)
 {
+#if 0
 	trace_t	trace;
 
 	memset (&trace, 0, sizeof(trace));
 	SV_RecursiveHullCheck (cl.worldmodel->hulls, 0, 0, 1, start, end, &trace);
 
 	VectorCopy (trace.endpos, impact);
+#endif
 }
 
-void Chase_Update (void)
+void Chase_Update ()
 {
+#if 0
 	int		i;
 	float	dist;
 	vec3_t	forward, up, right;
@@ -87,5 +90,6 @@ void Chase_Update (void)
 
 	// move towards destination
 	VectorCopy (chase_dest, r_refdef.vieworg);
+#endif
 }
 

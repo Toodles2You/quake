@@ -37,9 +37,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <sys/mman.h>
 #include <errno.h>
 
-#include "quakedef.h"
-
-qboolean			isDedicated;
+#include "../client/clientdef.h"
+#include "../server/serverdef.h"
 
 int nostdout = 0;
 
@@ -128,7 +127,7 @@ void Sys_Printf (char *fmt, ...)
 	}
 }
 
-void Sys_Quit (void)
+void Sys_Quit ()
 {
 	Host_Shutdown();
     fcntl (0, F_SETFL, fcntl (0, F_GETFL, 0) & ~FNDELAY);
@@ -136,7 +135,7 @@ void Sys_Quit (void)
 	exit(0);
 }
 
-void Sys_Init(void)
+void Sys_Init()
 {
 }
 
@@ -282,7 +281,7 @@ void Sys_EditFile(char *filename)
 
 }
 
-double Sys_FloatTime (void)
+double Sys_FloatTime ()
 {
     struct timeval tp;
     struct timezone tzp; 
@@ -310,7 +309,7 @@ void alarm_handler(int x)
 	oktogo=1;
 }
 
-void Sys_LineRefresh(void)
+void Sys_LineRefresh()
 {
 }
 
@@ -320,7 +319,7 @@ void floating_point_exception_handler(int whatever)
 	signal(SIGFPE, floating_point_exception_handler);
 }
 
-char *Sys_ConsoleInput(void)
+char *Sys_ConsoleInput()
 {
     static char text[256];
     int     len;

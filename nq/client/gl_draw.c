@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "clientdef.h"
 
 extern unsigned char d_15to8table[65536];
 
@@ -58,7 +58,7 @@ typedef struct
 	int		brightnum;
 	char	identifier[64];
 	int		width, height;
-	qboolean	mipmap;
+	bool	mipmap;
 } gltexture_t;
 
 #define	MAX_GLTEXTURES	1024
@@ -94,7 +94,7 @@ void GL_Bind (int texnum)
 
 int			scrap_allocated[MAX_SCRAPS][BLOCK_WIDTH];
 byte		scrap_texels[MAX_SCRAPS][BLOCK_WIDTH*BLOCK_HEIGHT*4];
-qboolean	scrap_dirty;
+bool	scrap_dirty;
 int			scrap_texnum;
 
 // returns a texture number and the position inside it
@@ -141,7 +141,7 @@ int Scrap_AllocBlock (int w, int h, int *x, int *y)
 
 int	scrap_uploads;
 
-void Scrap_Upload (void)
+void Scrap_Upload ()
 {
 	int		texnum;
 	int		scrapnum;
@@ -310,7 +310,7 @@ glmode_t modes[] = {
 Draw_TextureMode_f
 ===============
 */
-void Draw_TextureMode_f (void)
+void Draw_TextureMode_f ()
 {
 	int		i;
 	gltexture_t	*glt;
@@ -358,7 +358,7 @@ void Draw_TextureMode_f (void)
 Draw_Init
 ===============
 */
-void Draw_Init (void)
+void Draw_Init ()
 {
 	int		i;
 	qpic_t	*cb;
@@ -794,7 +794,7 @@ Draw_FadeScreen
 
 ================
 */
-void Draw_FadeScreen (void)
+void Draw_FadeScreen ()
 {
 	glEnable (GL_BLEND);
 	glDisable (GL_TEXTURE_2D);
@@ -824,7 +824,7 @@ Draws the little blue disc in the corner of the screen.
 Call before beginning any disc IO.
 ================
 */
-void Draw_BeginDisc (void)
+void Draw_BeginDisc ()
 {
 	if (!draw_disc)
 		return;
@@ -842,7 +842,7 @@ Erases the disc icon.
 Call after completing any disc IO
 ================
 */
-void Draw_EndDisc (void)
+void Draw_EndDisc ()
 {
 }
 
@@ -853,7 +853,7 @@ GL_Set2D
 Setup as if the screen was 320*200
 ================
 */
-void GL_Set2D (void)
+void GL_Set2D ()
 {
 	glViewport (glx, gly, glwidth, glheight);
 
@@ -990,7 +990,7 @@ void GL_MipMap8Bit (byte *in, int width, int height)
 GL_Upload32
 ===============
 */
-void GL_Upload32 (unsigned *data, int width, int height,  qboolean mipmap, qboolean alpha)
+void GL_Upload32 (unsigned *data, int width, int height,  bool mipmap, bool alpha)
 {
 	int			samples;
 static	unsigned	scaled[1024*512];	// [512*256];
@@ -1179,15 +1179,15 @@ void GL_Upload8 (
 	byte *pal,
 	int bytes,
 	int colors,
-	qboolean mipmap,
-	qboolean alpha
+	bool mipmap,
+	bool alpha
 )
 {
 	/* Toodles TODO: Find a better way to allocate memory. */
 	unsigned	trans[640 * 480 * 2];
 	int			i;
-	qboolean	noalpha;
-	qboolean	nobright = true;
+	bool	noalpha;
+	bool	nobright = true;
 	int			p;
 
 	int s = width*height;
@@ -1292,11 +1292,11 @@ void GL_LoadTexture (
 	int bytes,
 	int colors,
 	byte *pal,
-	qboolean mipmap,
-	qboolean alpha
+	bool mipmap,
+	bool alpha
 )
 {
-	qboolean	noalpha;
+	bool	noalpha;
 	int			i, p, s;
 	gltexture_t	*glt;
 

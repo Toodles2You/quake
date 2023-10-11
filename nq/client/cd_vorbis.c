@@ -20,7 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include <stdio.h>
 
-#include "quakedef.h"
+#include "clientdef.h"
 
 #include "stb_vorbis.h"
 
@@ -52,7 +52,7 @@ static int trackchannels;
 
 static double fadetime;
 static byte queuenum;
-static qboolean queuelooping;
+static bool queuelooping;
 
 static byte remap[100];
 
@@ -89,7 +89,7 @@ static void CDAudio_FadeOut(float time)
     cd_state |= CD_FADING_OUT;
 }
 
-void CDAudio_Play(byte track, qboolean looping)
+void CDAudio_Play(byte track, bool looping)
 {
     if (!(cd_state & CD_ENABLED))
         return;

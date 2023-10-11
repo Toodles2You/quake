@@ -18,9 +18,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "clientdef.h"
 
-void CL_FinishTimeDemo (void);
+void CL_FinishTimeDemo ();
 
 /*
 ==============================================================================
@@ -42,7 +42,7 @@ CL_StopPlayback
 Called when a demo file runs out, or the user starts a game
 ==============
 */
-void CL_StopPlayback (void)
+void CL_StopPlayback ()
 {
 	if (!cls.demoplayback)
 		return;
@@ -63,7 +63,7 @@ CL_WriteDemoMessage
 Dumps the current net message, prefixed by the length and view angles
 ====================
 */
-void CL_WriteDemoMessage (void)
+void CL_WriteDemoMessage ()
 {
 	int		len;
 	int		i;
@@ -87,7 +87,7 @@ CL_GetMessage
 Handles recording and playback of demos, on top of NET_ code
 ====================
 */
-int CL_GetMessage (void)
+int CL_GetMessage ()
 {
 	int		r, i;
 	float	f;
@@ -163,7 +163,7 @@ CL_Stop_f
 stop recording a demo
 ====================
 */
-void CL_Stop_f (void)
+void CL_Stop_f ()
 {
 	if (cmd_source != src_command)
 		return;
@@ -193,7 +193,7 @@ CL_Record_f
 record <demoname> <map> [cd track]
 ====================
 */
-void CL_Record_f (void)
+void CL_Record_f ()
 {
 	int		c;
 	char	name[MAX_OSPATH];
@@ -265,11 +265,11 @@ CL_PlayDemo_f
 play [demoname]
 ====================
 */
-void CL_PlayDemo_f (void)
+void CL_PlayDemo_f ()
 {
 	char	name[256];
 	int c;
-	qboolean neg = false;
+	bool neg = false;
 
 	if (cmd_source != src_command)
 		return;
@@ -322,7 +322,7 @@ CL_FinishTimeDemo
 
 ====================
 */
-void CL_FinishTimeDemo (void)
+void CL_FinishTimeDemo ()
 {
 	int		frames;
 	float	time;
@@ -344,7 +344,7 @@ CL_TimeDemo_f
 timedemo [demoname]
 ====================
 */
-void CL_TimeDemo_f (void)
+void CL_TimeDemo_f ()
 {
 	if (cmd_source != src_command)
 		return;

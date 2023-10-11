@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "clientdef.h"
 
 static int			wad_numlumps;
 static lumpinfo_t	*wad_lumps;
@@ -219,7 +219,7 @@ void W_LoadMapWadFile(char *filename)
 	}
 }
 
-static qboolean W_GetMapLumpInfo(char *name, wad_t** wad, lumpinfo_t **lump)
+static bool W_GetMapLumpInfo(char *name, wad_t** wad, lumpinfo_t **lump)
 {
 	if (!wad_head)
 		return false;
@@ -253,7 +253,7 @@ static qboolean W_GetMapLumpInfo(char *name, wad_t** wad, lumpinfo_t **lump)
 static wad_t* mip_wad = NULL;
 static lumpinfo_t* mip_lump = NULL;
 
-qboolean W_LoadMapMiptexInfo(char *name, void* dst)
+bool W_LoadMapMiptexInfo(char *name, void* dst)
 {
 	if (!W_GetMapLumpInfo(name, &mip_wad, &mip_lump))
 	{
@@ -264,7 +264,7 @@ qboolean W_LoadMapMiptexInfo(char *name, void* dst)
 	return Sys_FileRead(mip_wad->handle, dst, sizeof(miptex_t)) > 0;
 }
 
-qboolean W_LoadMapMiptexData(void* dst)
+bool W_LoadMapMiptexData(void* dst)
 {
 	if (!mip_wad || !mip_lump)
 	{
@@ -272,7 +272,7 @@ qboolean W_LoadMapMiptexData(void* dst)
 	}
 
 	Sys_FileSeek(mip_wad->handle, mip_lump->filepos + sizeof(miptex_t));
-	qboolean result = Sys_FileRead(mip_wad->handle, dst, mip_lump->size - sizeof(miptex_t)) > 0;
+	bool result = Sys_FileRead(mip_wad->handle, dst, mip_lump->size - sizeof(miptex_t)) > 0;
 	
 	mip_wad = NULL;
 	mip_lump = NULL;

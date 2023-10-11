@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "clientdef.h"
 
 /*
 
@@ -41,11 +41,11 @@ keydest_t	key_dest;
 int		key_count;			// incremented every key event
 
 char	*keybindings[256];
-qboolean	consolekeys[256];	// if true, can't be rebound while in console
-qboolean	menubound[256];	// if true, can't be rebound while in menu
+bool	consolekeys[256];	// if true, can't be rebound while in console
+bool	menubound[256];	// if true, can't be rebound while in menu
 int		keyshift[256];		// key to map to if shift held down in console
 int		key_repeats[256];	// if > 1, it is autorepeating
-qboolean	keydown[256];
+bool	keydown[256];
 
 typedef struct
 {
@@ -278,7 +278,7 @@ void Key_Console (int key)
 //============================================================================
 
 char chat_buffer[32];
-qboolean team_message = false;
+bool team_message = false;
 
 void Key_Message (int key)
 {
@@ -420,7 +420,7 @@ void Key_SetBinding (int keynum, char *binding)
 Key_Unbind_f
 ===================
 */
-void Key_Unbind_f (void)
+void Key_Unbind_f ()
 {
 	int		b;
 
@@ -440,7 +440,7 @@ void Key_Unbind_f (void)
 	Key_SetBinding (b, "");
 }
 
-void Key_Unbindall_f (void)
+void Key_Unbindall_f ()
 {
 	int		i;
 	
@@ -455,7 +455,7 @@ void Key_Unbindall_f (void)
 Key_Bind_f
 ===================
 */
-void Key_Bind_f (void)
+void Key_Bind_f ()
 {
 	int			i, c, b;
 	char		cmd[1024];
@@ -518,7 +518,7 @@ void Key_WriteBindings (FILE *f)
 Key_Init
 ===================
 */
-void Key_Init (void)
+void Key_Init ()
 {
 	int		i;
 
@@ -597,7 +597,7 @@ Called by the system between frames for both key up and key down events
 Should NOT be called during an interrupt!
 ===================
 */
-void Key_Event (int key, qboolean down)
+void Key_Event (int key, bool down)
 {
 	char	*kb;
 	char	cmd[1024];
@@ -755,7 +755,7 @@ void Key_Event (int key, qboolean down)
 Key_ClearStates
 ===================
 */
-void Key_ClearStates (void)
+void Key_ClearStates ()
 {
 	int		i;
 

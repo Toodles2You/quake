@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "serverdef.h"
 
 dprograms_t		*progs;
 dfunction_t		*pr_functions;
@@ -35,7 +35,7 @@ unsigned short		pr_crc;
 int		type_size[8] = {1,sizeof(string_t)/4,1,3,1,1,sizeof(func_t)/4,sizeof(void *)/4};
 
 ddef_t *ED_FieldAtOfs (int ofs);
-qboolean	ED_ParseEpair (void *base, ddef_t *key, char *s);
+bool	ED_ParseEpair (void *base, ddef_t *key, char *s);
 
 cvar_t	nomonsters = {"nomonsters", "0"};
 cvar_t	gamecfg = {"gamecfg", "0"};
@@ -83,7 +83,7 @@ instead of being removed and recreated, which can cause interpolated
 angles and bad trails.
 =================
 */
-edict_t *ED_Alloc (void)
+edict_t *ED_Alloc ()
 {
 	int			i;
 	edict_t		*e;
@@ -533,7 +533,7 @@ ED_PrintEdicts
 For debugging, prints all the entities in the current server
 =============
 */
-void ED_PrintEdicts (void)
+void ED_PrintEdicts ()
 {
 	int		i;
 	
@@ -549,7 +549,7 @@ ED_PrintEdict_f
 For debugging, prints a single edicy
 =============
 */
-void ED_PrintEdict_f (void)
+void ED_PrintEdict_f ()
 {
 	int		i;
 	
@@ -569,7 +569,7 @@ ED_Count
 For debugging
 =============
 */
-void ED_Count (void)
+void ED_Count ()
 {
 	int		i;
 	edict_t	*ent;
@@ -724,7 +724,7 @@ Can parse either fields or globals
 returns false if error
 =============
 */
-qboolean	ED_ParseEpair (void *base, ddef_t *key, char *s)
+bool	ED_ParseEpair (void *base, ddef_t *key, char *s)
 {
 	int		i;
 	char	string[128];
@@ -801,8 +801,8 @@ Used for initial level load and for savegames.
 char *ED_ParseEdict (char *data, edict_t *ent)
 {
 	ddef_t		*key;
-	qboolean	anglehack;
-	qboolean	init;
+	bool	anglehack;
+	bool	init;
 	char		keyname[256];
 	int			n;
 
@@ -983,7 +983,7 @@ void ED_LoadFromFile (char *data)
 PR_LoadProgs
 ===============
 */
-void PR_LoadProgs (void)
+void PR_LoadProgs ()
 {
 	int		i;
 
@@ -1066,7 +1066,7 @@ void PR_LoadProgs (void)
 PR_Init
 ===============
 */
-void PR_Init (void)
+void PR_Init ()
 {
 	Cmd_AddCommand ("edict", ED_PrintEdict_f);
 	Cmd_AddCommand ("edicts", ED_PrintEdicts);

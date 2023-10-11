@@ -18,14 +18,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "../client/clientdef.h"
+#include "../server/serverdef.h"
 #include "net_loop.h"
 
-qboolean	localconnectpending = false;
+bool	localconnectpending = false;
 qsocket_t	*loop_client = NULL;
 qsocket_t	*loop_server = NULL;
 
-int Loop_Init (void)
+int Loop_Init ()
 {
 	if (cls.state == ca_dedicated)
 		return -1;
@@ -33,19 +34,19 @@ int Loop_Init (void)
 }
 
 
-void Loop_Shutdown (void)
+void Loop_Shutdown ()
 {
 }
 
 
-void Loop_Listen (qboolean state)
+void Loop_Listen (bool state)
 {
 }
 
 
-void Loop_SearchForHosts (qboolean xmit)
+void Loop_SearchForHosts (bool xmit)
 {
-	if (!sv.active)
+	if (!Host_IsLocalGame ())
 		return;
 
 	hostCacheCount = 1;
@@ -101,7 +102,7 @@ qsocket_t *Loop_Connect (char *host)
 }
 
 
-qsocket_t *Loop_CheckNewConnections (void)
+qsocket_t *Loop_CheckNewConnections ()
 {
 	if (!localconnectpending)
 		return NULL;
@@ -216,7 +217,7 @@ int Loop_SendUnreliableMessage (qsocket_t *sock, sizebuf_t *data)
 }
 
 
-qboolean Loop_CanSendMessage (qsocket_t *sock)
+bool Loop_CanSendMessage (qsocket_t *sock)
 {
 	if (!sock->driverdata)
 		return false;
@@ -224,7 +225,7 @@ qboolean Loop_CanSendMessage (qsocket_t *sock)
 }
 
 
-qboolean Loop_CanSendUnreliableMessage (qsocket_t *sock)
+bool Loop_CanSendUnreliableMessage (qsocket_t *sock)
 {
 	return true;
 }

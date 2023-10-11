@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "clientdef.h"
 
 int			cache_full_cycle;
 
@@ -168,7 +168,7 @@ byte 	*iff_data;
 int 	iff_chunk_len;
 
 
-short GetLittleShort(void)
+short GetLittleShort()
 {
 	short val = 0;
 	val = *data_p;
@@ -177,7 +177,7 @@ short GetLittleShort(void)
 	return val;
 }
 
-int GetLittleLong(void)
+int GetLittleLong()
 {
 	int val = 0;
 	val = *data_p;
@@ -223,7 +223,7 @@ void FindChunk(char *name)
 }
 
 
-void DumpChunks(void)
+void DumpChunks()
 {
 	char	str[5];
 	

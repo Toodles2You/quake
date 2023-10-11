@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "clientdef.h"
 
 #define	PAINTBUFFER_SIZE	512
 portable_samplepair_t paintbuffer[PAINTBUFFER_SIZE];
@@ -26,9 +26,9 @@ int		snd_scaletable[32][256];
 int 	*snd_p, snd_linear_count, snd_vol;
 short	*snd_out;
 
-void Snd_WriteLinearBlastStereo16 (void);
+void Snd_WriteLinearBlastStereo16 ();
 
-void Snd_WriteLinearBlastStereo16 (void)
+void Snd_WriteLinearBlastStereo16 ()
 {
 	int		i;
 	int		val;
@@ -230,7 +230,7 @@ void S_PaintChannels(int endtime)
 	}
 }
 
-void SND_InitScaletable (void)
+void SND_InitScaletable ()
 {
 	int		i, j;
 	

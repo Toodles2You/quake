@@ -21,7 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <sys/signal.h>
 #include <dlfcn.h>
 
-#include "quakedef.h"
+#include "clientdef.h"
 
 #include <GL/glx.h>
 #include <SDL2/SDL.h>
@@ -41,8 +41,8 @@ const char *gl_extensions;
 
 SDL_Window *window = NULL;
 
-qboolean isPermedia = false;
-qboolean gl_mtexable = false;
+bool isPermedia = false;
+bool gl_mtexable = false;
 
 unsigned short d_8to16table[256];
 unsigned d_8to24table[256];
@@ -55,8 +55,8 @@ static void (*qgl3DfxSetPaletteEXT)(GLuint *);
 
 static SDL_GLContext context = NULL;
 
-static qboolean vidmode_active = false;
-static qboolean is8bit = false;
+static bool vidmode_active = false;
+static bool is8bit = false;
 static int scr_width, scr_height;
 static float vid_gamma = 1.0;
 
@@ -298,7 +298,7 @@ static void VID_CheckGamma(unsigned char *pal)
     memcpy(pal, palette, sizeof(palette));
 }
 
-static void VID_SetMode(int width, int height, qboolean fullscreen)
+static void VID_SetMode(int width, int height, bool fullscreen)
 {
     vidmode_active = false;
     int display = SDL_GetWindowDisplayIndex(window);
@@ -356,7 +356,7 @@ static void VID_SetMode(int width, int height, qboolean fullscreen)
     SDL_SetWindowDisplayMode(window, &vidmode);
 }
 
-static void VID_CheckParms(int *width, int *height, qboolean *fullscreen)
+static void VID_CheckParms(int *width, int *height, bool *fullscreen)
 {
     int i;
     
@@ -412,7 +412,7 @@ void VID_Init(unsigned char *palette)
 {
     int i;
     int width, height;
-    qboolean fullscreen;
+    bool fullscreen;
 
     Cvar_RegisterVariable(&vid_mode);
     Cvar_RegisterVariable(&gl_ztrick);

@@ -1,4 +1,7 @@
 
+#ifndef _KEYS_H
+#define _KEYS_H
+
 //
 // these are the key numbers that should be passed to Key_Event
 //
@@ -96,19 +99,24 @@
 #define K_MWHEELUP		239
 #define K_MWHEELDOWN	240
 
+typedef enum
+{
+    key_game,
+    key_console,
+    key_message,
+    key_menu
+} keydest_t;
 
-
-typedef enum {key_game, key_console, key_message, key_menu} keydest_t;
-
-extern keydest_t	key_dest;
+extern keydest_t key_dest;
 extern char *keybindings[256];
-extern	int		key_repeats[256];
-extern	int		key_count;			// incremented every key event
-extern	int		key_lastpress;
+extern int key_repeats[256];
+extern int key_count; // incremented every key event
+extern int key_lastpress;
 
-void Key_Event (int key, qboolean down);
-void Key_Init (void);
-void Key_WriteBindings (FILE *f);
-void Key_SetBinding (int keynum, char *binding);
-void Key_ClearStates (void);
+void Key_Event(int key, bool down);
+void Key_Init();
+void Key_WriteBindings(FILE *f);
+void Key_SetBinding(int keynum, char *binding);
+void Key_ClearStates();
 
+#endif /* !_KEYS_H */

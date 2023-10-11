@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "serverdef.h"
 
 /*
 
@@ -57,7 +57,7 @@ void SV_Physics_Toss (edict_t *ent);
 SV_CheckAllEnts
 ================
 */
-void SV_CheckAllEnts (void)
+void SV_CheckAllEnts ()
 {
 	int			e;
 	edict_t		*check;
@@ -120,7 +120,7 @@ in a frame.  Not used for pushmove objects, because they must be exact.
 Returns false if the entity removed itself.
 =============
 */
-qboolean SV_RunThink (edict_t *ent)
+bool SV_RunThink (edict_t *ent)
 {
 	float	thinktime;
 
@@ -796,7 +796,7 @@ void SV_CheckStuck (edict_t *ent)
 SV_CheckWater
 =============
 */
-qboolean SV_CheckWater (edict_t *ent)
+bool SV_CheckWater (edict_t *ent)
 {
 	vec3_t	point;
 	int		cont;
@@ -1342,7 +1342,7 @@ will fall if the floor is pulled out from under them.
 */
 void SV_Physics_Step (edict_t *ent)
 {
-	qboolean	hitsound;
+	bool	hitsound;
 
 // freefall if not onground
 	if ( ! ((int)ent->v.flags & (FL_ONGROUND | FL_FLY | FL_SWIM) ) )
@@ -1378,7 +1378,7 @@ SV_Physics
 
 ================
 */
-void SV_Physics (void)
+void SV_Physics ()
 {
 	int		i;
 	edict_t	*ent;

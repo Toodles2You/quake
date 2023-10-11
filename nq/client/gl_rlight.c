@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "clientdef.h"
 
 int	r_dlightframecount;
 
@@ -28,7 +28,7 @@ int	r_dlightframecount;
 R_AnimateLight
 ==================
 */
-void R_AnimateLight (void)
+void R_AnimateLight ()
 {
 	int			i,j,k;
 	
@@ -109,7 +109,7 @@ void R_RenderDlight (dlight_t *light)
 R_RenderDlights
 =============
 */
-void R_RenderDlights (void)
+void R_RenderDlights ()
 {
 	int		i;
 	dlight_t	*l;
@@ -200,7 +200,7 @@ void R_MarkLights (dlight_t *light, int bit, mnode_t *node)
 R_PushDlights
 =============
 */
-void R_PushDlights (void)
+void R_PushDlights ()
 {
 	int		i;
 	dlight_t	*l;
@@ -235,7 +235,7 @@ extern int		d_lightmap_bytes;
 mplane_t		*lightplane;
 vec3_t			lightspot;
 
-qboolean RecursiveLightPoint (mnode_t *node, vec3_t start, vec3_t end, vec3_t dest)
+bool RecursiveLightPoint (mnode_t *node, vec3_t start, vec3_t end, vec3_t dest)
 {
 	float		front, back, frac;
 	int			side;

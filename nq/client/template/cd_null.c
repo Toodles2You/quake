@@ -1,36 +1,36 @@
-#include "quakedef.h"
+#include "clientdef.h"
 
-void CDAudio_Play(byte track, qboolean looping)
+void CDAudio_Play(byte track, bool looping)
 {
 }
 
 
-void CDAudio_Stop(void)
+void CDAudio_Stop()
 {
 }
 
 
-void CDAudio_Pause(void)
+void CDAudio_Pause()
 {
 }
 
 
-void CDAudio_Resume(void)
+void CDAudio_Resume()
 {
 }
 
 
-void CDAudio_Update(void)
+void CDAudio_Update()
 {
 }
 
 
-int CDAudio_Init(void)
+int CDAudio_Init()
 {
 	return 0;
 }
 
 
-void CDAudio_Shutdown(void)
+void CDAudio_Shutdown()
 {
 }

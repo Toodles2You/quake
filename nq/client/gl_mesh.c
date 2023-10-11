@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "clientdef.h"
 
 /*
 =================================================================
@@ -31,7 +31,7 @@ ALIAS MODEL DISPLAY LIST GENERATION
 model_t		*aliasmodel;
 aliashdr_t	*paliashdr;
 
-qboolean	used[8192];
+bool	used[8192];
 
 // the command list holds counts and s/t values that are valid for
 // every frame
@@ -194,7 +194,7 @@ Generate a list of trifans or strips
 for the model, which holds for all frames
 ================
 */
-void BuildTris (void)
+void BuildTris ()
 {
 	int		i, j, k;
 	int		startv;

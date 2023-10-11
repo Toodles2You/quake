@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "bothdef.h"
 
 #define	DYNAMIC_SIZE	0xc000
 
@@ -243,7 +243,7 @@ void Z_Print (memzone_t *zone)
 Z_CheckHeap
 ========================
 */
-void Z_CheckHeap (void)
+void Z_CheckHeap ()
 {
 	memblock_t	*block;
 	
@@ -277,10 +277,10 @@ int		hunk_size;
 int		hunk_low_used;
 int		hunk_high_used;
 
-qboolean	hunk_tempactive;
+bool	hunk_tempactive;
 int		hunk_tempmark;
 
-void R_FreeTextures (void);
+void R_FreeTextures ();
 
 /*
 ==============
@@ -289,7 +289,7 @@ Hunk_Check
 Run consistancy and sentinal trahing checks
 ==============
 */
-void Hunk_Check (void)
+void Hunk_Check ()
 {
 	hunk_t	*h;
 	
@@ -311,7 +311,7 @@ If "all" is specified, every single allocation is printed.
 Otherwise, allocations with the same name will be totaled up before printing.
 ==============
 */
-void Hunk_Print (qboolean all)
+void Hunk_Print (bool all)
 {
 	hunk_t	*h, *next, *endlow, *starthigh, *endhigh;
 	int		count, sum;
@@ -435,7 +435,7 @@ void *Hunk_Alloc (int size)
 	return Hunk_AllocName (size, "unknown");
 }
 
-int	Hunk_LowMark (void)
+int	Hunk_LowMark ()
 {
 	return hunk_low_used;
 }
@@ -448,7 +448,7 @@ void Hunk_FreeToLowMark (int mark)
 	hunk_low_used = mark;
 }
 
-int	Hunk_HighMark (void)
+int	Hunk_HighMark ()
 {
 	if (hunk_tempactive)
 	{
@@ -562,7 +562,7 @@ typedef struct cache_system_s
 	struct cache_system_s	*lru_prev, *lru_next;	// for LRU flushing	
 } cache_system_t;
 
-cache_system_t *Cache_TryAlloc (int size, qboolean nobottom);
+cache_system_t *Cache_TryAlloc (int size, bool nobottom);
 
 cache_system_t	cache_head;
 
@@ -676,7 +676,7 @@ Looks for a free block of memory between the high and low hunk marks
 Size should already include the header and padding
 ============
 */
-cache_system_t *Cache_TryAlloc (int size, qboolean nobottom)
+cache_system_t *Cache_TryAlloc (int size, bool nobottom)
 {
 	cache_system_t	*cs, *new;
 	
@@ -755,7 +755,7 @@ Cache_Flush
 Throw everything out, so new data will be demand cached
 ============
 */
-void Cache_Flush (void)
+void Cache_Flush ()
 {
 	while (cache_head.next != &cache_head)
 		Cache_Free ( cache_head.next->user );	// reclaim the space
@@ -768,7 +768,7 @@ Cache_Print
 
 ============
 */
-void Cache_Print (void)
+void Cache_Print ()
 {
 	cache_system_t	*cd;
 
@@ -784,7 +784,7 @@ Cache_Report
 
 ============
 */
-void Cache_Report (void)
+void Cache_Report ()
 {
 	Con_DPrintf ("%4.1f megabyte data cache\n", (hunk_size - hunk_high_used - hunk_low_used) / (float)(1024*1024) );
 }
@@ -795,7 +795,7 @@ Cache_Compact
 
 ============
 */
-void Cache_Compact (void)
+void Cache_Compact ()
 {
 }
 
@@ -805,7 +805,7 @@ Cache_Init
 
 ============
 */
-void Cache_Init (void)
+void Cache_Init ()
 {
 	cache_head.next = cache_head.prev = &cache_head;
 	cache_head.lru_next = cache_head.lru_prev = &cache_head;

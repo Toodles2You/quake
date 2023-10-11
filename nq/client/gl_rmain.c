@@ -18,11 +18,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "clientdef.h"
 
 entity_t	r_worldentity;
-
-qboolean	r_cache_thrash;		// compatability
 
 vec3_t		modelorg, r_entorigin;
 entity_t	*currententity;
@@ -34,7 +32,7 @@ mplane_t	frustum[4];
 
 int			c_brush_polys, c_alias_polys;
 
-qboolean	envmap;				// true during envmap command capture 
+bool	envmap;				// true during envmap command capture 
 
 int			currenttexture = -1;		// to avoid unnecessary texture sets
 
@@ -44,7 +42,7 @@ int			particletexture;	// little dot for particles
 int			playertextures;		// up to 16 color translated skins
 
 int			mirrortexturenum;	// quake texturenum, not gltexturenum
-qboolean	mirror;
+bool	mirror;
 mplane_t	*mirror_plane;
 
 //
@@ -70,7 +68,7 @@ texture_t	*r_notexture_mip;
 int		d_lightstylevalue[256];	// 8.8 fraction of base light value
 
 
-void R_MarkLeaves (void);
+void R_MarkLeaves ();
 void R_SetupGL (float fov_x, float fov_y, vrect_t* vrect);
 
 cvar_t	r_norefresh = {"r_norefresh","0"};
@@ -111,7 +109,7 @@ R_CullBox
 Returns true if the box is completely outside the frustom
 =================
 */
-qboolean R_CullBox (vec3_t mins, vec3_t maxs)
+bool R_CullBox (vec3_t mins, vec3_t maxs)
 {
 	int		i;
 
@@ -292,7 +290,7 @@ int	lastposenum;
 GL_DrawAliasFrame
 =============
 */
-void GL_DrawAliasFrame (aliashdr_t *paliashdr, int posenum, qboolean shade)
+void GL_DrawAliasFrame (aliashdr_t *paliashdr, int posenum, bool shade)
 {
 	float	s, t;
 	vec3_t 	l;
@@ -427,7 +425,7 @@ R_SetupAliasFrame
 
 =================
 */
-void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr, qboolean shade)
+void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr, bool shade)
 {
 	int				pose, numposes;
 	float			interval;
@@ -559,8 +557,8 @@ void R_DrawAliasModel (entity_t *e)
 		glShadeModel (GL_SMOOTH);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	
-	qboolean affine = (gl_affinemodels.value != 0);
-	qboolean fence = (r_fence.value != 0);
+	bool affine = (gl_affinemodels.value != 0);
+	bool fence = (r_fence.value != 0);
 
 	if (affine)
 		glHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
@@ -627,7 +625,7 @@ void R_DrawAliasModel (entity_t *e)
 R_DrawEntitiesOnList
 =============
 */
-void R_DrawEntitiesOnList (void)
+void R_DrawEntitiesOnList ()
 {
 	int		i;
 
@@ -672,7 +670,7 @@ void R_DrawEntitiesOnList (void)
 R_DrawViewModel
 =============
 */
-void R_DrawViewModel (void)
+void R_DrawViewModel ()
 {
 	if (!r_drawviewmodel.value)
 		return;
@@ -712,7 +710,7 @@ void R_DrawViewModel (void)
 R_PolyBlend
 ============
 */
-void R_PolyBlend (void)
+void R_PolyBlend ()
 {
 	if (!gl_polyblend.value)
 		return;
@@ -790,7 +788,7 @@ void TurnVector (vec3_t out, const vec3_t forward, const vec3_t side, float angl
 R_SetFrustum -- johnfitz -- rewritten
 ===============
 */
-void R_SetFrustum (void)
+void R_SetFrustum ()
 {
 	int		i;
 
@@ -814,7 +812,7 @@ void R_SetFrustum (void)
 R_SetupFrame
 ===============
 */
-void R_SetupFrame (void)
+void R_SetupFrame ()
 {
 	int				edgecount;
 	vrect_t			vrect;
@@ -839,8 +837,6 @@ void R_SetupFrame (void)
 
 	V_SetContentsColor (r_viewleaf->contents);
 	V_CalcBlend ();
-
-	r_cache_thrash = false;
 
 	c_brush_polys = 0;
 	c_alias_polys = 0;
@@ -945,7 +941,7 @@ R_RenderScene
 r_refdef must be set before the first call
 ================
 */
-void R_RenderScene (void)
+void R_RenderScene ()
 {
 	R_SetupFrame ();
 
@@ -975,7 +971,7 @@ void R_RenderScene (void)
 R_Clear
 =============
 */
-void R_Clear (void)
+void R_Clear ()
 {
 	if (r_mirroralpha.value != 1.0)
 	{
@@ -1027,7 +1023,7 @@ void R_Clear (void)
 R_Mirror
 =============
 */
-void R_Mirror (void)
+void R_Mirror ()
 {
 	float		d;
 	msurface_t	*s;
@@ -1096,7 +1092,7 @@ R_RenderView
 r_refdef must be set before the first call
 ================
 */
-void R_RenderView (void)
+void R_RenderView ()
 {
 	double	time1, time2;
 	GLfloat colors[4] = {(GLfloat) 0.0, (GLfloat) 0.0, (GLfloat) 1, (GLfloat) 0.20};

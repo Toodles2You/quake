@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "bothdef.h"
 #include "crc.h"
 
 // this is a 16 bit, non-reflected CRC using the polynomial 0x1021

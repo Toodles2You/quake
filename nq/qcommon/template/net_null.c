@@ -1,4 +1,4 @@
-#include "quakedef.h"
+#include "bothdef.h"
 
 #include "net_loop.h"
 

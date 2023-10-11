@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "clientdef.h"
 
 extern	model_t	*loadmodel;
 
@@ -32,7 +32,7 @@ msurface_t	*warpface;
 
 extern cvar_t gl_subdivide_size;
 
-static qboolean skyanimated;
+static bool skyanimated;
 
 void BoundPoly (int numverts, float *verts, vec3_t mins, vec3_t maxs)
 {
@@ -383,7 +383,7 @@ int fgetLittleLong (FILE *f)
 LoadTGA
 =============
 */
-qboolean LoadTGA (FILE *fin, byte *targa_rgba)
+bool LoadTGA (FILE *fin, byte *targa_rgba)
 {
 	int				columns, rows, numPixels;
 	byte			*pixbuf;
@@ -704,7 +704,7 @@ void ClipSkyPolygon (int nump, vec3_t vecs, int stage)
 {
 	float	*norm;
 	float	*v;
-	qboolean	front, back;
+	bool	front, back;
 	float	d, e;
 	float	dists[MAX_CLIP_VERTS];
 	int		sides[MAX_CLIP_VERTS];
@@ -833,7 +833,7 @@ void R_DrawSkyChain (msurface_t *s)
 R_ClearSkyBox
 ==============
 */
-void R_ClearSkyBox (void)
+void R_ClearSkyBox ()
 {
 	int		i;
 
@@ -889,7 +889,7 @@ R_DrawSkyBox
 ==============
 */
 int	skytexorder[6] = {0,2,1,3,4,5};
-void R_DrawSkyBox (void)
+void R_DrawSkyBox ()
 {
 	if (skyanimated)
 		return;

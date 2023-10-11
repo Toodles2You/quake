@@ -18,7 +18,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "quakedef.h"
+#include "clientdef.h"
 
 #define MAX_PARTICLES			2048	// default max # of particles at one
 										//  time
@@ -42,7 +42,7 @@ vec3_t			r_pright, r_pup, r_ppn;
 R_InitParticles
 ===============
 */
-void R_InitParticles (void)
+void R_InitParticles ()
 {
 	int		i;
 
@@ -137,7 +137,7 @@ avelocities[0][i] = (rand()&255) * 0.01;
 R_ClearParticles
 ===============
 */
-void R_ClearParticles (void)
+void R_ClearParticles ()
 {
 	int		i;
 	
@@ -149,9 +149,9 @@ void R_ClearParticles (void)
 	particles[r_numparticles-1].next = NULL;
 }
 
-
-void R_ReadPointFile_f (void)
+void R_ReadPointFile_f ()
 {
+#if 0
 	FILE	*f;
 	vec3_t	org;
 	int		r;
@@ -196,6 +196,7 @@ void R_ReadPointFile_f (void)
 
 	fclose (f);
 	Con_Printf ("%i points read\n", c);
+#endif
 }
 
 /*
@@ -205,7 +206,7 @@ R_ParseParticleEffect
 Parse an effect out of the server message
 ===============
 */
-void R_ParseParticleEffect (void)
+void R_ParseParticleEffect ()
 {
 	vec3_t		org, dir;
 	int			i, count, msgcount, color;
@@ -603,7 +604,7 @@ R_DrawParticles
 */
 extern	cvar_t	sv_gravity;
 
-void R_DrawParticles (void)
+void R_DrawParticles ()
 {
 	particle_t		*p, *kill;
 	float			grav;
