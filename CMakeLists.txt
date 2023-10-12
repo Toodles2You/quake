@@ -54,7 +54,6 @@ if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
 endif()
 
 set(QUAKE_DIRS include)
-
 set(QUAKE_LIBRARIES m)
 
 #===============================================================#
@@ -144,6 +143,167 @@ target_include_directories(quake PRIVATE ${QUAKE_DIRS} ${SDL_INCLUDE_DIRS})
 target_link_directories(quake PRIVATE ${SDL_LIBRARY_DIRS})
 
 target_link_libraries(quake PRIVATE ${QUAKE_LIBRARIES} ${SDL_LIBRARIES} GL dl)
+
+#===============================================================#
+# QuakeC Compiler                                               #
+#===============================================================#
+
+add_executable(qcc
+    common/cmdlib.c
+    utils/qcc/pr_comp.c
+    utils/qcc/pr_lex.c
+    utils/qcc/qcc.c
+)
+target_include_directories(qcc PRIVATE ${QUAKE_DIRS})
+target_link_libraries(qcc PRIVATE ${QUAKE_LIBRARIES})
+
+#===============================================================#
+# BSP                                                           #
+#===============================================================#
+
+add_executable(qbsp
+    common/bspfile.c
+    common/cmdlib.c
+    common/mathlib.c
+    utils/qbsp/brush.c
+    utils/qbsp/csg4.c
+    utils/qbsp/map.c
+    utils/qbsp/merge.c
+    utils/qbsp/nodraw.c
+    utils/qbsp/outside.c
+    utils/qbsp/portals.c
+    utils/qbsp/qbsp.c
+    utils/qbsp/region.c
+    utils/qbsp/solidbsp.c
+    utils/qbsp/surfaces.c
+    utils/qbsp/tjunc.c
+    utils/qbsp/writebsp.c
+)
+
+target_include_directories(qbsp PRIVATE ${QUAKE_DIRS})
+target_link_libraries(qbsp PRIVATE ${QUAKE_LIBRARIES})
+
+#===============================================================#
+# Light                                                         #
+#===============================================================#
+
+add_executable(light
+    common/bspfile.c
+    common/cmdlib.c
+    common/mathlib.c
+    common/trilib.c
+    utils/light/entities.c
+    utils/light/light.c
+    utils/light/ltface.c
+    utils/light/threads.c
+    utils/light/trace.c
+)
+
+target_include_directories(light PRIVATE ${QUAKE_DIRS})
+target_link_libraries(light PRIVATE ${QUAKE_LIBRARIES})
+
+#===============================================================#
+# Vis                                                           #
+#===============================================================#
+
+add_executable(vis
+    common/bspfile.c
+    common/cmdlib.c
+    common/mathlib.c
+    utils/vis/flow.c
+    utils/vis/soundpvs.c
+    utils/vis/vis.c
+)
+
+target_include_directories(vis PRIVATE ${QUAKE_DIRS})
+target_link_libraries(vis PRIVATE ${QUAKE_LIBRARIES})
+
+#===============================================================#
+# Info                                                          #
+#===============================================================#
+
+add_executable(bspinfo
+    common/bspfile.c
+    common/cmdlib.c
+    utils/bspinfo/bspinfo.c
+)
+
+target_include_directories(bspinfo PRIVATE ${QUAKE_DIRS})
+target_link_libraries(bspinfo PRIVATE ${QUAKE_LIBRARIES})
+
+#===============================================================#
+# Tex Make                                                      #
+#===============================================================#
+
+add_executable(texmake
+    common/cmdlib.c
+    common/lbmlib.c
+    common/mathlib.c
+    common/scriplib.c
+    common/trilib.c
+    utils/texmake/texmake.c
+)
+
+target_include_directories(texmake PRIVATE ${QUAKE_DIRS})
+target_link_libraries(texmake PRIVATE ${QUAKE_LIBRARIES})
+
+#===============================================================#
+# Model Gen                                                     #
+#===============================================================#
+
+add_executable(modelgen
+    common/cmdlib.c
+    common/lbmlib.c
+    common/mathlib.c
+    common/scriplib.c
+    common/trilib.c
+    utils/modelgen/modelgen.c
+)
+
+target_include_directories(modelgen PRIVATE ${QUAKE_DIRS})
+target_link_libraries(modelgen PRIVATE ${QUAKE_LIBRARIES})
+
+#===============================================================#
+# Sprite Gen                                                    #
+#===============================================================#
+
+add_executable(sprgen
+    common/cmdlib.c
+    common/lbmlib.c
+    common/scriplib.c
+    utils/sprgen/sprgen.c
+)
+
+target_include_directories(sprgen PRIVATE ${QUAKE_DIRS})
+target_link_libraries(sprgen PRIVATE ${QUAKE_LIBRARIES})
+
+#===============================================================#
+# Lumpy                                                         #
+#===============================================================#
+
+add_executable(qlumpy
+    common/cmdlib.c
+    common/lbmlib.c
+    common/scriplib.c
+    common/wadlib.c
+    utils/qlumpy/qlumpy.c
+    utils/qlumpy/quakegrb.c
+)
+
+target_include_directories(qlumpy PRIVATE ${QUAKE_DIRS})
+target_link_libraries(qlumpy PRIVATE ${QUAKE_LIBRARIES})
+
+#===============================================================#
+# Files                                                         #
+#===============================================================#
+
+add_executable(qfiles
+    common/cmdlib.c
+    utils/qfiles/qfiles.c
+)
+
+target_include_directories(qfiles PRIVATE ${QUAKE_DIRS})
+target_link_libraries(qfiles PRIVATE ${QUAKE_LIBRARIES})
 
 #===============================================================#
 # Installation                                                  #
