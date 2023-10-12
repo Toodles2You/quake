@@ -658,7 +658,7 @@ int PF_newcheckclient (int check)
 	int		i;
 	byte	*pvs;
 	edict_t	*ent;
-	cleaf_t	*leaf;
+	mleaf_t	*leaf;
 	vec3_t	org;
 
 // cycle to the next one
@@ -723,7 +723,7 @@ int c_invis, c_notvis;
 void PF_checkclient ()
 {
 	edict_t	*ent, *self;
-	cleaf_t	*leaf;
+	mleaf_t	*leaf;
 	int		l;
 	vec3_t	view;
 	

@@ -110,42 +110,6 @@ typedef struct msurface_s
 	byte *samples;					// [numstyles*surfsize]
 } msurface_t;
 
-typedef struct mnode_s
-{
-	// common with leaf
-	int contents; // 0, to differentiate from leafs
-	int visframe; // node needs to be traversed if current
-
-	float minmaxs[6]; // for bounding box culling
-
-	struct mnode_s *parent;
-
-	// node specific
-	mplane_t *plane;
-	struct mnode_s *children[2];
-
-	unsigned short firstsurface;
-	unsigned short numsurfaces;
-} mnode_t;
-
-typedef struct mleaf_s
-{
-	// common with node
-	int contents; // wil be a negative contents number
-	int visframe; // node needs to be traversed if current
-
-	float minmaxs[6]; // for bounding box culling
-
-	struct mnode_s *parent;
-
-	// leaf specific
-	efrag_t *efrags;
-
-	msurface_t **firstmarksurface;
-	int nummarksurfaces;
-	byte ambient_sound_level[NUM_AMBIENTS];
-} mleaf_t;
-
 /*
 ==============================================================================
 
@@ -310,23 +274,14 @@ typedef struct model_s
 
 	int firstmodelsurface, nummodelsurfaces;
 
-	int numsubmodels;
-	dmodel_t *submodels;
-
 	int numplanes;
 	mplane_t *planes;
-
-	int numleafs; // number of visible leafs, not counting 0
-	mleaf_t *leafs;
 
 	int numvertexes;
 	mvertex_t *vertexes;
 
 	int numedges;
 	medge_t *edges;
-
-	int numnodes;
-	mnode_t *nodes;
 
 	int numtexinfo;
 	mtexinfo_t *texinfo;

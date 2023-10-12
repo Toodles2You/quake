@@ -250,6 +250,7 @@ void CL_ParseServerInfo ()
 
 // precache models
 	memset (cl.model_precache, 0, sizeof(cl.model_precache));
+	memset (cl.cmodel_precache, 0, sizeof(cl.cmodel_precache));
 	for (nummodels=1 ; ; nummodels++)
 	{
 		str = MSG_ReadString ();
@@ -292,9 +293,11 @@ void CL_ParseServerInfo ()
 			Con_Printf("Model %s not found\n", model_precache[i]);
 			return;
 		}
-		if (i == 1)
+		cl.cmodel_precache[i] = CMod_ForName (model_precache[i], false, i == 1);
+		if (cl.cmodel_precache[i] == NULL)
 		{
-			cl.worldcmodel = CMod_ForName (model_precache[i], false, true);
+			Con_Printf("Model %s not found\n", model_precache[i]);
+			return;
 		}
 		CL_KeepaliveMessage ();
 	}
@@ -334,6 +337,7 @@ void CL_ParseUpdate (int bits)
 {
 	int			i;
 	model_t		*model;
+	cmodel_t	*cmodel;
 	int			modnum;
 	bool	forcelink;
 	entity_t	*ent;
@@ -380,9 +384,11 @@ if (bits&(1<<i))
 		modnum = ent->baseline.modelindex;
 		
 	model = cl.model_precache[modnum];
+	cmodel = cl.cmodel_precache[modnum];
 	if (model != ent->model)
 	{
 		ent->model = model;
+		ent->cmodel = cmodel;
 	// automatic animation (torches, etc) can be either all together
 	// or randomized
 		if (model)
@@ -671,6 +677,7 @@ void CL_ParseStatic ()
 
 // copy it to the current state
 	ent->model = cl.model_precache[ent->baseline.modelindex];
+	ent->cmodel = cl.cmodel_precache[ent->baseline.modelindex];
 	ent->frame = ent->baseline.frame;
 	ent->colormap = vid.colormap;
 	ent->skinnum = ent->baseline.skin;

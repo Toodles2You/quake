@@ -628,7 +628,7 @@ void S_UpdateAmbientSounds ()
 	if (!cl.worldmodel)
 		return;
 
-	l = CMod_PointInLeaf (listener_origin, cl.worldcmodel);
+	l = CMod_PointInLeaf (listener_origin, cl.cmodel_precache[1]);
 	if (!l || !ambient_level.value)
 	{
 		for (ambient_channel = 0 ; ambient_channel< NUM_AMBIENTS ; ambient_channel++)

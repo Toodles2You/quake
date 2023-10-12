@@ -1184,12 +1184,14 @@ void R_DrawBrushModel (entity_t *e)
 	float		dot;
 	mplane_t	*pplane;
 	model_t		*clmodel;
+	cmodel_t	*clcmodel;
 	bool	rotated;
 
 	currententity = e;
 	currenttexture = -1;
 
 	clmodel = e->model;
+	clcmodel = e->cmodel;
 
 	if (e->angles[0] || e->angles[1] || e->angles[2])
 	{
@@ -1230,8 +1232,6 @@ void R_DrawBrushModel (entity_t *e)
 
 // calculate dynamic lighting for bmodel if it's not an
 // instanced model
-	/*! Toodles FIXME: */
-#if 0
 	if (clmodel->firstmodelsurface != 0 && gl_flashblend.value == 0)
 	{
 		for (k=0 ; k<MAX_DLIGHTS ; k++)
@@ -1241,10 +1241,9 @@ void R_DrawBrushModel (entity_t *e)
 				continue;
 
 			R_MarkLights (&cl_dlights[k], 1<<k,
-				clmodel->nodes + clmodel->hulls[HULL_POINT].firstclipnode);
+				clcmodel->nodes + clcmodel->hulls[HULL_POINT].firstclipnode);
 		}
 	}
-#endif
 
     glPushMatrix ();
 e->angles[0] = -e->angles[0];	// stupid quake bug
@@ -1297,7 +1296,7 @@ e->angles[0] = -e->angles[0];	// stupid quake bug
 R_RecursiveWorldNode
 ================
 */
-void R_RecursiveWorldNode (mnode_t *node)
+void R_RecursiveWorldNode (msurface_t **surfs, mnode_t *node)
 {
 	int			i, c, side, *pindex;
 	vec3_t		acceptpt, rejectpt;
@@ -1320,7 +1319,7 @@ void R_RecursiveWorldNode (mnode_t *node)
 	{
 		pleaf = (mleaf_t *)node;
 
-		mark = pleaf->firstmarksurface;
+		mark = surfs + pleaf->firstmarksurface;
 		c = pleaf->nummarksurfaces;
 
 		if (c)
@@ -1366,7 +1365,7 @@ void R_RecursiveWorldNode (mnode_t *node)
 		side = 1;
 
 // recurse down the children, front side first
-	R_RecursiveWorldNode (node->children[side]);
+	R_RecursiveWorldNode (surfs, node->children[side]);
 
 // draw stuff
 	c = node->numsurfaces;
@@ -1416,7 +1415,7 @@ void R_RecursiveWorldNode (mnode_t *node)
 	}
 
 // recurse down the back side
-	R_RecursiveWorldNode (node->children[!side]);
+	R_RecursiveWorldNode (surfs, node->children[!side]);
 }
 
 
@@ -1445,7 +1444,7 @@ void R_DrawWorld ()
 
     glEnable(GL_STENCIL_TEST);
 
-	R_RecursiveWorldNode (cl.worldmodel->nodes);
+	R_RecursiveWorldNode (cl.worldmodel->marksurfaces, cl.cmodel_precache[1]->nodes);
 
 	DrawTextureChains ();
 
@@ -1481,16 +1480,16 @@ void R_MarkLeaves ()
 	if (r_novis.value)
 	{
 		vis = solid;
-		memset (solid, 0xff, (cl.worldmodel->numleafs+7)>>3);
+		memset (solid, 0xff, (cl.cmodel_precache[1]->numleafs+7)>>3);
 	}
 	else
-		vis = CMod_LeafPVS (r_viewleaf, cl.worldcmodel);
+		vis = CMod_LeafPVS (r_viewleaf, cl.cmodel_precache[1]);
 		
-	for (i=0 ; i<cl.worldmodel->numleafs ; i++)
+	for (i=0 ; i<cl.cmodel_precache[1]->numleafs ; i++)
 	{
 		if (vis[i>>3] & (1<<(i&7)))
 		{
-			node = (mnode_t *)&cl.worldmodel->leafs[i+1];
+			node = (mnode_t *)&cl.cmodel_precache[1]->leafs[i+1];
 			do
 			{
 				if (node->visframe == r_visframecount)

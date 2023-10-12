@@ -324,10 +324,10 @@ SV_FindTouchedLeafs
 
 ===============
 */
-void SV_FindTouchedLeafs (edict_t *ent, cnode_t *node)
+void SV_FindTouchedLeafs (edict_t *ent, mnode_t *node)
 {
 	mplane_t	*splitplane;
-	cleaf_t		*leaf;
+	mleaf_t		*leaf;
 	int			sides;
 	int			leafnum;
 
@@ -341,7 +341,7 @@ void SV_FindTouchedLeafs (edict_t *ent, cnode_t *node)
 		if (ent->num_leafs == MAX_ENT_LEAFS)
 			return;
 
-		leaf = (cleaf_t *)node;
+		leaf = (mleaf_t *)node;
 		leafnum = leaf - sv.worldmodel->leafs - 1;
 
 		ent->leafnums[ent->num_leafs] = leafnum;

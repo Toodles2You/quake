@@ -176,6 +176,7 @@ typedef struct
 	// information that is static for the entire time connected to a server
 	//
 	struct model_s *model_precache[MAX_MODELS];
+	struct cmodel_s *cmodel_precache[MAX_MODELS];
 	struct sfx_s *sound_precache[MAX_SOUNDS];
 
 	char levelname[40]; // for display on solo scoreboard
@@ -185,7 +186,6 @@ typedef struct
 
 	// refresh related state
 	struct model_s *worldmodel; // cl_entitites[0].model
-	struct cmodel_s *worldcmodel; // cl_entitites[0].model
 	struct efrag_s *free_efrags;
 	int num_entities; // held in cl_entities array
 	int num_statics;  // held in cl_staticentities array

@@ -45,7 +45,6 @@ Mod_Init
 */
 void Mod_Init()
 {
-	mod_numknown = 0;
 	Cvar_RegisterVariable(&gl_subdivide_size);
 }
 
@@ -89,7 +88,7 @@ model_t *Mod_FindName(char *name)
 	//
 	for (i = 0, mod = mod_known; i < mod_numknown; i++, mod++)
 	{
-		if (!strcmp(mod->name, name))
+		if (!Q_strcmp(mod->name, name))
 		{
 			break;
 		}
@@ -101,7 +100,7 @@ model_t *Mod_FindName(char *name)
 		{
 			Sys_Error("mod_numknown == MAX_MODELS");
 		}
-		strcpy(mod->name, name);
+		Q_strcpy(mod->name, name);
 		mod->needload = true;
 		mod_numknown++;
 	}
@@ -616,6 +615,77 @@ void Mod_LoadEntities(lump_t *l)
 
 /*
 =================
+RadiusFromBounds
+=================
+*/
+float RadiusFromBounds(vec3_t mins, vec3_t maxs)
+{
+    int i;
+    vec3_t corner;
+
+    for (i = 0; i < 3; i++)
+    {
+        corner[i] = fabs(mins[i]) > fabs(maxs[i]) ? fabs(mins[i]) : fabs(maxs[i]);
+    }
+
+    return Length(corner);
+}
+
+/*
+=================
+Mod_LoadSubmodels
+
+Toodles FIXME: This isn't really necessary.
+=================
+*/
+void Mod_LoadSubmodels(lump_t *l)
+{
+    dmodel_t *in;
+    model_t *out, *next;
+    int i, j, count;
+    char name[10];
+
+    in = (void *)(mod_base + l->fileofs);
+
+    if (l->filelen % sizeof(*in))
+    {
+        Sys_Error("MOD_LoadBmodel: funny lump size in %s", loadmodel->name);
+    }
+
+    count = l->filelen / sizeof(*in);
+    out = loadmodel;
+
+    for (i = 0; i < count; i++, in++)
+    {
+		if (i > 0)
+		{
+			/* Get the next cmodel_t to be filled. */
+			sprintf(name, "*%i", i);
+			next = Mod_FindName(name);
+
+			/* Duplicate the basic information. */
+			*next = *out;
+			Q_strcpy(next->name, name);
+
+			/* Switch it out. */
+			out = next;
+		}
+
+		out->firstmodelsurface = LittleLong(in->firstface);
+		out->nummodelsurfaces = LittleLong(in->numfaces);
+
+        for (j = 0; j < 3; j++)
+        {
+            out->mins[j] = LittleFloat(in->mins[j]) - 1.0f;
+            out->maxs[j] = LittleFloat(in->maxs[j]) + 1.0f;
+        }
+
+		out->radius = RadiusFromBounds(out->mins, out->maxs);
+    }
+}
+
+/*
+=================
 Mod_LoadVertexes
 =================
 */
@@ -893,180 +963,6 @@ void Mod_LoadFaces(lump_t *l)
 
 /*
 =================
-Mod_LoadSubmodels
-=================
-*/
-void Mod_LoadSubmodels(lump_t *l)
-{
-    dmodel_t *in;
-    dmodel_t *out;
-    int i, j, count;
-
-    in = (void *)(mod_base + l->fileofs);
-
-    if (l->filelen % sizeof(*in))
-    {
-        Sys_Error("MOD_LoadBmodel: funny lump size in %s", loadmodel->name);
-    }
-
-    count = l->filelen / sizeof(*in);
-    out = Hunk_AllocName(count * sizeof(*out), loadname);
-
-    loadmodel->submodels = out;
-    loadmodel->numsubmodels = count;
-
-    for (i = 0; i < count; i++, in++, out++)
-    {
-        for (j = 0; j < 3; j++)
-        {
-            out->mins[j] = LittleFloat(in->mins[j]) - 1;
-            out->maxs[j] = LittleFloat(in->maxs[j]) + 1;
-            out->origin[j] = LittleFloat(in->origin[j]);
-        }
-
-        for (j = 0; j < MAX_MAP_HULLS; j++)
-        {
-            out->headnode[j] = LittleLong(in->headnode[j]);
-        }
-
-        out->visleafs = LittleLong(in->visleafs);
-        out->firstface = LittleLong(in->firstface);
-        out->numfaces = LittleLong(in->numfaces);
-    }
-}
-
-/*
-=================
-Mod_SetParent
-=================
-*/
-void Mod_SetParent(mnode_t *node, mnode_t *parent)
-{
-	node->parent = parent;
-	if (node->contents < 0)
-	{
-		return;
-	}
-	Mod_SetParent(node->children[0], node);
-	Mod_SetParent(node->children[1], node);
-}
-
-/*
-=================
-Mod_LoadNodes
-=================
-*/
-void Mod_LoadNodes(lump_t *l)
-{
-	int i, j, count, p;
-	dnode_t *in;
-	mnode_t *out;
-
-	in = (void *)(mod_base + l->fileofs);
-
-	if (l->filelen % sizeof(*in))
-	{
-		Sys_Error("MOD_LoadBmodel: funny lump size in %s", loadmodel->name);
-	}
-
-	count = l->filelen / sizeof(*in);
-	out = Hunk_AllocName(count * sizeof(*out), loadname);
-
-	loadmodel->nodes = out;
-	loadmodel->numnodes = count;
-
-	for (i = 0; i < count; i++, in++, out++)
-	{
-		for (j = 0; j < 3; j++)
-		{
-			out->minmaxs[j] = LittleShort(in->mins[j]);
-			out->minmaxs[3 + j] = LittleShort(in->maxs[j]);
-		}
-
-		p = LittleLong(in->planenum);
-		out->plane = loadmodel->planes + p;
-
-		out->firstsurface = LittleShort(in->firstface);
-		out->numsurfaces = LittleShort(in->numfaces);
-
-		for (j = 0; j < 2; j++)
-		{
-			p = LittleShort(in->children[j]);
-			if (p >= 0)
-			{
-				out->children[j] = loadmodel->nodes + p;
-			}
-			else
-			{
-				out->children[j] = (mnode_t *)(loadmodel->leafs + (-1 - p));
-			}
-		}
-	}
-
-	Mod_SetParent(loadmodel->nodes, NULL); // sets nodes and leafs
-}
-
-/*
-=================
-Mod_LoadLeafs
-=================
-*/
-void Mod_LoadLeafs(lump_t *l)
-{
-	dleaf_t *in;
-	mleaf_t *out;
-	int i, j, count, p;
-
-	in = (void *)(mod_base + l->fileofs);
-
-	if (l->filelen % sizeof(*in))
-	{
-		Sys_Error("MOD_LoadBmodel: funny lump size in %s", loadmodel->name);
-	}
-
-	count = l->filelen / sizeof(*in);
-	out = Hunk_AllocName(count * sizeof(*out), loadname);
-
-	loadmodel->leafs = out;
-	loadmodel->numleafs = count;
-
-	for (i = 0; i < count; i++, in++, out++)
-	{
-		for (j = 0; j < 3; j++)
-		{
-			out->minmaxs[j] = LittleShort(in->mins[j]);
-			out->minmaxs[3 + j] = LittleShort(in->maxs[j]);
-		}
-
-		p = LittleLong(in->contents);
-		out->contents = p;
-
-		out->firstmarksurface = loadmodel->marksurfaces +
-								LittleShort(in->firstmarksurface);
-		out->nummarksurfaces = LittleShort(in->nummarksurfaces);
-
-		out->efrags = NULL;
-
-		for (j = 0; j < 4; j++)
-		{
-			out->ambient_sound_level[j] = in->ambient_level[j];
-		}
-
-		// gl underwater warp
-		if (out->contents != CONTENTS_EMPTY)
-		{
-			for (j = 0; j < out->nummarksurfaces; j++)
-			{
-				out->firstmarksurface[j]->flags |= SURF_UNDERWATER;
-			}
-		}
-	}
-
-	(mod_version == BSPQUAKE) ? S_AmbientOn() : S_AmbientOff();
-}
-
-/*
-=================
 Mod_LoadMarksurfaces
 =================
 */
@@ -1175,24 +1071,6 @@ void Mod_LoadPlanes(lump_t *l)
 
 /*
 =================
-RadiusFromBounds
-=================
-*/
-float RadiusFromBounds(vec3_t mins, vec3_t maxs)
-{
-    int i;
-    vec3_t corner;
-
-    for (i = 0; i < 3; i++)
-    {
-        corner[i] = fabs(mins[i]) > fabs(maxs[i]) ? fabs(mins[i]) : fabs(maxs[i]);
-    }
-
-    return Length(corner);
-}
-
-/*
-=================
 Mod_LoadBrushModel
 =================
 */
@@ -1249,36 +1127,15 @@ void Mod_LoadBrushModel(model_t *mod, void *buffer)
 	Mod_LoadTexinfo		(&header->lumps[LUMP_TEXINFO]);
 	Mod_LoadFaces		(&header->lumps[LUMP_FACES]);
 	Mod_LoadMarksurfaces(&header->lumps[LUMP_MARKSURFACES]);
-	Mod_LoadLeafs		(&header->lumps[LUMP_LEAFS]);
-	Mod_LoadNodes		(&header->lumps[LUMP_NODES]);
-    Mod_LoadSubmodels  	(&header->lumps[LUMP_MODELS]);
+    Mod_LoadSubmodels   (&header->lumps[LUMP_MODELS]);
 
-	model_t *cur = mod;
-
-	for (i = 0; i < cur->numsubmodels; i++)
+	if (mod_version == BSPQUAKE)
 	{
-		bm = &cur->submodels[i];
-
-		VectorCopy(bm->maxs, cur->maxs);
-		VectorCopy(bm->mins, cur->mins);
-
-		cur->firstmodelsurface = bm->firstface;
-		cur->nummodelsurfaces = bm->numfaces;
-		cur->radius = RadiusFromBounds(cur->mins, cur->maxs);
-
-		cur->numleafs = bm->visleafs;
-
-		// duplicate the basic information
-		if (i < cur->numsubmodels - 1)
-		{
-			char name[10];
-
-			sprintf(name, "*%i", i + 1);
-			loadmodel = Mod_FindName(name);
-			*loadmodel = *cur;
-			Q_strcpy(loadmodel->name, name);
-			cur = loadmodel;
-		}
+		S_AmbientOn();
+	}
+	else
+	{
+		S_AmbientOff();
 	}
 }
 

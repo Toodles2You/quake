@@ -59,9 +59,9 @@ void CMod_Init()
 CMod_PointInLeaf
 ===============
 */
-cleaf_t *CMod_PointInLeaf(vec3_t p, cmodel_t *model)
+mleaf_t *CMod_PointInLeaf(vec3_t p, cmodel_t *model)
 {
-    cnode_t *node;
+    mnode_t *node;
     float d;
     mplane_t *plane;
 
@@ -70,7 +70,7 @@ cleaf_t *CMod_PointInLeaf(vec3_t p, cmodel_t *model)
     {
         if (node->contents < 0)
         {
-            return (cleaf_t *)node;
+            return (mleaf_t *)node;
         }
         plane = node->plane;
         d = DotProduct(p, plane->normal) - plane->dist;
@@ -132,7 +132,7 @@ byte *CMod_DecompressVis(byte *in, cmodel_t *model)
     return decompressed;
 }
 
-byte *CMod_LeafPVS(cleaf_t *leaf, cmodel_t *model)
+byte *CMod_LeafPVS(mleaf_t *leaf, cmodel_t *model)
 {
     if (leaf == model->leafs)
     {
@@ -327,8 +327,9 @@ CMod_LoadSubmodels
 void CMod_LoadSubmodels(lump_t *l)
 {
     dmodel_t *in;
-    dmodel_t *out;
+    cmodel_t *out, *next;
     int i, j, count;
+    char name[10];
 
     in = (void *)(mod_base + l->fileofs);
 
@@ -338,28 +339,39 @@ void CMod_LoadSubmodels(lump_t *l)
     }
 
     count = l->filelen / sizeof(*in);
-    out = Hunk_AllocName(count * sizeof(*out), loadname);
+    out = loadcmod;
 
-    loadcmod->submodels = out;
     loadcmod->numsubmodels = count;
 
-    for (i = 0; i < count; i++, in++, out++)
+    for (i = 0; i < count; i++, in++)
     {
+        if (i > 0)
+        {
+            /* Get the next cmodel_t to be filled. */
+            sprintf(name, "*%i", i);
+            next = CMod_FindName(name);
+
+            /* Duplicate the basic information. */
+			*next = *out;
+			Q_strcpy(next->name, name);
+
+            /* Switch it out. */
+            out = next;
+        }
+
         for (j = 0; j < 3; j++)
         {
-            out->mins[j] = LittleFloat(in->mins[j]) - 1;
-            out->maxs[j] = LittleFloat(in->maxs[j]) + 1;
-            out->origin[j] = LittleFloat(in->origin[j]);
+            out->mins[j] = LittleFloat(in->mins[j]) - 1.0f;
+            out->maxs[j] = LittleFloat(in->maxs[j]) + 1.0f;
         }
 
         for (j = 0; j < MAX_MAP_HULLS; j++)
         {
-            out->headnode[j] = LittleLong(in->headnode[j]);
+            out->hulls[j].firstclipnode = LittleLong(in->headnode[j]);
+            out->hulls[j].lastclipnode = out->numclipnodes - 1;
         }
 
-        out->visleafs = LittleLong(in->visleafs);
-        out->firstface = LittleLong(in->firstface);
-        out->numfaces = LittleLong(in->numfaces);
+        out->numleafs = LittleLong(in->visleafs);
     }
 }
 
@@ -368,7 +380,7 @@ void CMod_LoadSubmodels(lump_t *l)
 CMod_SetParent
 =================
 */
-void CMod_SetParent(cnode_t *node, cnode_t *parent)
+void CMod_SetParent(mnode_t *node, mnode_t *parent)
 {
     node->parent = parent;
     if (node->contents < 0)
@@ -388,7 +400,7 @@ void CMod_LoadNodes(lump_t *l)
 {
     int i, j, count, p;
     dnode_t *in;
-    cnode_t *out;
+    mnode_t *out;
 
     in = (void *)(mod_base + l->fileofs);
 
@@ -414,6 +426,9 @@ void CMod_LoadNodes(lump_t *l)
         p = LittleLong(in->planenum);
         out->plane = loadcmod->planes + p;
 
+		out->firstsurface = LittleShort(in->firstface);
+		out->numsurfaces = LittleShort(in->numfaces);
+
         for (j = 0; j < 2; j++)
         {
             p = LittleShort(in->children[j]);
@@ -423,7 +438,7 @@ void CMod_LoadNodes(lump_t *l)
             }
             else
             {
-                out->children[j] = (cnode_t *)(loadcmod->leafs + (-1 - p));
+                out->children[j] = (mnode_t *)(loadcmod->leafs + (-1 - p));
             }
         }
     }
@@ -439,7 +454,7 @@ CMod_LoadLeafs
 void CMod_LoadLeafs(lump_t *l)
 {
     dleaf_t *in;
-    cleaf_t *out;
+    mleaf_t *out;
     int i, j, count, p;
 
     in = (void *)(mod_base + l->fileofs);
@@ -465,6 +480,16 @@ void CMod_LoadLeafs(lump_t *l)
 
         p = LittleLong(in->contents);
         out->contents = p;
+
+		out->firstmarksurface = LittleShort(in->firstmarksurface);
+		out->nummarksurfaces = LittleShort(in->nummarksurfaces);
+
+		out->efrags = NULL;
+
+		for (j = 0; j < NUM_AMBIENTS; j++)
+		{
+			out->ambient_sound_level[j] = in->ambient_level[j];
+		}
 
         p = LittleLong(in->visofs);
 
@@ -540,7 +565,7 @@ Deplicate the drawing hull structure as a clipping hull
 */
 void CMod_MakeHull0()
 {
-    cnode_t *in, *child;
+    mnode_t *in, *child;
     dclipnode_t *out;
     int i, j, count;
     hull_t *hull;
@@ -627,7 +652,6 @@ void CMod_LoadBrushModel(cmodel_t *mod, void *buffer)
 {
     int i, j;
     dheader_t *header;
-    dmodel_t *bm;
 
     header = (dheader_t *)buffer;
 
@@ -659,41 +683,10 @@ void CMod_LoadBrushModel(cmodel_t *mod, void *buffer)
     CMod_LoadLeafs      (&header->lumps[LUMP_LEAFS]);
     CMod_LoadNodes      (&header->lumps[LUMP_NODES]);
     CMod_LoadClipnodes  (&header->lumps[LUMP_CLIPNODES]);
-    CMod_LoadSubmodels  (&header->lumps[LUMP_MODELS]);
 
     CMod_MakeHull0();
 
-    //
-    // set up the submodels (FIXME: this is confusing)
-    //
-    for (i = 0; i < mod->numsubmodels; i++)
-    {
-        bm = &mod->submodels[i];
-
-        mod->hulls[HULL_POINT].firstclipnode = bm->headnode[HULL_POINT];
-        for (j = 1; j < MAX_MAP_HULLS; j++)
-        {
-            mod->hulls[j].firstclipnode = bm->headnode[j];
-            mod->hulls[j].lastclipnode = mod->numclipnodes - 1;
-        }
-
-        VectorCopy(bm->maxs, mod->maxs);
-        VectorCopy(bm->mins, mod->mins);
-
-        mod->numleafs = bm->visleafs;
-
-        // duplicate the basic information
-        if (i < mod->numsubmodels - 1)
-        {
-            char name[10];
-
-            sprintf(name, "*%i", i + 1);
-            loadcmod = CMod_FindName(name);
-            *loadcmod = *mod;
-            Q_strcpy(loadcmod->name, name);
-            mod = loadcmod;
-        }
-    }
+    CMod_LoadSubmodels  (&header->lumps[LUMP_MODELS]);
 }
 
 //=============================================================================
@@ -708,7 +701,7 @@ void CMod_Print()
     int i;
     cmodel_t *mod;
 
-    Con_Printf("Cached models:\n");
+    Con_Printf("Cached cmodels:\n");
     for (i = 0, mod = cmod_known; i < cmod_numknown; i++, mod++)
     {
         Con_Printf("%u : %s\n", i, mod->name);

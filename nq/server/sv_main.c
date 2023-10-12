@@ -358,7 +358,7 @@ crosses a waterline.
 int		fatbytes;
 byte	fatpvs[MAX_MAP_LEAFS/8];
 
-void SV_AddToFatPVS (vec3_t org, cnode_t *node)
+void SV_AddToFatPVS (vec3_t org, mnode_t *node)
 {
 	int		i;
 	byte	*pvs;
@@ -372,7 +372,7 @@ void SV_AddToFatPVS (vec3_t org, cnode_t *node)
 		{
 			if (node->contents != CONTENTS_SOLID)
 			{
-				pvs = CMod_LeafPVS ( (cleaf_t *)node, sv.worldmodel);
+				pvs = CMod_LeafPVS ( (mleaf_t *)node, sv.worldmodel);
 				for (i=0 ; i<fatbytes ; i++)
 					fatpvs[i] |= pvs[i];
 			}

@@ -216,7 +216,7 @@ void R_PushDlights ()
 	{
 		if (l->die < cl.time || !l->radius)
 			continue;
-		R_MarkLights ( l, 1<<i, cl.worldmodel->nodes );
+		R_MarkLights ( l, 1<<i, cl.cmodel_precache[1]->nodes );
 	}
 }
 
@@ -362,7 +362,7 @@ void R_LightPoint (vec3_t p, vec3_t dest)
 	end[1] = p[1];
 	end[2] = p[2] - 2048;
 	
-	if (RecursiveLightPoint (cl.worldmodel->nodes, p, end, dest))
+	if (RecursiveLightPoint (cl.cmodel_precache[1]->nodes, p, end, dest))
 	{
 		if (lightmap_bytes == 1 && d_lightmap_bytes == 3)
 		{

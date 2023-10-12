@@ -30,9 +30,11 @@ typedef struct mplane_s
 	byte pad[2];
 } mplane_t;
 
-typedef struct cnode_s cnode_t;
+typedef struct mnode_s mnode_t;
+typedef struct efrag_s efrag_t;
+typedef struct msurface_s msurface_t;
 
-typedef struct cnode_s
+typedef struct mnode_s
 {
 	// common with leaf
 	int contents; // 0, to differentiate from leafs
@@ -40,14 +42,18 @@ typedef struct cnode_s
 
 	float minmaxs[6]; // for bounding box culling
 
-	cnode_t *parent;
+	mnode_t *parent;
 
 	// node specific
 	mplane_t *plane;
-	cnode_t *children[2];
-} cnode_t;
+	mnode_t *children[2];
 
-typedef struct cleaf_s
+	/*! TODO: Client only. Dedicated server never needs these. */
+	unsigned short firstsurface;
+	unsigned short numsurfaces;
+} mnode_t;
+
+typedef struct mleaf_s
 {
 	// common with node
 	int contents; // wil be a negative contents number
@@ -55,11 +61,18 @@ typedef struct cleaf_s
 
 	float minmaxs[6]; // for bounding box culling
 
-	cnode_t *parent;
+	mnode_t *parent;
 
 	// leaf specific
 	byte *compressed_vis;
-} cleaf_t;
+
+	/*! TODO: Client only. Dedicated server never needs these. */
+	efrag_t *efrags;
+
+	int firstmarksurface;
+	int nummarksurfaces;
+	byte ambient_sound_level[NUM_AMBIENTS];
+} mleaf_t;
 
 typedef struct
 {
@@ -83,16 +96,15 @@ typedef struct cmodel_s
 	bool world;
 
 	int numsubmodels;
-	dmodel_t *submodels;
 
 	int numplanes;
 	mplane_t *planes;
 
 	int numleafs; // number of visible leafs, not counting 0
-	cleaf_t *leafs;
+	mleaf_t *leafs;
 
 	int numnodes;
-	cnode_t *nodes;
+	mnode_t *nodes;
 
 	int numclipnodes;
 	dclipnode_t *clipnodes;
@@ -112,7 +124,7 @@ void CMod_Init();
 void CMod_ClearAll();
 cmodel_t *CMod_ForName(char *name, bool crash, bool world);
 
-cleaf_t *CMod_PointInLeaf(vec3_t p, cmodel_t *model);
-byte *CMod_LeafPVS(cleaf_t *leaf, cmodel_t *model);
+mleaf_t *CMod_PointInLeaf(vec3_t p, cmodel_t *model);
+byte *CMod_LeafPVS(mleaf_t *leaf, cmodel_t *model);
 
 #endif /* !_CMODEL_H */
