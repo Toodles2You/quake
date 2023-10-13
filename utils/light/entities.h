@@ -14,6 +14,7 @@ typedef struct entity_s
 	vec3_t	origin;
 	float	angle;
 	int		light;
+	vec3_t	color;
 	int		style;
 	char	target[32];
 	char	targetname[32];

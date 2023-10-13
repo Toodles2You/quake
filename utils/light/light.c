@@ -21,8 +21,13 @@ int			bspfileface;	// next surface to dispatch
 vec3_t	bsp_origin;
 
 bool	extrasamples;
+bool	hasrgb;
+
+int		bspversion;
 
 float		minlights[MAX_MAP_FACES];
+
+extern dheader_t *header;
 
 
 byte *GetFileSpace (int size)
@@ -89,6 +94,8 @@ int main (int argc, char **argv)
 
 	printf ("----- LightFaces ----\n");
 
+	hasrgb = true;
+
 	for (i=1 ; i<argc ; i++)
 	{
 		if (!strcmp(argv[i],"-threads"))
@@ -129,6 +136,20 @@ int main (int argc, char **argv)
 	DefaultExtension (source, ".bsp");
 	
 	LoadBSPFile (source);
+
+	bspversion = header->version;
+
+	if (bspversion == BSPQUAKE)
+	{
+		hasrgb = false;
+		printf ("rgb light disabled by default\n");
+	}
+	else
+	{
+		hasrgb = true;
+		printf ("rgb light enabled\n");
+	}
+
 	LoadEntities ();
 		
 	MakeTnodes (&dmodels[0]);

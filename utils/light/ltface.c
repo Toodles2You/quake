@@ -53,9 +53,9 @@ towards the center until it is valid.
 
 typedef struct
 {
-	vec_t	lightmaps[MAXLIGHTMAPS][SINGLEMAP];
+	vec3_t	lightmaps[MAXLIGHTMAPS][SINGLEMAP];
 	int		numlightstyles;
-	vec_t	*light;
+	vec3_t	*light;
 	vec_t	facedist;
 	vec3_t	facenormal;
 
@@ -336,11 +336,12 @@ void SingleLightFace (entity_t *light, lightinfo_t *l)
 	bool	hit;
 	int		mapnum;
 	int		size;
-	int		c, i;
+	int		c, i, j;
 	vec3_t	rel;
 	vec3_t	spotvec;
 	vec_t	falloff;
-	vec_t	*lightsamp;
+	vec3_t	*lightsamp;
+	int		bytes;
 	
 	VectorSubtract (light->origin, bsp_origin, rel);
 	dist = scaledist * (DotProduct (rel, l->facenormal) - l->facedist);
@@ -372,7 +373,7 @@ void SingleLightFace (entity_t *light, lightinfo_t *l)
 	for (mapnum=0 ; mapnum<l->numlightstyles ; mapnum++)
 		if (l->lightstyles[mapnum] == light->style)
 			break;
-	lightsamp = l->lightmaps[mapnum];
+	lightsamp = (vec3_t *)l->lightmaps[mapnum];
 	if (mapnum == l->numlightstyles)
 	{	// init a new light map
 		if (mapnum == MAXLIGHTMAPS)
@@ -382,7 +383,11 @@ void SingleLightFace (entity_t *light, lightinfo_t *l)
 		}
 		size = (l->texsize[1]+1)*(l->texsize[0]+1);
 		for (i=0 ; i<size ; i++)
-			lightsamp[i] = 0;
+		{
+			lightsamp[i][0] = 0.0f;
+			lightsamp[i][1] = 0.0f;
+			lightsamp[i][2] = 0.0f;
+		}
 	}
 
 //
@@ -390,6 +395,7 @@ void SingleLightFace (entity_t *light, lightinfo_t *l)
 //
 	hit = false;
 	c_proper++;
+	bytes = hasrgb ? 3 : 1;
 	
 	surf = l->surfpt[0];
 	for (c=0 ; c<l->numsurfpt ; c++, surf+=3)
@@ -408,13 +414,21 @@ void SingleLightFace (entity_t *light, lightinfo_t *l)
 		}
 
 		angle = (1.0-scalecos) + scalecos*angle;
-		add = light->light - dist;
-		add *= angle;
-		if (add < 0)
-			continue;
-		lightsamp[c] += add;
-		if (lightsamp[c] > 1)		// ignore real tiny lights
-			hit = true;
+
+		for (j = 0; j < bytes; j++)
+		{
+			add = (light->color[j] * light->light) - dist;
+			add *= angle;
+			if (add <= 0)
+			{
+				continue;
+			}
+			lightsamp[c][j] += add;
+			if (lightsamp[c][j] > 1) // ignore real tiny lights
+			{
+				hit = true;
+			}
+		}
 	}
 		
 	if (mapnum == l->numlightstyles && hit)
@@ -431,14 +445,17 @@ FixMinlight
 */
 void FixMinlight (lightinfo_t *l)
 {
-	int		i, j;
+	int		i, j, k;
 	float	minlight;
+	int		bytes;
 	
 	minlight = minlights[l->surfnum];
 
 // if minlight is set, there must be a style 0 light map
 	if (!minlight)
 		return;
+	
+	bytes = hasrgb ? 3 : 1;
 	
 	for (i=0 ; i< l->numlightstyles ; i++)
 	{
@@ -450,15 +467,27 @@ void FixMinlight (lightinfo_t *l)
 		if (l->numlightstyles == MAXLIGHTMAPS)
 			return;		// oh well..
 		for (j=0 ; j<l->numsurfpt ; j++)
-			l->lightmaps[i][j] = minlight;
+		{
+			for (k = 0; k < bytes; k++)
+			{
+				l->lightmaps[i][j][k] = minlight;
+			}
+		}
 		l->lightstyles[i] = 0;
 		l->numlightstyles++;
 	}
 	else
 	{
 		for (j=0 ; j<l->numsurfpt ; j++)
-			if ( l->lightmaps[i][j] < minlight)
-				l->lightmaps[i][j] = minlight;
+		{
+			for (k = 0; k < bytes; k++)
+			{
+				if (l->lightmaps[i][j][k] < minlight)
+				{
+					l->lightmaps[i][j][k] = minlight;
+				}
+			}
+		}
 	}
 }
 
@@ -474,12 +503,13 @@ void LightFace (int surfnum)
 	lightinfo_t	l;
 	int		s, t;
 	int		i,j,c;
-	vec_t	total;
+	vec3_t	total;
 	int		size;
 	int		lightmapwidth, lightmapsize;
 	byte	*out;
-	vec_t	*light;
+	vec3_t	*light;
 	int		w, h;
+	int		bytes;
 	
 	f = dfaces + surfnum;
 
@@ -548,7 +578,8 @@ void LightFace (int surfnum)
 	for (i=0 ; i <MAXLIGHTMAPS ; i++)
 		f->styles[i] = l.lightstyles[i];
 
-	lightmapsize = size*l.numlightstyles;
+	bytes = hasrgb ? 3 : 1;
+	lightmapsize = size*bytes*l.numlightstyles;
 
 	out = GetFileSpace (lightmapsize);
 	f->lightofs = out - filebase;
@@ -561,25 +592,63 @@ void LightFace (int surfnum)
 	{
 		if (l.lightstyles[i] == 0xff)
 			Error ("Wrote empty lightmap");
-		light = l.lightmaps[i];
+		light = (vec3_t *)l.lightmaps[i];
 		c = 0;
 		for (t=0 ; t<=l.texsize[1] ; t++)
 			for (s=0 ; s<=l.texsize[0] ; s++, c++)
 			{
 				if (extrasamples)
 				{	// filtered sample
-					total = light[t*2*w+s*2] + light[t*2*w+s*2+1]
-					+ light[(t*2+1)*w+s*2] + light[(t*2+1)*w+s*2+1];
-					total *= 0.25;
+					for (j = 0; j < bytes; j++)
+					{
+						total[j] = light[t * 2 * w + s * 2][j]
+								 + light[t * 2 * w + s * 2 + 1][j]
+								 + light[(t * 2 + 1) * w + s * 2][j]
+								 + light[(t * 2 + 1) * w + s * 2 + 1][j];
+						total[j] *= 0.25f;
+					}
 				}
 				else
-					total = light[c];
-				total *= rangescale;	// scale before clamping
-				if (total > 255)
-					total = 255;
-				if (total < 0)
-					Error ("light < 0");
-				*out++ = total;
+				{
+					if (hasrgb)
+					{
+						VectorCopy(light[c], total);
+					}
+					else
+					{
+						total[0] = light[c][0];
+					}
+				}
+				// scale before clamping
+				if (hasrgb)
+				{
+					VectorScale(total, rangescale, total);
+					if (total[0] < 0 || total[1] < 0 || total[2] < 0)
+					{
+						Error("light < 0");
+					}
+					if (total[0] > 255 || total[1] > 255 || total[2] > 255)
+					{
+						VectorNormalize(total);
+						VectorScale(total, 255, total);
+					}
+					*out++ = (byte)total[0];
+					*out++ = (byte)total[1];
+					*out++ = (byte)total[2];
+				}
+				else
+				{
+					total[0] *= rangescale;
+					if (total[0] < 0)
+					{
+						Error("light < 0");
+					}
+					if (total[0] > 255)
+					{
+						total[0] = 255;
+					}
+					*out++ = (byte)total[0];
+				}
 			}
 	}
 

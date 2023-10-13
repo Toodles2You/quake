@@ -84,6 +84,8 @@ void LoadEntities (void)
 	epair_t		*epair;
 	double		vec[3];
 	int			i;
+	int			num;
+	float		light;
 
 	data = dentdata;
 //
@@ -152,7 +154,29 @@ void LoadEntities (void)
 			}
 			else if (!strncmp(key, "light", 5) || !strcmp (key, "_light") )
 			{
-				entity->light = atof(com_token);
+				num = sscanf(
+					com_token,
+					"%f %f %f %f",
+					&entity->color[0],
+					&entity->color[1],
+					&entity->color[2],
+					&light
+				);
+				if (num == 4)
+				{
+					entity->color[0] /= 255.0f;
+					entity->color[1] /= 255.0f;
+					entity->color[2] /= 255.0f;
+					hasrgb = true;
+				}
+				else
+				{
+					entity->color[0] = 1.0f;
+					entity->color[1] = 1.0f;
+					entity->color[2] = 1.0f;
+					light = atof(com_token);
+				}
+				entity->light = light;
 			}
 			else if (!strcmp(key, "style"))
 			{

@@ -34,5 +34,8 @@ void TransformSample (vec3_t in, vec3_t out);
 void RotateSample (vec3_t in, vec3_t out);
 
 extern	bool	extrasamples;
+extern  bool    hasrgb;
+
+extern  int     bspversion;
 
 extern	float		minlights[MAX_MAP_FACES];
