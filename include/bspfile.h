@@ -41,8 +41,11 @@ enum
 
 //=============================================================================
 
-#define BSPVERSION 30
-#define BSPQUAKE 29
+enum
+{
+	BSPVERSION = 30,
+	BSPQUAKE = 29,
+};
 
 typedef struct
 {
