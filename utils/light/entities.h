@@ -12,7 +12,7 @@ typedef struct entity_s
 {
 	char	classname[64];
 	vec3_t	origin;
-	float	angle;
+	vec3_t	angles;
 	int		light;
 	vec3_t	color;
 	int		style;
@@ -20,6 +20,7 @@ typedef struct entity_s
 	char	targetname[32];
 	struct epair_s	*epairs;
 	struct entity_s	*targetent;
+	bool	sky;
 } entity_t;
 
 extern	entity_t	entities[MAX_MAP_ENTITIES];

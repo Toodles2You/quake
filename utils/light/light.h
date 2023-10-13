@@ -10,7 +10,7 @@
 #define	MAXLIGHTS			1024
 
 void LoadNodes (char *file);
-bool TestLine (vec3_t start, vec3_t stop);
+bool TestLine (vec3_t start, vec3_t stop, int *contents);
 
 void LightFace (int surfnum);
 void LightLeaf (dleaf_t *leaf);

@@ -186,7 +186,11 @@ void LoadEntities (void)
 			}
 			else if (!strcmp(key, "angle"))
 			{
-				entity->angle = atof(com_token);
+				entity->angles[1] = atof(com_token);
+			}
+			else if (!strcmp(key, "angles"))
+			{
+				sscanf (com_token, "%f %f %f", &entity->angles[0], &entity->angles[1], &entity->angles[2]);
 			}
 		
 		}
@@ -205,6 +209,10 @@ void LoadEntities (void)
 				sprintf (s,"%i", entity->style);
 				SetKeyValue (entity, "style", s);
 			}
+		}
+		else if (!strcmp (entity->classname, "light_environment"))
+		{
+			entity->sky = true;
 		}
 	}
 

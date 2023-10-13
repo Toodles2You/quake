@@ -13,8 +13,9 @@ vec_t CastRay (vec3_t p1, vec3_t p2)
 	int		i;
 	vec_t	t;
 	bool	trace;
+	int		contents;
 		
-	trace = TestLine (p1, p2);
+	trace = TestLine (p1, p2, &contents);
 		
 	if (!trace)
 		return -1;		// ray was blocked
@@ -26,6 +27,26 @@ vec_t CastRay (vec3_t p1, vec3_t p2)
 	if (t == 0)
 		t = 1;		// don't blow up...
 	return sqrt(t);
+}
+
+/*
+============
+CastRaySky
+
+Returns the distance between the points, or -1 if blocked
+=============
+*/
+bool CastRaySky (vec3_t p1, vec3_t p2)
+{
+	vec3_t p3, p4;
+	int contents;
+
+	VectorMA(p1, ON_EPSILON, p2, p3);
+	VectorMA(p1, 8192.0, p2, p4);
+
+	TestLine (p3, p4, &contents);
+
+	return contents == CONTENTS_SKY;
 }
 
 /*
@@ -323,6 +344,106 @@ int		c_culldistplane, c_proper;
 
 /*
 ================
+SingleEnvLightFace
+================
+*/
+void SingleEnvLightFace (entity_t *light, lightinfo_t *l)
+{
+	vec_t dot;
+	vec3_t incoming;
+	vec_t angle;
+	vec_t add;
+	vec_t *surf;
+	bool hit;
+	int mapnum;
+	int size;
+	int c, i, j;
+	vec3_t rel;
+	vec3_t spotvec;
+	vec_t falloff;
+	vec3_t *lightsamp;
+	int bytes;
+	vec3_t forward;
+
+	AngleVectors(light->angles, forward, NULL, NULL);
+	VectorScale(forward, -1, spotvec);
+
+	dot = DotProduct(spotvec, l->facenormal);
+
+	// don't bother with lights behind the surface
+	if (dot < 0)
+	{
+		return;
+	}
+
+	mapnum = 0;
+	for (mapnum = 0; mapnum < l->numlightstyles; mapnum++)
+	{
+		if (l->lightstyles[mapnum] == light->style)
+		{
+			break;
+		}
+	}
+	lightsamp = (vec3_t *)l->lightmaps[mapnum];
+	// init a new light map
+	if (mapnum == l->numlightstyles)
+	{
+		if (mapnum == MAXLIGHTMAPS)
+		{
+			printf("WARNING: Too many light styles on a face\n");
+			return;
+		}
+		size = (l->texsize[1] + 1) * (l->texsize[0] + 1);
+		for (i = 0; i < size; i++)
+		{
+			lightsamp[i][0] = 0.0f;
+			lightsamp[i][1] = 0.0f;
+			lightsamp[i][2] = 0.0f;
+		}
+	}
+
+	//
+	// check it for real
+	//
+	hit = false;
+	c_proper++;
+	bytes = hasrgb ? 3 : 1;
+
+	surf = l->surfpt[0];
+	for (c = 0; c < l->numsurfpt; c++, surf += 3)
+	{
+		if (!CastRaySky(surf, spotvec))
+		{
+			continue; // light doesn't reach
+		}
+
+		angle = (1.0 - scalecos) + scalecos * dot;
+
+		for (j = 0; j < bytes; j++)
+		{
+			add = (light->color[j] * light->light);
+			add *= angle;
+			if (add <= 0)
+			{
+				continue;
+			}
+			lightsamp[c][j] += add;
+			if (lightsamp[c][j] > 1) // ignore real tiny lights
+			{
+				hit = true;
+			}
+		}
+	}
+
+	if (mapnum == l->numlightstyles && hit)
+	{
+		l->lightstyles[mapnum] = light->style;
+		l->numlightstyles++; // the style has some real data now
+	}
+}
+
+/*
+================
 SingleLightFace
 ================
 */
@@ -342,6 +463,12 @@ void SingleLightFace (entity_t *light, lightinfo_t *l)
 	vec_t	falloff;
 	vec3_t	*lightsamp;
 	int		bytes;
+
+	if (light->sky)
+	{
+		SingleEnvLightFace (light, l);
+		return;
+	}
 	
 	VectorSubtract (light->origin, bsp_origin, rel);
 	dist = scaledist * (DotProduct (rel, l->facenormal) - l->facedist);
@@ -361,10 +488,10 @@ void SingleLightFace (entity_t *light, lightinfo_t *l)
 	{
 		VectorSubtract (light->targetent->origin, light->origin, spotvec);
 		VectorNormalize (spotvec);
-		if (!light->angle)
+		if (!light->angles[1])
 			falloff = -cos(20*Q_PI/180);	
 		else
-			falloff = -cos(light->angle/2*Q_PI/180);
+			falloff = -cos(light->angles[1]/2*Q_PI/180);
 	}
 	else
 		falloff = 0;	// shut up compiler warnings
@@ -610,13 +737,9 @@ void LightFace (int surfnum)
 				}
 				else
 				{
-					if (hasrgb)
+					for (j = 0; j < bytes; j++)
 					{
-						VectorCopy(light[c], total);
-					}
-					else
-					{
-						total[0] = light[c][0];
+						total[j] = light[c][j];
 					}
 				}
 				// scale before clamping

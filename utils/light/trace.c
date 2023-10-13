@@ -90,7 +90,7 @@ typedef struct
 TestLine
 ==============
 */
-bool TestLine (vec3_t start, vec3_t stop)
+bool TestLine (vec3_t start, vec3_t stop, int *contents)
 {
 	int				node;
 	float			front, back;
@@ -112,12 +112,15 @@ bool TestLine (vec3_t start, vec3_t stop)
 	
 	while (1)
 	{
-		while (node < 0 && node != CONTENTS_SOLID)
+		while (node < 0 && node != CONTENTS_SOLID && node != CONTENTS_SKY)
 		{
 		// pop up the stack for a back side
 			tstack_p--;
 			if (tstack_p < tracestack)
+			{
+				*contents = node;
 				return true;
+			}
 			node = tstack_p->node;
 			
 		// set the hit point for this plane
@@ -135,8 +138,11 @@ bool TestLine (vec3_t start, vec3_t stop)
 			node = tnodes[tstack_p->node].children[!tstack_p->side];
 		}
 
-		if (node == CONTENTS_SOLID)
+		if (node == CONTENTS_SOLID || node == CONTENTS_SKY)
+		{
+			*contents = node;
 			return false;	// DONE!
+		}
 		
 		tnode = &tnodes[node];
 		

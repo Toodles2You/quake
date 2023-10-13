@@ -38,6 +38,7 @@ void _VectorCopy (vec3_t in, vec3_t out);
 
 double VectorLength(vec3_t v);
 
+void AngleVectors (vec3_t angles, vec3_t forward, vec3_t right, vec3_t up);
 void VectorMA (vec3_t va, double scale, vec3_t vb, vec3_t vc);
 
 void CrossProduct (vec3_t v1, vec3_t v2, vec3_t cross);
