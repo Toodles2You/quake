@@ -10,6 +10,7 @@
 #include <setjmp.h>
 #include <ctype.h>
 #include <stdbool.h>
+#include <stdint.h>
 
 #define MINIMUM_MEMORY 0x550000
 #define MINIMUM_MEMORY_LEVELPAK (MINIMUM_MEMORY + 0x100000)

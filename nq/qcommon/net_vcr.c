@@ -82,14 +82,14 @@ int VCR_GetMessage (qsocket_t *sock)
 	if (host_time != next.time || next.op != VCR_OP_GETMESSAGE || next.session != *(long *)(&sock->driverdata))
 		Sys_Error ("VCR missmatch");
 
-	Sys_FileRead(vcrFile, &ret, sizeof(int));
+	Sys_FileRead(vcrFile, &ret, sizeof(int32_t));
 	if (ret != 1)
 	{
 		VCR_ReadNext ();
 		return ret;
 	}
 
-	Sys_FileRead(vcrFile, &net_message.cursize, sizeof(int));
+	Sys_FileRead(vcrFile, &net_message.cursize, sizeof(int32_t));
 	Sys_FileRead(vcrFile, net_message.data, net_message.cursize);
 
 	VCR_ReadNext ();
@@ -105,7 +105,7 @@ int VCR_SendMessage (qsocket_t *sock, sizebuf_t *data)
 	if (host_time != next.time || next.op != VCR_OP_SENDMESSAGE || next.session != *(long *)(&sock->driverdata))
 		Sys_Error ("VCR missmatch");
 
-	Sys_FileRead(vcrFile, &ret, sizeof(int));
+	Sys_FileRead(vcrFile, &ret, sizeof(int32_t));
 
 	VCR_ReadNext ();
 
@@ -120,7 +120,7 @@ bool VCR_CanSendMessage (qsocket_t *sock)
 	if (host_time != next.time || next.op != VCR_OP_CANSENDMESSAGE || next.session != *(long *)(&sock->driverdata))
 		Sys_Error ("VCR missmatch");
 
-	Sys_FileRead(vcrFile, &ret, sizeof(int));
+	Sys_FileRead(vcrFile, &ret, sizeof(int32_t));
 
 	VCR_ReadNext ();
 

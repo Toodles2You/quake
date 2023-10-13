@@ -142,7 +142,7 @@ void Q_memset (void *dest, int fill, int count)
 		count >>= 2;
 		fill = fill | (fill<<8) | (fill<<16) | (fill<<24);
 		for (i=0 ; i<count ; i++)
-			((int *)dest)[i] = fill;
+			((int32_t *)dest)[i] = fill;
 	}
 	else
 		for (i=0 ; i<count ; i++)
@@ -157,7 +157,7 @@ void Q_memcpy (void *dest, void *src, int count)
 	{
 		count>>=2;
 		for (i=0 ; i<count ; i++)
-			((int *)dest)[i] = ((int *)src)[i];
+			((int32_t *)dest)[i] = ((int32_t *)src)[i];
 	}
 	else
 		for (i=0 ; i<count ; i++)
@@ -474,14 +474,14 @@ float Q_atof (char *str)
 
 bool        bigendien;
 
-short   (*BigShort) (short l);
-short   (*LittleShort) (short l);
-int     (*BigLong) (int l);
-int     (*LittleLong) (int l);
+int16_t (*BigShort) (int16_t l);
+int16_t (*LittleShort) (int16_t l);
+int32_t (*BigLong) (int32_t l);
+int32_t (*LittleLong) (int32_t l);
 float   (*BigFloat) (float l);
 float   (*LittleFloat) (float l);
 
-short   ShortSwap (short l)
+int16_t   ShortSwap (int16_t l)
 {
 	byte    b1,b2;
 
@@ -491,12 +491,12 @@ short   ShortSwap (short l)
 	return (b1<<8) + b2;
 }
 
-short   ShortNoSwap (short l)
+int16_t   ShortNoSwap (int16_t l)
 {
 	return l;
 }
 
-int    LongSwap (int l)
+int32_t    LongSwap (int32_t l)
 {
 	byte    b1,b2,b3,b4;
 
@@ -505,10 +505,10 @@ int    LongSwap (int l)
 	b3 = (l>>16)&255;
 	b4 = (l>>24)&255;
 
-	return ((int)b1<<24) + ((int)b2<<16) + ((int)b3<<8) + b4;
+	return ((int32_t)b1<<24) + ((int32_t)b2<<16) + ((int32_t)b3<<8) + b4;
 }
 
-int     LongNoSwap (int l)
+int32_t     LongNoSwap (int32_t l)
 {
 	return l;
 }
@@ -1117,7 +1117,7 @@ being registered.
 void COM_CheckRegistered ()
 {
 	int             h;
-	unsigned short  check[128];
+	uint16_t  		check[128];
 	int                     i;
 
 	COM_OpenFile("gfx/pop.lmp", &h);
@@ -1136,7 +1136,7 @@ void COM_CheckRegistered ()
 	COM_CloseFile (h);
 	
 	for (i=0 ; i<128 ; i++)
-		if (pop[i] != (unsigned short)BigShort (check[i]))
+		if (pop[i] != (uint16_t)BigShort (check[i]))
 			Sys_Error ("Corrupted data file.");
 	
 	Cvar_Set ("cmdline", com_cmdline);

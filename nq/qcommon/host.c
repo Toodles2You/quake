@@ -789,16 +789,16 @@ void Host_InitVCR (quakeparms_t *parms)
 		if (vcrFile == -1)
 			Sys_Error("playback file not found\n");
 
-		Sys_FileRead (vcrFile, &i, sizeof(int));
+		Sys_FileRead (vcrFile, &i, sizeof(int32_t));
 		if (i != VCR_SIGNATURE)
 			Sys_Error("Invalid signature in vcr file\n");
 
-		Sys_FileRead (vcrFile, &com_argc, sizeof(int));
+		Sys_FileRead (vcrFile, &com_argc, sizeof(int32_t));
 		com_argv = malloc(com_argc * sizeof(char *));
 		com_argv[0] = parms->argv[0];
 		for (i = 0; i < com_argc; i++)
 		{
-			Sys_FileRead (vcrFile, &len, sizeof(int));
+			Sys_FileRead (vcrFile, &len, sizeof(int32_t));
 			p = malloc(len);
 			Sys_FileRead (vcrFile, p, len);
 			com_argv[i+1] = p;
@@ -813,20 +813,20 @@ void Host_InitVCR (quakeparms_t *parms)
 		vcrFile = Sys_FileOpenWrite("quake.vcr");
 
 		i = VCR_SIGNATURE;
-		Sys_FileWrite(vcrFile, &i, sizeof(int));
+		Sys_FileWrite(vcrFile, &i, sizeof(int32_t));
 		i = com_argc - 1;
-		Sys_FileWrite(vcrFile, &i, sizeof(int));
+		Sys_FileWrite(vcrFile, &i, sizeof(int32_t));
 		for (i = 1; i < com_argc; i++)
 		{
 			if (i == n)
 			{
 				len = 10;
-				Sys_FileWrite(vcrFile, &len, sizeof(int));
+				Sys_FileWrite(vcrFile, &len, sizeof(int32_t));
 				Sys_FileWrite(vcrFile, "-playback", len);
 				continue;
 			}
 			len = Q_strlen(com_argv[i]) + 1;
-			Sys_FileWrite(vcrFile, &len, sizeof(int));
+			Sys_FileWrite(vcrFile, &len, sizeof(int32_t));
 			Sys_FileWrite(vcrFile, com_argv[i], len);
 		}
 	}

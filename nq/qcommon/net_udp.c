@@ -57,7 +57,7 @@ int UDP_Init ()
 	// determine my name & address
 	gethostname(buff, MAXHOSTNAMELEN);
 	local = gethostbyname(buff);
-	myAddr = *(int *)local->h_addr_list[0];
+	myAddr = *(int32_t *)local->h_addr_list[0];
 
 	// if the quake hostname isn't set, set it to the machine name
 	if (Q_strcmp(hostname.string, "UNNAMED") == 0)
@@ -367,7 +367,7 @@ int UDP_GetAddrFromName(char *name, struct qsockaddr *addr)
 
 	addr->sa_family = AF_INET;
 	((struct sockaddr_in *)addr)->sin_port = htons(net_hostport);	
-	((struct sockaddr_in *)addr)->sin_addr.s_addr = *(int *)hostentry->h_addr_list[0];
+	((struct sockaddr_in *)addr)->sin_addr.s_addr = *(int32_t *)hostentry->h_addr_list[0];
 
 	return 0;
 }

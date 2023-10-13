@@ -23,8 +23,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #define	PAINTBUFFER_SIZE	512
 portable_samplepair_t paintbuffer[PAINTBUFFER_SIZE];
 int		snd_scaletable[32][256];
-int 	*snd_p, snd_linear_count, snd_vol;
-short	*snd_out;
+int32_t *snd_p, snd_linear_count, snd_vol;
+int16_t	*snd_out;
 
 void Snd_WriteLinearBlastStereo16 ();
 
@@ -57,21 +57,21 @@ void S_TransferStereo16 (int endtime)
 {
 	int		lpos;
 	int		lpaintedtime;
-	unsigned int	*pbuf;
+	uint32_t	*pbuf;
 
 	snd_vol = volume.value*256;
 
-	snd_p = (int *) paintbuffer;
+	snd_p = (int32_t *) paintbuffer;
 	lpaintedtime = paintedtime;
 
-	pbuf = (unsigned int *)shm->buffer;
+	pbuf = (uint32_t *)shm->buffer;
 
 	while (lpaintedtime < endtime)
 	{
 	// handle recirculating buffer issues
 		lpos = lpaintedtime & ((shm->samples>>1)-1);
 
-		snd_out = (short *) pbuf + (lpos<<1);
+		snd_out = (int16_t *) pbuf + (lpos<<1);
 
 		snd_linear_count = (shm->samples>>1) - lpos;
 		if (lpaintedtime + snd_linear_count > endtime)
@@ -96,7 +96,7 @@ void S_TransferPaintBuffer(int endtime)
 	int 	step;
 	int		val;
 	int		snd_vol;
-	unsigned int	*pbuf;
+	uint32_t	*pbuf;
 
 	if (shm->samplebits == 16 && shm->channels == 2)
 	{
@@ -104,18 +104,18 @@ void S_TransferPaintBuffer(int endtime)
 		return;
 	}
 	
-	p = (int *) paintbuffer;
+	p = (int32_t *) paintbuffer;
 	count = (endtime - paintedtime) * shm->channels;
 	out_mask = shm->samples - 1; 
 	out_idx = paintedtime * shm->channels & out_mask;
 	step = 3 - shm->channels;
 	snd_vol = volume.value*256;
 
-	pbuf = (unsigned int *)shm->buffer;
+	pbuf = (uint32_t *)shm->buffer;
 
 	if (shm->samplebits == 16)
 	{
-		short *out = (short *) pbuf;
+		int16_t *out = (int16_t *) pbuf;
 		while (count--)
 		{
 			val = (*p * snd_vol) >> 8;
@@ -130,7 +130,7 @@ void S_TransferPaintBuffer(int endtime)
 	}
 	else if (shm->samplebits == 8)
 	{
-		unsigned char *out = (unsigned char *) pbuf;
+		byte *out = (byte *) pbuf;
 		while (count--)
 		{
 			val = (*p * snd_vol) >> 8;
@@ -270,12 +270,12 @@ void SND_PaintChannelFrom16 (channel_t *ch, sfxcache_t *sc, int count)
 	int data;
 	int left, right;
 	int leftvol, rightvol;
-	signed short *sfx;
+	int16_t *sfx;
 	int	i;
 
 	leftvol = ch->leftvol;
 	rightvol = ch->rightvol;
-	sfx = (signed short *)sc->data + ch->pos;
+	sfx = (int16_t *)sc->data + ch->pos;
 
 	for (i=0 ; i<count ; i++)
 	{

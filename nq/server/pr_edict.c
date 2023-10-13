@@ -435,7 +435,7 @@ void ED_Print (edict_t *ed)
 {
 	int		l;
 	ddef_t	*d;
-	int		*v;
+	int32_t	*v;
 	int		i, j;
 	char	*name;
 	int		type;
@@ -454,7 +454,7 @@ void ED_Print (edict_t *ed)
 		if (name[strlen(name)-2] == '_')
 			continue;	// skip _x, _y, _z vars
 			
-		v = (int *)((char *)&ed->v + d->ofs*4);
+		v = (int32_t *)((char *)&ed->v + d->ofs*4);
 
 	// if the value is still all 0, skip the field
 		type = d->type & ~DEF_SAVEGLOBAL;
@@ -484,7 +484,7 @@ For savegames
 void ED_Write (FILE *f, edict_t *ed)
 {
 	ddef_t	*d;
-	int		*v;
+	int32_t	*v;
 	int		i, j;
 	char	*name;
 	int		type;
@@ -504,7 +504,7 @@ void ED_Write (FILE *f, edict_t *ed)
 		if (name[strlen(name)-2] == '_')
 			continue;	// skip _x, _y, _z vars
 			
-		v = (int *)((char *)&ed->v + d->ofs*4);
+		v = (int32_t *)((char *)&ed->v + d->ofs*4);
 
 	// if the value is still all 0, skip the field
 		type = d->type & ~DEF_SAVEGLOBAL;
@@ -733,7 +733,7 @@ bool	ED_ParseEpair (void *base, ddef_t *key, char *s)
 	void	*d;
 	dfunction_t	*func;
 	
-	d = (void *)((int *)base + key->ofs);
+	d = (void *)((int32_t *)base + key->ofs);
 	
 	switch (key->type & ~DEF_SAVEGLOBAL)
 	{
@@ -760,7 +760,7 @@ bool	ED_ParseEpair (void *base, ddef_t *key, char *s)
 		break;
 		
 	case ev_entity:
-		*(int *)d = EDICT_TO_PROG(EDICT_NUM(atoi (s)));
+		*(int32_t *)d = EDICT_TO_PROG(EDICT_NUM(atoi (s)));
 		break;
 		
 	case ev_field:
@@ -770,7 +770,7 @@ bool	ED_ParseEpair (void *base, ddef_t *key, char *s)
 			Con_Printf ("Can't find field %s\n", s);
 			return false;
 		}
-		*(int *)d = G_INT(def->ofs);
+		*(int32_t *)d = G_INT(def->ofs);
 		break;
 	
 	case ev_function:
@@ -1003,7 +1003,7 @@ void PR_LoadProgs ()
 
 // byte swap the header
 	for (i=0 ; i<sizeof(*progs)/4 ; i++)
-		((int *)progs)[i] = LittleLong ( ((int *)progs)[i] );		
+		((int32_t *)progs)[i] = LittleLong ( ((int32_t *)progs)[i] );		
 
 	if (progs->version != PROG_VERSION)
 		Sys_Error ("progs.dat has wrong version number (%i should be %i)", progs->version, PROG_VERSION);
@@ -1057,7 +1057,7 @@ void PR_LoadProgs ()
 	}
 
 	for (i=0 ; i<progs->numglobals ; i++)
-		((int *)pr_globals)[i] = LittleLong (((int *)pr_globals)[i]);
+		((int32_t *)pr_globals)[i] = LittleLong (((int32_t *)pr_globals)[i]);
 }
 
 

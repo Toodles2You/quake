@@ -22,33 +22,36 @@
 // TODO: shorten these?
 typedef struct
 {
-	int ident;
-	int version;
-	int type;
+	int32_t ident;
+	int32_t version;
+	int32_t type;
 	float boundingradius;
-	int width;
-	int height;
-	int numframes;
+	int32_t width;
+	int32_t height;
+	int32_t numframes;
 	float beamlength;
 	synctype_t synctype;
 } dsprite_t;
 
-#define SPR_VP_PARALLEL_UPRIGHT 0
-#define SPR_FACING_UPRIGHT 1
-#define SPR_VP_PARALLEL 2
-#define SPR_ORIENTED 3
-#define SPR_VP_PARALLEL_ORIENTED 4
+enum
+{
+	SPR_VP_PARALLEL_UPRIGHT = 0,
+	SPR_FACING_UPRIGHT,
+	SPR_VP_PARALLEL,
+	SPR_ORIENTED,
+	SPR_VP_PARALLEL_ORIENTED,
+};
 
 typedef struct
 {
-	int origin[2];
-	int width;
-	int height;
+	int32_t origin[2];
+	int32_t width;
+	int32_t height;
 } dspriteframe_t;
 
 typedef struct
 {
-	int numframes;
+	int32_t numframes;
 } dspritegroup_t;
 
 typedef struct

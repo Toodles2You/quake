@@ -651,7 +651,7 @@ int ParseNum (char *str)
 
 #ifdef __BIG_ENDIAN__
 
-short   LittleShort (short l)
+int16_t   LittleShort (int16_t l)
 {
 	byte    b1,b2;
 
@@ -661,13 +661,13 @@ short   LittleShort (short l)
 	return (b1<<8) + b2;
 }
 
-short   BigShort (short l)
+int16_t   BigShort (int16_t l)
 {
 	return l;
 }
 
 
-int    LittleLong (int l)
+int32_t    LittleLong (int32_t l)
 {
 	byte    b1,b2,b3,b4;
 
@@ -676,10 +676,10 @@ int    LittleLong (int l)
 	b3 = (l>>16)&255;
 	b4 = (l>>24)&255;
 
-	return ((int)b1<<24) + ((int)b2<<16) + ((int)b3<<8) + b4;
+	return ((int32_t)b1<<24) + ((int32_t)b2<<16) + ((int32_t)b3<<8) + b4;
 }
 
-int    BigLong (int l)
+int32_t    BigLong (int32_t l)
 {
 	return l;
 }
@@ -707,7 +707,7 @@ float	BigFloat (float l)
 #else
 
 
-short   BigShort (short l)
+int16_t   BigShort (int16_t l)
 {
 	byte    b1,b2;
 
@@ -717,13 +717,13 @@ short   BigShort (short l)
 	return (b1<<8) + b2;
 }
 
-short   LittleShort (short l)
+int16_t   LittleShort (int16_t l)
 {
 	return l;
 }
 
 
-int    BigLong (int l)
+int32_t    BigLong (int32_t l)
 {
 	byte    b1,b2,b3,b4;
 
@@ -732,10 +732,10 @@ int    BigLong (int l)
 	b3 = (l>>16)&255;
 	b4 = (l>>24)&255;
 
-	return ((int)b1<<24) + ((int)b2<<16) + ((int)b3<<8) + b4;
+	return ((int32_t)b1<<24) + ((int32_t)b2<<16) + ((int32_t)b3<<8) + b4;
 }
 
-int    LittleLong (int l)
+int32_t    LittleLong (int32_t l)
 {
 	return l;
 }

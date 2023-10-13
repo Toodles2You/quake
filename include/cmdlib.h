@@ -10,12 +10,10 @@
 #include <ctype.h>
 #include <time.h>
 #include <stdarg.h>
+#include <stdbool.h>
+#include <stdint.h>
 
-#ifndef __BYTEBOOL__
-#define __BYTEBOOL__
-typedef enum {false, true} bool;
 typedef unsigned char byte;
-#endif
 
 // the dec offsetof macro doesn't work very well...
 #define myoffsetof(type,identifier) ((size_t)&((type *)0)->identifier)
@@ -67,10 +65,10 @@ void	ExtractFileExtension (char *path, char *dest);
 
 int 	ParseNum (char *str);
 
-short	BigShort (short l);
-short	LittleShort (short l);
-int		BigLong (int l);
-int		LittleLong (int l);
+int16_t	BigShort (int16_t l);
+int16_t	LittleShort (int16_t l);
+int32_t BigLong (int32_t l);
+int32_t LittleLong (int32_t l);
 float	BigFloat (float l);
 float	LittleFloat (float l);
 

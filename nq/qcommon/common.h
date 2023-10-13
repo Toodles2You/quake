@@ -46,25 +46,25 @@ void InsertLinkAfter(link_t *l, link_t *after);
 #endif
 
 #define Q_MAXCHAR ((char)0x7f)
-#define Q_MAXSHORT ((short)0x7fff)
-#define Q_MAXINT ((int)0x7fffffff)
-#define Q_MAXLONG ((int)0x7fffffff)
+#define Q_MAXSHORT ((int16_t)0x7fff)
+#define Q_MAXINT ((int32_t)0x7fffffff)
+#define Q_MAXLONG ((int32_t)0x7fffffff)
 #define Q_MAXFLOAT ((int)0x7fffffff)
 
 #define Q_MINCHAR ((char)0x80)
-#define Q_MINSHORT ((short)0x8000)
-#define Q_MININT ((int)0x80000000)
-#define Q_MINLONG ((int)0x80000000)
+#define Q_MINSHORT ((int16_t)0x8000)
+#define Q_MININT ((int32_t)0x80000000)
+#define Q_MINLONG ((int32_t)0x80000000)
 #define Q_MINFLOAT ((int)0x7fffffff)
 
 //============================================================================
 
 extern bool bigendien;
 
-extern short (*BigShort)(short l);
-extern short (*LittleShort)(short l);
-extern int (*BigLong)(int l);
-extern int (*LittleLong)(int l);
+extern int16_t (*BigShort)(int16_t l);
+extern int16_t (*LittleShort)(int16_t l);
+extern int32_t (*BigLong)(int32_t l);
+extern int32_t (*LittleLong)(int32_t l);
 extern float (*BigFloat)(float l);
 extern float (*LittleFloat)(float l);
 

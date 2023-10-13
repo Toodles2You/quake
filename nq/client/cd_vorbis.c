@@ -41,7 +41,7 @@ static cvar_t bgmfade = {"bgmfade", "0.5", false};
 static cdstate_t cd_state;
 
 static stb_vorbis *vorbis;
-static short* bgm_buffer;
+static int16_t* bgm_buffer;
 
 static char trackdir[MAX_QPATH] = "music/track%02i.ogg";
 static char trackname[MAX_OSPATH];
@@ -399,7 +399,7 @@ void CDAudio_Paint(void* out, int idx, int count)
     if (count <= 0)
         return;
 
-    short *inptr = (short *)bgm_buffer;
+    int16_t *inptr = (int16_t *)bgm_buffer;
     int out_mask = shm->samples - 1;
     int step = trackrate;
     int bgm_vol = bgmvolume.value * 256;
@@ -436,7 +436,7 @@ void CDAudio_Paint(void* out, int idx, int count)
 
     if (shm->samplebits == 16)
     {
-        short *outptr = (short *)out;
+        int16_t *outptr = (int16_t *)out;
 
         while (count--)
         {
@@ -453,7 +453,7 @@ void CDAudio_Paint(void* out, int idx, int count)
     }
     else if (shm->samplebits == 8)
     {
-        unsigned char *outptr = (unsigned char *)out;
+        byte *outptr = (byte *)out;
         
         while (count--)
         {

@@ -139,7 +139,7 @@ Loads a model into the cache
 model_t *Mod_LoadModel(model_t *mod, bool crash, bool world)
 {
 	void *d;
-	unsigned *buf;
+	uint32_t *buf;
 	byte stackbuf[1024]; // avoid dirtying the cache heap
 
 	if (!mod->needload)
@@ -161,7 +161,7 @@ model_t *Mod_LoadModel(model_t *mod, bool crash, bool world)
 	//
 	// load the file
 	//
-	buf = (unsigned *)COM_LoadStackFile(mod->name, stackbuf, sizeof(stackbuf));
+	buf = (uint32_t *)COM_LoadStackFile(mod->name, stackbuf, sizeof(stackbuf));
 	if (!buf)
 	{
 		if (crash)
@@ -186,7 +186,7 @@ model_t *Mod_LoadModel(model_t *mod, bool crash, bool world)
 	mod->needload = false;
 	mod->world = world;
 
-	switch (LittleLong(*(unsigned *)buf))
+	switch (LittleLong(*(uint32_t *)buf))
 	{
 	case IDPOLYHEADER:
 		mod->type = mod_alias;
@@ -294,7 +294,7 @@ static texture_t *Mod_LoadMiptex(miptex_t *mt)
 
 	if (mod_version != BSPQUAKE)
 	{
-		txsize += sizeof(unsigned short) + 768;
+		txsize += sizeof(uint16_t) + 768;
 	}
 
 	texture_t *tx = Hunk_AllocName(sizeof(texture_t) + txsize, loadname);
@@ -325,8 +325,8 @@ static texture_t *Mod_LoadMiptex(miptex_t *mt)
 
 	if (mod_version != BSPQUAKE)
 	{
-		pal = (byte *)(tx + 1) + pixels + sizeof(unsigned short);
-		colors = *((unsigned short *)pal - 1);
+		pal = (byte *)(tx + 1) + pixels + sizeof(uint16_t);
+		colors = *((uint16_t *)pal - 1);
 		bytes = 3;
 
 		if (tx->name[0] == '~' || (tx->name[0] == '+' && tx->name[1] != 'A' && tx->name[2] == '~'))
@@ -969,7 +969,7 @@ Mod_LoadMarksurfaces
 void Mod_LoadMarksurfaces(lump_t *l)
 {
 	int i, j, count;
-	short *in;
+	int16_t *in;
 	msurface_t **out;
 
 	in = (void *)(mod_base + l->fileofs);
@@ -1112,7 +1112,7 @@ void Mod_LoadBrushModel(model_t *mod, void *buffer)
 
 	for (i = 0; i < sizeof(dheader_t) / 4; i++)
 	{
-		((int *)header)[i] = LittleLong(((int *)header)[i]);
+		((int32_t *)header)[i] = LittleLong(((int32_t *)header)[i]);
 	}
 
 	// load into heap

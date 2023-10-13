@@ -207,7 +207,7 @@ Loads a model into the cache
 cmodel_t *CMod_LoadModel(cmodel_t *mod, bool crash, bool world)
 {
     void *d;
-    unsigned *buf;
+    uint32_t *buf;
     byte stackbuf[1024]; // avoid dirtying the cache heap
 
     if (!mod->needload)
@@ -218,7 +218,7 @@ cmodel_t *CMod_LoadModel(cmodel_t *mod, bool crash, bool world)
     //
     // load the file
     //
-    buf = (unsigned *)COM_LoadStackFile(mod->name, stackbuf, sizeof(stackbuf));
+    buf = (uint32_t *)COM_LoadStackFile(mod->name, stackbuf, sizeof(stackbuf));
     if (!buf)
     {
         if (crash)
@@ -243,7 +243,7 @@ cmodel_t *CMod_LoadModel(cmodel_t *mod, bool crash, bool world)
     mod->needload = false;
     mod->world = world;
 
-    switch (LittleLong(*(unsigned *)buf))
+    switch (LittleLong(*(uint32_t *)buf))
     {
     case IDPOLYHEADER:
         mod->type = mod_alias;
@@ -673,7 +673,7 @@ void CMod_LoadBrushModel(cmodel_t *mod, void *buffer)
 
     for (i = 0; i < sizeof(dheader_t) / 4; i++)
     {
-        ((int *)header)[i] = LittleLong(((int *)header)[i]);
+        ((int32_t *)header)[i] = LittleLong(((int32_t *)header)[i]);
     }
 
     // load into heap

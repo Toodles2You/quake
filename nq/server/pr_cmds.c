@@ -20,7 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "serverdef.h"
 
-#define	RETURN_EDICT(e) (((int *)pr_globals)[OFS_RETURN] = EDICT_TO_PROG(e))
+#define	RETURN_EDICT(e) (((int32_t *)pr_globals)[OFS_RETURN] = EDICT_TO_PROG(e))
 
 /*
 ===============================================================================
@@ -591,7 +591,7 @@ break()
 void PF_break ()
 {
 Con_Printf ("break statement\n");
-*(int *)-4 = 0;	// dump to debugger
+*(int32_t *)-4 = 0;	// dump to debugger
 //	PR_RunError ("break statement");
 }
 

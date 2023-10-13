@@ -298,7 +298,7 @@ void GL_DrawAliasFrame (aliashdr_t *paliashdr, int posenum, bool shade)
 	int		index;
 	trivertx_t	*v, *verts;
 	int		list;
-	int		*order;
+	int32_t	*order;
 	vec3_t	point;
 	float	*normal;
 	int		count;
@@ -307,7 +307,7 @@ lastposenum = posenum;
 
 	verts = (trivertx_t *)((byte *)paliashdr + paliashdr->posedata);
 	verts += posenum * paliashdr->poseverts;
-	order = (int *)((byte *)paliashdr + paliashdr->commands);
+	order = (int32_t *)((byte *)paliashdr + paliashdr->commands);
 
 	while (1)
 	{
@@ -364,7 +364,7 @@ void GL_DrawAliasShadow (aliashdr_t *paliashdr, int posenum)
 	int		index;
 	trivertx_t	*v, *verts;
 	int		list;
-	int		*order;
+	int32_t	*order;
 	vec3_t	point;
 	float	*normal;
 	float	height, lheight;
@@ -375,7 +375,7 @@ void GL_DrawAliasShadow (aliashdr_t *paliashdr, int posenum)
 	height = 0;
 	verts = (trivertx_t *)((byte *)paliashdr + paliashdr->posedata);
 	verts += posenum * paliashdr->poseverts;
-	order = (int *)((byte *)paliashdr + paliashdr->commands);
+	order = (int32_t *)((byte *)paliashdr + paliashdr->commands);
 
 	height = -lheight + 1.0;
 

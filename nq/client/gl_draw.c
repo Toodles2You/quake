@@ -1171,8 +1171,8 @@ GL_Upload8
 ===============
 */
 void GL_Upload8 (
-	int* gl_texturenum,
-	int* gl_brightnum,
+	int *gl_texturenum,
+	int *gl_brightnum,
 	byte *data,
 	int width,
 	int height,
