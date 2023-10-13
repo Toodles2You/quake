@@ -232,7 +232,7 @@ There are no ++ / -- operators, or operate/assign operators.
 //=============================================================================
 
 // offsets are allways multiplied by 4 before using
-typedef int	gofs_t;				// offset in global data block
+typedef int32_t	gofs_t;				// offset in global data block
 typedef struct function_s function_t;
 
 #define	MAX_PARMS	8
@@ -390,7 +390,7 @@ extern	char		pr_parm_names[MAX_PARMS][MAX_NAME];
 extern	bool	pr_trace;
 
 #define	G_FLOAT(o) (pr_globals[o])
-#define	G_INT(o) (*(int *)&pr_globals[o])
+#define	G_INT(o) (*(int32_t *)&pr_globals[o])
 #define	G_VECTOR(o) (&pr_globals[o])
 #define	G_STRING(o) (strings + *(string_t *)&pr_globals[o])
 #define	G_FUNCTION(o) (*(func_t *)&pr_globals[o])

@@ -797,7 +797,7 @@ def_t *PR_GetDef (type_t *type, char *name, def_t *scope, bool allocate)
 
 	if (type->type == ev_field)
 	{
-		*(int *)&pr_globals[def->ofs] = pr.size_fields;
+		*(int32_t *)&pr_globals[def->ofs] = pr.size_fields;
 		
 		if (type->aux_type->type == ev_vector)
 		{

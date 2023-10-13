@@ -245,10 +245,10 @@ void	LoadBSPFile (char *filename)
 
 // swap the header
 	for (i=0 ; i< sizeof(dheader_t)/4 ; i++)
-		((int *)header)[i] = LittleLong ( ((int *)header)[i]);
+		((int32_t *)header)[i] = LittleLong ( ((int32_t *)header)[i]);
 
-	if (header->version != BSPVERSION)
-		Error ("%s is version %i, not %i", filename, i, BSPVERSION);
+	if (header->version != BSPVERSION && header->version != BSPQUAKE)
+		Error ("%s is version %i, not %i or %i", filename, i, BSPVERSION, BSPQUAKE);
 
 	nummodels = CopyLump (LUMP_MODELS, dmodels, sizeof(dmodel_t));
 	numvertexes = CopyLump (LUMP_VERTEXES, dvertexes, sizeof(dvertex_t));

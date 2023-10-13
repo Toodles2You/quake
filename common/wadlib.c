@@ -112,20 +112,20 @@ int	W_CheckNumForName (char *name)
 	
 // make the name into four integers for easy compares
 
-	v1 = *(int *)cleanname;
-	v2 = *(int *)&cleanname[4];
-	v3 = *(int *)&cleanname[8];
-	v4 = *(int *)&cleanname[12];
+	v1 = *(int32_t *)cleanname;
+	v2 = *(int32_t *)&cleanname[4];
+	v3 = *(int32_t *)&cleanname[8];
+	v4 = *(int32_t *)&cleanname[12];
 
 // find it
 
 	lump_p = lumpinfo;
 	for (i=0 ; i<numlumps ; i++, lump_p++)
 	{
-		if ( *(int *)lump_p->name == v1
-		&& *(int *)&lump_p->name[4] == v2
-		&& *(int *)&lump_p->name[8] == v3
-		&& *(int *)&lump_p->name[12] == v4)
+		if ( *(int32_t *)lump_p->name == v1
+		&& *(int32_t *)&lump_p->name[4] == v2
+		&& *(int32_t *)&lump_p->name[8] == v3
+		&& *(int32_t *)&lump_p->name[12] == v4)
 			return i;
 	}
 
@@ -232,8 +232,8 @@ FILE		*outwad;
 lumpinfo_t	outinfo[4096];
 int			outlumps;
 
-short	(*wadshort) (short l);
-int		(*wadlong) (int l);
+int16_t	(*wadshort) (int16_t l);
+int32_t	(*wadlong) (int32_t l);
 
 /*
 ===============

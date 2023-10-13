@@ -282,7 +282,7 @@ strofs = (strofs+3)&~3;
 	progs.ofs_globals = lseek (h, 0, SEEK_CUR);
 	progs.numglobals = numpr_globals;
 	for (i=0 ; i<numpr_globals ; i++)
-		((int *)pr_globals)[i] = LittleLong (((int *)pr_globals)[i]);
+		((int32_t *)pr_globals)[i] = LittleLong (((int32_t *)pr_globals)[i]);
 	SafeWrite (h, pr_globals, numpr_globals*4);
 
 	printf ("%6i TOTAL SIZE\n", (int)lseek (h, 0, SEEK_CUR));	
@@ -294,7 +294,7 @@ strofs = (strofs+3)&~3;
 	
 // byte swap the header and write it out
 	for (i=0 ; i<sizeof(progs)/4 ; i++)
-		((int *)&progs)[i] = LittleLong ( ((int *)&progs)[i] );		
+		((int32_t *)&progs)[i] = LittleLong ( ((int32_t *)&progs)[i] );		
 	lseek (h, 0, SEEK_SET);
 	SafeWrite (h, &progs, sizeof(progs));
 	close (h);
@@ -357,7 +357,7 @@ def_t	*PR_DefForFieldOfs (gofs_t ofs)
 	{
 		if (d->type->type != ev_field)
 			continue;
-		if (*((int *)&pr_globals[d->ofs]) == ofs)
+		if (*((int32_t *)&pr_globals[d->ofs]) == ofs)
 			return d;
 	}
 	Error ("PR_DefForFieldOfs: couldn't find %i",ofs);
@@ -380,20 +380,20 @@ char *PR_ValueString (etype_t type, void *val)
 	switch (type)
 	{
 	case ev_string:
-		sprintf (line, "%s", PR_String(strings + *(int *)val));
+		sprintf (line, "%s", PR_String(strings + *(int32_t *)val));
 		break;
 	case ev_entity:	
-		sprintf (line, "entity %i", *(int *)val);
+		sprintf (line, "entity %i", *(int32_t *)val);
 		break;
 	case ev_function:
-		f = functions + *(int *)val;
+		f = functions + *(int32_t *)val;
 		if (!f)
 			sprintf (line, "undefined function");
 		else
 			sprintf (line, "%s()", strings + f->s_name);
 		break;
 	case ev_field:
-		def = PR_DefForFieldOfs ( *(int *)val );
+		def = PR_DefForFieldOfs ( *(int32_t *)val );
 		sprintf (line, ".%s", def->name);
 		break;
 	case ev_void:

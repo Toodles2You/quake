@@ -40,11 +40,11 @@ void ByteSwapTri (tf_triangle *tri)
 	
 	for (i=0 ; i<sizeof(tf_triangle)/4 ; i++)
 	{
-		((int *)tri)[i] = BigLong (((int *)tri)[i]);
+		((int32_t *)tri)[i] = BigLong (((int32_t *)tri)[i]);
 	}
 }
 
-void LoadTriangleList (char *filename, triangle_t **pptri, int *numtriangles)
+void LoadTriangleList (char *filename, triangle_t **pptri, int32_t *numtriangles)
 {
 	FILE        *input;
 	float       start;
@@ -82,8 +82,8 @@ void LoadTriangleList (char *filename, triangle_t **pptri, int *numtriangles)
 
 	while (feof(input) == 0) {
 		fread(&start,  sizeof(float), 1, input);
-		*(int *)&start = BigLong(*(int *)&start);
-		if (*(int *)&start != exitpattern)
+		*(int32_t *)&start = BigLong(*(int32_t *)&start);
+		if (*(int32_t *)&start != exitpattern)
 		{
 			if (start == FLOAT_START) {
 				/* Start of an object or group of objects. */
