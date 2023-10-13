@@ -434,13 +434,6 @@ This is done by brute force, and could easily get a lot faster if anyone cares.
 ==============================================================================
 */
 
-vec3_t	hull_size[3][2] = {
-{ {0, 0, 0}, {0, 0, 0} },
-{ {-16,-16,-32}, {16,16,24} },
-{ {-32,-32,-64}, {32,32,24} }
-
-};
-
 #define	MAX_HULL_POINTS	32
 #define	MAX_HULL_EDGES	64
 

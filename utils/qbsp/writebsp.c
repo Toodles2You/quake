@@ -353,7 +353,7 @@ void	TEX_InitFromWad (char *path)
 	
 	texfile = SafeOpenRead (path);
 	SafeRead (texfile, &wadinfo, sizeof(wadinfo));
-	if (strncmp (wadinfo.identification, "WAD2", 4))
+	if (strncmp (wadinfo.identification, "WAD2", 4) && strncmp (wadinfo.identification, "WAD3", 4))
 		Error ("TEX_InitFromWad: %s isn't a wadfile",path);
 	wadinfo.numlumps = LittleLong(wadinfo.numlumps);
 	wadinfo.infotableofs = LittleLong(wadinfo.infotableofs);
@@ -474,6 +474,15 @@ void WriteMiptex (void)
 	{
 		l->dataofs[i] = data - (byte *)l;
 		len = LoadLump (miptex[i], data);
+		/*! Toodles TODO: Find a cleaner way of doing this. */
+		if (notex)
+		{
+			((miptex_t *)data)->offsets[0] = 0;
+			((miptex_t *)data)->offsets[1] = 0;
+			((miptex_t *)data)->offsets[2] = 0;
+			((miptex_t *)data)->offsets[3] = 0;
+			len = sizeof(miptex_t);
+		}
 		if (data + len - dtexdata >= MAX_MAP_MIPTEX)
 			Error ("Textures exceeded MAX_MAP_MIPTEX");
 		if (!len)

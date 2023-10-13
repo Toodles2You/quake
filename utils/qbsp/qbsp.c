@@ -13,6 +13,7 @@ bool onlyents;
 bool	verbose = true;
 bool	allverbose;
 bool	usehulls;
+bool	notex;
 
 int		subdivide_size = 240;
 
@@ -30,6 +31,26 @@ char	*argv0;					// changed after fork();
 bool	worldmodel;
 
 int		hullnum;
+
+int		bspversion;
+
+const vec3_t hull_sizes[MAX_MAP_HULLS][2] =
+{
+    {{0, 0, 0}, {0, 0, 0}},
+    {{-16, -16, -36}, {16, 16, 36}},
+    {{-32, -32, -36}, {32, 32, 36}},
+    {{-16, -16, -18}, {16, 16, 18}},
+};
+
+const vec3_t quake_hull_sizes[MAX_MAP_HULLS][2] =
+{
+    {{0, 0, 0}, {0, 0, 0}},
+    {{-16, -16, -24}, {16, 16, 32}},
+    {{-32, -32, -24}, {32, 32, 64}},
+    {{0, 0, 0}, {0, 0, 0}},
+};
+
+vec3_t hull_size[MAX_MAP_HULLS][2];
 
 //===========================================================================
 
@@ -808,6 +829,15 @@ CreateHulls
 */
 void CreateHulls (void)
 {
+	if (bspversion == BSPQUAKE)
+	{
+		memcpy(hull_size, quake_hull_sizes, sizeof(hull_size));
+	}
+	else
+	{
+		memcpy(hull_size, hull_sizes, sizeof(hull_size));
+	}
+
 // commanded to create a single hull only
 	if (hullnum)
 	{
@@ -870,6 +900,15 @@ void CreateHulls (void)
 	numclipnodes = 0;
 	hullnum = 2;
 	CreateSingleHull ();
+	
+	if (bspversion != BSPQUAKE)
+	{
+		nummodels = 0;
+		numplanes = 0;
+		numclipnodes = 0;
+		hullnum = 3;
+		CreateSingleHull ();
+	}
 	
 	nummodels = 0;
 	numplanes = 0;
@@ -956,6 +995,8 @@ int main (int argc, char **argv)
 	
 //	malloc_debug (15);
 
+	bspversion = BSPVERSION;
+	notex = true;
 //
 // check command line flags
 //
@@ -985,6 +1026,12 @@ int main (int argc, char **argv)
 		else if (!strcmp (argv[i],"-subdivide"))
 		{
 			subdivide_size = atoi(argv[i+1]);
+			i++;
+		}
+		else if (!strcmp (argv[i],"-quake"))
+		{
+			bspversion = BSPQUAKE;
+			notex = false;
 			i++;
 		}
 		else

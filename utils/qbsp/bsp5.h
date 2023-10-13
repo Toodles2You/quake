@@ -261,6 +261,7 @@ extern	bool nofill;
 extern	bool notjunc;
 extern	bool noclip;
 extern	bool	verbose;
+extern	bool notex;
 
 extern	int		subdivide_size;
 
@@ -277,6 +278,10 @@ extern	char	bspfilename[1024];
 extern	char	pointfilename[1024];
 
 extern	bool	worldmodel;
+
+extern	int		bspversion;
+
+extern	vec3_t	hull_size[MAX_MAP_HULLS][2];
 
 
 // misc functions
