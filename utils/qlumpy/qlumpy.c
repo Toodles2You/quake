@@ -151,21 +151,21 @@ void ParseScript (void)
 		GetToken (true);
 		if (endofscript)
 			break;
-		if (!Q_strcasecmp (token,"$LOAD"))
+		if (!strcasecmp (token,"$LOAD"))
 		{
 			GetToken (false);
 			LoadScreen (token);
 			continue;
 		}
 
-		if (!Q_strcasecmp (token,"$DEST"))
+		if (!strcasecmp (token,"$DEST"))
 		{
 			GetToken (false);
 			strcpy (destfile, ExpandPath(token));
 			continue;
 		}
 
-		if (!Q_strcasecmp (token,"$SINGLEDEST"))
+		if (!strcasecmp (token,"$SINGLEDEST"))
 		{
 			GetToken (false);
 			strcpy (destfile, token);
@@ -196,7 +196,7 @@ void ParseScript (void)
 		// with lump_p pointing after the last byte to be saved
 		//
 		for (cmd=0 ; commands[cmd].name ; cmd++)
-			if ( !Q_strcasecmp(token,commands[cmd].name) )
+			if ( !strcasecmp(token,commands[cmd].name) )
 			{
 				commands[cmd].function ();
 				break;

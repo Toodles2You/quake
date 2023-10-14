@@ -88,7 +88,7 @@ model_t *Mod_FindName(char *name)
 	//
 	for (i = 0, mod = mod_known; i < mod_numknown; i++, mod++)
 	{
-		if (!Q_strcmp(mod->name, name))
+		if (!strcmp(mod->name, name))
 		{
 			break;
 		}
@@ -100,7 +100,7 @@ model_t *Mod_FindName(char *name)
 		{
 			Sys_Error("mod_numknown == MAX_MODELS");
 		}
-		Q_strcpy(mod->name, name);
+		strcpy(mod->name, name);
 		mod->needload = true;
 		mod_numknown++;
 	}
@@ -342,7 +342,7 @@ static texture_t *Mod_LoadMiptex(miptex_t *mt)
 		brightnum = &tx->gl_brightnum;
 	}
 
-	if (mod_needsky && !Q_strncmp(tx->name, "sky", 3))
+	if (mod_needsky && !strncmp(tx->name, "sky", 3))
 	{
 		R_InitSky(tx);
 		return tx;
@@ -559,18 +559,18 @@ static void Mod_ReadWorldPairs(byte *data)
 	while (COM_ReadPair(&data, k, v))
 	{
 		Con_DSafePrintf("\"%s\" = \"%s\"\n", k, v);
-		if (!Q_strcasecmp("skyname", k) || !Q_strcasecmp("sky", k))
+		if (!strcasecmp("skyname", k) || !strcasecmp("sky", k))
 		{
 			mod_needsky = false;
 			R_LoadSkys(v);
 			continue;
 		}
-		else if (!Q_strcasecmp("wad", k))
+		else if (!strcasecmp("wad", k))
 		{
 			token = v;
 			while (true)
 			{
-				next = Q_strchr(token, ';');
+				next = strchr(token, ';');
 				if (next)
 				{
 					*next = '\0';
@@ -586,7 +586,7 @@ static void Mod_ReadWorldPairs(byte *data)
 			}
 			continue;
 		}
-		else if (!Q_strcasecmp("maxrange", k))
+		else if (!strcasecmp("maxrange", k))
 		{
 			zmax = atof(v);
 			continue;
@@ -663,7 +663,7 @@ void Mod_LoadSubmodels(lump_t *l)
 
 			/* Duplicate the basic information. */
 			*next = *out;
-			Q_strcpy(next->name, name);
+			strcpy(next->name, name);
 
 			/* Switch it out. */
 			out = next;
@@ -924,7 +924,7 @@ void Mod_LoadFaces(lump_t *l)
 
 		// set the drawing flags flag
 
-		if (!Q_strncmp(out->texinfo->texture->name, "sky", 3)) // sky
+		if (!strncmp(out->texinfo->texture->name, "sky", 3)) // sky
 		{
 			out->flags |= (SURF_DRAWSKY | SURF_DRAWTILED);
 			GL_SubdivideSurface(out); // cut up polygon for warps
@@ -943,7 +943,7 @@ void Mod_LoadFaces(lump_t *l)
 			continue;
 		}
 
-		if (Q_strstr(out->texinfo->texture->name, "trigger"))
+		if (strstr(out->texinfo->texture->name, "trigger"))
 		{
 			out->flags |= SURF_NODRAW;
 			out->samples = NULL;
@@ -1616,7 +1616,7 @@ void *Mod_LoadSpriteFrame(void *pin, mspriteframe_t **ppframe, int framenum)
 
 	pspriteframe = Hunk_AllocName(sizeof(mspriteframe_t), loadname);
 
-	Q_memset(pspriteframe, 0, sizeof(mspriteframe_t));
+	memset(pspriteframe, 0, sizeof(mspriteframe_t));
 
 	*ppframe = pspriteframe;
 

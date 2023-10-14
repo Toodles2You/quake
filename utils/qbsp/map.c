@@ -49,7 +49,7 @@ int	FindTexinfo (texinfo_t *t)
 		
 // set the special flag
 	if (miptex[t->miptex][0] == '*' 
-	|| !Q_strncasecmp (miptex[t->miptex], "sky",3) )
+	|| !strncasecmp (miptex[t->miptex], "sky",3) )
 		t->flags |= TEX_SPECIAL;
 
 

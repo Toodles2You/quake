@@ -152,7 +152,7 @@ void IN_UseUp () {KeyUp(&in_use);}
 void IN_JumpDown () {KeyDown(&in_jump);}
 void IN_JumpUp () {KeyUp(&in_jump);}
 
-void IN_Impulse () {in_impulse=Q_atoi(Cmd_Argv(1));}
+void IN_Impulse () {in_impulse=atoi(Cmd_Argv(1));}
 
 /*
 ===============
@@ -283,7 +283,7 @@ void CL_BaseMove (usercmd_t *cmd)
 			
 	CL_AdjustAngles ();
 	
-	Q_memset (cmd, 0, sizeof(*cmd));
+	memset (cmd, 0, sizeof(*cmd));
 	
 	if (in_strafe.state & 1)
 	{

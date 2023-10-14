@@ -274,7 +274,7 @@ static void VID_CheckGamma(unsigned char *pal)
             vid_gamma = 0.7; // default to 0.7 on non-3dfx hardware
     }
     else
-        vid_gamma = Q_atof(com_argv[i + 1]);
+        vid_gamma = atof(com_argv[i + 1]);
 
     for (i = 0; i < 768; i++)
     {
@@ -382,7 +382,7 @@ static void VID_CheckParms(int *width, int *height, bool *fullscreen)
     if ((i = COM_CheckParm("-conwidth")) != 0)
     {
         /* Make it a multiple of eight. */
-        vid.conwidth = Q_atoi(com_argv[i + 1]) & 0xFFF8;
+        vid.conwidth = atoi(com_argv[i + 1]) & 0xFFF8;
         vid.conwidth = SDL_max(vid.conwidth, 320);
     }
     else
@@ -392,7 +392,7 @@ static void VID_CheckParms(int *width, int *height, bool *fullscreen)
 
     if ((i = COM_CheckParm("-conheight")) != 0)
     {
-        vid.conheight = SDL_max(Q_atoi(com_argv[i + 1]), 200);
+        vid.conheight = SDL_max(atoi(com_argv[i + 1]), 200);
     }
     else
     {

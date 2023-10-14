@@ -177,7 +177,7 @@ cmodel_t *CMod_FindName(char *name)
     //
     for (i = 0, mod = cmod_known; i < cmod_numknown; i++, mod++)
     {
-        if (!Q_strcmp(mod->name, name))
+        if (!strcmp(mod->name, name))
         {
             break;
         }
@@ -189,7 +189,7 @@ cmodel_t *CMod_FindName(char *name)
         {
             Sys_Error("cmod_numknown == MAX_MODELS");
         }
-        Q_strcpy(mod->name, name);
+        strcpy(mod->name, name);
         mod->needload = true;
         cmod_numknown++;
     }
@@ -352,7 +352,7 @@ void CMod_LoadSubmodels(lump_t *l)
 
             /* Duplicate the basic information. */
 			*next = *out;
-			Q_strcpy(next->name, name);
+			strcpy(next->name, name);
 
             /* Switch it out. */
             out = next;

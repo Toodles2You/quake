@@ -196,7 +196,7 @@ void W_LoadMapWadFile(char *filename)
 	int numlumps = LittleLong(header.numlumps);
 
 	wad_t *wad = Hunk_Alloc(sizeof(wad_t) + sizeof(lumpinfo_t) * numlumps);
-	Q_strncpy (wad->name, filename, 16);
+	strncpy (wad->name, filename, 16);
 	wad->numlumps = numlumps;
 	wad->handle = handle;
 	wad->next = wad_head;
@@ -236,7 +236,7 @@ static bool W_GetMapLumpInfo(char *name, wad_t** wad, lumpinfo_t **lump)
 	{
 		for (lump_p = wad_p->lumps, i = 0; i < wad_p->numlumps; i++, lump_p++)
 		{
-			if (!Q_strcmp(clean, lump_p->name))
+			if (!strcmp(clean, lump_p->name))
 			{
 				*wad = wad_p;
 				*lump = lump_p;

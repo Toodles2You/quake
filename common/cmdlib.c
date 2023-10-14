@@ -75,7 +75,7 @@ void SetQdirFromPath (char *path)
 	// search for "quake" in path
 
 	for (c=path ; *c ; c++)
-		if (!Q_strncasecmp (c, "quake", 5))
+		if (!strncasecmp (c, "quake", 5))
 		{
 			strncpy (qdir, path, c+6-path);
 			printf ("qdir: %s\n", qdir);
@@ -286,8 +286,9 @@ skipwhite:
 	return data;
 }
 
+#ifdef QUAKE_WINDOWS
 
-int Q_strncasecmp (char *s1, char *s2, int n)
+int strncasecmp (char *s1, char *s2, int n)
 {
 	int		c1, c2;
 	
@@ -315,11 +316,12 @@ int Q_strncasecmp (char *s1, char *s2, int n)
 	return -1;
 }
 
-int Q_strcasecmp (char *s1, char *s2)
+int strcasecmp (char *s1, char *s2)
 {
-	return Q_strncasecmp (s1, s2, 99999);
+	return strncasecmp (s1, s2, 99999);
 }
 
+#endif /* QUAKE_WINDOWS */
 
 char *strupr (char *start)
 {
@@ -369,7 +371,7 @@ int CheckParm (char *check)
 
 	for (i = 1;i<myargc;i++)
 	{
-		if ( !Q_strcasecmp(check, myargv[i]) )
+		if ( !strcasecmp(check, myargv[i]) )
 			return i;
 	}
 

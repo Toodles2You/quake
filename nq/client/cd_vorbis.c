@@ -215,16 +215,16 @@ static void CD_f()
     int ret;
     int n;
 
-    if (Q_strcasecmp(command, "on") == 0)
+    if (strcasecmp(command, "on") == 0)
     {
         cd_state |= CD_ENABLED;
     }
-    else if (Q_strcasecmp(command, "off") == 0)
+    else if (strcasecmp(command, "off") == 0)
     {
         CDAudio_ForceStop();
         cd_state &= ~CD_ENABLED;
     }
-    else if (Q_strcasecmp(command, "reset") == 0)
+    else if (strcasecmp(command, "reset") == 0)
     {
         cd_state |= CD_ENABLED;
 
@@ -233,7 +233,7 @@ static void CD_f()
         for (n = 0; n < 100; n++)
             remap[n] = n;
     }
-    else if (Q_strcasecmp(command, "remap") == 0)
+    else if (strcasecmp(command, "remap") == 0)
     {
         ret = Cmd_Argc() - 2;
 
@@ -250,33 +250,33 @@ static void CD_f()
         }
         
         for (n = 0; n <= ret; n++)
-            remap[n] = Q_atoi(Cmd_Argv(n + 1));
+            remap[n] = atoi(Cmd_Argv(n + 1));
     }
-    else if (Q_strcasecmp(command, "play") == 0)
+    else if (strcasecmp(command, "play") == 0)
     {
-        CDAudio_Play((byte)Q_atoi(Cmd_Argv(2)), false);
+        CDAudio_Play((byte)atoi(Cmd_Argv(2)), false);
     }
-    else if (Q_strcasecmp(command, "loop") == 0)
+    else if (strcasecmp(command, "loop") == 0)
     {
-        CDAudio_Play((byte)Q_atoi(Cmd_Argv(2)), true);
+        CDAudio_Play((byte)atoi(Cmd_Argv(2)), true);
     }
-    else if (Q_strcasecmp(command, "stop") == 0)
+    else if (strcasecmp(command, "stop") == 0)
     {
         CDAudio_Stop();
     }
-    else if (Q_strcasecmp(command, "pause") == 0)
+    else if (strcasecmp(command, "pause") == 0)
     {
         CDAudio_Pause();
     }
-    else if (Q_strcasecmp(command, "resume") == 0)
+    else if (strcasecmp(command, "resume") == 0)
     {
         CDAudio_Resume();
     }
-    else if (Q_strcasecmp(command, "eject") == 0)
+    else if (strcasecmp(command, "eject") == 0)
     {
         CDAudio_ForceStop();
     }
-    else if (Q_strcasecmp(command, "info") == 0)
+    else if (strcasecmp(command, "info") == 0)
     {
         Con_Printf("CDAudio:\n99 tracks\n");
 

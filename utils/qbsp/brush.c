@@ -715,19 +715,19 @@ brush_t *LoadBrush (mbrush_t *mb, int hullnum)
 //	
 	name = miptex[texinfo[mb->faces->texinfo].miptex];
 
-	if (!Q_strcasecmp(name, "clip") && hullnum == 0)
+	if (!strcasecmp(name, "clip") && hullnum == 0)
 		return NULL;		// "clip" brushes don't show up in the draw hull
 	
 	if (name[0] == '*' && worldmodel)		// entities never use water merging
 	{
-		if (!Q_strncasecmp(name+1,"lava",4))
+		if (!strncasecmp(name+1,"lava",4))
 			contents = CONTENTS_LAVA;
-		else if (!Q_strncasecmp(name+1,"slime",5))
+		else if (!strncasecmp(name+1,"slime",5))
 			contents = CONTENTS_SLIME;
 		else			
 			contents = CONTENTS_WATER;
 	}
-	else if (!Q_strncasecmp (name, "sky",3) && worldmodel && hullnum == 0)
+	else if (!strncasecmp (name, "sky",3) && worldmodel && hullnum == 0)
 		contents = CONTENTS_SKY;
 	else
 		contents = CONTENTS_SOLID;
