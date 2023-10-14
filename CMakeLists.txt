@@ -36,7 +36,7 @@ elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     list(APPEND QUAKE_DEFS QUAKE_WINDOWS)
 endif()
 
-set(QUAKE_FLAGS)
+set(QUAKE_FLAGS -Wno-format-overflow)
 
 if(NOT CMAKE_BUILD_TYPE STREQUAL "Debug")
     list(APPEND QUAKE_FLAGS

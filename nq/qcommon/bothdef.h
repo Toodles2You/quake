@@ -11,6 +11,7 @@
 #include <ctype.h>
 #include <stdbool.h>
 #include <stdint.h>
+#include <stddef.h>
 
 #define MINIMUM_MEMORY 0x550000
 #define MINIMUM_MEMORY_LEVELPAK (MINIMUM_MEMORY + 0x100000)
