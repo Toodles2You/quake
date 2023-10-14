@@ -50,13 +50,9 @@ unsigned char d_15to8table[65536];
 
 cvar_t gl_ztrick = {"gl_ztrick", "1"};
 
-static void (*qglColorTableEXT)(int, int, int, int, int, const void *);
-static void (*qgl3DfxSetPaletteEXT)(GLuint *);
-
 static SDL_GLContext context = NULL;
 
 static bool vidmode_active = false;
-static bool is8bit = false;
 static int scr_width, scr_height;
 static float vid_gamma = 1.0;
 
@@ -111,11 +107,9 @@ void VID_SetPalette(unsigned char *palette)
     unsigned r, g, b;
     unsigned v;
     int r1, g1, b1;
-    int j, k, l, m;
+    int k;
     unsigned short i;
     unsigned *table;
-    FILE *f;
-    char s[255];
     int dist, bestdist;
 
     //
@@ -249,8 +243,6 @@ GL_BeginRendering
 */
 void GL_BeginRendering(int *x, int *y, int *width, int *height)
 {
-    extern cvar_t gl_clear;
-
     *x = *y = 0;
     *width = scr_width;
     *height = scr_height;
@@ -410,7 +402,6 @@ static void VID_CheckParms(int *width, int *height, bool *fullscreen)
 
 void VID_Init(unsigned char *palette)
 {
-    int i;
     int width, height;
     bool fullscreen;
 

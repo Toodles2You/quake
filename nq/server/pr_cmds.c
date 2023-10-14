@@ -1505,7 +1505,10 @@ PF_changelevel
 */
 void PF_changelevel ()
 {
-	char	*s1, *s2;
+	char	*s1;
+#ifdef QUAKE2
+	char	*s2;
+#endif
 
 	if (svs.changelevel_issued)
 		return;

@@ -102,7 +102,6 @@ int Scrap_AllocBlock (int w, int h, int *x, int *y)
 {
 	int		i, j;
 	int		best, best2;
-	int		bestx;
 	int		texnum;
 
 	for (texnum=0 ; texnum<MAX_SCRAPS ; texnum++)
@@ -362,13 +361,12 @@ void Draw_Init ()
 {
 	int		i;
 	qpic_t	*cb;
-	byte	*dest, *src;
+	byte	*dest;
 	int		x, y;
 	char*	ver;
 	glpic_t	*gl;
 	int		start;
 	byte	*ncdata;
-	int		f, fstep;
 
 
 	Cvar_RegisterVariable (&gl_nobind);
@@ -392,7 +390,7 @@ void Draw_Init ()
 			draw_chars[i] = 255;	// proper transparent color
 
 	// now turn them into textures
-	GL_LoadTexture (&char_texture, NULL, "charset", 128, 128, draw_chars, 4, 256, d_8to24table, false, true);
+	GL_LoadTexture (&char_texture, NULL, "charset", 128, 128, draw_chars, 4, 256, (byte *)d_8to24table, false, true);
 
 	start = Hunk_LowMark();
 
@@ -447,7 +445,7 @@ void Draw_Init ()
 	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
 
 	gl = (glpic_t *)conback->data;
-	GL_LoadTexture (&gl->texnum, NULL, "conback", conback->width, conback->height, ncdata, 4, 256, d_8to24table, false, false);
+	GL_LoadTexture (&gl->texnum, NULL, "conback", conback->width, conback->height, ncdata, 4, 256, (byte *)d_8to24table, false, false);
 	gl->sl = 0;
 	gl->sh = 1;
 	gl->tl = 0;
@@ -485,10 +483,6 @@ smoothly scrolled off.
 */
 void Draw_Character (int x, int y, int num)
 {
-	byte			*dest;
-	byte			*source;
-	unsigned short	*pusdest;
-	int				drawline;	
 	int				row, col;
 	float			frow, fcol, size;
 
@@ -587,9 +581,6 @@ Draw_AlphaPic
 */
 void Draw_AlphaPic (int x, int y, qpic_t *pic, float alpha)
 {
-	byte			*dest, *source;
-	unsigned short	*pusdest;
-	int				v, u;
 	glpic_t			*gl;
 
 	if (scrap_dirty)
@@ -624,9 +615,6 @@ Draw_Pic
 */
 void Draw_Pic (int x, int y, qpic_t *pic)
 {
-	byte			*dest, *source;
-	unsigned short	*pusdest;
-	int				v, u;
 	glpic_t			*gl;
 
 	if (scrap_dirty)
@@ -654,10 +642,6 @@ Draw_TransPic
 */
 void Draw_TransPic (int x, int y, qpic_t *pic)
 {
-	byte	*dest, *source, tbyte;
-	unsigned short	*pusdest;
-	int				v, u;
-
 	if (x < 0 || (unsigned)(x + pic->width) > vid.width || y < 0 ||
 		 (unsigned)(y + pic->height) > vid.height)
 	{
@@ -677,14 +661,12 @@ Only used for the player color selection menu
 */
 void Draw_TransPicTranslate (int x, int y, qpic_t *pic, byte *translation)
 {
-	int				v, u, c;
+	int				v, u;
 	unsigned		trans[64*64], *dest;
 	byte			*src;
 	int				p;
 
 	GL_Bind (translate_texture);
-
-	c = pic->width * pic->height;
 
 	dest = trans;
 	for (v=0 ; v<64 ; v++, dest += 64)
@@ -1296,8 +1278,7 @@ void GL_LoadTexture (
 	bool alpha
 )
 {
-	bool	noalpha;
-	int			i, p, s;
+	int			i;
 	gltexture_t	*glt;
 
 	// see if the texture is allready present
@@ -1351,7 +1332,7 @@ GL_LoadPicTexture
 int GL_LoadPicTexture (qpic_t *pic)
 {
 	int gl_texturenum = 0;
-	GL_LoadTexture (&gl_texturenum, NULL, "", pic->width, pic->height, pic->data, 4, 256, d_8to24table, false, true);
+	GL_LoadTexture (&gl_texturenum, NULL, "", pic->width, pic->height, pic->data, 4, 256, (byte *)d_8to24table, false, true);
 	return gl_texturenum;
 }
 

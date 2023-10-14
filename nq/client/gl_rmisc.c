@@ -105,7 +105,6 @@ Grab six views for environment mapping tests
 void R_Envmap_f ()
 {
 	byte	buffer[256*256*4];
-	char	name[1024];
 
 	glDrawBuffer  (GL_FRONT);
 	glReadBuffer  (GL_FRONT);
@@ -168,8 +167,7 @@ R_Init
 ===============
 */
 void R_Init ()
-{	
-	extern byte *hunk_base;
+{
 	extern cvar_t gl_finish;
 
 	Cmd_AddCommand ("timerefresh", R_TimeRefresh_f);	
@@ -239,7 +237,6 @@ void R_TranslatePlayerSkin (int playernum)
 	int			inwidth, inheight;
 	byte		*inrow;
 	unsigned	frac, fracstep;
-	extern	byte		**player_8bit_texels_tbl;
 
 	GL_DisableMultitexture();
 
@@ -394,8 +391,6 @@ void R_TimeRefresh_f ()
 {
 	int			i;
 	float		start, stop, time;
-	int			startangle;
-	vrect_t		vr;
 
 	glDrawBuffer  (GL_FRONT);
 	glFinish ();

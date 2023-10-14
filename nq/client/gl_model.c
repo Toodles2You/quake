@@ -373,8 +373,7 @@ Mod_LoadTextures
 */
 void Mod_LoadTextures(lump_t *l)
 {
-	int i, j, pixels, num, max, altmax;
-	miptex_t *mt;
+	int i, j, num, max, altmax;
 	texture_t *tx, *tx2;
 	texture_t *anims[10];
 	texture_t *altanims[10];
@@ -401,7 +400,7 @@ void Mod_LoadTextures(lump_t *l)
 			continue;
 		}
 		// Con_Printf("%s\n", ((miptex_t *)((byte *)m + m->dataofs[i]))->name);
-		loadmodel->textures[i] = Mod_LoadMiptex((byte *)m + m->dataofs[i]);
+		loadmodel->textures[i] = Mod_LoadMiptex((miptex_t *)((byte *)m + m->dataofs[i]));
 	}
 
 	//
@@ -555,7 +554,6 @@ static void Mod_ReadWorldPairs(byte *data)
 	}
 
 	char *token, *next;
-	char *wad;
 	float zmax = 4096;
 
 	while (COM_ReadPair(&data, k, v))
@@ -758,7 +756,6 @@ void Mod_LoadTexinfo(lump_t *l)
 	mtexinfo_t *out;
 	int i, j, count;
 	int miptex;
-	float len1, len2;
 
 	in = (void *)(mod_base + l->fileofs);
 
@@ -1076,9 +1073,8 @@ Mod_LoadBrushModel
 */
 void Mod_LoadBrushModel(model_t *mod, void *buffer)
 {
-	int i, j;
+	int i;
 	dheader_t *header;
-	dmodel_t *bm;
 
 	loadmodel->type = mod_brush;
 
@@ -1167,8 +1163,8 @@ Mod_LoadAliasFrame
 */
 void *Mod_LoadAliasFrame(void *pin, maliasframedesc_t *frame)
 {
-	trivertx_t *pframe, *pinframe;
-	int i, j;
+	trivertx_t *pinframe;
+	int i;
 	daliasframe_t *pdaliasframe;
 
 	pdaliasframe = (daliasframe_t *)pin;
@@ -1331,7 +1327,6 @@ void *Mod_LoadAllSkins(int numskins, daliasskintype_t *pskintype)
 	int i, j, k;
 	char name[32];
 	int s;
-	byte *copy;
 	byte *skin;
 	byte *texels;
 	daliasskingroup_t *pinskingroup;
@@ -1369,7 +1364,7 @@ void *Mod_LoadAllSkins(int numskins, daliasskintype_t *pskintype)
 				(byte *)(pskintype + 1),
 				4,
 				256,
-				d_8to24table,
+				(byte *)d_8to24table,
 				true,
 				true);
 
@@ -1417,7 +1412,7 @@ void *Mod_LoadAllSkins(int numskins, daliasskintype_t *pskintype)
 					(byte *)(pskintype),
 					4,
 					256,
-					d_8to24table,
+					(byte *)d_8to24table,
 					true,
 					true);
 
@@ -1450,7 +1445,7 @@ void Mod_LoadAliasModel(model_t *mod, void *buffer)
 	mdl_t *pinmodel;
 	stvert_t *pinstverts;
 	dtriangle_t *pintriangles;
-	int version, numframes, numskins;
+	int version, numframes;
 	int size;
 	daliasframetype_t *pframetype;
 	daliasskintype_t *pskintype;
@@ -1610,9 +1605,7 @@ void *Mod_LoadSpriteFrame(void *pin, mspriteframe_t **ppframe, int framenum)
 {
 	dspriteframe_t *pinframe;
 	mspriteframe_t *pspriteframe;
-	int i, width, height, size, origin[2];
-	unsigned short *ppixout;
-	byte *ppixin;
+	int width, height, size, origin[2];
 	char name[64];
 
 	pinframe = (dspriteframe_t *)pin;
@@ -1648,7 +1641,7 @@ void *Mod_LoadSpriteFrame(void *pin, mspriteframe_t **ppframe, int framenum)
 		(byte *)(pinframe + 1),
 		4,
 		256,
-		d_8to24table,
+		(byte *)d_8to24table,
 		true,
 		true);
 

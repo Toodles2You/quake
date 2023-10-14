@@ -151,7 +151,6 @@ void GL_SubdivideSurface (msurface_t *fa)
 	int			i;
 	int			lindex;
 	float		*vec;
-	texture_t	*t;
 
 	warpface = fa;
 
@@ -274,10 +273,6 @@ will have them chained together.
 */
 void EmitBothSkyLayers (msurface_t *fa)
 {
-	int			i;
-	int			lindex;
-	float		*vec;
-
 	GL_DisableMultitexture();
 
 	GL_Bind (solidskytexture);
@@ -385,7 +380,7 @@ LoadTGA
 */
 bool LoadTGA (FILE *fin, byte *targa_rgba)
 {
-	int				columns, rows, numPixels;
+	int				columns, rows;
 	byte			*pixbuf;
 	int				row, column;
 
@@ -419,7 +414,6 @@ bool LoadTGA (FILE *fin, byte *targa_rgba)
 
 	columns = targa_header.width;
 	rows = targa_header.height;
-	numPixels = columns * rows;
 	
 	if (targa_header.id_length != 0)
 		fseek(fin, targa_header.id_length, SEEK_CUR);  // skip TARGA image comment
@@ -894,9 +888,7 @@ void R_DrawSkyBox ()
 	if (skyanimated)
 		return;
 	
-	int		i, j, k;
-	vec3_t	v;
-	float	s, t;
+	int		i;
 
 #if 0
 glEnable (GL_BLEND);

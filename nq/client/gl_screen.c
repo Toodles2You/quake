@@ -296,7 +296,6 @@ Internal use only
 */
 static void SCR_CalcRefdef ()
 {
-	vrect_t		vrect;
 	float		size;
 	bool		full = false;
 
@@ -840,9 +839,6 @@ needs almost the entire 256k of stack space!
 */
 void SCR_UpdateScreen ()
 {
-	static float	oldscr_viewsize;
-	vrect_t		vrect;
-
 	if (block_drawing)
 		return;
 

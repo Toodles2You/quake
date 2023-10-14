@@ -350,7 +350,6 @@ bool RecursiveLightPoint (mnode_t *node, vec3_t start, vec3_t end, vec3_t dest)
 void R_LightPoint (vec3_t p, vec3_t dest)
 {
 	vec3_t		end;
-	int			r;
 	
 	if (!cl.worldmodel->lightdata)
 	{

@@ -34,8 +34,6 @@ cvar_t  cmdline = {"cmdline","0", false, true};
 
 bool        com_modified;   // set true if using non-id files
 
-bool		proghack;
-
 int             static_registered = 1;  // only for startup check, then set
 
 void COM_InitFilesystem ();
@@ -1474,11 +1472,6 @@ int COM_FindFile (char *filename, int *handle, FILE **file)
 // search through the path, one element at a time
 //
 	search = com_searchpaths;
-	if (proghack)
-	{	// gross hack to use quake 1 progs with quake 2 maps
-		if (!strcmp(filename, "progs.dat"))
-			search = search->next;
-	}
 
 	for ( ; search ; search = search->next)
 	{
@@ -1913,9 +1906,6 @@ void COM_InitFilesystem ()
 			com_searchpaths = search;
 		}
 	}
-
-	if (COM_CheckParm ("-proghack"))
-		proghack = true;
 }
 
 

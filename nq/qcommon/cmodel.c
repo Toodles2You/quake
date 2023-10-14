@@ -206,7 +206,6 @@ Loads a model into the cache
 */
 cmodel_t *CMod_LoadModel(cmodel_t *mod, bool crash, bool world)
 {
-    void *d;
     uint32_t *buf;
     byte stackbuf[1024]; // avoid dirtying the cache heap
 
@@ -650,7 +649,7 @@ CMod_LoadBrushModel
 */
 void CMod_LoadBrushModel(cmodel_t *mod, void *buffer)
 {
-    int i, j;
+    int i;
     dheader_t *header;
 
     header = (dheader_t *)buffer;
