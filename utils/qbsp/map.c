@@ -82,9 +82,7 @@ int	FindTexinfo (texinfo_t *t)
 
 //============================================================================
 
-#define	MAXTOKEN	128
-
-char	token[MAXTOKEN];
+char	token[MAX_VALUE];
 bool	unget;
 char	*script_p;
 int		scriptline;
@@ -150,7 +148,7 @@ skipspace:
 			if (!*script_p)
 				Error ("EOF inside quoted token");
 			*token_p++ = *script_p++;
-			if (token_p > &token[MAXTOKEN-1])
+			if (token_p > &token[MAX_VALUE-1])
 				Error ("Token too large on line %i",scriptline);
 		}
 		script_p++;
@@ -158,7 +156,7 @@ skipspace:
 	else while ( *script_p > 32 )
 	{
 		*token_p++ = *script_p++;
-		if (token_p > &token[MAXTOKEN-1])
+		if (token_p > &token[MAX_VALUE-1])
 			Error ("Token too large on line %i",scriptline);
 	}
 
@@ -542,16 +540,60 @@ void 	GetVectorForKey (entity_t *ent, char *key, vec3_t vec)
 }
 
 
+void FixUpWadNames (char *v)
+{
+	char wadname[128];
+	char *token, *next;
+
+	token = v;
+	while (true)
+	{
+		next = strchr(token, ';');
+		if (next)
+		{
+			*next = '\0';
+		}
+
+		ExtractFileBase (token, wadname, true);
+		strcpy (v, wadname);
+
+		if (!next)
+		{
+			break;
+		}
+		strcat (v, ";");
+		v += strlen(wadname) + 1;
+		token = next + 1;
+	}
+}
+
+
 void WriteEntitiesToString (void)
 {
 	char	*buf, *end;
 	epair_t	*ep;
 	char	line[128];
 	int		i;
+	char	*path;
 	
 	buf = dentdata;
 	end = buf;
 	*end = 0;
+
+	path = ValueForKey (&entities[0], "_wad");
+	if (!path || !path[0])
+	{
+		path = ValueForKey (&entities[0], "wad");
+		if (!path || !path[0])
+		{
+			path = NULL;
+		}
+	}
+
+	if (path)
+	{
+		FixUpWadNames (path);
+	}
 	
 	for (i=0 ; i<num_entities ; i++)
 	{

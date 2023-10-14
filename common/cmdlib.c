@@ -557,7 +557,7 @@ void ExtractFilePath (char *path, char *dest)
 	dest[src-path] = 0;
 }
 
-void ExtractFileBase (char *path, char *dest)
+void ExtractFileBase (char *path, char *dest, bool ext)
 {
 	char    *src;
 
@@ -569,7 +569,7 @@ void ExtractFileBase (char *path, char *dest)
 	while (src != path && *(src-1) != PATHSEPERATOR)
 		src--;
 
-	while (*src && *src != '.')
+	while (*src && (ext || *src != '.'))
 	{
 		*dest++ = *src++;
 	}
