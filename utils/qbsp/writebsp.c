@@ -461,7 +461,7 @@ void WriteMiptex (void)
 		}
 	}
 	
-	sprintf (fullpath, "%s/%s", gamedir, path);
+	sprintf (fullpath, "%s/%s", wadpath, path);
 
 	TEX_InitFromWad (fullpath);
 	

@@ -25,6 +25,7 @@ char	bspfilename[1024];
 char	pointfilename[1024];
 char	portfilename[1024];
 char	hullfilename[1024];
+char	*wadpath;
 
 char	*argv0;					// changed after fork();
 
@@ -997,6 +998,7 @@ int main (int argc, char **argv)
 
 	bspversion = BSPVERSION;
 	notex = true;
+	wadpath = ".";
 //
 // check command line flags
 //
@@ -1028,6 +1030,11 @@ int main (int argc, char **argv)
 			subdivide_size = atoi(argv[i+1]);
 			i++;
 		}
+		else if (!strcmp (argv[i],"-wadpath"))
+		{
+			wadpath = argv[i+1];
+			i++;
+		}
 		else if (!strcmp (argv[i],"-quake"))
 		{
 			bspversion = BSPQUAKE;
@@ -1040,8 +1047,6 @@ int main (int argc, char **argv)
 	
 	if (i != argc - 2 && i != argc - 1)
 		Error ("usage: qbsp [options] sourcefile [destfile]\noptions: -nojunc -nofill -threads[124] -draw -onlyents -verbose -proj <projectpath>");
-
-	SetQdirFromPath (argv[i]);
 
 //
 // let forked processes change name for ps status
