@@ -177,7 +177,7 @@ void CheckWindingArea (winding_t *w)
 		VectorSubtract (w->points[i], w->points[0], v1);
 		VectorSubtract (w->points[i+1], w->points[0], v2);
 		CrossProduct (v1, v2, cross);
-		add = VectorLength (cross);
+		add = Length (cross);
 		total += add*0.5;
 	}
 	if (total < 16)
@@ -442,8 +442,8 @@ int		num_visportals;
 
 void WriteFloat (FILE *f, vec_t v)
 {
-	if ( fabs(v - Q_rint(v)) < 0.001 )
-		fprintf (f,"%i ",(int)Q_rint(v));
+	if ( fabs(v - roundf(v)) < 0.001 )
+		fprintf (f,"%i ",(int)roundf(v));
 	else
 		fprintf (f,"%f ",v);
 }

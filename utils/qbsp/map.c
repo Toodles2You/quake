@@ -376,7 +376,7 @@ void ParseBrush (void)
 				{ sinv = -1 ; cosv = 0; }
 			else
 			{	
-				ang = rotate / 180 * Q_PI;
+				ang = rotate / 180 * M_PI;
 				sinv = sin(ang);
 				cosv = cos(ang);
 			}

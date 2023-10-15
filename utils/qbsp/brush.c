@@ -51,7 +51,7 @@ void CheckFace (face_t *f)
 		p2 = f->pts[j];
 		VectorSubtract (p2, p1, dir);
 		
-		if (VectorLength (dir) < ON_EPSILON)
+		if (Length (dir) < ON_EPSILON)
 			Error ("CheckFace: degenerate edge");
 			
 		CrossProduct (facenormal, dir, edgenormal);
@@ -208,7 +208,7 @@ int	FindPlane (plane_t *dplane, int *side)
 	plane_t		*dp, pl;
 	vec_t		dot;
 		
-	dot = VectorLength(dplane->normal);
+	dot = Length(dplane->normal);
 	if (dot < 1.0 - ANGLEEPSILON || dot > 1.0 + ANGLEEPSILON)
 		Error ("FindPlane: normalization error");
 	
@@ -254,7 +254,7 @@ int	FindPlane_old (plane_t *dplane, int *side)
 	plane_t		*dp;
 	vec_t		dot, ax, ay, az;
 		
-	dot = VectorLength(dplane->normal);
+	dot = Length(dplane->normal);
 	if (dot < 1.0 - ANGLEEPSILON || dot > 1.0 + ANGLEEPSILON)
 		Error ("FindPlane: normalization error");
 	
@@ -401,7 +401,7 @@ void CreateBrushFaces (void)
 		{
 			for (k=0 ; k<3 ; k++)
 			{
-				r = Q_rint (w->points[j][k]);
+				r = roundf (w->points[j][k]);
 				if ( fabs(w->points[j][k] - r) < ZERO_EPSILON)
 					f->pts[j][k] = r;
 				else
@@ -456,7 +456,7 @@ void AddBrushPlane (plane_t *plane)
 	
 	if (numbrushfaces == MAX_FACES)
 		Error ("AddBrushPlane: numbrushfaces == MAX_FACES");
-	l = VectorLength (plane->normal);
+	l = Length (plane->normal);
 	if (l < 0.999 || l > 1.001)
 		Error ("AddBrushPlane: bad normal");
 	
@@ -627,7 +627,7 @@ void AddHullEdge (vec3_t p1, vec3_t p2, int hullnum)
 				planevec[a] = 1;
 				
 				CrossProduct (planevec, edgevec, plane.normal);
-				l = VectorLength (plane.normal);
+				l = Length (plane.normal);
 				if (l < 1-ANGLEEPSILON || l > 1+ANGLEEPSILON)
 					continue;
 				plane.dist = DotProduct (planeorg, plane.normal);				

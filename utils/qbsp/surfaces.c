@@ -62,7 +62,7 @@ void SubdivideFace (face_t *f, face_t **prevptr)
 			subdivides++;
 			
 			VectorCopy (tex->vecs[axis], plane.normal);
-			v = VectorLength (plane.normal);
+			v = Length (plane.normal);
 			VectorNormalize (plane.normal);			
 			plane.dist = (mins + subdivide_size - 16)/v;
 			next = f->next;
@@ -258,8 +258,8 @@ int	GetVertex (vec3_t in, int planenum)
 	
 	for (i=0 ; i<3 ; i++)
 	{
-		if ( fabs(in[i] - Q_rint(in[i])) < 0.001)
-			vert[i] = Q_rint(in[i]);
+		if ( fabs(in[i] - roundf(in[i])) < 0.001)
+			vert[i] = roundf(in[i]);
 		else
 			vert[i] = in[i];
 	}

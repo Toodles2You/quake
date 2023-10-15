@@ -147,8 +147,8 @@ void AddFace (triangle_t *f)
 
 	for (i=0 ; i<3 ; i++)
 	{
-		coords[i][0] = Q_rint((f->verts[i][0] - mins[0])*scale + basex);
-		coords[i][1] = Q_rint( (maxs[2] - f->verts[i][2])*scale + basey);
+		coords[i][0] = roundf((f->verts[i][0] - mins[0])*scale + basex);
+		coords[i][1] = roundf( (maxs[2] - f->verts[i][2])*scale + basey);
 	}
 	
 //

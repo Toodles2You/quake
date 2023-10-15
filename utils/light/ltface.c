@@ -144,7 +144,7 @@ void CalcFaceVectors (lightinfo_t *l)
 
 	for (i=0 ; i<2 ; i++)
 	{
-		len = VectorLength (l->worldtotex[i]);
+		len = Length (l->worldtotex[i]);
 		dist = DotProduct (l->worldtotex[i], l->facenormal);
 		dist *= distscale;
 		VectorMA (l->worldtotex[i], -dist, texnormal, l->textoworld[i]);
@@ -489,9 +489,9 @@ void SingleLightFace (entity_t *light, lightinfo_t *l)
 		VectorSubtract (light->targetent->origin, light->origin, spotvec);
 		VectorNormalize (spotvec);
 		if (!light->angles[1])
-			falloff = -cos(20*Q_PI/180);	
+			falloff = -cos(20*M_PI/180);	
 		else
-			falloff = -cos(light->angles[1]/2*Q_PI/180);
+			falloff = -cos(light->angles[1]/2*M_PI/180);
 	}
 	else
 		falloff = 0;	// shut up compiler warnings

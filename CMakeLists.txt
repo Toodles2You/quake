@@ -8,11 +8,6 @@ set(CMAKE_C_STANDARD 90)
 set(CMAKE_C_STANDARD_REQUIRED ON)
 set(CMAKE_EXPORT_COMPILE_COMMANDS ON)
 
-set(CMAKE_SHARED_LIBRARY_PREFIX_C "")
-set(CMAKE_SHARED_MODULE_PREFIX_C "")
-set(CMAKE_SHARED_LIBRARY_PREFIX_CXX "")
-set(CMAKE_SHARED_MODULE_PREFIX_CXX "")
-
 find_package(PkgConfig REQUIRED)
 pkg_check_modules(SDL REQUIRED sdl2)
 
@@ -60,6 +55,10 @@ set(QUAKE_LIBRARIES m)
 # Source files                                                  #
 #===============================================================#
 
+set(COMMON_SRC
+    common/mathlib.c
+)
+
 set(QCOMMON_SRC
     nq/qcommon/cmd.c
     nq/qcommon/cmodel.c
@@ -68,7 +67,6 @@ set(QCOMMON_SRC
     nq/qcommon/cvar.c
     nq/qcommon/host_cmd.c
     nq/qcommon/host.c
-    nq/qcommon/mathlib.c
     nq/qcommon/net_bsd.c
     nq/qcommon/net_dgrm.c
     nq/qcommon/net_loop.c
@@ -129,19 +127,16 @@ set(SERVER_SRC
 #===============================================================#
 
 add_executable(quake
+    ${COMMON_SRC}
     ${QCOMMON_SRC}
     ${CLIENT_SRC}
     ${SERVER_SRC}
 )
 
 target_compile_definitions(quake PRIVATE ${QUAKE_DEFS})
-
 target_compile_options(quake PRIVATE ${QUAKE_FLAGS})
-
 target_include_directories(quake PRIVATE ${QUAKE_DIRS} ${SDL_INCLUDE_DIRS})
-
 target_link_directories(quake PRIVATE ${SDL_LIBRARY_DIRS})
-
 target_link_libraries(quake PRIVATE ${QUAKE_LIBRARIES} ${SDL_LIBRARIES} GL dl)
 
 #===============================================================#
@@ -154,6 +149,9 @@ add_executable(qcc
     utils/qcc/pr_lex.c
     utils/qcc/qcc.c
 )
+
+target_compile_definitions(qcc PRIVATE ${QUAKE_DEFS})
+target_compile_options(qcc PRIVATE ${QUAKE_FLAGS})
 target_include_directories(qcc PRIVATE ${QUAKE_DIRS})
 target_link_libraries(qcc PRIVATE ${QUAKE_LIBRARIES})
 
@@ -162,9 +160,9 @@ target_link_libraries(qcc PRIVATE ${QUAKE_LIBRARIES})
 #===============================================================#
 
 add_executable(qbsp
+    ${COMMON_SRC}
     common/bspfile.c
     common/cmdlib.c
-    common/mathlib.c
     utils/qbsp/brush.c
     utils/qbsp/csg4.c
     utils/qbsp/map.c
@@ -180,6 +178,8 @@ add_executable(qbsp
     utils/qbsp/writebsp.c
 )
 
+target_compile_definitions(qbsp PRIVATE ${QUAKE_DEFS})
+target_compile_options(qbsp PRIVATE ${QUAKE_FLAGS})
 target_include_directories(qbsp PRIVATE ${QUAKE_DIRS})
 target_link_libraries(qbsp PRIVATE ${QUAKE_LIBRARIES})
 
@@ -188,9 +188,9 @@ target_link_libraries(qbsp PRIVATE ${QUAKE_LIBRARIES})
 #===============================================================#
 
 add_executable(light
+    ${COMMON_SRC}
     common/bspfile.c
     common/cmdlib.c
-    common/mathlib.c
     common/trilib.c
     utils/light/entities.c
     utils/light/light.c
@@ -199,6 +199,8 @@ add_executable(light
     utils/light/trace.c
 )
 
+target_compile_definitions(light PRIVATE ${QUAKE_DEFS})
+target_compile_options(light PRIVATE ${QUAKE_FLAGS})
 target_include_directories(light PRIVATE ${QUAKE_DIRS})
 target_link_libraries(light PRIVATE ${QUAKE_LIBRARIES})
 
@@ -207,14 +209,16 @@ target_link_libraries(light PRIVATE ${QUAKE_LIBRARIES})
 #===============================================================#
 
 add_executable(vis
+    ${COMMON_SRC}
     common/bspfile.c
     common/cmdlib.c
-    common/mathlib.c
     utils/vis/flow.c
     utils/vis/soundpvs.c
     utils/vis/vis.c
 )
 
+target_compile_definitions(vis PRIVATE ${QUAKE_DEFS})
+target_compile_options(vis PRIVATE ${QUAKE_FLAGS})
 target_include_directories(vis PRIVATE ${QUAKE_DIRS})
 target_link_libraries(vis PRIVATE ${QUAKE_LIBRARIES})
 
@@ -228,6 +232,8 @@ add_executable(bspinfo
     utils/bspinfo/bspinfo.c
 )
 
+target_compile_definitions(bspinfo PRIVATE ${QUAKE_DEFS})
+target_compile_options(bspinfo PRIVATE ${QUAKE_FLAGS})
 target_include_directories(bspinfo PRIVATE ${QUAKE_DIRS})
 target_link_libraries(bspinfo PRIVATE ${QUAKE_LIBRARIES})
 
@@ -236,14 +242,16 @@ target_link_libraries(bspinfo PRIVATE ${QUAKE_LIBRARIES})
 #===============================================================#
 
 add_executable(texmake
+    ${COMMON_SRC}
     common/cmdlib.c
     common/lbmlib.c
-    common/mathlib.c
     common/scriplib.c
     common/trilib.c
     utils/texmake/texmake.c
 )
 
+target_compile_definitions(texmake PRIVATE ${QUAKE_DEFS})
+target_compile_options(texmake PRIVATE ${QUAKE_FLAGS})
 target_include_directories(texmake PRIVATE ${QUAKE_DIRS})
 target_link_libraries(texmake PRIVATE ${QUAKE_LIBRARIES})
 
@@ -252,14 +260,16 @@ target_link_libraries(texmake PRIVATE ${QUAKE_LIBRARIES})
 #===============================================================#
 
 add_executable(modelgen
+    ${COMMON_SRC}
     common/cmdlib.c
     common/lbmlib.c
-    common/mathlib.c
     common/scriplib.c
     common/trilib.c
     utils/modelgen/modelgen.c
 )
 
+target_compile_definitions(modelgen PRIVATE ${QUAKE_DEFS})
+target_compile_options(modelgen PRIVATE ${QUAKE_FLAGS})
 target_include_directories(modelgen PRIVATE ${QUAKE_DIRS})
 target_link_libraries(modelgen PRIVATE ${QUAKE_LIBRARIES})
 
@@ -274,6 +284,8 @@ add_executable(sprgen
     utils/sprgen/sprgen.c
 )
 
+target_compile_definitions(sprgen PRIVATE ${QUAKE_DEFS})
+target_compile_options(sprgen PRIVATE ${QUAKE_FLAGS})
 target_include_directories(sprgen PRIVATE ${QUAKE_DIRS})
 target_link_libraries(sprgen PRIVATE ${QUAKE_LIBRARIES})
 
@@ -290,6 +302,8 @@ add_executable(qlumpy
     utils/qlumpy/quakegrb.c
 )
 
+target_compile_definitions(qlumpy PRIVATE ${QUAKE_DEFS})
+target_compile_options(qlumpy PRIVATE ${QUAKE_FLAGS})
 target_include_directories(qlumpy PRIVATE ${QUAKE_DIRS})
 target_link_libraries(qlumpy PRIVATE ${QUAKE_LIBRARIES})
 
@@ -302,6 +316,8 @@ add_executable(qfiles
     utils/qfiles/qfiles.c
 )
 
+target_compile_definitions(qfiles PRIVATE ${QUAKE_DEFS})
+target_compile_options(qfiles PRIVATE ${QUAKE_FLAGS})
 target_include_directories(qfiles PRIVATE ${QUAKE_DIRS})
 target_link_libraries(qfiles PRIVATE ${QUAKE_LIBRARIES})
 

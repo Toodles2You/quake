@@ -192,7 +192,7 @@ enum
 #include "../qcommon/common.h"
 #include "../qcommon/sys.h"
 #include "../qcommon/zone.h"
-#include "../qcommon/mathlib.h"
+#include "mathlib.h"
 #include "../qcommon/cvar.h"
 #include "../qcommon/net.h"
 #include "../qcommon/protocol.h"

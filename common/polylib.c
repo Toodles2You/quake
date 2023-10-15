@@ -93,7 +93,7 @@ vec_t	WindingArea (winding_t *w)
 		VectorSubtract (w->p[i-1], w->p[0], d1);
 		VectorSubtract (w->p[i], w->p[0], d2);
 		CrossProduct (d1, d2, cross);
-		total += 0.5 * VectorLength ( cross );
+		total += 0.5 * Length ( cross );
 	}
 	return total;
 }
@@ -378,7 +378,7 @@ void CheckWinding (winding_t *w)
 		p2 = w->p[j];
 		VectorSubtract (p2, p1, dir);
 		
-		if (VectorLength (dir) < ON_EPSILON)
+		if (Length (dir) < ON_EPSILON)
 			Error ("CheckFace: degenerate edge");
 			
 		CrossProduct (facenormal, dir, edgenormal);

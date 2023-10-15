@@ -548,8 +548,8 @@ void SetSkinValues (void)
 			if ((triangles[i].facesfront) || ((pstvert->onseam & 1) == 0))
 			{
 			// we want the front s value for seam vertices
-				pstvert->s = Q_rint((pbasevert[0] - mins[0]) * scale + basex);
-				pstvert->t = Q_rint((maxs[2] - pbasevert[2]) * scale + basey);
+				pstvert->s = roundf((pbasevert[0] - mins[0]) * scale + basex);
+				pstvert->t = roundf((maxs[2] - pbasevert[2]) * scale + basey);
 			}
 		}
 	}

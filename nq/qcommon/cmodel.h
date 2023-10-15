@@ -13,23 +13,6 @@ typedef enum
 	mod_alias
 } modtype_t;
 
-enum
-{
-	SIDE_FRONT = 0,
-	SIDE_BACK,
-	SIDE_ON,
-};
-
-// plane_t structure
-typedef struct mplane_s
-{
-	vec3_t normal;
-	float dist;
-	byte type;	   // for texture axis selection and fast side tests
-	byte signbits; // signx + signy<<1 + signz<<1
-	byte pad[2];
-} mplane_t;
-
 typedef struct mnode_s mnode_t;
 typedef struct efrag_s efrag_t;
 typedef struct msurface_s msurface_t;

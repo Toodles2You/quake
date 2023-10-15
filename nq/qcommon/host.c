@@ -555,54 +555,6 @@ Host_ServerFrame
 
 ==================
 */
-#ifdef FPS_20
-
-void _Host_ServerFrame ()
-{
-// run the world state	
-	pr_global_struct->frametime = host_frametime;
-
-// read client messages
-	SV_RunClients ();
-	
-// move things around and think
-// always pause in single player if in console or menus
-	if (!sv.paused && (svs.maxclients > 1 || key_dest == key_game) )
-		SV_Physics ();
-}
-
-void Host_ServerFrame ()
-{
-	float	save_host_frametime;
-	float	temp_host_frametime;
-
-// run the world state	
-	pr_global_struct->frametime = host_frametime;
-
-// set the time and clear the general datagram
-	SV_ClearDatagram ();
-	
-// check for new clients
-	SV_CheckForNewClients ();
-
-	temp_host_frametime = save_host_frametime = host_frametime;
-	while(temp_host_frametime > (1.0/72.0))
-	{
-		if (temp_host_frametime > 0.05)
-			host_frametime = 0.05;
-		else
-			host_frametime = temp_host_frametime;
-		temp_host_frametime -= host_frametime;
-		_Host_ServerFrame ();
-	}
-	host_frametime = save_host_frametime;
-
-// send all messages to the clients
-	SV_SendClientMessages ();
-}
-
-#else
-
 void Host_ServerFrame ()
 {
 // run the world state	
@@ -625,8 +577,6 @@ void Host_ServerFrame ()
 // send all messages to the clients
 	SV_SendClientMessages ();
 }
-
-#endif
 
 
 /*
@@ -636,7 +586,7 @@ Host_Frame
 Runs all active servers
 ==================
 */
-void _Host_Frame (float time)
+void Host_Frame (float time)
 {
 	static double		time1 = 0;
 	static double		time2 = 0;
@@ -732,41 +682,6 @@ void _Host_Frame (float time)
 	host_framecount++;
 }
 
-void Host_Frame (float time)
-{
-	double	time1, time2;
-	static double	timetotal;
-	static int		timecount;
-	int		i, c, m;
-
-	if (!serverprofile.value)
-	{
-		_Host_Frame (time);
-		return;
-	}
-	
-	time1 = Sys_FloatTime ();
-	_Host_Frame (time);
-	time2 = Sys_FloatTime ();	
-	
-	timetotal += time2 - time1;
-	timecount++;
-	
-	if (timecount < 1000)
-		return;
-
-	m = timetotal*1000/timecount;
-	timecount = 0;
-	timetotal = 0;
-	c = 0;
-	for (i=0 ; i<svs.maxclients ; i++)
-	{
-		if (svs.clients[i].active)
-			c++;
-	}
-
-	Con_Printf ("serverprofile: %2i clients %2i msec\n",  c,  m);
-}
 
 //============================================================================
 

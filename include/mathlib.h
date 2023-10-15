@@ -1,49 +1,107 @@
-#ifndef __MATHLIB__
-#define __MATHLIB__
 
-// mathlib.h
+#ifndef _MATHLIB_H
+#define _MATHLIB_H
 
 #include <math.h>
 
-#ifdef DOUBLEVEC_T
-typedef double vec_t;
-#else
+typedef unsigned char byte;
 typedef float vec_t;
-#endif
+typedef vec_t vec2_t[2];
 typedef vec_t vec3_t[3];
+typedef vec_t vec5_t[5];
 
-#define	SIDE_FRONT		0
-#define	SIDE_ON			2
-#define	SIDE_BACK		1
-#define	SIDE_CROSS		-2
+typedef int fixed4_t;
 
-#define	Q_PI	3.14159265358979323846
+enum
+{
+	SIDE_CROSS = -2,
+	SIDE_FRONT = 0,
+	SIDE_BACK,
+	SIDE_ON,
+};
+
+// plane_t structure
+typedef struct mplane_s
+{
+	vec3_t normal;
+	float dist;
+	byte type;	   // for texture axis selection and fast side tests
+	byte signbits; // signx + signy<<1 + signz<<1
+	byte pad[2];
+} mplane_t;
+
+#ifndef M_PI
+#define M_PI 3.14159265358979323846 // matches value in gcc v2 math.h
+#endif
+
+struct mplane_s;
 
 extern vec3_t vec3_origin;
+extern int nanmask;
 
 #define	EQUAL_EPSILON	0.001
+#define IS_NAN(x) (((*(int *)&x) & nanmask) == nanmask)
+#define DEG2RAD(a) (a * M_PI) / 180.0F
 
-bool VectorCompare (vec3_t v1, vec3_t v2);
+#define DotProduct(x, y) (x[0] * y[0] + x[1] * y[1] + x[2] * y[2])
+#define VectorSubtract(a, b, c) \
+	{                           \
+		c[0] = a[0] - b[0];     \
+		c[1] = a[1] - b[1];     \
+		c[2] = a[2] - b[2];     \
+	}
+#define VectorAdd(a, b, c)  \
+	{                       \
+		c[0] = a[0] + b[0]; \
+		c[1] = a[1] + b[1]; \
+		c[2] = a[2] + b[2]; \
+	}
+#define VectorCopy(a, b) \
+	{                    \
+		b[0] = a[0];     \
+		b[1] = a[1];     \
+		b[2] = a[2];     \
+	}
 
-#define DotProduct(x,y) (x[0]*y[0]+x[1]*y[1]+x[2]*y[2])
-#define VectorSubtract(a,b,c) {c[0]=a[0]-b[0];c[1]=a[1]-b[1];c[2]=a[2]-b[2];}
-#define VectorAdd(a,b,c) {c[0]=a[0]+b[0];c[1]=a[1]+b[1];c[2]=a[2]+b[2];}
-#define VectorCopy(a,b) {b[0]=a[0];b[1]=a[1];b[2]=a[2];}
+void VectorMA(vec3_t veca, float scale, vec3_t vecb, vec3_t vecc);
 
-vec_t Q_rint (vec_t in);
-vec_t _DotProduct (vec3_t v1, vec3_t v2);
-void _VectorSubtract (vec3_t va, vec3_t vb, vec3_t out);
-void _VectorAdd (vec3_t va, vec3_t vb, vec3_t out);
-void _VectorCopy (vec3_t in, vec3_t out);
+vec_t _DotProduct(vec3_t v1, vec3_t v2);
+void _VectorSubtract(vec3_t veca, vec3_t vecb, vec3_t out);
+void _VectorAdd(vec3_t veca, vec3_t vecb, vec3_t out);
+void _VectorCopy(vec3_t in, vec3_t out);
 
-double VectorLength(vec3_t v);
+int VectorCompare(vec3_t v1, vec3_t v2);
+vec_t Length(vec3_t v);
+void CrossProduct(vec3_t v1, vec3_t v2, vec3_t cross);
+float VectorNormalize(vec3_t v); // returns vector length
+void VectorInverse(vec3_t v);
+void VectorScale(vec3_t in, vec_t scale, vec3_t out);
+int Q_log2(int val);
 
-void AngleVectors (vec3_t angles, vec3_t forward, vec3_t right, vec3_t up);
-void VectorMA (vec3_t va, double scale, vec3_t vb, vec3_t vc);
+void R_ConcatRotations(float in1[3][3], float in2[3][3], float out[3][3]);
+void R_ConcatTransforms(float in1[3][4], float in2[3][4], float out[3][4]);
 
-void CrossProduct (vec3_t v1, vec3_t v2, vec3_t cross);
-vec_t VectorNormalize (vec3_t v);
-void VectorInverse (vec3_t v);
-void VectorScale (vec3_t v, vec_t scale, vec3_t out);
+void FloorDivMod(double numer, double denom, int *quotient, int *rem);
+int GreatestCommonDivisor(int i1, int i2);
 
-#endif
+void AngleVectors(vec3_t angles, vec3_t forward, vec3_t right, vec3_t up);
+int BoxOnPlaneSide(vec3_t emins, vec3_t emaxs, struct mplane_s *plane);
+float anglemod(float a);
+
+#define BOX_ON_PLANE_SIDE(emins, emaxs, p)	\
+	(((p)->type < 3)?						\
+	(										\
+		((p)->dist <= (emins)[(p)->type])?	\
+			1								\
+		:									\
+		(									\
+			((p)->dist >= (emaxs)[(p)->type])?\
+				2							\
+			:								\
+				3							\
+		)									\
+	)										\
+	:										\
+		BoxOnPlaneSide( (emins), (emaxs), (p)))
+
+#endif /* !_MATHLIB_H */
