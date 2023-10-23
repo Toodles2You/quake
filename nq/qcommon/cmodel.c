@@ -364,7 +364,9 @@ void CMod_LoadSubmodels(lump_t *l)
             out->maxs[j] = LittleFloat(in->maxs[j]) + 1.0f;
         }
 
-        for (j = 0; j < MAX_MAP_HULLS; j++)
+        out->hulls[HULL_POINT].firstclipnode = LittleLong(in.headnode[HULL_POINT]);
+
+        for (j = 1; j < MAX_MAP_HULLS; j++)
         {
             out->hulls[j].firstclipnode = LittleLong(in->headnode[j]);
             out->hulls[j].lastclipnode = out->numclipnodes - 1;
