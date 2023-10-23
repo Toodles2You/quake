@@ -43,6 +43,9 @@ cvar_t	cl_bob = {"cl_bob","0.02", false};
 cvar_t	cl_bobcycle = {"cl_bobcycle","0.6", false};
 cvar_t	cl_bobup = {"cl_bobup","0.5", false};
 
+cvar_t	cl_pitchmax = {"cl_pitchmax", "70", false};
+cvar_t	cl_pitchmin = {"cl_pitchmin", "80", false};
+
 cvar_t	v_kicktime = {"v_kicktime", "0.5", false};
 cvar_t	v_kickroll = {"v_kickroll", "0.6", false};
 cvar_t	v_kickpitch = {"v_kickpitch", "0.6", false};
@@ -57,8 +60,6 @@ cvar_t	v_ipitch_level = {"v_ipitch_level", "0.3", false};
 cvar_t	v_idlescale = {"v_idlescale", "0", false};
 
 cvar_t	crosshair = {"crosshair", "0", true};
-cvar_t	cl_crossx = {"cl_crossx", "0", false};
-cvar_t	cl_crossy = {"cl_crossy", "0", false};
 
 cvar_t	gl_cshiftpercent = {"gl_cshiftpercent", "100", false};
 
@@ -861,9 +862,6 @@ void V_CalcRefdef ()
 // fudge position around to keep amount of weapon visible
 // roughly equal with different FOV
 
-#if 0
-	if (cl.model_precache[cl.stats[STAT_WEAPON]] && strcmp (cl.model_precache[cl.stats[STAT_WEAPON]]->name,  "progs/v_shot2.mdl"))
-#endif
 	view->origin[2] += 2;
 
 	view->model = cl.model_precache[cl.stats[STAT_WEAPON]];
@@ -970,6 +968,19 @@ void V_RenderView ()
 	}	
 }
 
+void V_ClampViewAngles ()
+{
+	/* Toodles: View pitch is inverted. */
+	if (cl.viewangles[PITCH] > cl_pitchmin.value)
+	{
+		cl.viewangles[PITCH] = cl_pitchmin.value;
+	}
+	else if (cl.viewangles[PITCH] < -cl_pitchmax.value)
+	{
+		cl.viewangles[PITCH] = -cl_pitchmax.value;
+	}
+}
+
 //============================================================================
 
 /*
@@ -998,8 +1009,6 @@ void V_Init ()
 
 	Cvar_RegisterVariable (&v_idlescale);
 	Cvar_RegisterVariable (&crosshair);
-	Cvar_RegisterVariable (&cl_crossx);
-	Cvar_RegisterVariable (&cl_crossy);
 	Cvar_RegisterVariable (&gl_cshiftpercent);
 
 	Cvar_RegisterVariable (&scr_ofsx);
@@ -1017,6 +1026,9 @@ void V_Init ()
 	
 	BuildGammaTable (1.0);	// no gamma yet
 	Cvar_RegisterVariable (&v_gamma);
+
+	Cvar_RegisterVariable (&cl_pitchmax);
+	Cvar_RegisterVariable (&cl_pitchmin);
 }
 
 

@@ -24,11 +24,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 extern SDL_Window *window;
 
-enum {
-    PITCH_MIN = -70,
-    PITCH_MAX = 80,
-};
-
 typedef enum {
     MOUSE_AVAILABLE = 1,
     MOUSE_ACTIVE = 2,
@@ -431,7 +426,7 @@ void IN_Move(usercmd_t *cmd)
     if (looking && !strafing)
     {
         cl.viewangles[PITCH] += m_pitch.value * mouse[1];
-        cl.viewangles[PITCH] = SDL_clamp(cl.viewangles[PITCH], PITCH_MIN, PITCH_MAX);
+        V_ClampViewAngles();
     }
     else
     {
