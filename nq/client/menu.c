@@ -1595,7 +1595,7 @@ void M_Menu_Quit_f ()
 	m_quit_prevstate = m_state;
 	m_state = m_quit;
 	m_entersound = true;
-	msgNumber = rand() % (sizeof(quitMessage) / sizeof(*quitMessage) / 4);
+	msgNumber = rand() % (lengthof(quitMessage) / 4);
 }
 
 
