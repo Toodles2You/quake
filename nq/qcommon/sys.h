@@ -48,8 +48,4 @@ void Sys_Sleep();
 void Sys_SendKeyEvents();
 // Perform Key_Event () callbacks until the input que is empty
 
-void Sys_LowFPPrecision();
-void Sys_HighFPPrecision();
-void Sys_SetFPCW();
-
 #endif /* !_SYS_H */

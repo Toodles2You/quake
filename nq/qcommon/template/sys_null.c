@@ -177,14 +177,6 @@ void Sys_SendKeyEvents ()
 {
 }
 
-void Sys_HighFPPrecision ()
-{
-}
-
-void Sys_LowFPPrecision ()
-{
-}
-
 //=============================================================================
 
 void main (int argc, char **argv)
