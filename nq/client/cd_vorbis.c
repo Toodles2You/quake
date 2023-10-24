@@ -217,7 +217,10 @@ static void CD_f()
 
     if (strcasecmp(command, "on") == 0)
     {
-        cd_state |= CD_ENABLED;
+        if (snd_initialized)
+        {
+            cd_state |= CD_ENABLED;
+        }
     }
     else if (strcasecmp(command, "off") == 0)
     {
@@ -226,7 +229,10 @@ static void CD_f()
     }
     else if (strcasecmp(command, "reset") == 0)
     {
-        cd_state |= CD_ENABLED;
+        if (snd_initialized)
+        {
+            cd_state |= CD_ENABLED;
+        }
 
         CDAudio_ForceStop();
         
@@ -317,7 +323,7 @@ int CDAudio_Init()
     if (cls.state == ca_dedicated)
         return -1;
 
-    if (COM_CheckParm("-nocdaudio"))
+    if (COM_CheckParm("-nocdaudio") || COM_CheckParm("-nosound"))
         return -1;
 
     if ((n = COM_CheckParm("-cddev")) != 0 && n < com_argc - 1)
