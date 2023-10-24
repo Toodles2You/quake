@@ -4,6 +4,8 @@
 
 typedef unsigned char byte;
 
+#define lengthof(array) (sizeof(array) / sizeof(array[0]))
+
 //============================================================================
 
 typedef struct sizebuf_s
