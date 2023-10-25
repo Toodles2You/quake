@@ -228,14 +228,13 @@ facing it.
 
 ======================
 */
-void PF_changeyaw ();
 bool SV_StepDirection (edict_t *ent, float yaw, float dist)
 {
 	vec3_t		move, oldorigin;
 	float		delta;
 	
 	ent->v.ideal_yaw = yaw;
-	PF_changeyaw();
+	PF_changeyaw(&sv.pr);
 	
 	yaw = yaw*M_PI*2 / 360;
 	move[0] = cos(yaw)*dist;
@@ -394,13 +393,13 @@ void SV_MoveToGoal ()
 	edict_t		*ent, *goal;
 	float		dist;
 
-	ent = PROG_TO_EDICT(pr->global_struct->self);
+	ent = PROG_TO_EDICT(sv.pr.global_struct->self);
 	goal = PROG_TO_EDICT(ent->v.goalentity);
-	dist = G_FLOAT(OFS_PARM0);
+	dist = sv.pr.globals[OFS_PARM0];
 
 	if ( !( (int)ent->v.flags & (FL_ONGROUND|FL_FLY|FL_SWIM) ) )
 	{
-		G_FLOAT(OFS_RETURN) = 0;
+		sv.pr.globals[OFS_RETURN] = 0;
 		return;
 	}
 

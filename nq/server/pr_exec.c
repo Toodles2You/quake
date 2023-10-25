@@ -125,9 +125,6 @@ char *pr_opnames[] =
 "BITOR"
 };
 
-char *PR_GlobalString (int ofs);
-char *PR_GlobalStringNoContents (int ofs);
-
 
 //=============================================================================
 
@@ -136,7 +133,7 @@ char *PR_GlobalStringNoContents (int ofs);
 PR_PrintStatement
 =================
 */
-void PR_PrintStatement (dstatement_t *s)
+static void PR_PrintStatement (progs_state_t *pr, dstatement_t *s)
 {
 	int		i;
 	
@@ -149,24 +146,24 @@ void PR_PrintStatement (dstatement_t *s)
 	}
 		
 	if (s->op == OP_IF || s->op == OP_IFNOT)
-		Con_Printf ("%sbranch %i",PR_GlobalString(s->a),s->b);
+		Con_Printf ("%sbranch %i",PR_GlobalString(pr, s->a),s->b);
 	else if (s->op == OP_GOTO)
 	{
 		Con_Printf ("branch %i",s->a);
 	}
 	else if ( (unsigned)(s->op - OP_STORE_F) < 6)
 	{
-		Con_Printf ("%s",PR_GlobalString(s->a));
-		Con_Printf ("%s", PR_GlobalStringNoContents(s->b));
+		Con_Printf ("%s",PR_GlobalString(pr, s->a));
+		Con_Printf ("%s", PR_GlobalStringNoContents(pr, s->b));
 	}
 	else
 	{
 		if (s->a)
-			Con_Printf ("%s",PR_GlobalString(s->a));
+			Con_Printf ("%s",PR_GlobalString(pr, s->a));
 		if (s->b)
-			Con_Printf ("%s",PR_GlobalString(s->b));
+			Con_Printf ("%s",PR_GlobalString(pr, s->b));
 		if (s->c)
-			Con_Printf ("%s", PR_GlobalStringNoContents(s->c));
+			Con_Printf ("%s", PR_GlobalStringNoContents(pr, s->c));
 	}
 	Con_Printf ("\n");
 }
@@ -176,7 +173,7 @@ void PR_PrintStatement (dstatement_t *s)
 PR_StackTrace
 ============
 */
-void PR_StackTrace ()
+static void PR_StackTrace (progs_state_t *pr)
 {
 	dfunction_t	*f;
 	int			i;
@@ -197,7 +194,7 @@ void PR_StackTrace ()
 			Con_Printf ("<NO FUNCTION>\n");
 		}
 		else
-			Con_Printf ("%12s : %s\n", PR_GetString(f->s_file), PR_GetString(f->s_name));		
+			Con_Printf ("%12s : %s\n", PR_GetString(pr, f->s_file), PR_GetString(pr, f->s_name));		
 	}
 }
 
@@ -214,6 +211,7 @@ void PR_Profile_f ()
 	int			max;
 	int			num;
 	int			i;
+	progs_state_t *pr = &sv.pr;
 	
 	num = 0;	
 	do
@@ -247,7 +245,7 @@ PR_RunError
 Aborts the currently executing function
 ============
 */
-void PR_RunError (char *error, ...)
+void PR_RunError (progs_state_t *pr, char *error, ...)
 {
 	va_list		argptr;
 	char		string[1024];
@@ -256,8 +254,8 @@ void PR_RunError (char *error, ...)
 	vsprintf (string,error,argptr);
 	va_end (argptr);
 
-	PR_PrintStatement (pr->statements + pr->xstatement);
-	PR_StackTrace ();
+	PR_PrintStatement (pr, pr->statements + pr->xstatement);
+	PR_StackTrace (pr);
 	Con_Printf ("%s\n", string);
 	
 	pr_depth = 0;		// dump the stack so host_error can shutdown functions
@@ -280,7 +278,7 @@ PR_EnterFunction
 Returns the new program statement counter
 ====================
 */
-int PR_EnterFunction (dfunction_t *f)
+static int PR_EnterFunction (progs_state_t *pr, dfunction_t *f)
 {
 	int		i, j, c, o;
 
@@ -288,12 +286,12 @@ int PR_EnterFunction (dfunction_t *f)
 	pr_stack[pr_depth].f = pr->xfunction;	
 	pr_depth++;
 	if (pr_depth >= MAX_STACK_DEPTH)
-		PR_RunError ("stack overflow");
+		PR_RunError (pr, "stack overflow");
 
 // save off any locals that the new function steps on
 	c = f->locals;
 	if (localstack_used + c > LOCALSTACK_SIZE)
-		PR_RunError ("PR_ExecuteProgram: locals stack overflow\n");
+		PR_RunError (pr, "PR_ExecuteProgram: locals stack overflow\n");
 
 	for (i=0 ; i < c ; i++)
 		localstack[localstack_used+i] = ((int32_t *)pr->globals)[f->parm_start + i];
@@ -319,7 +317,7 @@ int PR_EnterFunction (dfunction_t *f)
 PR_LeaveFunction
 ====================
 */
-int PR_LeaveFunction ()
+static int PR_LeaveFunction (progs_state_t *pr)
 {
 	int		i, c;
 
@@ -330,7 +328,7 @@ int PR_LeaveFunction ()
 	c = pr->xfunction->locals;
 	localstack_used -= c;
 	if (localstack_used < 0)
-		PR_RunError ("PR_ExecuteProgram: locals stack underflow\n");
+		PR_RunError (pr, "PR_ExecuteProgram: locals stack underflow\n");
 
 	for (i=0 ; i < c ; i++)
 		((int32_t *)pr->globals)[pr->xfunction->parm_start + i] = localstack[localstack_used+i];
@@ -347,7 +345,7 @@ int PR_LeaveFunction ()
 PR_ExecuteProgram
 ====================
 */
-void PR_ExecuteProgram (func_t fnum)
+void PR_ExecuteProgram (progs_state_t *pr, func_t fnum)
 {
 	eval_t	*a, *b, *c;
 	int			s;
@@ -374,7 +372,7 @@ void PR_ExecuteProgram (func_t fnum)
 // make a stack frame
 	exitdepth = pr_depth;
 
-	s = PR_EnterFunction (f);
+	s = PR_EnterFunction (pr, f);
 	
 while (1)
 {
@@ -386,13 +384,13 @@ while (1)
 	c = (eval_t *)&pr->globals[st->c];
 	
 	if (!--runaway)
-		PR_RunError ("runaway loop error");
+		PR_RunError (pr, "runaway loop error");
 		
 	pr->xfunction->profile++;
 	pr->xstatement = s;
 	
 	if (pr_trace)
-		PR_PrintStatement (st);
+		PR_PrintStatement (pr, st);
 		
 	switch (st->op)
 	{
@@ -550,7 +548,7 @@ while (1)
 	case OP_ADDRESS:
 		ed = PROG_TO_EDICT(a->edict);
 		if (ed == (edict_t *)sv.edicts && sv.state == ss_active)
-			PR_RunError ("assignment to world entity");
+			PR_RunError (pr, "assignment to world entity");
 		c->_int = (byte *)((int32_t *)&ed->v + b->_int) - (byte *)sv.edicts;
 		break;
 		
@@ -599,7 +597,7 @@ while (1)
 	case OP_CALL8:
 		pr->argc = st->op - OP_CALL0;
 		if (!a->function)
-			PR_RunError ("NULL function");
+			PR_RunError (pr, "NULL function");
 
 		newf = &pr->functions[a->function];
 
@@ -607,12 +605,12 @@ while (1)
 		{	// negative statements are built in functions
 			i = -newf->first_statement;
 			if (i >= pr->numbuiltins)
-				PR_RunError ("Bad builtin call number");
-			pr->builtins[i] ();
+				PR_RunError (pr, "Bad builtin call number");
+			pr->builtins[i](pr);
 			break;
 		}
 
-		s = PR_EnterFunction (newf);
+		s = PR_EnterFunction (pr, newf);
 		break;
 
 	case OP_DONE:
@@ -621,7 +619,7 @@ while (1)
 		pr->globals[OFS_RETURN+1] = pr->globals[st->a+1];
 		pr->globals[OFS_RETURN+2] = pr->globals[st->a+2];
 	
-		s = PR_LeaveFunction ();
+		s = PR_LeaveFunction (pr);
 		if (pr_depth == exitdepth)
 			return;		// all done
 		break;
@@ -637,7 +635,7 @@ while (1)
 		break;
 		
 	default:
-		PR_RunError ("Bad opcode %i", st->op);
+		PR_RunError (pr, "Bad opcode %i", st->op);
 	}
 }
 
@@ -648,7 +646,7 @@ while (1)
 char *pr_strtbl[MAX_PRSTR];
 int num_prstr;
 
-char *PR_GetString(int num)
+char *PR_GetString(progs_state_t *pr, int num)
 {
 	if (num < 0) {
 //Con_DPrintf("GET:%d == %s\n", num, pr_strtbl[-num]);
@@ -657,7 +655,7 @@ char *PR_GetString(int num)
 	return pr->strings + num;
 }
 
-int PR_SetString(char *s)
+int PR_SetString(progs_state_t *pr, char *s)
 {
 	int i;
 

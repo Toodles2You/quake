@@ -34,9 +34,11 @@ typedef struct edict_s
 
 #define EDICT_FROM_AREA(l) STRUCT_FROM_LINK(l, edict_t, area)
 
-typedef void (*builtin_t)();
+typedef struct progs_state_s progs_state_t;
 
-typedef struct {
+typedef void (*builtin_t)(progs_state_t *);
+
+typedef struct progs_state_s {
 	dprograms_t *progs;
 	dfunction_t *functions;
 	char *strings;
@@ -61,14 +63,18 @@ typedef struct {
 
 //============================================================================
 
-extern progs_state_t *pr;
-
-//============================================================================
-
 void PR_Init();
 
-void PR_ExecuteProgram(func_t fnum);
-int PR_LoadProgs(progs_state_t *state, char *filename, int version, int crc);
+void PR_ExecuteProgram(progs_state_t *pr, func_t fnum);
+int PR_LoadProgs(progs_state_t *pr, char *filename, int version, int crc);
+
+ddef_t *PR_GlobalAtOfs (progs_state_t *pr, int ofs);
+char *PR_GlobalString (progs_state_t *pr, int ofs);
+char *PR_GlobalStringNoContents (progs_state_t *pr, int ofs);
+ddef_t *PR_FieldAtOfs (progs_state_t *pr, int ofs);
+ddef_t *PR_FindField (progs_state_t *pr, char *name);
+ddef_t *PR_FindGlobal (progs_state_t *pr, char *name);
+dfunction_t *PR_FindFunction (progs_state_t *pr, char *name);
 
 void PR_Profile_f();
 
@@ -90,7 +96,7 @@ void ED_LoadFromFile(char *data);
 edict_t *EDICT_NUM(int n);
 int NUM_FOR_EDICT(edict_t *e);
 
-#define NEXT_EDICT(e) ((edict_t *)((byte *)e + pr->edict_size))
+#define NEXT_EDICT(e) ((edict_t *)((byte *)e + sv.pr.edict_size))
 
 #define EDICT_TO_PROG(e) ((byte *)e - (byte *)sv.edicts)
 #define PROG_TO_EDICT(e) ((edict_t *)((byte *)sv.edicts + e))
@@ -99,16 +105,16 @@ int NUM_FOR_EDICT(edict_t *e);
 
 #define G_FLOAT(o) (pr->globals[o])
 #define G_INT(o) (*(int32_t *)&pr->globals[o])
-#define G_EDICT(o) ((edict_t *)((byte *)sv.edicts + *(int32_t *)&pr->globals[o]))
+#define G_EDICT(o) ((edict_t *)((byte *)sv.edicts + *(int32_t *)&sv.pr.globals[o]))
 #define G_EDICTNUM(o) NUM_FOR_EDICT(G_EDICT(o))
 #define G_VECTOR(o) (&pr->globals[o])
-#define G_STRING(o) (PR_GetString(*(string_t *)&pr->globals[o]))
+#define G_STRING(o) (PR_GetString(pr, *(string_t *)&pr->globals[o]))
 #define G_FUNCTION(o) (*(func_t *)&pr->globals[o])
 
 #define E_FLOAT(e, o) (((float *)&e->v)[o])
 #define E_INT(e, o) (*(int32_t *)&((float *)&e->v)[o])
 #define E_VECTOR(e, o) (&((float *)&e->v)[o])
-#define E_STRING(e, o) (PR_GetString(*(string_t *)&((float *)&e->v)[o]))
+#define E_STRING(e, o) (PR_GetString(pr, *(string_t *)&((float *)&e->v)[o]))
 
 extern int pr_type_size[ev_types];
 
@@ -117,7 +123,7 @@ extern int pr_numbuiltins;
 
 extern bool pr_trace;
 
-void PR_RunError(char *error, ...);
+void PR_RunError(progs_state_t *pr, char *error, ...);
 
 void ED_PrintEdicts();
 void ED_PrintNum(int ent);
@@ -132,7 +138,12 @@ eval_t *GetEdictFieldValue(edict_t *ed, char *field);
 extern char *pr_strtbl[MAX_PRSTR];
 extern int num_prstr;
 
-char *PR_GetString(int num);
-int PR_SetString(char *s);
+char *PR_GetString(progs_state_t *pr, int num);
+int PR_SetString(progs_state_t *pr, char *s);
+void PR_CheckEmptyString (progs_state_t *pr, char *s);
+
+//============================================================================
+
+void PF_changeyaw (progs_state_t *pr);
 
 #endif /* !_PROGS_H */
