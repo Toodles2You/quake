@@ -14,7 +14,8 @@ typedef enum
 	ev_entity,
 	ev_field,
 	ev_function,
-	ev_pointer
+	ev_pointer,
+	ev_types,
 } etype_t;
 
 #define OFS_NULL 0

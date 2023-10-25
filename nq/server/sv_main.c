@@ -191,7 +191,7 @@ void SV_SendServerinfo (client_t *client)
 	char			message[2048];
 
 	MSG_WriteByte (&client->message, svc_print);
-	sprintf (message, "%c\nVERSION "QUAKE_VERSION" SERVER (%i CRC)\n", 2, pr_crc);
+	sprintf (message, "%c\nVERSION "QUAKE_VERSION" SERVER (%i CRC)\n", 2, pr->crc);
 	MSG_WriteString (&client->message,message);
 
 	MSG_WriteByte (&client->message, svc_serverinfo);
@@ -203,7 +203,7 @@ void SV_SendServerinfo (client_t *client)
 	else
 		MSG_WriteByte (&client->message, GAME_COOP);
 
-	strcpy (message, pr_strings+sv.edicts->v.message);
+	strcpy (message, pr->strings+sv.edicts->v.message);
 
 	MSG_WriteString (&client->message,message);
 
@@ -278,9 +278,9 @@ void SV_ConnectClient (int clientnum)
 	else
 	{
 	// call the progs to get default spawn parms for the new client
-		PR_ExecuteProgram (pr_global_struct->SetNewParms);
+		PR_ExecuteProgram (pr->global_struct->SetNewParms);
 		for (i=0 ; i<NUM_SPAWN_PARMS ; i++)
-			client->spawn_parms[i] = (&pr_global_struct->parm1)[i];
+			client->spawn_parms[i] = (&pr->global_struct->parm1)[i];
 	}
 
 	SV_SendServerinfo (client);
@@ -443,7 +443,7 @@ void SV_WriteEntitiesToClient (edict_t	*clent, sizebuf_t *msg)
 		if (ent != clent)	// clent is ALLWAYS sent
 		{
 // ignore ents without visible models
-			if (!ent->v.modelindex || !pr_strings[ent->v.model])
+			if (!ent->v.modelindex || !pr->strings[ent->v.model])
 				continue;
 
 			for (i=0 ; i < ent->num_leafs ; i++)
@@ -618,7 +618,7 @@ void SV_WriteClientdataToMessage (edict_t *ent, sizebuf_t *msg)
 	if (val)
 		items = (int)ent->v.items | ((int)val->_float << 23);
 	else
-		items = (int)ent->v.items | ((int)pr_global_struct->serverflags << 28);
+		items = (int)ent->v.items | ((int)pr->global_struct->serverflags << 28);
 
 	bits |= SU_ITEMS;
 	
@@ -672,7 +672,7 @@ void SV_WriteClientdataToMessage (edict_t *ent, sizebuf_t *msg)
 	if (bits & SU_ARMOR)
 		MSG_WriteByte (msg, ent->v.armorvalue);
 	if (bits & SU_WEAPON)
-		MSG_WriteByte (msg, SV_ModelIndex(pr_strings+ent->v.weaponmodel));
+		MSG_WriteByte (msg, SV_ModelIndex(pr->strings+ent->v.weaponmodel));
 	
 	MSG_WriteShort (msg, ent->v.health);
 	MSG_WriteByte (msg, ent->v.currentammo);
@@ -998,7 +998,7 @@ void SV_SaveSpawnparms ()
 {
 	int		i, j;
 
-	svs.serverflags = pr_global_struct->serverflags;
+	svs.serverflags = pr->global_struct->serverflags;
 
 	for (i=0, host_client = svs.clients ; i<svs.maxclients ; i++, host_client++)
 	{
@@ -1006,10 +1006,10 @@ void SV_SaveSpawnparms ()
 			continue;
 
 	// call the progs to get default spawn parms for the new client
-		pr_global_struct->self = EDICT_TO_PROG(host_client->edict);
-		PR_ExecuteProgram (pr_global_struct->SetChangeParms);
+		pr->global_struct->self = EDICT_TO_PROG(host_client->edict);
+		PR_ExecuteProgram (pr->global_struct->SetChangeParms);
 		for (j=0 ; j<NUM_SPAWN_PARMS ; j++)
-			host_client->spawn_parms[j] = (&pr_global_struct->parm1)[j];
+			host_client->spawn_parms[j] = (&pr->global_struct->parm1)[j];
 	}
 }
 
@@ -1069,12 +1069,19 @@ void SV_SpawnServer (char *server, char *startspot)
 		strcpy(sv.startspot, startspot);
 
 // load progs to get entity field count
-	PR_LoadProgs ();
+	if (PR_LoadProgs(&sv.pr, "progs.dat", PROG_VERSION, PROGHEADER_CRC) != 0)
+	{
+		sv.active = false;
+		return;
+	}
+
+	sv.pr.builtins = pr_builtins;
+	sv.pr.numbuiltins = pr_numbuiltins;
 
 // allocate server memory
 	sv.max_edicts = MAX_EDICTS;
 	
-	sv.edicts = Hunk_AllocName (sv.max_edicts*pr_edict_size, "edicts");
+	sv.edicts = Hunk_AllocName (sv.max_edicts*pr->edict_size, "edicts");
 
 	sv.datagram.maxsize = sizeof(sv.datagram_buf);
 	sv.datagram.cursize = 0;
@@ -1117,9 +1124,9 @@ void SV_SpawnServer (char *server, char *startspot)
 //
 	SV_ClearWorld ();
 	
-	sv.sound_precache[0] = pr_strings;
+	sv.sound_precache[0] = pr->strings;
 
-	sv.model_precache[0] = pr_strings;
+	sv.model_precache[0] = pr->strings;
 	sv.model_precache[1] = sv.modelname;
 	for (i=1 ; i<sv.worldmodel->numsubmodels ; i++)
 	{
@@ -1131,7 +1138,7 @@ void SV_SpawnServer (char *server, char *startspot)
 // load the rest of the entities
 //	
 	ent = EDICT_NUM(0);
-	memset (&ent->v, 0, progs->entityfields * 4);
+	memset (&ent->v, 0, pr->progs->entityfields * sizeof(uint32_t));
 	ent->free = false;
 	ent->v.model = PR_SetString(sv.worldmodel->name);
 	ent->v.modelindex = 1;		// world model
@@ -1139,17 +1146,17 @@ void SV_SpawnServer (char *server, char *startspot)
 	ent->v.movetype = MOVETYPE_PUSH;
 
 	if (coop.value)
-		pr_global_struct->coop = coop.value;
+		pr->global_struct->coop = coop.value;
 	else
-		pr_global_struct->deathmatch = deathmatch.value;
+		pr->global_struct->deathmatch = deathmatch.value;
 
-	pr_global_struct->mapname = PR_SetString(sv.name);
+	pr->global_struct->mapname = PR_SetString(sv.name);
 #ifdef QUAKE2
-	pr_global_struct->startspot = PR_SetString(sv.startspot);
+	pr->global_struct->startspot = PR_SetString(sv.startspot);
 #endif
 
 // serverflags are for cross level information (sigils)
-	pr_global_struct->serverflags = svs.serverflags;
+	pr->global_struct->serverflags = svs.serverflags;
 	
 	ED_LoadFromFile (sv.worldmodel->entities);
 

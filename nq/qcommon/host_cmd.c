@@ -119,7 +119,7 @@ void Host_God_f ()
 		return;
 	}
 
-	if (pr_global_struct->deathmatch && !host_client->privileged)
+	if (pr->global_struct->deathmatch && !host_client->privileged)
 		return;
 
 	sv_player->v.flags = (int)sv_player->v.flags ^ FL_GODMODE;
@@ -137,7 +137,7 @@ void Host_Notarget_f ()
 		return;
 	}
 
-	if (pr_global_struct->deathmatch && !host_client->privileged)
+	if (pr->global_struct->deathmatch && !host_client->privileged)
 		return;
 
 	sv_player->v.flags = (int)sv_player->v.flags ^ FL_NOTARGET;
@@ -157,7 +157,7 @@ void Host_Noclip_f ()
 		return;
 	}
 
-	if (pr_global_struct->deathmatch && !host_client->privileged)
+	if (pr->global_struct->deathmatch && !host_client->privileged)
 		return;
 
 	if (sv_player->v.movetype != MOVETYPE_NOCLIP)
@@ -189,7 +189,7 @@ void Host_Fly_f ()
 		return;
 	}
 
-	if (pr_global_struct->deathmatch && !host_client->privileged)
+	if (pr->global_struct->deathmatch && !host_client->privileged)
 		return;
 
 	if (sv_player->v.movetype != MOVETYPE_FLY)
@@ -649,7 +649,7 @@ void Host_Loadgame_f ()
 		{	// parse an edict
 
 			ent = EDICT_NUM(entnum);
-			memset (&ent->v, 0, progs->entityfields * 4);
+			memset (&ent->v, 0, pr->progs->entityfields * 4);
 			ent->free = false;
 			ED_ParseEdict (start, ent);
 	
@@ -811,7 +811,7 @@ int LoadGamestate(char *level, char *startspot)
 		// parse an edict
 
 		ent = EDICT_NUM(entnum);
-		memset (&ent->v, 0, progs->entityfields * 4);
+		memset (&ent->v, 0, pr->progs->entityfields * 4);
 		ent->free = false;
 		ED_ParseEdict (start, ent);
 	
@@ -1119,9 +1119,9 @@ void Host_Kill_f ()
 		return;
 	}
 	
-	pr_global_struct->time = sv.time;
-	pr_global_struct->self = EDICT_TO_PROG(sv_player);
-	PR_ExecuteProgram (pr_global_struct->ClientKill);
+	pr->global_struct->time = sv.time;
+	pr->global_struct->self = EDICT_TO_PROG(sv_player);
+	PR_ExecuteProgram (pr->global_struct->ClientKill);
 }
 
 
@@ -1221,7 +1221,7 @@ void Host_Spawn_f ()
 		// set up the edict
 		ent = host_client->edict;
 
-		memset (&ent->v, 0, progs->entityfields * 4);
+		memset (&ent->v, 0, pr->progs->entityfields * 4);
 		ent->v.colormap = NUM_FOR_EDICT(ent);
 		ent->v.team = (host_client->colors & 15) + 1;
 		ent->v.netname = PR_SetString(host_client->name);
@@ -1229,18 +1229,18 @@ void Host_Spawn_f ()
 		// copy spawn parms out of the client_t
 
 		for (i=0 ; i< NUM_SPAWN_PARMS ; i++)
-			(&pr_global_struct->parm1)[i] = host_client->spawn_parms[i];
+			(&pr->global_struct->parm1)[i] = host_client->spawn_parms[i];
 
 		// call the spawn function
 
-		pr_global_struct->time = sv.time;
-		pr_global_struct->self = EDICT_TO_PROG(sv_player);
-		PR_ExecuteProgram (pr_global_struct->ClientConnect);
+		pr->global_struct->time = sv.time;
+		pr->global_struct->self = EDICT_TO_PROG(sv_player);
+		PR_ExecuteProgram (pr->global_struct->ClientConnect);
 
 		if ((Sys_FloatTime() - host_client->netconnection->connecttime) <= sv.time)
 			Sys_Printf ("%s entered the game\n", host_client->name);
 
-		PR_ExecuteProgram (pr_global_struct->PutClientInServer);	
+		PR_ExecuteProgram (pr->global_struct->PutClientInServer);	
 	}
 
 
@@ -1277,19 +1277,19 @@ void Host_Spawn_f ()
 //
 	MSG_WriteByte (&host_client->message, svc_updatestat);
 	MSG_WriteByte (&host_client->message, STAT_TOTALSECRETS);
-	MSG_WriteLong (&host_client->message, pr_global_struct->total_secrets);
+	MSG_WriteLong (&host_client->message, pr->global_struct->total_secrets);
 
 	MSG_WriteByte (&host_client->message, svc_updatestat);
 	MSG_WriteByte (&host_client->message, STAT_TOTALMONSTERS);
-	MSG_WriteLong (&host_client->message, pr_global_struct->total_monsters);
+	MSG_WriteLong (&host_client->message, pr->global_struct->total_monsters);
 
 	MSG_WriteByte (&host_client->message, svc_updatestat);
 	MSG_WriteByte (&host_client->message, STAT_SECRETS);
-	MSG_WriteLong (&host_client->message, pr_global_struct->found_secrets);
+	MSG_WriteLong (&host_client->message, pr->global_struct->found_secrets);
 
 	MSG_WriteByte (&host_client->message, svc_updatestat);
 	MSG_WriteByte (&host_client->message, STAT_MONSTERS);
-	MSG_WriteLong (&host_client->message, pr_global_struct->killed_monsters);
+	MSG_WriteLong (&host_client->message, pr->global_struct->killed_monsters);
 
 	
 //
@@ -1353,7 +1353,7 @@ void Host_Kick_f ()
 			return;
 		}
 	}
-	else if (pr_global_struct->deathmatch && !host_client->privileged)
+	else if (pr->global_struct->deathmatch && !host_client->privileged)
 		return;
 
 	save = host_client;
@@ -1441,7 +1441,7 @@ void Host_Give_f ()
 		return;
 	}
 
-	if (pr_global_struct->deathmatch && !host_client->privileged)
+	if (pr->global_struct->deathmatch && !host_client->privileged)
 		return;
 
 	t = Cmd_Argv(1);

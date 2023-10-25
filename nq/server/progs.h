@@ -34,25 +34,41 @@ typedef struct edict_s
 
 #define EDICT_FROM_AREA(l) STRUCT_FROM_LINK(l, edict_t, area)
 
+typedef void (*builtin_t)();
+
+typedef struct {
+	dprograms_t *progs;
+	dfunction_t *functions;
+	char *strings;
+	ddef_t *globaldefs;
+	ddef_t *fielddefs;
+	dstatement_t *statements;
+	globalvars_t *global_struct;
+	float *globals;
+
+	size_t edict_size;
+	
+	builtin_t *builtins;
+	size_t numbuiltins;
+	
+	size_t argc;
+
+	dfunction_t	*xfunction;
+	int xstatement;
+
+	unsigned short crc;
+} progs_state_t;
+
 //============================================================================
 
-extern dprograms_t *progs;
-extern dfunction_t *pr_functions;
-extern char *pr_strings;
-extern ddef_t *pr_globaldefs;
-extern ddef_t *pr_fielddefs;
-extern dstatement_t *pr_statements;
-extern globalvars_t *pr_global_struct;
-extern float *pr_globals; // same as pr_global_struct
-
-extern int pr_edict_size; // in bytes
+extern progs_state_t *pr;
 
 //============================================================================
 
 void PR_Init();
 
 void PR_ExecuteProgram(func_t fnum);
-void PR_LoadProgs();
+int PR_LoadProgs(progs_state_t *state, char *filename, int version, int crc);
 
 void PR_Profile_f();
 
@@ -74,39 +90,32 @@ void ED_LoadFromFile(char *data);
 edict_t *EDICT_NUM(int n);
 int NUM_FOR_EDICT(edict_t *e);
 
-#define NEXT_EDICT(e) ((edict_t *)((byte *)e + pr_edict_size))
+#define NEXT_EDICT(e) ((edict_t *)((byte *)e + pr->edict_size))
 
 #define EDICT_TO_PROG(e) ((byte *)e - (byte *)sv.edicts)
 #define PROG_TO_EDICT(e) ((edict_t *)((byte *)sv.edicts + e))
 
 //============================================================================
 
-#define G_FLOAT(o) (pr_globals[o])
-#define G_INT(o) (*(int32_t *)&pr_globals[o])
-#define G_EDICT(o) ((edict_t *)((byte *)sv.edicts + *(int32_t *)&pr_globals[o]))
+#define G_FLOAT(o) (pr->globals[o])
+#define G_INT(o) (*(int32_t *)&pr->globals[o])
+#define G_EDICT(o) ((edict_t *)((byte *)sv.edicts + *(int32_t *)&pr->globals[o]))
 #define G_EDICTNUM(o) NUM_FOR_EDICT(G_EDICT(o))
-#define G_VECTOR(o) (&pr_globals[o])
-#define G_STRING(o) (PR_GetString(*(string_t *)&pr_globals[o]))
-#define G_FUNCTION(o) (*(func_t *)&pr_globals[o])
+#define G_VECTOR(o) (&pr->globals[o])
+#define G_STRING(o) (PR_GetString(*(string_t *)&pr->globals[o]))
+#define G_FUNCTION(o) (*(func_t *)&pr->globals[o])
 
 #define E_FLOAT(e, o) (((float *)&e->v)[o])
 #define E_INT(e, o) (*(int32_t *)&((float *)&e->v)[o])
 #define E_VECTOR(e, o) (&((float *)&e->v)[o])
 #define E_STRING(e, o) (PR_GetString(*(string_t *)&((float *)&e->v)[o]))
 
-extern int type_size[8];
+extern int pr_type_size[ev_types];
 
-typedef void (*builtin_t)();
 extern builtin_t *pr_builtins;
 extern int pr_numbuiltins;
 
-extern int pr_argc;
-
 extern bool pr_trace;
-extern dfunction_t *pr_xfunction;
-extern int pr_xstatement;
-
-extern unsigned short pr_crc;
 
 void PR_RunError(char *error, ...);
 
