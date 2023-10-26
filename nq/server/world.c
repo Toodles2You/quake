@@ -133,12 +133,12 @@ hull_t *SV_HullForEntity (edict_t *ent, vec3_t mins, vec3_t maxs, vec3_t offset)
 	hull_t		*hull;
 
 // decide which clipping hull to use, based on the size
-	if (ent->v.solid == SOLID_BSP)
+	if (ed_float(ent, solid) == SOLID_BSP)
 	{	// explicit hulls in the BSP model
-		if (ent->v.movetype != MOVETYPE_PUSH)
+		if (ed_float(ent, movetype) != MOVETYPE_PUSH)
 			Sys_Error ("SOLID_BSP without MOVETYPE_PUSH");
 
-		model = sv.models[ (int)ent->v.modelindex ];
+		model = sv.models[(int)ed_float(ent, modelindex)];
 
 		if (!model || model->type != mod_brush)
 			Sys_Error ("MOVETYPE_PUSH with a non bsp model");
@@ -153,16 +153,16 @@ hull_t *SV_HullForEntity (edict_t *ent, vec3_t mins, vec3_t maxs, vec3_t offset)
 
 // calculate an offset value to center the origin
 		VectorSubtract (hull->clip_mins, mins, offset);
-		VectorAdd (offset, ent->v.origin, offset);
+		VectorAdd (offset, ed_vector(ent, origin), offset);
 	}
 	else
 	{	// create a temp hull from bounding box sizes
 
-		VectorSubtract (ent->v.mins, maxs, hullmins);
-		VectorSubtract (ent->v.maxs, mins, hullmaxs);
+		VectorSubtract (ed_vector(ent, mins), maxs, hullmins);
+		VectorSubtract (ed_vector(ent, maxs), mins, hullmaxs);
 		hull = SV_HullForBox (hullmins, hullmaxs);
 		
-		VectorCopy (ent->v.origin, offset);
+		VectorCopy (ed_vector(ent, origin), offset);
 	}
 
 
@@ -286,34 +286,34 @@ void SV_TouchLinks ( edict_t *ent, areanode_t *node )
 		touch = EDICT_FROM_AREA(l);
 		if (touch == ent)
 			continue;
-		if (!touch->v.touch || touch->v.solid != SOLID_TRIGGER)
+		if (!ed_int(touch, touch) || ed_float(touch, solid) != SOLID_TRIGGER)
 			continue;
-		if (ent->v.absmin[0] > touch->v.absmax[0]
-		|| ent->v.absmin[1] > touch->v.absmax[1]
-		|| ent->v.absmin[2] > touch->v.absmax[2]
-		|| ent->v.absmax[0] < touch->v.absmin[0]
-		|| ent->v.absmax[1] < touch->v.absmin[1]
-		|| ent->v.absmax[2] < touch->v.absmin[2] )
+		if (ed_vector(ent, absmin)[0] > ed_vector(touch, absmax)[0]
+		 || ed_vector(ent, absmin)[1] > ed_vector(touch, absmax)[1]
+		 || ed_vector(ent, absmin)[2] > ed_vector(touch, absmax)[2]
+		 || ed_vector(ent, absmax)[0] < ed_vector(touch, absmin)[0]
+		 || ed_vector(ent, absmax)[1] < ed_vector(touch, absmin)[1]
+		 || ed_vector(ent, absmax)[2] < ed_vector(touch, absmin)[2] )
 			continue;
-		old_self = sv.pr.global_struct->self;
-		old_other = sv.pr.global_struct->other;
+		old_self = sv_pr_int(self);
+		old_other = sv_pr_int(other);
 
-		sv.pr.global_struct->self = EDICT_TO_PROG(touch);
-		sv.pr.global_struct->other = EDICT_TO_PROG(ent);
-		sv.pr.global_struct->time = sv.time;
-		PR_ExecuteProgram (&sv.pr, touch->v.touch);
+		sv_pr_int(self) = EDICT_TO_PROG(touch);
+		sv_pr_int(other) = EDICT_TO_PROG(ent);
+		sv_pr_float(time) = sv.time;
+		PR_ExecuteProgram (&sv.pr, ed_int(touch, touch));
 
-		sv.pr.global_struct->self = old_self;
-		sv.pr.global_struct->other = old_other;
+		sv_pr_int(self) = old_self;
+		sv_pr_int(other) = old_other;
 	}
 	
 // recurse down both sides
 	if (node->axis == -1)
 		return;
 	
-	if ( ent->v.absmax[node->axis] > node->dist )
+	if ( ed_vector(ent, absmax)[node->axis] > node->dist )
 		SV_TouchLinks ( ent, node->children[0] );
-	if ( ent->v.absmin[node->axis] < node->dist )
+	if ( ed_vector(ent, absmin)[node->axis] < node->dist )
 		SV_TouchLinks ( ent, node->children[1] );
 }
 
@@ -352,7 +352,7 @@ void SV_FindTouchedLeafs (edict_t *ent, mnode_t *node)
 // NODE_MIXED
 
 	splitplane = node->plane;
-	sides = BOX_ON_PLANE_SIDE(ent->v.absmin, ent->v.absmax, splitplane);
+	sides = BOX_ON_PLANE_SIDE(ed_vector(ent, absmin), ed_vector(ent, absmax), splitplane);
 	
 // recurse down the contacted sides
 	if (sides & 1)
@@ -383,8 +383,8 @@ void SV_LinkEdict (edict_t *ent, bool touch_triggers)
 
 // set the abs box
 
-	if (ent->v.solid == SOLID_BSP && 
-	(ent->v.angles[0] || ent->v.angles[1] || ent->v.angles[2]) )
+	if (ed_float(ent, solid) == SOLID_BSP && 
+	(ed_vector(ent, angles)[0] || ed_vector(ent, angles)[1] || ed_vector(ent, angles)[2]) )
 	{	// expand for rotation
 		float		max, v;
 		int			i;
@@ -392,53 +392,53 @@ void SV_LinkEdict (edict_t *ent, bool touch_triggers)
 		max = 0;
 		for (i=0 ; i<3 ; i++)
 		{
-			v =fabs( ent->v.mins[i]);
+			v =fabs( ed_vector(ent, mins)[i]);
 			if (v > max)
 				max = v;
-			v =fabs( ent->v.maxs[i]);
+			v =fabs( ed_vector(ent, maxs)[i]);
 			if (v > max)
 				max = v;
 		}
 		for (i=0 ; i<3 ; i++)
 		{
-			ent->v.absmin[i] = ent->v.origin[i] - max;
-			ent->v.absmax[i] = ent->v.origin[i] + max;
+			ed_vector(ent, absmin)[i] = ed_vector(ent, origin)[i] - max;
+			ed_vector(ent, absmax)[i] = ed_vector(ent, origin)[i] + max;
 		}
 	}
 	else
 	{
-		VectorAdd (ent->v.origin, ent->v.mins, ent->v.absmin);	
-		VectorAdd (ent->v.origin, ent->v.maxs, ent->v.absmax);
+		VectorAdd (ed_vector(ent, origin), ed_vector(ent, mins), ed_vector(ent, absmin));	
+		VectorAdd (ed_vector(ent, origin), ed_vector(ent, maxs), ed_vector(ent, absmax));
 	}
 
 //
 // to make items easier to pick up and allow them to be grabbed off
 // of shelves, the abs sizes are expanded
 //
-	if ((int)ent->v.flags & FL_ITEM)
+	if ((int)ed_float(ent, flags) & FL_ITEM)
 	{
-		ent->v.absmin[0] -= 15;
-		ent->v.absmin[1] -= 15;
-		ent->v.absmax[0] += 15;
-		ent->v.absmax[1] += 15;
+		ed_vector(ent, absmin)[0] -= 15;
+		ed_vector(ent, absmin)[1] -= 15;
+		ed_vector(ent, absmax)[0] += 15;
+		ed_vector(ent, absmax)[1] += 15;
 	}
 	else
 	{	// because movement is clipped an epsilon away from an actual edge,
 		// we must fully check even when bounding boxes don't quite touch
-		ent->v.absmin[0] -= 1;
-		ent->v.absmin[1] -= 1;
-		ent->v.absmin[2] -= 1;
-		ent->v.absmax[0] += 1;
-		ent->v.absmax[1] += 1;
-		ent->v.absmax[2] += 1;
+		ed_vector(ent, absmin)[0] -= 1;
+		ed_vector(ent, absmin)[1] -= 1;
+		ed_vector(ent, absmin)[2] -= 1;
+		ed_vector(ent, absmax)[0] += 1;
+		ed_vector(ent, absmax)[1] += 1;
+		ed_vector(ent, absmax)[2] += 1;
 	}
 	
 // link to PVS leafs
 	ent->num_leafs = 0;
-	if (ent->v.modelindex)
+	if (ed_float(ent, modelindex))
 		SV_FindTouchedLeafs (ent, sv.worldmodel->nodes);
 
-	if (ent->v.solid == SOLID_NOT)
+	if (ed_float(ent, solid) == SOLID_NOT)
 		return;
 
 // find the first node that the ent's box crosses
@@ -447,9 +447,9 @@ void SV_LinkEdict (edict_t *ent, bool touch_triggers)
 	{
 		if (node->axis == -1)
 			break;
-		if (ent->v.absmin[node->axis] > node->dist)
+		if (ed_vector(ent, absmin)[node->axis] > node->dist)
 			node = node->children[0];
-		else if (ent->v.absmax[node->axis] < node->dist)
+		else if (ed_vector(ent, absmax)[node->axis] < node->dist)
 			node = node->children[1];
 		else
 			break;		// crosses the node
@@ -457,7 +457,7 @@ void SV_LinkEdict (edict_t *ent, bool touch_triggers)
 	
 // link it in	
 
-	if (ent->v.solid == SOLID_TRIGGER)
+	if (ed_float(ent, solid) == SOLID_TRIGGER)
 		InsertLinkBefore (&ent->area, &node->trigger_edicts);
 	else
 		InsertLinkBefore (&ent->area, &node->solid_edicts);
@@ -544,7 +544,7 @@ edict_t	*SV_TestEntityPosition (edict_t *ent)
 {
 	trace_t	trace;
 
-	trace = SV_Move (ent->v.origin, ent->v.mins, ent->v.maxs, ent->v.origin, 0, ent);
+	trace = SV_Move (ed_vector(ent, origin), ed_vector(ent, mins), ed_vector(ent, maxs), ed_vector(ent, origin), 0, ent);
 	
 	if (trace.startsolid)
 		return sv.edicts;
@@ -722,13 +722,13 @@ trace_t SV_ClipMoveToEntity (edict_t *ent, vec3_t start, vec3_t mins, vec3_t max
 	VectorSubtract (end, offset, end_l);
 
 	// rotate start and end into the models frame of reference
-	if (ent->v.solid == SOLID_BSP && 
-	(ent->v.angles[0] || ent->v.angles[1] || ent->v.angles[2]) )
+	if (ed_float(ent, solid) == SOLID_BSP && 
+	(ed_vector(ent, angles)[0] || ed_vector(ent, angles)[1] || ed_vector(ent, angles)[2]) )
 	{
 		vec3_t	forward, right, up;
 		vec3_t	temp;
 
-		AngleVectors (ent->v.angles, forward, right, up);
+		AngleVectors (ed_vector(ent, angles), forward, right, up);
 
 		VectorCopy (start_l, temp);
 		start_l[0] = DotProduct (temp, forward);
@@ -745,8 +745,8 @@ trace_t SV_ClipMoveToEntity (edict_t *ent, vec3_t start, vec3_t mins, vec3_t max
 	SV_RecursiveHullCheck (hull, hull->firstclipnode, 0, 1, start_l, end_l, &trace);
 
 	// rotate endpos back to world frame of reference
-	if (ent->v.solid == SOLID_BSP && 
-	(ent->v.angles[0] || ent->v.angles[1] || ent->v.angles[2]) )
+	if (ed_float(ent, solid) == SOLID_BSP && 
+	(ed_vector(ent, angles)[0] || ed_vector(ent, angles)[1] || ed_vector(ent, angles)[2]) )
 	{
 		vec3_t	a;
 		vec3_t	forward, right, up;
@@ -754,7 +754,7 @@ trace_t SV_ClipMoveToEntity (edict_t *ent, vec3_t start, vec3_t mins, vec3_t max
 
 		if (trace.fraction != 1)
 		{
-			VectorSubtract (vec3_origin, ent->v.angles, a);
+			VectorSubtract (vec3_origin, ed_vector(ent, angles), a);
 			AngleVectors (a, forward, right, up);
 
 			VectorCopy (trace.endpos, temp);
@@ -800,25 +800,25 @@ void SV_ClipToLinks ( areanode_t *node, moveclip_t *clip )
 	{
 		next = l->next;
 		touch = EDICT_FROM_AREA(l);
-		if (touch->v.solid == SOLID_NOT)
+		if (ed_float(touch, solid) == SOLID_NOT)
 			continue;
 		if (touch == clip->passedict)
 			continue;
-		if (touch->v.solid == SOLID_TRIGGER)
+		if (ed_float(touch, solid) == SOLID_TRIGGER)
 			Sys_Error ("Trigger in clipping list");
 
-		if (clip->type == MOVE_NOMONSTERS && touch->v.solid != SOLID_BSP)
+		if (clip->type == MOVE_NOMONSTERS && ed_float(touch, solid) != SOLID_BSP)
 			continue;
 
-		if (clip->boxmins[0] > touch->v.absmax[0]
-		|| clip->boxmins[1] > touch->v.absmax[1]
-		|| clip->boxmins[2] > touch->v.absmax[2]
-		|| clip->boxmaxs[0] < touch->v.absmin[0]
-		|| clip->boxmaxs[1] < touch->v.absmin[1]
-		|| clip->boxmaxs[2] < touch->v.absmin[2] )
+		if (clip->boxmins[0] > ed_vector(touch, absmax)[0]
+		|| clip->boxmins[1] > ed_vector(touch, absmax)[1]
+		|| clip->boxmins[2] > ed_vector(touch, absmax)[2]
+		|| clip->boxmaxs[0] < ed_vector(touch, absmin)[0]
+		|| clip->boxmaxs[1] < ed_vector(touch, absmin)[1]
+		|| clip->boxmaxs[2] < ed_vector(touch, absmin)[2] )
 			continue;
 
-		if (clip->passedict && clip->passedict->v.size[0] && !touch->v.size[0])
+		if (clip->passedict && ed_vector(clip->passedict, size)[0] && !ed_vector(touch, size)[0])
 			continue;	// points never interact
 
 	// might intersect, so do an exact clip
@@ -826,13 +826,13 @@ void SV_ClipToLinks ( areanode_t *node, moveclip_t *clip )
 			return;
 		if (clip->passedict)
 		{
-		 	if (PROG_TO_EDICT(touch->v.owner) == clip->passedict)
+		 	if (ed_get_edict(touch, owner) == clip->passedict)
 				continue;	// don't clip against own missiles
-			if (PROG_TO_EDICT(clip->passedict->v.owner) == touch)
+			if (ed_get_edict(clip->passedict, owner) == touch)
 				continue;	// don't clip against owner
 		}
 
-		if ((int)touch->v.flags & FL_MONSTER)
+		if ((int)ed_float(touch, flags) & FL_MONSTER)
 			trace = SV_ClipMoveToEntity (touch, clip->start, clip->mins2, clip->maxs2, clip->end);
 		else
 			trace = SV_ClipMoveToEntity (touch, clip->start, clip->mins, clip->maxs, clip->end);

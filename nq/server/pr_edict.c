@@ -32,6 +32,22 @@ int pr_type_size[ev_types] =
 	sizeof(void *) / sizeof(uint32_t),
 };
 
+#define PR_FIELD(_, name) #name,
+
+char *pr_globals[] =
+{
+	#include "pr_globals.h"
+	NULL,
+};
+
+char *pr_fields[] =
+{
+	#include "pr_fields.h"
+	NULL,
+};
+
+#undef PR_FIELD
+
 bool	ED_ParseEpair (void *base, ddef_t *key, char *s);
 
 cvar_t	nomonsters = {"nomonsters", "0"};
@@ -65,7 +81,7 @@ Sets everything to NULL
 */
 void ED_ClearEdict (edict_t *e)
 {
-	memset (&e->v, 0, sv.pr.progs->entityfields * 4);
+	memset (e + 1, 0, sv.pr.progs->entityfields * sizeof(int32_t));
 	e->free = false;
 }
 
@@ -120,16 +136,16 @@ void ED_Free (edict_t *ed)
 	SV_UnlinkEdict (ed);		// unlink from world bsp
 
 	ed->free = true;
-	ed->v.model = 0;
-	ed->v.takedamage = 0;
-	ed->v.modelindex = 0;
-	ed->v.colormap = 0;
-	ed->v.skin = 0;
-	ed->v.frame = 0;
-	VectorCopy (vec3_origin, ed->v.origin);
-	VectorCopy (vec3_origin, ed->v.angles);
-	ed->v.nextthink = -1;
-	ed->v.solid = 0;
+	ed_int(ed, model) = 0;
+	ed_float(ed, takedamage) = 0;
+	ed_float(ed, modelindex) = 0;
+	ed_float(ed, colormap) = 0;
+	ed_float(ed, skin) = 0;
+	ed_float(ed, frame) = 0;
+	VectorCopy (vec3_origin, ed_vector(ed, origin));
+	VectorCopy (vec3_origin, ed_vector(ed, angles));
+	ed_float(ed, nextthink) = -1;
+	ed_float(ed, solid) = 0;
 	
 	ed->freetime = sv.time;
 }
@@ -262,7 +278,7 @@ Done:
 	if (!def)
 		return NULL;
 
-	return (eval_t *)((char *)&ed->v + def->ofs*4);
+	return (eval_t *)((int32_t *)(ed + 1) + def->ofs);
 }
 
 
@@ -461,7 +477,7 @@ void ED_Print (edict_t *ed)
 		if (name[strlen(name)-2] == '_')
 			continue;	// skip _x, _y, _z vars
 			
-		v = (int32_t *)((char *)&ed->v + d->ofs*4);
+		v = (int32_t *)((int32_t *)(ed + 1) + d->ofs);
 
 	// if the value is still all 0, skip the field
 		type = d->type & ~DEF_SAVEGLOBAL;
@@ -511,7 +527,7 @@ void ED_Write (FILE *f, edict_t *ed)
 		if (name[strlen(name)-2] == '_')
 			continue;	// skip _x, _y, _z vars
 			
-		v = (int32_t *)((char *)&ed->v + d->ofs*4);
+		v = (int32_t *)((int32_t *)(ed + 1) + d->ofs);
 
 	// if the value is still all 0, skip the field
 		type = d->type & ~DEF_SAVEGLOBAL;
@@ -589,11 +605,11 @@ void ED_Count ()
 		if (ent->free)
 			continue;
 		active++;
-		if (ent->v.solid)
+		if (ed_float(ent, solid))
 			solid++;
-		if (ent->v.model)
+		if (ed_int(ent, model))
 			models++;
-		if (ent->v.movetype == MOVETYPE_STEP)
+		if (ed_float(ent, movetype) == MOVETYPE_STEP)
 			step++;
 	}
 
@@ -817,7 +833,9 @@ char *ED_ParseEdict (char *data, edict_t *ent)
 
 // clear it
 	if (ent != sv.edicts)	// hack
-		memset (&ent->v, 0, sv.pr.progs->entityfields * sizeof(uint32_t));
+	{
+		ED_ClearEdict (ent);
+	}
 
 // go through all the dictionary pairs
 	while (1)
@@ -881,7 +899,7 @@ strcpy (temp, com_token);
 sprintf (com_token, "0 %s 0", temp);
 }
 
-		if (!ED_ParseEpair ((void *)&ent->v, key, com_token))
+		if (!ED_ParseEpair ((void *)(ent + 1), key, com_token))
 			Host_Error ("ED_ParseEdict: parse error");
 	}
 
@@ -915,7 +933,7 @@ void ED_LoadFromFile (char *data)
 	
 	ent = NULL;
 	inhibit = 0;
-	sv.pr.global_struct->time = sv.time;
+	sv_pr_float(time) = sv.time;
 	
 // parse ents
 	while (1)
@@ -936,16 +954,16 @@ void ED_LoadFromFile (char *data)
 // remove things from different skill levels or deathmatch
 		if (deathmatch.value)
 		{
-			if (((int)ent->v.spawnflags & SPAWNFLAG_NOT_DEATHMATCH))
+			if (((int)ed_float(ent, spawnflags) & SPAWNFLAG_NOT_DEATHMATCH))
 			{
 				ED_Free (ent);	
 				inhibit++;
 				continue;
 			}
 		}
-		else if ((current_skill == 0 && ((int)ent->v.spawnflags & SPAWNFLAG_NOT_EASY))
-				|| (current_skill == 1 && ((int)ent->v.spawnflags & SPAWNFLAG_NOT_MEDIUM))
-				|| (current_skill >= 2 && ((int)ent->v.spawnflags & SPAWNFLAG_NOT_HARD)) )
+		else if ((current_skill == 0 && ((int)ed_float(ent, spawnflags) & SPAWNFLAG_NOT_EASY))
+				|| (current_skill == 1 && ((int)ed_float(ent, spawnflags) & SPAWNFLAG_NOT_MEDIUM))
+				|| (current_skill >= 2 && ((int)ed_float(ent, spawnflags) & SPAWNFLAG_NOT_HARD)) )
 		{
 			ED_Free (ent);	
 			inhibit++;
@@ -955,7 +973,7 @@ void ED_LoadFromFile (char *data)
 //
 // immediately call spawn function
 //
-		if (!ent->v.classname)
+		if (!ed_int(ent, classname))
 		{
 			Con_Printf ("No classname for:\n");
 			ED_Print (ent);
@@ -964,20 +982,20 @@ void ED_LoadFromFile (char *data)
 		}
 
 	// look for the spawn function
-		func = PR_FindFunction ( &sv.pr, PR_GetString(&sv.pr, ent->v.classname) );
+		func = PR_FindFunction (&sv.pr, ed_get_string(ent, classname));
 
 		if (!func)
 		{
 			Con_Printf(
 				"No spawn function for EDICT %i: \"%s\"\n",
 				NUM_FOR_EDICT(ent),
-				PR_GetString(&sv.pr, ent->v.classname)
+				ed_get_string(ent, classname)
 			);
 			ED_Free (ent);
 			continue;
 		}
 
-		sv.pr.global_struct->self = EDICT_TO_PROG(ent);
+		sv_pr_int(self) = EDICT_TO_PROG(ent);
 		PR_ExecuteProgram (&sv.pr, func - sv.pr.functions);
 	}	
 
@@ -993,6 +1011,7 @@ PR_LoadProgs
 int PR_LoadProgs(progs_state_t *pr, char *filename, int version, int crc)
 {
 	int i;
+	ddef_t *def;
 
 // flush the non-C variable lookup cache
 	for (i = 0; i < GEFV_CACHESIZE; i++)
@@ -1039,11 +1058,9 @@ int PR_LoadProgs(progs_state_t *pr, char *filename, int version, int crc)
 	pr->globaldefs = (ddef_t *)((byte *)pr->progs + pr->progs->ofs_globaldefs);
 	pr->fielddefs = (ddef_t *)((byte *)pr->progs + pr->progs->ofs_fielddefs);
 	pr->statements = (dstatement_t *)((byte *)pr->progs + pr->progs->ofs_statements);
-
-	pr->global_struct = (globalvars_t *)((byte *)pr->progs + pr->progs->ofs_globals);
-	pr->globals = (float *)pr->global_struct;
+	pr->globals = (float *)((byte *)pr->progs + pr->progs->ofs_globals);
 	
-	pr->edict_size = pr->progs->entityfields * sizeof(int32_t) + sizeof(edict_t) - sizeof(entvars_t);
+	*(size_t *)&pr->edict_size = sizeof(edict_t) + pr->progs->entityfields * sizeof(int32_t);
 	
 // byte swap the lumps
 	for (i = 0; i < pr->progs->numstatements; i++)
@@ -1086,6 +1103,40 @@ int PR_LoadProgs(progs_state_t *pr, char *filename, int version, int crc)
 	for (i = 0; i < pr->progs->numglobals; i++)
 	{
 		((int32_t *)pr->globals)[i] = LittleLong(((int32_t *)pr->globals)[i]);
+	}
+
+	/* Get the offsets of the global vars. */
+	for (i = 0; pr_globals[i] != NULL; i++)
+	{
+		def = PR_FindGlobal(pr, pr_globals[i]);
+		if (!def)
+		{
+			((int32_t *)&pr->global_struct)[i] = 0;
+			Con_Printf("PR_LoadProgs: %s globaldefs missing %s\n", filename, pr_globals[i]);
+			continue;
+		}
+		if (def->type != ev_function)
+		{
+			((int32_t *)&pr->global_struct)[i] = def->ofs;
+		}
+		else
+		{
+			/* C code passes these to PR_ExecuteProgram directly. */
+			((int32_t *)&pr->global_struct)[i] = *(int32_t *)(pr->globals + def->ofs);
+		}
+	}
+
+	/* Get the offsets of the entity vars. */
+	for (i = 0; pr_fields[i] != NULL; i++)
+	{
+		def = PR_FindField(pr, pr_fields[i]);
+		if (!def)
+		{
+			((int32_t *)&pr->field_struct)[i] = 0;
+			Con_Printf("PR_LoadProgs: %s fielddefs missing %s\n", filename, pr_fields[i]);
+			continue;
+		}
+		((int32_t *)&pr->field_struct)[i] = def->ofs;
 	}
 
 	return 0;

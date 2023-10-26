@@ -359,8 +359,8 @@ void PR_ExecuteProgram (progs_state_t *pr, func_t fnum)
 
 	if (!fnum || fnum >= pr->progs->numfunctions)
 	{
-		if (pr->global_struct->self)
-			ED_Print (PROG_TO_EDICT(pr->global_struct->self));
+		if (pr_int(pr, self))
+			ED_Print (PROG_TO_EDICT(pr_int(pr, self)));
 		Host_Error ("PR_ExecuteProgram: NULL function");
 	}
 	
@@ -549,7 +549,7 @@ while (1)
 		ed = PROG_TO_EDICT(a->edict);
 		if (ed == (edict_t *)sv.edicts && sv.state == ss_active)
 			PR_RunError (pr, "assignment to world entity");
-		c->_int = (byte *)((int32_t *)&ed->v + b->_int) - (byte *)sv.edicts;
+		c->_int = (byte *)((int32_t *)(ed + 1) + b->_int) - (byte *)sv.edicts;
 		break;
 		
 	case OP_LOAD_F:
@@ -558,13 +558,13 @@ while (1)
 	case OP_LOAD_S:
 	case OP_LOAD_FNC:
 		ed = PROG_TO_EDICT(a->edict);
-		a = (eval_t *)((int32_t *)&ed->v + b->_int);
+		a = (eval_t *)((int32_t *)(ed + 1) + b->_int);
 		c->_int = a->_int;
 		break;
 
 	case OP_LOAD_V:
 		ed = PROG_TO_EDICT(a->edict);
-		a = (eval_t *)((int32_t *)&ed->v + b->_int);
+		a = (eval_t *)((int32_t *)(ed + 1) + b->_int);
 		c->vector[0] = a->vector[0];
 		c->vector[1] = a->vector[1];
 		c->vector[2] = a->vector[2];
@@ -625,13 +625,13 @@ while (1)
 		break;
 		
 	case OP_STATE:
-		ed = PROG_TO_EDICT(pr->global_struct->self);
-		ed->v.nextthink = pr->global_struct->time + 0.1;
-		if (a->_float != ed->v.frame)
+		ed = PROG_TO_EDICT(pr_int(pr, self));
+		ed_float(ed, nextthink) = pr_float(pr, time) + 0.1;
+		if (a->_float != ed_float(ed, frame))
 		{
-			ed->v.frame = a->_float;
+			ed_float(ed, frame) = a->_float;
 		}
-		ed->v.think = b->function;
+		ed_int(ed, think) = b->function;
 		break;
 		
 	default:

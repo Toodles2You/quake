@@ -356,10 +356,10 @@ void SV_DropClient (bool crash)
 		{
 		// call the prog function for removing a client
 		// this will set the body to a dead frame, among other things
-			saveSelf = sv.pr.global_struct->self;
-			sv.pr.global_struct->self = EDICT_TO_PROG(host_client->edict);
-			PR_ExecuteProgram (&sv.pr, sv.pr.global_struct->ClientDisconnect);
-			sv.pr.global_struct->self = saveSelf;
+			saveSelf = sv_pr_int(self);
+			sv_pr_int(self) = EDICT_TO_PROG(host_client->edict);
+			PR_ExecuteProgram (&sv.pr, sv.pr.global_struct.ClientDisconnect);
+			sv_pr_int(self) = saveSelf;
 		}
 
 		Sys_Printf ("Client %s removed\n",host_client->name);
@@ -558,7 +558,7 @@ Host_ServerFrame
 void Host_ServerFrame ()
 {
 // run the world state	
-	sv.pr.global_struct->frametime = host_frametime;
+	sv_pr_float(frametime) = host_frametime;
 
 // set the time and clear the general datagram
 	SV_ClearDatagram ();
