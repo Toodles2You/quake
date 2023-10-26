@@ -1431,7 +1431,6 @@ void Host_Give_f ()
 {
 	char	*t;
 	int		v;
-	eval_t	*val;
 
 	if (cmd_source == src_command)
 	{
@@ -1482,25 +1481,20 @@ void Host_Give_f ()
 		break;
 	
     case 's':
-		if (rogue)
+		if (ed_field(ammo_shells1))
 		{
-	        val = GetEdictFieldValue(sv_player, "ammo_shells1");
-		    if (val)
-			    val->_float = v;
+			ed_float(sv_player, ammo_shells1) = v;
 		}
 
         ed_float(sv_player, ammo_shells) = v;
         break;		
     case 'n':
-		if (rogue)
+		if (ed_field(ammo_nails1))
 		{
-			val = GetEdictFieldValue(sv_player, "ammo_nails1");
-			if (val)
-			{
-				val->_float = v;
-				if (ed_float(sv_player, weapon) <= IT_LIGHTNING)
-					ed_float(sv_player, ammo_nails) = v;
-			}
+			ed_float(sv_player, ammo_nails1) = v;
+
+			if (ed_float(sv_player, weapon) <= IT_LIGHTNING)
+				ed_float(sv_player, ammo_nails) = v;
 		}
 		else
 		{
@@ -1508,27 +1502,21 @@ void Host_Give_f ()
 		}
         break;		
     case 'l':
-		if (rogue)
+		if (ed_field(ammo_lava_nails))
 		{
-			val = GetEdictFieldValue(sv_player, "ammo_lava_nails");
-			if (val)
-			{
-				val->_float = v;
-				if (ed_float(sv_player, weapon) > IT_LIGHTNING)
-					ed_float(sv_player, ammo_nails) = v;
-			}
+			ed_float(sv_player, ammo_lava_nails) = v;
+			
+			if (ed_float(sv_player, weapon) > IT_LIGHTNING)
+				ed_float(sv_player, ammo_nails) = v;
 		}
         break;
     case 'r':
-		if (rogue)
+		if (ed_field(ammo_rockets1))
 		{
-			val = GetEdictFieldValue(sv_player, "ammo_rockets1");
-			if (val)
-			{
-				val->_float = v;
-				if (ed_float(sv_player, weapon) <= IT_LIGHTNING)
-					ed_float(sv_player, ammo_rockets) = v;
-			}
+			ed_float(sv_player, ammo_rockets1) = v;
+			
+			if (ed_float(sv_player, weapon) <= IT_LIGHTNING)
+				ed_float(sv_player, ammo_rockets) = v;
 		}
 		else
 		{
@@ -1536,30 +1524,24 @@ void Host_Give_f ()
 		}
         break;		
     case 'm':
-		if (rogue)
+		if (ed_field(ammo_multi_rockets))
 		{
-			val = GetEdictFieldValue(sv_player, "ammo_multi_rockets");
-			if (val)
-			{
-				val->_float = v;
+			ed_float(sv_player, ammo_multi_rockets) = v;
+			
 				if (ed_float(sv_player, weapon) > IT_LIGHTNING)
 					ed_float(sv_player, ammo_rockets) = v;
-			}
 		}
         break;		
     case 'h':
         ed_float(sv_player, health) = v;
         break;		
     case 'c':
-		if (rogue)
+		if (ed_field(ammo_cells1))
 		{
-			val = GetEdictFieldValue(sv_player, "ammo_cells1");
-			if (val)
-			{
-				val->_float = v;
-				if (ed_float(sv_player, weapon) <= IT_LIGHTNING)
-					ed_float(sv_player, ammo_cells) = v;
-			}
+			ed_float(sv_player, ammo_cells1) = v;
+			
+			if (ed_float(sv_player, weapon) <= IT_LIGHTNING)
+				ed_float(sv_player, ammo_cells) = v;
 		}
 		else
 		{
@@ -1567,15 +1549,12 @@ void Host_Give_f ()
 		}
         break;		
     case 'p':
-		if (rogue)
+		if (ed_field(ammo_plasma))
 		{
-			val = GetEdictFieldValue(sv_player, "ammo_plasma");
-			if (val)
-			{
-				val->_float = v;
-				if (ed_float(sv_player, weapon) > IT_LIGHTNING)
-					ed_float(sv_player, ammo_cells) = v;
-			}
+			ed_float(sv_player, ammo_plasma) = v;
+			
+			if (ed_float(sv_player, weapon) > IT_LIGHTNING)
+				ed_float(sv_player, ammo_cells) = v;
 		}
         break;		
     }

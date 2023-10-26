@@ -20,33 +20,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "serverdef.h"
 
-int pr_type_size[ev_types] =
+static const int pr_type_size[ev_types] =
 {
-	1,
-	sizeof(string_t) / sizeof(uint32_t),
-	1,
-	3,
-	1,
-	1,
-	sizeof(func_t) / sizeof(uint32_t),
-	sizeof(void *) / sizeof(uint32_t),
+	1,										// ev_void
+	sizeof(string_t)	/ sizeof(uint32_t),	// ev_string
+	sizeof(float)		/ sizeof(uint32_t),	// ev_float
+	sizeof(float) * 3	/ sizeof(uint32_t),	// ev_vector
+	sizeof(uint32_t)	/ sizeof(uint32_t),	// ev_entity
+	sizeof(uint32_t)	/ sizeof(uint32_t),	// ev_field
+	sizeof(func_t)		/ sizeof(uint32_t),	// ev_function
+	sizeof(void *)		/ sizeof(uint32_t),	// ev_pointer
 };
-
-#define PR_FIELD(_, name) #name,
-
-char *pr_globals[] =
-{
-	#include "pr_globals.h"
-	NULL,
-};
-
-char *pr_fields[] =
-{
-	#include "pr_fields.h"
-	NULL,
-};
-
-#undef PR_FIELD
 
 bool	ED_ParseEpair (void *base, ddef_t *key, char *s);
 
@@ -1105,6 +1089,23 @@ int PR_LoadProgs(progs_state_t *pr, char *filename, int version, int crc)
 		((int32_t *)pr->globals)[i] = LittleLong(((int32_t *)pr->globals)[i]);
 	}
 
+
+	#define PR_FIELD(_, name) #name,
+
+	const char *pr_globals[] =
+	{
+		#include "pr_globals.h"
+		NULL,
+	};
+
+	const char *pr_fields[] =
+	{
+		#include "pr_fields.h"
+		NULL,
+	};
+
+	#undef PR_FIELD
+
 	/* Get the offsets of the global vars. */
 	for (i = 0; pr_globals[i] != NULL; i++)
 	{
@@ -1112,7 +1113,7 @@ int PR_LoadProgs(progs_state_t *pr, char *filename, int version, int crc)
 		if (!def)
 		{
 			((int32_t *)&pr->global_struct)[i] = 0;
-			Con_Printf("PR_LoadProgs: %s globaldefs missing %s\n", filename, pr_globals[i]);
+			Con_DPrintf("PR_LoadProgs: %s globaldefs missing %s\n", filename, pr_globals[i]);
 			continue;
 		}
 		if (def->type != ev_function)
@@ -1133,7 +1134,7 @@ int PR_LoadProgs(progs_state_t *pr, char *filename, int version, int crc)
 		if (!def)
 		{
 			((int32_t *)&pr->field_struct)[i] = 0;
-			Con_Printf("PR_LoadProgs: %s fielddefs missing %s\n", filename, pr_fields[i]);
+			Con_DPrintf("PR_LoadProgs: %s fielddefs missing %s\n", filename, pr_fields[i]);
 			continue;
 		}
 		((int32_t *)&pr->field_struct)[i] = def->ofs;
