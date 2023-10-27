@@ -138,10 +138,18 @@ void SetMinMaxSize (edict_t *e, float *min, float *max, bool rotate)
 	float	a;
 	vec3_t	base, transformed;
 	int		i, j, k, l;
+	float	save;
 	
-	for (i=0 ; i<3 ; i++)
+	for (i = 0; i < 3; i++)
+	{
 		if (min[i] > max[i])
-			PR_RunError (&sv.pr, "backwards mins/maxs");
+		{
+			Con_DPrintf("backwards mins/maxs\n");
+			save = min[i];
+			min[i] = max[i];
+			max[i] = save;
+		}
+	}
 
 	rotate = false;		// FIXME: implement rotation properly again
 
