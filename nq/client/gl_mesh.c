@@ -35,13 +35,13 @@ char	used[8192];
 
 // the command list holds counts and s/t values that are valid for
 // every frame
-int		commands[8192];
-int		numcommands;
+int32_t commands[8192];
+uint32_t numcommands;
 
 // all frames will have their vertexes rearranged and expanded
 // so they are in the order expected by the command list
-int		vertexorder[8192];
-int		numorder;
+int32_t vertexorder[8192];
+uint32_t numorder;
 
 int		allverts, alltris;
 
@@ -283,7 +283,7 @@ GL_MakeAliasModelDisplayLists
 void GL_MakeAliasModelDisplayLists (model_t *m, aliashdr_t *hdr)
 {
 	int		i, j;
-	int			*cmds;
+	int32_t			*cmds;
 	trivertx_t	*verts;
 	char	cache[MAX_QPATH], fullpath[MAX_OSPATH];
 	FILE	*f;
@@ -298,11 +298,12 @@ void GL_MakeAliasModelDisplayLists (model_t *m, aliashdr_t *hdr)
 	COM_StripExtension (m->name+strlen("progs/"), cache+strlen("glquake/"));
 	strcat (cache, ".ms2");
 
-	COM_FOpenFile (cache, &f);	
+	sprintf (fullpath, "%s/%s", com_gamedir, cache);
+	f = fopen (fullpath, "rb");
 	if (f)
 	{
-		fread (&numcommands, 4, 1, f);
-		fread (&numorder, 4, 1, f);
+		fread (&numcommands, sizeof(numcommands), 1, f);
+		fread (&numorder, sizeof(numorder), 1, f);
 		fread (&commands, numcommands * sizeof(commands[0]), 1, f);
 		fread (&vertexorder, numorder * sizeof(vertexorder[0]), 1, f);
 		fclose (f);
@@ -319,12 +320,11 @@ void GL_MakeAliasModelDisplayLists (model_t *m, aliashdr_t *hdr)
 		//
 		// save out the cached version
 		//
-		sprintf (fullpath, "%s/%s", com_gamedir, cache);
 		f = fopen (fullpath, "wb");
 		if (f)
 		{
-			fwrite (&numcommands, 4, 1, f);
-			fwrite (&numorder, 4, 1, f);
+			fwrite (&numcommands, sizeof(numcommands), 1, f);
+			fwrite (&numorder, sizeof(numorder), 1, f);
 			fwrite (&commands, numcommands * sizeof(commands[0]), 1, f);
 			fwrite (&vertexorder, numorder * sizeof(vertexorder[0]), 1, f);
 			fclose (f);
@@ -336,9 +336,9 @@ void GL_MakeAliasModelDisplayLists (model_t *m, aliashdr_t *hdr)
 
 	paliashdr->poseverts = numorder;
 
-	cmds = Hunk_Alloc (numcommands * 4);
+	cmds = Hunk_Alloc (numcommands * sizeof(commands[0]));
 	paliashdr->commands = (byte *)cmds - (byte *)paliashdr;
-	memcpy (cmds, commands, numcommands * 4);
+	memcpy (cmds, commands, numcommands * sizeof(commands[0]));
 
 	verts = Hunk_Alloc (paliashdr->numposes * paliashdr->poseverts 
 		* sizeof(trivertx_t) );
