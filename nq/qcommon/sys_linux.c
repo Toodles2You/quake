@@ -191,7 +191,7 @@ void Sys_mkdir (char *path)
     mkdir (path, 0777);
 }
 
-int Sys_FileOpenRead (char *path, int *handle)
+off_t Sys_FileOpenRead (char *path, int *handle)
 {
 	int	h;
 	struct stat	fileinfo;
@@ -223,7 +223,7 @@ int Sys_FileOpenWrite (char *path)
 	return handle;
 }
 
-int Sys_FileWrite (int handle, void *src, int count)
+ssize_t Sys_FileWrite (int handle, void *src, size_t count)
 {
 	return write (handle, src, count);
 }
@@ -233,12 +233,12 @@ void Sys_FileClose (int handle)
 	close (handle);
 }
 
-void Sys_FileSeek (int handle, int position)
+void Sys_FileSeek (int handle, size_t position)
 {
 	lseek (handle, position, SEEK_SET);
 }
 
-int Sys_FileRead (int handle, void *dest, int count)
+ssize_t Sys_FileRead (int handle, void *dest, size_t count)
 {
     return read (handle, dest, count);
 }
@@ -416,31 +416,6 @@ int main (int c, char **v)
         if (sys_linerefresh.value)
             Sys_LineRefresh ();
     }
-
-}
-
-
-/*
-================
-Sys_MakeCodeWriteable
-================
-*/
-void Sys_MakeCodeWriteable (unsigned long startaddr, unsigned long length)
-{
-
-	int r;
-	unsigned long addr;
-	int psize = getpagesize();
-
-	addr = (startaddr & ~(psize-1)) - psize;
-
-//	fprintf(stderr, "writable code %lx(%lx)-%lx, length=%lx\n", startaddr,
-//			addr, startaddr+length, length);
-
-	r = mprotect((char*)addr, length + startaddr - addr + psize, 7);
-
-	if (r < 0)
-    		Sys_Error("Protection change failed\n");
 
 }
 

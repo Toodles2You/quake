@@ -128,17 +128,17 @@ char *va(char *format, ...);
 
 //============================================================================
 
-extern int com_filesize;
+extern size_t com_filesize;
 struct cache_user_s;
 
 extern char com_gamedir[MAX_OSPATH];
 
-void COM_WriteFile(char *filename, void *data, int len);
-int COM_OpenFile(char *filename, int *hndl);
-int COM_FOpenFile(char *filename, FILE **file);
+void COM_WriteFile(char *filename, void *data, size_t len);
+size_t COM_OpenFile(char *filename, int *hndl);
+size_t COM_FOpenFile(char *filename, FILE **file);
 void COM_CloseFile(int h);
 
-byte *COM_LoadStackFile(char *path, void *buffer, int bufsize);
+byte *COM_LoadStackFile(char *path, void *buffer, size_t bufsize);
 byte *COM_LoadTempFile(char *path);
 byte *COM_LoadHunkFile(char *path);
 void COM_LoadCacheFile(char *path, struct cache_user_s *cu);

@@ -41,7 +41,7 @@ int filelength (FILE *f)
 	return end;
 }
 
-int Sys_FileOpenRead (char *path, int *hndl)
+off_t Sys_FileOpenRead (char *path, int *hndl)
 {
 	FILE    *f;
 	int             i;
@@ -81,17 +81,17 @@ void Sys_FileClose (int handle)
 	sys_handles[handle] = NULL;
 }
 
-void Sys_FileSeek (int handle, int position)
+void Sys_FileSeek (int handle, size_t position)
 {
 	fseek (sys_handles[handle], position, SEEK_SET);
 }
 
-int Sys_FileRead (int handle, void *dest, int count)
+ssize_t Sys_FileRead (int handle, void *dest, size_t count)
 {
 	return fread (dest, 1, count, sys_handles[handle]);
 }
 
-int Sys_FileWrite (int handle, void *data, int count)
+ssize_t Sys_FileWrite (int handle, void *data, size_t count)
 {
 	return fwrite (data, 1, count, sys_handles[handle]);
 }
@@ -122,11 +122,6 @@ SYSTEM IO
 
 ===============================================================================
 */
-
-void Sys_MakeCodeWriteable (unsigned long startaddr, unsigned long length)
-{
-}
-
 
 void Sys_Error (char *error, ...)
 {
@@ -167,10 +162,6 @@ double Sys_FloatTime ()
 char *Sys_ConsoleInput ()
 {
 	return NULL;
-}
-
-void Sys_Sleep ()
-{
 }
 
 void Sys_SendKeyEvents ()

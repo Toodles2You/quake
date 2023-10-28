@@ -32,9 +32,8 @@ static char     *safeargvs[NUM_SAFE_ARGVS] =
 cvar_t  registered = {"registered","0"};
 cvar_t  cmdline = {"cmdline","0", false, true};
 
-bool        com_modified;   // set true if using non-id files
-
-int             static_registered = 1;  // only for startup check, then set
+bool com_modified;   // set true if using non-id files
+bool static_registered;  // only for startup check, then set
 
 void COM_InitFilesystem ();
 
@@ -809,7 +808,7 @@ void COM_CheckRegistered ()
 	int                     i;
 
 	COM_OpenFile("gfx/pop.lmp", &h);
-	static_registered = 0;
+	static_registered = false;
 
 	if (h == -1)
 	{
@@ -829,7 +828,7 @@ void COM_CheckRegistered ()
 	
 	Cvar_Set ("cmdline", com_cmdline);
 	Cvar_Set ("registered", "1");
-	static_registered = 1;
+	static_registered = true;
 	Con_Printf ("Playing registered version.\n");
 }
 
@@ -980,7 +979,7 @@ QUAKE FILESYSTEM
 =============================================================================
 */
 
-int     com_filesize;
+size_t com_filesize;
 
 
 //
@@ -989,16 +988,16 @@ int     com_filesize;
 
 typedef struct
 {
-	char    name[MAX_QPATH];
-	int             filepos, filelen;
+	char name[MAX_QPATH];
+	size_t filepos, filelen;
 } packfile_t;
 
 typedef struct pack_s
 {
-	char    filename[MAX_OSPATH];
-	int             handle;
-	int             numfiles;
-	packfile_t      *files;
+	char filename[MAX_OSPATH];
+	int handle;
+	size_t numfiles;
+	packfile_t *files;
 } pack_t;
 
 //
@@ -1046,7 +1045,7 @@ void COM_Path_f ()
 	{
 		if (s->pack)
 		{
-			Con_Printf ("%s (%i files)\n", s->pack->filename, s->pack->numfiles);
+			Con_Printf ("%s (%lu files)\n", s->pack->filename, s->pack->numfiles);
 		}
 		else
 			Con_Printf ("%s\n", s->filename);
@@ -1060,7 +1059,7 @@ COM_WriteFile
 The filename will be prefixed by the current game directory
 ============
 */
-void COM_WriteFile (char *filename, void *data, int len)
+void COM_WriteFile (char *filename, void *data, size_t len)
 {
 	int             handle;
 	char    name[MAX_OSPATH];
@@ -1087,7 +1086,7 @@ COM_CreatePath
 Only used for CopyFile
 ============
 */
-void    COM_CreatePath (char *path)
+static void    COM_CreatePath (char *path)
 {
 	char    *ofs;
 	
@@ -1111,11 +1110,11 @@ Copies a file over from the net to the local cache, creating any directories
 needed.  This is for the convenience of developers using ISDN from home.
 ===========
 */
-void COM_CopyFile (char *netpath, char *cachepath)
+static void COM_CopyFile (char *netpath, char *cachepath)
 {
-	int             in, out;
-	int             remaining, count;
-	char    buf[4096];
+	int in, out;
+	size_t remaining, count;
+	char buf[4096];
 	
 	remaining = Sys_FileOpenRead (netpath, &in);            
 	COM_CreatePath (cachepath);     // create directories up to the cache file
@@ -1144,14 +1143,15 @@ Finds the file in the search path.
 Sets com_filesize and one of handle or file
 ===========
 */
-int COM_FindFile (char *filename, int *handle, FILE **file)
+static size_t COM_FindFile (char *filename, int *handle, FILE **file)
 {
-	searchpath_t    *search;
-	char            netpath[MAX_OSPATH];
-	char            cachepath[MAX_OSPATH];
-	pack_t          *pak;
-	int                     i;
-	int                     findtime, cachetime;
+	searchpath_t *search;
+	char netpath[MAX_OSPATH];
+	char cachepath[MAX_OSPATH];
+	pack_t *pak;
+	size_t i;
+	int h;
+	int findtime, cachetime;
 
 	if (file && handle)
 		Sys_Error ("COM_FindFile: both handle and file set");
@@ -1226,12 +1226,12 @@ int COM_FindFile (char *filename, int *handle, FILE **file)
 			}	
 
 			Sys_Printf ("FindFile: %s\n",netpath);
-			com_filesize = Sys_FileOpenRead (netpath, &i);
+			com_filesize = Sys_FileOpenRead (netpath, &h);
 			if (handle)
-				*handle = i;
+				*handle = h;
 			else
 			{
-				Sys_FileClose (i);
+				Sys_FileClose (h);
 				*file = fopen (netpath, "rb");
 			}
 			return com_filesize;
@@ -1245,8 +1245,8 @@ int COM_FindFile (char *filename, int *handle, FILE **file)
 		*handle = -1;
 	else
 		*file = NULL;
-	com_filesize = -1;
-	return -1;
+	com_filesize = 0;
+	return 0;
 }
 
 
@@ -1259,7 +1259,7 @@ returns a handle and a length
 it may actually be inside a pak file
 ===========
 */
-int COM_OpenFile (char *filename, int *handle)
+size_t COM_OpenFile (char *filename, int *handle)
 {
 	return COM_FindFile (filename, handle, NULL);
 }
@@ -1272,7 +1272,7 @@ If the requested file is inside a packfile, a new FILE * will be opened
 into the file.
 ===========
 */
-int COM_FOpenFile (char *filename, FILE **file)
+size_t COM_FOpenFile (char *filename, FILE **file)
 {
 	return COM_FindFile (filename, NULL, file);
 }
@@ -1304,15 +1304,17 @@ Filename are reletive to the quake directory.
 Allways appends a 0 byte.
 ============
 */
+
 cache_user_t *loadcache;
-byte    *loadbuf;
-int             loadsize;
-byte *COM_LoadFile (char *path, int usehunk)
+byte *loadbuf;
+size_t loadsize;
+
+static byte *COM_LoadFile (char *path, int usehunk)
 {
-	int             h;
-	byte    *buf;
-	char    base[32];
-	int             len;
+	int h;
+	byte *buf;
+	char base[32];
+	size_t len;
 
 	buf = NULL;     // quiet compiler warning
 
@@ -1372,7 +1374,7 @@ void COM_LoadCacheFile (char *path, struct cache_user_s *cu)
 }
 
 // uses temp hunk if larger than bufsize
-byte *COM_LoadStackFile (char *path, void *buffer, int bufsize)
+byte *COM_LoadStackFile (char *path, void *buffer, size_t bufsize)
 {
 	byte    *buf;
 	
@@ -1393,16 +1395,16 @@ Loads the header and directory, adding the files at the beginning
 of the list so they override previous pack files.
 =================
 */
-pack_t *COM_LoadPackFile (char *packfile)
+static pack_t *COM_LoadPackFile (char *packfile)
 {
 	dpackheader_t   header;
-	int                             i;
-	packfile_t              *newfiles;
-	int                             numpackfiles;
-	pack_t                  *pack;
-	int                             packhandle;
-	dpackfile_t             info[MAX_FILES_IN_PACK];
-	unsigned short          crc;
+	size_t i;
+	packfile_t *newfiles;
+	size_t numpackfiles;
+	pack_t *pack;
+	int packhandle;
+	dpackfile_t info[MAX_FILES_IN_PACK];
+	unsigned short crc;
 
 	if (Sys_FileOpenRead (packfile, &packhandle) == -1)
 	{
@@ -1419,7 +1421,7 @@ pack_t *COM_LoadPackFile (char *packfile)
 	numpackfiles = header.dirlen / sizeof(dpackfile_t);
 
 	if (numpackfiles > MAX_FILES_IN_PACK)
-		Sys_Error ("%s has %i files", packfile, numpackfiles);
+		Sys_Error ("%s has %lu files", packfile, numpackfiles);
 
 	if (numpackfiles != PAK0_COUNT)
 		com_modified = true;    // not the original file
@@ -1450,7 +1452,7 @@ pack_t *COM_LoadPackFile (char *packfile)
 	pack->numfiles = numpackfiles;
 	pack->files = newfiles;
 	
-	Con_Printf ("Added packfile %s (%i files)\n", packfile, numpackfiles);
+	Con_Printf ("Added packfile %s (%lu files)\n", packfile, numpackfiles);
 	return pack;
 }
 
@@ -1494,11 +1496,6 @@ void COM_AddGameDirectory (char *dir)
 		search->next = com_searchpaths;
 		com_searchpaths = search;               
 	}
-
-//
-// add the contents of the parms.txt file to the end of the command line
-//
-
 }
 
 /*

@@ -67,28 +67,26 @@ Zone block
 #ifndef _ZONE_H
 #define _ZONE_H
 
-void Memory_Init(void *buf, int size);
+void Memory_Init(void *buf, size_t size);
 
 void Z_Free(void *ptr);
-void *Z_Malloc(int size); // returns 0 filled memory
-void *Z_TagMalloc(int size, int tag);
+void *Z_Malloc(size_t size); // returns 0 filled memory
+void *Z_TagMalloc(size_t size, size_t tag);
 
-void Z_DumpHeap();
 void Z_CheckHeap();
-int Z_FreeMemory();
 
-void *Hunk_Alloc(int size); // returns 0 filled memory
-void *Hunk_AllocName(int size, char *name);
+void *Hunk_Alloc(size_t size); // returns 0 filled memory
+void *Hunk_AllocName(size_t size, char *name);
 
-void *Hunk_HighAllocName(int size, char *name);
+void *Hunk_HighAllocName(size_t size, char *name);
 
-int Hunk_LowMark();
-void Hunk_FreeToLowMark(int mark);
+size_t Hunk_LowMark();
+void Hunk_FreeToLowMark(size_t mark);
 
-int Hunk_HighMark();
-void Hunk_FreeToHighMark(int mark);
+size_t Hunk_HighMark();
+void Hunk_FreeToHighMark(size_t mark);
 
-void *Hunk_TempAlloc(int size);
+void *Hunk_TempAlloc(size_t size);
 
 void Hunk_Check();
 
@@ -105,7 +103,7 @@ void *Cache_Check(cache_user_t *c);
 
 void Cache_Free(cache_user_t *c);
 
-void *Cache_Alloc(cache_user_t *c, int size, char *name);
+void *Cache_Alloc(cache_user_t *c, size_t size, char *name);
 // Returns NULL if all purgable data was tossed and there still
 // wasn't enough room.
 
