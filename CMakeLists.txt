@@ -112,6 +112,7 @@ set(CLIENT_SRC
 )
 
 set(SERVER_SRC
+    nq/server/progs.c
     nq/server/pr_cmds.c 
     nq/server/pr_edict.c
     nq/server/pr_exec.c

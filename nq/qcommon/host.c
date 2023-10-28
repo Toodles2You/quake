@@ -785,6 +785,7 @@ void Host_Init (quakeparms_t *parms)
 	Con_Init ();	
 	M_Init ();	
 	PR_Init ();
+    ED_Init ();
 	CMod_Init ();
 	Mod_Init ();
 	NET_Init ();

@@ -89,6 +89,8 @@ ddef_t *PR_FieldAtOfs (progs_state_t *pr, int ofs);
 ddef_t *PR_FindField (progs_state_t *pr, char *name);
 ddef_t *PR_FindGlobal (progs_state_t *pr, char *name);
 dfunction_t *PR_FindFunction (progs_state_t *pr, char *name);
+char *PR_ValueString(progs_state_t *pr, etype_t type, eval_t *val);
+char *PR_UglyValueString(progs_state_t *pr, etype_t type, eval_t *val);
 
 void PR_Profile_f();
 
@@ -107,6 +109,8 @@ void ED_WriteGlobals(FILE *f);
 void ED_ParseGlobals(char *data);
 
 void ED_LoadFromFile(char *data);
+
+void ED_Init();
 
 edict_t *EDICT_NUM(int n);
 int NUM_FOR_EDICT(edict_t *e);
