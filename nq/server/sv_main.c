@@ -278,7 +278,7 @@ void SV_ConnectClient (int clientnum)
 	else
 	{
 	// call the progs to get default spawn parms for the new client
-		PR_ExecuteProgram (&sv.pr, sv.pr.global_struct.SetNewParms);
+		sv_pr_execute(SetNewParms);
 		for (i=0 ; i<NUM_SPAWN_PARMS ; i++)
 			client->spawn_parms[i] = sv_pr_vector(parm1)[i];
 	}
@@ -1011,10 +1011,45 @@ void SV_SaveSpawnparms ()
 
 	// call the progs to get default spawn parms for the new client
 		sv_pr_int(self) = EDICT_TO_PROG(host_client->edict);
-		PR_ExecuteProgram (&sv.pr, sv.pr.global_struct.SetChangeParms);
+		sv_pr_execute(SetChangeParms);
 		for (j=0 ; j<NUM_SPAWN_PARMS ; j++)
 			host_client->spawn_parms[j] = sv_pr_vector(parm1)[j];
 	}
+}
+
+
+static bool SV_LoadProgs()
+{
+	if (PR_LoadProgs(&sv.pr, "progs.dat", PROG_VERSION, PROGHEADER_CRC) != 0)
+	{
+		return false;
+	}
+
+	#define PR_FIELD(_, name) #name,
+
+	char *pr_globals[] =
+	{
+		#include "pr_globals.h"
+		NULL
+	};
+
+	char *pr_fields[] =
+	{
+		#include "pr_fields.h"
+		NULL
+	};
+
+	#undef PR_FIELD
+
+	uint32_t *pr_global_struct = Hunk_AllocName((pr_globals_count + pr_fields_count) * sizeof(uint32_t), "pr_tables");
+	uint32_t *pr_fields_struct = pr_global_struct + pr_globals_count;
+
+	PR_BuildStructs(&sv.pr, pr_global_struct, pr_globals, pr_fields_struct, pr_fields);
+
+	sv.pr.builtins = pr_builtins;
+	sv.pr.numbuiltins = pr_numbuiltins;
+
+	return true;
 }
 
 
@@ -1073,14 +1108,11 @@ void SV_SpawnServer (char *server, char *startspot)
 		strcpy(sv.startspot, startspot);
 
 // load progs to get entity field count
-	if (PR_LoadProgs(&sv.pr, "progs.dat", PROG_VERSION, PROGHEADER_CRC) != 0)
+	if (!SV_LoadProgs())
 	{
 		sv.active = false;
 		return;
 	}
-
-	sv.pr.builtins = pr_builtins;
-	sv.pr.numbuiltins = pr_numbuiltins;
 
 // allocate server memory
 	sv.max_edicts = MAX_EDICTS;

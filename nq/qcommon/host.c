@@ -358,7 +358,7 @@ void SV_DropClient (bool crash)
 		// this will set the body to a dead frame, among other things
 			saveSelf = sv_pr_int(self);
 			sv_pr_int(self) = EDICT_TO_PROG(host_client->edict);
-			PR_ExecuteProgram (&sv.pr, sv.pr.global_struct.ClientDisconnect);
+			sv_pr_execute(ClientDisconnect);
 			sv_pr_int(self) = saveSelf;
 		}
 

@@ -1119,7 +1119,7 @@ void Host_Kill_f ()
 	
 	sv_pr_float(time) = sv.time;
 	sv_pr_int(self) = EDICT_TO_PROG(sv_player);
-	PR_ExecuteProgram (&sv.pr, sv.pr.global_struct.ClientKill);
+	sv_pr_execute(ClientKill);
 }
 
 
@@ -1233,12 +1233,12 @@ void Host_Spawn_f ()
 
 		sv_pr_float(time) = sv.time;
 		sv_pr_int(self) = EDICT_TO_PROG(sv_player);
-		PR_ExecuteProgram (&sv.pr, sv.pr.global_struct.ClientConnect);
+		sv_pr_execute(ClientConnect);
 
 		if ((Sys_FloatTime() - host_client->netconnection->connecttime) <= sv.time)
 			Sys_Printf ("%s entered the game\n", host_client->name);
 
-		PR_ExecuteProgram (&sv.pr, sv.pr.global_struct.PutClientInServer);	
+		sv_pr_execute(PutClientInServer);
 	}
 
 

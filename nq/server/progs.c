@@ -271,7 +271,6 @@ char *PR_GlobalStringNoContents(progs_state_t *pr, int ofs)
 int PR_LoadProgs(progs_state_t *pr, char *filename, int version, int crc)
 {
     int i;
-    ddef_t *def;
 
     memset(pr, 0, sizeof(progs_state_t));
 
@@ -359,57 +358,56 @@ int PR_LoadProgs(progs_state_t *pr, char *filename, int version, int crc)
         ((int32_t *)pr->globals)[i] = LittleLong(((int32_t *)pr->globals)[i]);
     }
 
-#define PR_FIELD(_, name) #name,
-
-    const char *pr_globals[] =
-    {
-        #include "pr_globals.h"
-        NULL,
-    };
-
-    const char *pr_fields[] =
-    {
-        #include "pr_fields.h"
-        NULL,
-    };
-
-#undef PR_FIELD
-
-    /* Get the offsets of the global vars. */
-    for (i = 0; pr_globals[i] != NULL; i++)
-    {
-        def = PR_FindGlobal(pr, pr_globals[i]);
-        if (!def)
-        {
-            ((int32_t *)&pr->global_struct)[i] = 0;
-            Con_DPrintf("PR_LoadProgs: %s globaldefs missing %s\n", filename, pr_globals[i]);
-            continue;
-        }
-        if (def->type != ev_function)
-        {
-            ((int32_t *)&pr->global_struct)[i] = def->ofs;
-        }
-        else
-        {
-            /* C code passes these to PR_ExecuteProgram directly. */
-            ((int32_t *)&pr->global_struct)[i] = *(int32_t *)(pr->globals + def->ofs);
-        }
-    }
-
-    /* Get the offsets of the entity vars. */
-    for (i = 0; pr_fields[i] != NULL; i++)
-    {
-        def = PR_FindField(pr, pr_fields[i]);
-        if (!def)
-        {
-            ((int32_t *)&pr->field_struct)[i] = 0;
-            Con_DPrintf("PR_LoadProgs: %s fielddefs missing %s\n", filename, pr_fields[i]);
-            continue;
-        }
-        ((int32_t *)&pr->field_struct)[i] = def->ofs;
-    }
-
     return 0;
+}
+
+
+void PR_BuildStructs(progs_state_t *pr, uint32_t *globalStruct, char **globalStrings, uint32_t *fieldStruct, char **fieldStrings)
+{
+    int i;
+    ddef_t *def;
+
+    if (globalStruct)
+    {
+        /* Get the offsets of the global vars. */
+        for (i = 0; globalStrings[i] != NULL; i++)
+        {
+            def = PR_FindGlobal(pr, globalStrings[i]);
+            if (!def)
+            {
+                globalStruct[i] = 0;
+                Con_DPrintf("PR_LoadProgs: progs.dat globaldefs missing %s\n", globalStrings[i]);
+                continue;
+            }
+            if (def->type != ev_function)
+            {
+                globalStruct[i] = def->ofs;
+            }
+            else
+            {
+                /* C code passes these to PR_ExecuteProgram directly. */
+                globalStruct[i] = *(int32_t *)(pr->globals + def->ofs);
+            }
+        }
+        pr->global_struct = globalStruct;
+    }
+
+    if (fieldStruct)
+    {
+        /* Get the offsets of the entity vars. */
+        for (i = 0; fieldStrings[i] != NULL; i++)
+        {
+            def = PR_FindField(pr, fieldStrings[i]);
+            if (!def)
+            {
+                fieldStruct[i] = 0;
+                Con_DPrintf("PR_LoadProgs: progs.dat fielddefs missing %s\n", fieldStrings[i]);
+                continue;
+            }
+            fieldStruct[i] = def->ofs;
+        }
+        pr->field_struct = fieldStruct;
+    }
 }
 
 

@@ -1052,7 +1052,7 @@ void SV_Physics_Client (edict_t	*ent, int num)
 //	
 	sv_pr_float(time) = sv.time;
 	sv_pr_int(self) = EDICT_TO_PROG(ent);
-	PR_ExecuteProgram (&sv.pr, sv.pr.global_struct.PlayerPreThink);
+	sv_pr_execute(PlayerPreThink);
 	
 //
 // do a move
@@ -1113,7 +1113,7 @@ void SV_Physics_Client (edict_t	*ent, int num)
 
 	sv_pr_float(time) = sv.time;
 	sv_pr_int(self) = EDICT_TO_PROG(ent);
-	PR_ExecuteProgram (&sv.pr, sv.pr.global_struct.PlayerPostThink);
+	sv_pr_execute(PlayerPostThink);
 }
 
 //============================================================================
@@ -1382,7 +1382,7 @@ void SV_Physics ()
 	sv_pr_int(self) = EDICT_TO_PROG(sv.edicts);
 	sv_pr_int(other) = EDICT_TO_PROG(sv.edicts);
 	sv_pr_float(time) = sv.time;
-	PR_ExecuteProgram (&sv.pr, sv.pr.global_struct.StartFrame);
+	sv_pr_execute(StartFrame);
 
 //SV_CheckAllEnts ();
 

@@ -39,15 +39,17 @@ typedef struct progs_state_s progs_state_t;
 
 typedef void (*builtin_t)(progs_state_t *);
 
-#define PR_FIELD(_, name) const int32_t name;
+#define PR_FIELD(_, name) pr_##name,
 
-typedef struct {
+typedef enum {
 	#include "pr_globals.h"
-} progs_globals_t;
+	pr_globals_count
+} progs_globals_e;
 
-typedef struct {
+typedef enum {
 	#include "pr_fields.h"
-} progs_fields_t;
+	pr_fields_count
+} progs_fields_e;
 
 #undef PR_FIELD
 
@@ -60,8 +62,8 @@ typedef struct progs_state_s {
 	dstatement_t *statements;
 	float *globals;
 
-	const progs_globals_t global_struct;
-	const progs_fields_t field_struct;
+	const uint32_t *global_struct;
+	const uint32_t *field_struct;
 	const size_t edict_size;
 	
 	builtin_t *builtins;
@@ -81,6 +83,7 @@ void PR_Init();
 
 void PR_ExecuteProgram(progs_state_t *pr, func_t fnum);
 int PR_LoadProgs(progs_state_t *pr, char *filename, int version, int crc);
+void PR_BuildStructs(progs_state_t *pr, uint32_t *globalStruct, char **globalStrings, uint32_t *fieldStruct, char **fieldStrings);
 
 ddef_t *PR_GlobalAtOfs (progs_state_t *pr, int ofs);
 char *PR_GlobalString (progs_state_t *pr, int ofs);
@@ -124,13 +127,14 @@ int NUM_FOR_EDICT(edict_t *e);
 
 #define pr_global(_PR, _TYPE, _OFS) (*(_TYPE *)(_PR->globals + _OFS))
 #define pr_global_ptr(_PR, _TYPE, _OFS) ((_TYPE *)(_PR->globals + _OFS))
-#define pr_float(_PR, _FIELD) (*(float *)(_PR->globals + _PR->global_struct._FIELD))
-#define pr_int(_PR, _FIELD) (*(int32_t *)(_PR->globals + _PR->global_struct._FIELD))
-#define pr_vector(_PR, _FIELD) ((float *)(_PR->globals + _PR->global_struct._FIELD))
+#define pr_float(_PR, _FIELD) (*(float *)(_PR->globals + _PR->global_struct[pr_##_FIELD]))
+#define pr_int(_PR, _FIELD) (*(int32_t *)(_PR->globals + _PR->global_struct[pr_##_FIELD]))
+#define pr_vector(_PR, _FIELD) ((float *)(_PR->globals + _PR->global_struct[pr_##_FIELD]))
 
-#define sv_pr_float(_FIELD) (*(float *)(sv.pr.globals + sv.pr.global_struct._FIELD))
-#define sv_pr_int(_FIELD) (*(int32_t *)(sv.pr.globals + sv.pr.global_struct._FIELD))
-#define sv_pr_vector(_FIELD) ((float *)(sv.pr.globals + sv.pr.global_struct._FIELD))
+#define sv_pr_float(_FIELD) (*(float *)(sv.pr.globals + sv.pr.global_struct[pr_##_FIELD]))
+#define sv_pr_int(_FIELD) (*(int32_t *)(sv.pr.globals + sv.pr.global_struct[pr_##_FIELD]))
+#define sv_pr_vector(_FIELD) ((float *)(sv.pr.globals + sv.pr.global_struct[pr_##_FIELD]))
+#define sv_pr_execute(_FIELD) PR_ExecuteProgram (&sv.pr, sv.pr.global_struct[pr_##_FIELD])
 
 #define pr_get_string(_PR, _OFS) PR_GetString(_PR, pr_global(_PR, string_t, _OFS))
 #define pr_set_string(_PR, _OFS, _STR) (pr_global(_PR, string_t, _OFS) = PR_SetString(_PR, _STR))
@@ -138,11 +142,11 @@ int NUM_FOR_EDICT(edict_t *e);
 #define pr_get_edict(_PR, _OFS) ((edict_t *)((byte *)sv.edicts + pr_global(_PR, int32_t, _OFS)))
 #define pr_get_edict_num(_PR, _OFS) NUM_FOR_EDICT(pr_get_edict(_PR, _OFS))
 
-#define pr_field(_FIELD) (sv.pr.global_struct._FIELD != 0)
+#define pr_field(_FIELD) (sv.pr.global_struct[pr_##_FIELD] != 0)
 
-#define ed_float(_ED, _FIELD) (*(float *)((float *)(_ED + 1) + sv.pr.field_struct._FIELD))
-#define ed_int(_ED, _FIELD) (*(int32_t *)((float *)(_ED + 1) + sv.pr.field_struct._FIELD))
-#define ed_vector(_ED, _FIELD) ((float *)((float *)(_ED + 1) + sv.pr.field_struct._FIELD))
+#define ed_float(_ED, _FIELD) (*(float *)((float *)(_ED + 1) + sv.pr.field_struct[pr_##_FIELD]))
+#define ed_int(_ED, _FIELD) (*(int32_t *)((float *)(_ED + 1) + sv.pr.field_struct[pr_##_FIELD]))
+#define ed_vector(_ED, _FIELD) ((float *)((float *)(_ED + 1) + sv.pr.field_struct[pr_##_FIELD]))
 
 #define ed_get_string(_ED, _FIELD) PR_GetString(&sv.pr, ed_int(_ED, _FIELD))
 #define ed_set_string(_ED, _FIELD, _STR) (ed_int(_ED, _FIELD) = PR_SetString(&sv.pr, _STR))
@@ -150,7 +154,7 @@ int NUM_FOR_EDICT(edict_t *e);
 #define ed_get_edict(_ED, _FIELD) PROG_TO_EDICT(ed_int(_ED, _FIELD))
 #define ed_set_edict(_ED, _FIELD, _ED2) (ed_int(_ED, _FIELD) = EDICT_TO_PROG(_ED2))
 
-#define ed_field(_FIELD) (sv.pr.field_struct._FIELD != 0)
+#define ed_field(_FIELD) (sv.pr.field_struct[pr_##_FIELD] != 0)
 
 extern builtin_t *pr_builtins;
 extern int pr_numbuiltins;
