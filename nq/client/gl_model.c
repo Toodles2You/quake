@@ -36,7 +36,7 @@ void Mod_LoadAliasModel(model_t *mod, void *buffer);
 static model_t mod_known[MAX_MODELS];
 static int mod_numknown;
 
-cvar_t gl_subdivide_size = {"gl_subdivide_size", "128", true};
+cvar_t gl_subdivide_size = {"gl_subdivide_size", "128", CVAR_ARCHIVE};
 
 /*
 ===============

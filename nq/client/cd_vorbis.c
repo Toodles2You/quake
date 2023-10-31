@@ -36,7 +36,7 @@ typedef enum
     CD_PLAYING_MASK = (CD_PLAYING | CD_PAUSED | CD_LOOPING | CD_FADING_MASK),
 } cdstate_t;
 
-static cvar_t bgmfade = {"bgmfade", "0.5", false};
+static cvar_t bgmfade = {"bgmfade", "0.5"};
 
 static cdstate_t cd_state;
 

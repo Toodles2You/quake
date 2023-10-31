@@ -119,7 +119,7 @@ void Cvar_Set (char *var_name, char *value)
 	var->string = Z_Malloc (strlen(value)+1);
 	strcpy (var->string, value);
 	var->value = atof (var->string);
-	if (var->server && changed)
+	if ((var->flags & CVAR_SERVER) && changed)
 	{
 		if (Host_IsLocalGame ())
 			SV_BroadcastPrintf ("\"%s\" changed to \"%s\"\n", var->name, var->string);
@@ -217,7 +217,7 @@ void Cvar_WriteVariables (FILE *f)
 	cvar_t	*var;
 	
 	for (var = cvar_vars ; var ; var = var->next)
-		if (var->archive)
+		if (var->flags & CVAR_ARCHIVE)
 			fprintf (f, "%s \"%s\"\n", var->name, var->string);
 }
 

@@ -164,7 +164,7 @@ void SV_UserFriction ()
 SV_Accelerate
 ==============
 */
-cvar_t	sv_maxspeed = {"sv_maxspeed", "320", false, true};
+cvar_t	sv_maxspeed = {"sv_maxspeed", "320", CVAR_SERVER};
 cvar_t	sv_accelerate = {"sv_accelerate", "10"};
 #if 0
 void SV_Accelerate (vec3_t wishvel)

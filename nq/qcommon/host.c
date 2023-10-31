@@ -58,12 +58,12 @@ cvar_t	host_speeds = {"host_speeds","0"};			// set for running times
 cvar_t	sys_ticrate = {"sys_ticrate","0.05"};
 cvar_t	serverprofile = {"serverprofile","0"};
 
-cvar_t	fraglimit = {"fraglimit","0",false,true};
-cvar_t	timelimit = {"timelimit","0",false,true};
-cvar_t	teamplay = {"teamplay","0",false,true};
+cvar_t	fraglimit = {"fraglimit","0", CVAR_SERVER};
+cvar_t	timelimit = {"timelimit","0", CVAR_SERVER};
+cvar_t	teamplay = {"teamplay","0", CVAR_SERVER};
 
 cvar_t	samelevel = {"samelevel","0"};
-cvar_t	noexit = {"noexit","0",false,true};
+cvar_t	noexit = {"noexit","0", CVAR_SERVER};
 
 #ifndef NDEBUG
 cvar_t	developer = {"developer","1"};

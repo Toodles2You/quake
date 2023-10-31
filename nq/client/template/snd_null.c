@@ -1,7 +1,7 @@
 #include "clientdef.h"
 
-cvar_t bgmvolume = {"bgmvolume", "1", true};
-cvar_t volume = {"volume", "0.7", true};
+cvar_t bgmvolume = {"bgmvolume", "1", CVAR_ARCHIVE};
+cvar_t volume = {"volume", "0.7", CVAR_ARCHIVE};
 
  
 void S_Init ()

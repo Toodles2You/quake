@@ -56,7 +56,7 @@ static bool vidmode_active = false;
 static int scr_width, scr_height;
 static float vid_gamma = 1.0;
 
-static cvar_t vid_mode = {"vid_mode", "0", false};
+static cvar_t vid_mode = {"vid_mode", "0"};
 
 void VID_Shutdown()
 {
