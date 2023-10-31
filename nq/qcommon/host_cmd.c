@@ -32,19 +32,10 @@ void Mod_Print ();
 Host_Quit_f
 ==================
 */
-
-extern void M_Menu_Quit_f ();
-
 void Host_Quit_f ()
 {
-	if (key_dest != key_console && cls.state != ca_dedicated)
-	{
-		M_Menu_Quit_f ();
-		return;
-	}
 	CL_Disconnect ();
-	Host_ShutdownServer(false);		
-
+	Host_ShutdownServer(false);
 	Sys_Quit ();
 }
 
