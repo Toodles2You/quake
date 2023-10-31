@@ -648,7 +648,7 @@ static qsocket_t *_Datagram_CheckNewConnections ()
 		MSG_WriteLong(&net_message, client->colors);
 		MSG_WriteLong(&net_message, (int)ed_float(client->edict, frags));
 		MSG_WriteLong(&net_message, (int)(net_time - client->netconnection->connecttime));
-		MSG_WriteString(&net_message, client->netconnection->address);
+		MSG_WriteByte(&net_message, '\0');
 		*((int32_t *)net_message.data) = BigLong(NETFLAG_CTL | (net_message.cursize & NETFLAG_LENGTH_MASK));
 		dfunc.Write (acceptsock, net_message.data, net_message.cursize, &clientaddr);
 		SZ_Clear(&net_message);
