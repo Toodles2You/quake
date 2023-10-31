@@ -20,7 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "serverdef.h"
 
-#define	RETURN_EDICT(e) (((int32_t *)pr_globals)[OFS_RETURN] = EDICT_TO_PROG(e))
+#define	RETURN_EDICT(e) (((int32_t *)pr->globals)[OFS_RETURN] = EDICT_TO_PROG(e))
 
 /*
 ===============================================================================
@@ -30,15 +30,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===============================================================================
 */
 
-char *PF_VarString (int	first)
+char *PF_VarString (progs_state_t *pr, int first)
 {
 	int		i;
 	static char out[256];
 	
 	out[0] = 0;
-	for (i=first ; i<pr_argc ; i++)
+	for (i=first ; i<pr->argc ; i++)
 	{
-		strcat (out, G_STRING((OFS_PARM0+i*3)));
+		strcat (out, pr_get_string(pr, (OFS_PARM0+i*3)));
 	}
 	return out;
 }
@@ -54,15 +54,15 @@ Dumps self.
 error(value)
 =================
 */
-void PF_error ()
+void PF_error (progs_state_t *pr)
 {
 	char	*s;
 	edict_t	*ed;
 	
-	s = PF_VarString(0);
+	s = PF_VarString(pr, 0);
 	Con_Printf ("======SERVER ERROR in %s:\n%s\n"
-	,PR_GetString(pr_xfunction->s_name),s);
-	ed = PROG_TO_EDICT(pr_global_struct->self);
+	,PR_GetString(pr, pr->xfunction->s_name),s);
+	ed = PROG_TO_EDICT(pr_int(pr, self));
 	ED_Print (ed);
 
 	Host_Error ("Program error");
@@ -78,15 +78,15 @@ removed, but the level can continue.
 objerror(value)
 =================
 */
-void PF_objerror ()
+void PF_objerror (progs_state_t *pr)
 {
 	char	*s;
 	edict_t	*ed;
 	
-	s = PF_VarString(0);
+	s = PF_VarString(pr, 0);
 	Con_Printf ("======OBJECT ERROR in %s:\n%s\n"
-	,PR_GetString(pr_xfunction->s_name),s);
-	ed = PROG_TO_EDICT(pr_global_struct->self);
+	,PR_GetString(pr, pr->xfunction->s_name),s);
+	ed = PROG_TO_EDICT(pr_int(pr, self));
 	ED_Print (ed);
 	ED_Free (ed);
 	
@@ -103,9 +103,9 @@ Writes new values for v_forward, v_up, and v_right based on angles
 makevectors(vector)
 ==============
 */
-void PF_makevectors ()
+void PF_makevectors (progs_state_t *pr)
 {
-	AngleVectors (G_VECTOR(OFS_PARM0), pr_global_struct->v_forward, pr_global_struct->v_right, pr_global_struct->v_up);
+	AngleVectors (pr_global_ptr(pr, float, OFS_PARM0), pr_vector(pr, v_forward), pr_vector(pr, v_right), pr_vector(pr, v_up));
 }
 
 /*
@@ -117,14 +117,14 @@ This is the only valid way to move an object without using the physics of the wo
 setorigin (entity, origin)
 =================
 */
-void PF_setorigin ()
+void PF_setorigin (progs_state_t *pr)
 {
 	edict_t	*e;
 	float	*org;
 	
-	e = G_EDICT(OFS_PARM0);
-	org = G_VECTOR(OFS_PARM1);
-	VectorCopy (org, e->v.origin);
+	e = pr_get_edict(pr, OFS_PARM0);
+	org = pr_global_ptr(pr, float, OFS_PARM1);
+	VectorCopy (org, ed_vector(e, origin));
 	SV_LinkEdict (e, false);
 }
 
@@ -138,10 +138,18 @@ void SetMinMaxSize (edict_t *e, float *min, float *max, bool rotate)
 	float	a;
 	vec3_t	base, transformed;
 	int		i, j, k, l;
+	float	save;
 	
-	for (i=0 ; i<3 ; i++)
+	for (i = 0; i < 3; i++)
+	{
 		if (min[i] > max[i])
-			PR_RunError ("backwards mins/maxs");
+		{
+			Con_DPrintf("backwards mins/maxs\n");
+			save = min[i];
+			min[i] = max[i];
+			max[i] = save;
+		}
+	}
 
 	rotate = false;		// FIXME: implement rotation properly again
 
@@ -153,7 +161,7 @@ void SetMinMaxSize (edict_t *e, float *min, float *max, bool rotate)
 	else
 	{
 	// find min / max for rotations
-		angles = e->v.angles;
+		angles = ed_vector(e, angles);
 		
 		a = angles[1]/180 * M_PI;
 		
@@ -196,9 +204,9 @@ void SetMinMaxSize (edict_t *e, float *min, float *max, bool rotate)
 	}
 	
 // set derived values
-	VectorCopy (rmin, e->v.mins);
-	VectorCopy (rmax, e->v.maxs);
-	VectorSubtract (max, min, e->v.size);
+	VectorCopy (rmin, ed_vector(e, mins));
+	VectorCopy (rmax, ed_vector(e, maxs));
+	VectorSubtract (max, min, ed_vector(e, size));
 	
 	SV_LinkEdict (e, false);
 }
@@ -212,14 +220,14 @@ the size box is rotated by the current angle
 setsize (entity, minvector, maxvector)
 =================
 */
-void PF_setsize ()
+void PF_setsize (progs_state_t *pr)
 {
 	edict_t	*e;
 	float	*min, *max;
 	
-	e = G_EDICT(OFS_PARM0);
-	min = G_VECTOR(OFS_PARM1);
-	max = G_VECTOR(OFS_PARM2);
+	e = pr_get_edict(pr, OFS_PARM0);
+	min = pr_global_ptr(pr, float, OFS_PARM1);
+	max = pr_global_ptr(pr, float, OFS_PARM2);
 	SetMinMaxSize (e, min, max, false);
 }
 
@@ -231,15 +239,15 @@ PF_setmodel
 setmodel(entity, model)
 =================
 */
-void PF_setmodel ()
+void PF_setmodel (progs_state_t *pr)
 {
 	edict_t	*e;
 	char	*m, **check;
 	cmodel_t	*mod;
 	int		i;
 
-	e = G_EDICT(OFS_PARM0);
-	m = G_STRING(OFS_PARM1);
+	e = pr_get_edict(pr, OFS_PARM0);
+	m = pr_get_string(pr, OFS_PARM1);
 
 // check to see if model was properly precached
 	for (i=0, check = sv.model_precache ; *check ; i++, check++)
@@ -247,13 +255,13 @@ void PF_setmodel ()
 			break;
 			
 	if (!*check)
-		PR_RunError ("no precache: %s\n", m);
+		PR_RunError (pr, "no precache: %s\n", m);
 		
 
-	e->v.model = PR_SetString(m);
-	e->v.modelindex = i; //SV_ModelIndex (m);
+	ed_set_string(e, model, m);
+	ed_float(e, modelindex) = i;
 
-	mod = sv.models[ (int)e->v.modelindex];  // CMod_ForName (m, true);
+	mod = sv.models[(int)ed_float(e, modelindex)];
 	
 	if (mod)
 		SetMinMaxSize (e, mod->mins, mod->maxs, true);
@@ -270,11 +278,11 @@ broadcast print to everyone on server
 bprint(value)
 =================
 */
-void PF_bprint ()
+void PF_bprint (progs_state_t *pr)
 {
 	char		*s;
 
-	s = PF_VarString(0);
+	s = PF_VarString(pr, 0);
 	SV_BroadcastPrintf ("%s", s);
 }
 
@@ -287,14 +295,14 @@ single print to a specific client
 sprint(clientent, value)
 =================
 */
-void PF_sprint ()
+void PF_sprint (progs_state_t *pr)
 {
 	char		*s;
 	client_t	*client;
 	int			entnum;
 	
-	entnum = G_EDICTNUM(OFS_PARM0);
-	s = PF_VarString(1);
+	entnum = pr_get_edict_num(pr, OFS_PARM0);
+	s = PF_VarString(pr, 1);
 	
 	if (entnum < 1 || entnum > svs.maxclients)
 	{
@@ -318,14 +326,14 @@ single print to a specific client
 centerprint(clientent, value)
 =================
 */
-void PF_centerprint ()
+void PF_centerprint (progs_state_t *pr)
 {
 	char		*s;
 	client_t	*client;
 	int			entnum;
 	
-	entnum = G_EDICTNUM(OFS_PARM0);
-	s = PF_VarString(1);
+	entnum = pr_get_edict_num(pr, OFS_PARM0);
+	s = PF_VarString(pr, 1);
 	
 	if (entnum < 1 || entnum > svs.maxclients)
 	{
@@ -347,13 +355,13 @@ PF_normalize
 vector normalize(vector)
 =================
 */
-void PF_normalize ()
+void PF_normalize (progs_state_t *pr)
 {
 	float	*value1;
 	vec3_t	newvalue;
 	float	new;
 	
-	value1 = G_VECTOR(OFS_PARM0);
+	value1 = pr_global_ptr(pr, float, OFS_PARM0);
 
 	new = value1[0] * value1[0] + value1[1] * value1[1] + value1[2]*value1[2];
 	new = sqrt(new);
@@ -368,7 +376,7 @@ void PF_normalize ()
 		newvalue[2] = value1[2] * new;
 	}
 	
-	VectorCopy (newvalue, G_VECTOR(OFS_RETURN));	
+	VectorCopy (newvalue, pr_global_ptr(pr, float, OFS_RETURN));	
 }
 
 /*
@@ -378,17 +386,17 @@ PF_vlen
 scalar vlen(vector)
 =================
 */
-void PF_vlen ()
+void PF_vlen (progs_state_t *pr)
 {
 	float	*value1;
 	float	new;
 	
-	value1 = G_VECTOR(OFS_PARM0);
+	value1 = pr_global_ptr(pr, float, OFS_PARM0);
 
 	new = value1[0] * value1[0] + value1[1] * value1[1] + value1[2]*value1[2];
 	new = sqrt(new);
 	
-	G_FLOAT(OFS_RETURN) = new;
+	pr_global(pr, float, OFS_RETURN) = new;
 }
 
 /*
@@ -398,12 +406,12 @@ PF_vectoyaw
 float vectoyaw(vector)
 =================
 */
-void PF_vectoyaw ()
+void PF_vectoyaw (progs_state_t *pr)
 {
 	float	*value1;
 	float	yaw;
 	
-	value1 = G_VECTOR(OFS_PARM0);
+	value1 = pr_global_ptr(pr, float, OFS_PARM0);
 
 	if (value1[1] == 0 && value1[0] == 0)
 		yaw = 0;
@@ -414,7 +422,7 @@ void PF_vectoyaw ()
 			yaw += 360;
 	}
 
-	G_FLOAT(OFS_RETURN) = yaw;
+	pr_global(pr, float, OFS_RETURN) = yaw;
 }
 
 
@@ -425,13 +433,13 @@ PF_vectoangles
 vector vectoangles(vector)
 =================
 */
-void PF_vectoangles ()
+void PF_vectoangles (progs_state_t *pr)
 {
 	float	*value1;
 	float	forward;
 	float	yaw, pitch;
 	
-	value1 = G_VECTOR(OFS_PARM0);
+	value1 = pr_global_ptr(pr, float, OFS_PARM0);
 
 	if (value1[1] == 0 && value1[0] == 0)
 	{
@@ -453,9 +461,9 @@ void PF_vectoangles ()
 			pitch += 360;
 	}
 
-	G_FLOAT(OFS_RETURN+0) = pitch;
-	G_FLOAT(OFS_RETURN+1) = yaw;
-	G_FLOAT(OFS_RETURN+2) = 0;
+	pr_global(pr, float, OFS_RETURN+0) = pitch;
+	pr_global(pr, float, OFS_RETURN+1) = yaw;
+	pr_global(pr, float, OFS_RETURN+2) = 0;
 }
 
 /*
@@ -467,13 +475,13 @@ Returns a number from 0<= num < 1
 random()
 =================
 */
-void PF_random ()
+void PF_random (progs_state_t *pr)
 {
 	float		num;
 		
 	num = (rand ()&0x7fff) / ((float)0x7fff);
 	
-	G_FLOAT(OFS_RETURN) = num;
+	pr_global(pr, float, OFS_RETURN) = num;
 }
 
 /*
@@ -483,16 +491,16 @@ PF_particle
 particle(origin, color, count)
 =================
 */
-void PF_particle ()
+void PF_particle (progs_state_t *pr)
 {
 	float		*org, *dir;
 	float		color;
 	float		count;
 			
-	org = G_VECTOR(OFS_PARM0);
-	dir = G_VECTOR(OFS_PARM1);
-	color = G_FLOAT(OFS_PARM2);
-	count = G_FLOAT(OFS_PARM3);
+	org = pr_global_ptr(pr, float, OFS_PARM0);
+	dir = pr_global_ptr(pr, float, OFS_PARM1);
+	color = pr_global(pr, float, OFS_PARM2);
+	count = pr_global(pr, float, OFS_PARM3);
 	SV_StartParticle (org, dir, color, count);
 }
 
@@ -503,7 +511,7 @@ PF_ambientsound
 
 =================
 */
-void PF_ambientsound ()
+void PF_ambientsound (progs_state_t *pr)
 {
 	char		**check;
 	char		*samp;
@@ -511,10 +519,10 @@ void PF_ambientsound ()
 	float 		vol, attenuation;
 	int			i, soundnum;
 
-	pos = G_VECTOR (OFS_PARM0);			
-	samp = G_STRING(OFS_PARM1);
-	vol = G_FLOAT(OFS_PARM2);
-	attenuation = G_FLOAT(OFS_PARM3);
+	pos = pr_global_ptr(pr, float, OFS_PARM0);			
+	samp = pr_get_string(pr, OFS_PARM1);
+	vol = pr_global(pr, float, OFS_PARM2);
+	attenuation = pr_global(pr, float, OFS_PARM3);
 	
 // check to see if samp was properly precached
 	for (soundnum=0, check = sv.sound_precache ; *check ; check++, soundnum++)
@@ -555,7 +563,7 @@ Larger attenuations will drop off.
 
 =================
 */
-void PF_sound ()
+void PF_sound (progs_state_t *pr)
 {
 	char		*sample;
 	int			channel;
@@ -563,11 +571,11 @@ void PF_sound ()
 	int 		volume;
 	float attenuation;
 		
-	entity = G_EDICT(OFS_PARM0);
-	channel = G_FLOAT(OFS_PARM1);
-	sample = G_STRING(OFS_PARM2);
-	volume = G_FLOAT(OFS_PARM3) * 255;
-	attenuation = G_FLOAT(OFS_PARM4);
+	entity = pr_get_edict(pr, OFS_PARM0);
+	channel = pr_global(pr, float, OFS_PARM1);
+	sample = pr_get_string(pr, OFS_PARM2);
+	volume = pr_global(pr, float, OFS_PARM3) * 255;
+	attenuation = pr_global(pr, float, OFS_PARM4);
 	
 	if (volume < 0 || volume > 255)
 		Sys_Error ("SV_StartSound: volume = %i", volume);
@@ -588,11 +596,11 @@ PF_break
 break()
 =================
 */
-void PF_break ()
+void PF_break (progs_state_t *pr)
 {
 Con_Printf ("break statement\n");
 *(int32_t *)-4 = 0;	// dump to debugger
-//	PR_RunError ("break statement");
+//	PR_RunError (pr, "break statement");
 }
 
 /*
@@ -606,32 +614,32 @@ if the tryents flag is set.
 traceline (vector1, vector2, tryents)
 =================
 */
-void PF_traceline ()
+void PF_traceline (progs_state_t *pr)
 {
 	float	*v1, *v2;
 	trace_t	trace;
 	int		nomonsters;
 	edict_t	*ent;
 
-	v1 = G_VECTOR(OFS_PARM0);
-	v2 = G_VECTOR(OFS_PARM1);
-	nomonsters = G_FLOAT(OFS_PARM2);
-	ent = G_EDICT(OFS_PARM3);
+	v1 = pr_global_ptr(pr, float, OFS_PARM0);
+	v2 = pr_global_ptr(pr, float, OFS_PARM1);
+	nomonsters = pr_global(pr, float, OFS_PARM2);
+	ent = pr_get_edict(pr, OFS_PARM3);
 
 	trace = SV_Move (v1, vec3_origin, vec3_origin, v2, nomonsters, ent);
 
-	pr_global_struct->trace_allsolid = trace.allsolid;
-	pr_global_struct->trace_startsolid = trace.startsolid;
-	pr_global_struct->trace_fraction = trace.fraction;
-	pr_global_struct->trace_inwater = trace.inwater;
-	pr_global_struct->trace_inopen = trace.inopen;
-	VectorCopy (trace.endpos, pr_global_struct->trace_endpos);
-	VectorCopy (trace.plane.normal, pr_global_struct->trace_plane_normal);
-	pr_global_struct->trace_plane_dist =  trace.plane.dist;	
+	pr_float(pr, trace_allsolid) = trace.allsolid;
+	pr_float(pr, trace_startsolid) = trace.startsolid;
+	pr_float(pr, trace_fraction) = trace.fraction;
+	pr_float(pr, trace_inwater) = trace.inwater;
+	pr_float(pr, trace_inopen) = trace.inopen;
+	VectorCopy (trace.endpos, pr_vector(pr, trace_endpos));
+	VectorCopy (trace.plane.normal, pr_vector(pr, trace_plane_normal));
+	pr_float(pr, trace_plane_dist) =  trace.plane.dist;	
 	if (trace.ent)
-		pr_global_struct->trace_ent = EDICT_TO_PROG(trace.ent);
+		pr_int(pr, trace_ent) = EDICT_TO_PROG(trace.ent);
 	else
-		pr_global_struct->trace_ent = EDICT_TO_PROG(sv.edicts);
+		pr_int(pr, trace_ent) = EDICT_TO_PROG(sv.edicts);
 }
 
 
@@ -645,7 +653,7 @@ FIXME: make work...
 scalar checkpos (entity, vector)
 =================
 */
-void PF_checkpos ()
+void PF_checkpos (progs_state_t *pr)
 {
 }
 
@@ -685,9 +693,9 @@ int PF_newcheckclient (int check)
 
 		if (ent->free)
 			continue;
-		if (ent->v.health <= 0)
+		if (ed_float(ent, health) <= 0)
 			continue;
-		if ((int)ent->v.flags & FL_NOTARGET)
+		if ((int)ed_float(ent, flags) & FL_NOTARGET)
 			continue;
 
 	// anything that is a client, or has a client as an enemy
@@ -695,7 +703,7 @@ int PF_newcheckclient (int check)
 	}
 
 // get the PVS for the entity
-	VectorAdd (ent->v.origin, ent->v.view_ofs, org);
+	VectorAdd (ed_vector(ent, origin), ed_vector(ent, view_ofs), org);
 	leaf = CMod_PointInLeaf (org, sv.worldmodel);
 	pvs = CMod_LeafPVS (leaf, sv.worldmodel);
 	memcpy (checkpvs, pvs, (sv.worldmodel->numleafs+7)>>3 );
@@ -720,7 +728,7 @@ name checkclient ()
 */
 #define	MAX_CHECK	16
 int c_invis, c_notvis;
-void PF_checkclient ()
+void PF_checkclient (progs_state_t *pr)
 {
 	edict_t	*ent, *self;
 	mleaf_t	*leaf;
@@ -736,15 +744,15 @@ void PF_checkclient ()
 
 // return check if it might be visible	
 	ent = EDICT_NUM(sv.lastcheck);
-	if (ent->free || ent->v.health <= 0)
+	if (ent->free || ed_float(ent, health) <= 0)
 	{
 		RETURN_EDICT(sv.edicts);
 		return;
 	}
 
 // if current entity can't possibly see the check entity, return 0
-	self = PROG_TO_EDICT(pr_global_struct->self);
-	VectorAdd (self->v.origin, self->v.view_ofs, view);
+	self = PROG_TO_EDICT(pr_int(pr, self));
+	VectorAdd (ed_vector(self, origin), ed_vector(self, view_ofs), view);
 	leaf = CMod_PointInLeaf (view, sv.worldmodel);
 	l = (leaf - sv.worldmodel->leafs) - 1;
 	if ( (l<0) || !(checkpvs[l>>3] & (1<<(l&7)) ) )
@@ -771,16 +779,16 @@ Sends text over to the client's execution buffer
 stuffcmd (clientent, value)
 =================
 */
-void PF_stuffcmd ()
+void PF_stuffcmd (progs_state_t *pr)
 {
 	int		entnum;
 	char	*str;
 	client_t	*old;
 	
-	entnum = G_EDICTNUM(OFS_PARM0);
+	entnum = pr_get_edict_num(pr, OFS_PARM0);
 	if (entnum < 1 || entnum > svs.maxclients)
-		PR_RunError ("Parm 0 not a client");
-	str = G_STRING(OFS_PARM1);	
+		PR_RunError (pr, "Parm 0 not a client");
+	str = pr_get_string(pr, OFS_PARM1);	
 	
 	old = host_client;
 	host_client = &svs.clients[entnum-1];
@@ -797,11 +805,11 @@ Sends text over to the client's execution buffer
 localcmd (string)
 =================
 */
-void PF_localcmd ()
+void PF_localcmd (progs_state_t *pr)
 {
 	char	*str;
 	
-	str = G_STRING(OFS_PARM0);	
+	str = pr_get_string(pr, OFS_PARM0);	
 	Cbuf_AddText (str);
 }
 
@@ -812,13 +820,13 @@ PF_cvar
 float cvar (string)
 =================
 */
-void PF_cvar ()
+void PF_cvar (progs_state_t *pr)
 {
 	char	*str;
 	
-	str = G_STRING(OFS_PARM0);
+	str = pr_get_string(pr, OFS_PARM0);
 	
-	G_FLOAT(OFS_RETURN) = Cvar_VariableValue (str);
+	pr_global(pr, float, OFS_RETURN) = Cvar_VariableValue (str);
 }
 
 /*
@@ -828,12 +836,12 @@ PF_cvar_set
 float cvar (string)
 =================
 */
-void PF_cvar_set ()
+void PF_cvar_set (progs_state_t *pr)
 {
 	char	*var, *val;
 	
-	var = G_STRING(OFS_PARM0);
-	val = G_STRING(OFS_PARM1);
+	var = pr_get_string(pr, OFS_PARM0);
+	val = pr_get_string(pr, OFS_PARM1);
 	
 	Cvar_Set (var, val);
 }
@@ -847,7 +855,7 @@ Returns a chain of entities that have origins within a spherical area
 findradius (origin, radius)
 =================
 */
-void PF_findradius ()
+void PF_findradius (progs_state_t *pr)
 {
 	edict_t	*ent, *chain;
 	float	rad;
@@ -857,22 +865,22 @@ void PF_findradius ()
 
 	chain = (edict_t *)sv.edicts;
 	
-	org = G_VECTOR(OFS_PARM0);
-	rad = G_FLOAT(OFS_PARM1);
+	org = pr_global_ptr(pr, float, OFS_PARM0);
+	rad = pr_global(pr, float, OFS_PARM1);
 
 	ent = NEXT_EDICT(sv.edicts);
 	for (i=1 ; i<sv.num_edicts ; i++, ent = NEXT_EDICT(ent))
 	{
 		if (ent->free)
 			continue;
-		if (ent->v.solid == SOLID_NOT)
+		if (ed_float(ent, solid) == SOLID_NOT)
 			continue;
 		for (j=0 ; j<3 ; j++)
-			eorg[j] = org[j] - (ent->v.origin[j] + (ent->v.mins[j] + ent->v.maxs[j])*0.5);			
+			eorg[j] = org[j] - (ed_vector(ent, origin)[j] + (ed_vector(ent, mins)[j] + ed_vector(ent, maxs)[j])*0.5);			
 		if (Length(eorg) > rad)
 			continue;
 			
-		ent->v.chain = EDICT_TO_PROG(chain);
+		ed_set_edict(ent, chain, chain);
 		chain = ent;
 	}
 
@@ -885,74 +893,74 @@ void PF_findradius ()
 PF_dprint
 =========
 */
-void PF_dprint ()
+void PF_dprint (progs_state_t *pr)
 {
-	Con_DPrintf ("%s",PF_VarString(0));
+	Con_DPrintf ("%s",PF_VarString(pr, 0));
 }
 
 char	pr_string_temp[128];
 
-void PF_ftos ()
+void PF_ftos (progs_state_t *pr)
 {
 	float	v;
-	v = G_FLOAT(OFS_PARM0);
+	v = pr_global(pr, float, OFS_PARM0);
 	
 	if (v == (int)v)
 		sprintf (pr_string_temp, "%d",(int)v);
 	else
 		sprintf (pr_string_temp, "%5.1f",v);
-	G_INT(OFS_RETURN) = PR_SetString(pr_string_temp);
+	pr_set_string(pr, OFS_RETURN, pr_string_temp);
 }
 
-void PF_fabs ()
+void PF_fabs (progs_state_t *pr)
 {
 	float	v;
-	v = G_FLOAT(OFS_PARM0);
-	G_FLOAT(OFS_RETURN) = fabs(v);
+	v = pr_global(pr, float, OFS_PARM0);
+	pr_global(pr, float, OFS_RETURN) = fabs(v);
 }
 
-void PF_vtos ()
+void PF_vtos (progs_state_t *pr)
 {
-	sprintf (pr_string_temp, "'%5.1f %5.1f %5.1f'", G_VECTOR(OFS_PARM0)[0], G_VECTOR(OFS_PARM0)[1], G_VECTOR(OFS_PARM0)[2]);
-	G_INT(OFS_RETURN) = PR_SetString(pr_string_temp);
+	sprintf (pr_string_temp, "'%5.1f %5.1f %5.1f'", pr_global_ptr(pr, float, OFS_PARM0)[0], pr_global_ptr(pr, float, OFS_PARM0)[1], pr_global_ptr(pr, float, OFS_PARM0)[2]);
+	pr_set_string(pr, OFS_RETURN, pr_string_temp);
 }
 
-void PF_Spawn ()
+void PF_Spawn (progs_state_t *pr)
 {
 	edict_t	*ed;
 	ed = ED_Alloc();
 	RETURN_EDICT(ed);
 }
 
-void PF_Remove ()
+void PF_Remove (progs_state_t *pr)
 {
 	edict_t	*ed;
 	
-	ed = G_EDICT(OFS_PARM0);
+	ed = pr_get_edict(pr, OFS_PARM0);
 	ED_Free (ed);
 }
 
 
 // entity (entity start, .string field, string match) find = #5;
-void PF_Find ()
+void PF_Find (progs_state_t *pr)
 {
 	int		e;	
 	int		f;
 	char	*s, *t;
 	edict_t	*ed;
 
-	e = G_EDICTNUM(OFS_PARM0);
-	f = G_INT(OFS_PARM1);
-	s = G_STRING(OFS_PARM2);
+	e = pr_get_edict_num(pr, OFS_PARM0);
+	f = pr_global(pr, int, OFS_PARM1);
+	s = pr_get_string(pr, OFS_PARM2);
 	if (!s)
-		PR_RunError ("PF_Find: bad search string");
+		PR_RunError (pr, "PF_Find: bad search string");
 		
 	for (e++ ; e < sv.num_edicts ; e++)
 	{
 		ed = EDICT_NUM(e);
 		if (ed->free)
 			continue;
-		t = E_STRING(ed,f);
+		t = PR_GetString(pr, *(string_t *)((float *)(ed + 1) + f));
 		if (!t)
 			continue;
 		if (!strcmp(t,s))
@@ -965,28 +973,28 @@ void PF_Find ()
 	RETURN_EDICT(sv.edicts);
 }
 
-void PR_CheckEmptyString (char *s)
+void PR_CheckEmptyString (progs_state_t *pr, char *s)
 {
 	if (s[0] <= ' ')
-		PR_RunError ("Bad string");
+		PR_RunError (pr, "Bad string");
 }
 
-void PF_precache_file ()
+void PF_precache_file (progs_state_t *pr)
 {	// precache_file is only used to copy files with qcc, it does nothing
-	G_INT(OFS_RETURN) = G_INT(OFS_PARM0);
+	pr_global(pr, int, OFS_RETURN) = pr_global(pr, int, OFS_PARM0);
 }
 
-void PF_precache_sound ()
+void PF_precache_sound (progs_state_t *pr)
 {
 	char	*s;
 	int		i;
 	
 	if (sv.state != ss_loading)
-		PR_RunError ("PF_Precache_*: Precache can only be done in spawn functions");
+		PR_RunError (pr, "PF_Precache_*: Precache can only be done in spawn functions");
 		
-	s = G_STRING(OFS_PARM0);
-	G_INT(OFS_RETURN) = G_INT(OFS_PARM0);
-	PR_CheckEmptyString (s);
+	s = pr_get_string(pr, OFS_PARM0);
+	pr_global(pr, int, OFS_RETURN) = pr_global(pr, int, OFS_PARM0);
+	PR_CheckEmptyString (pr, s);
 	
 	for (i=0 ; i<MAX_SOUNDS ; i++)
 	{
@@ -998,20 +1006,20 @@ void PF_precache_sound ()
 		if (!strcmp(sv.sound_precache[i], s))
 			return;
 	}
-	PR_RunError ("PF_precache_sound: overflow");
+	PR_RunError (pr, "PF_precache_sound: overflow");
 }
 
-void PF_precache_model ()
+void PF_precache_model (progs_state_t *pr)
 {
 	char	*s;
 	int		i;
 	
 	if (sv.state != ss_loading)
-		PR_RunError ("PF_Precache_*: Precache can only be done in spawn functions");
+		PR_RunError (pr, "PF_Precache_*: Precache can only be done in spawn functions");
 		
-	s = G_STRING(OFS_PARM0);
-	G_INT(OFS_RETURN) = G_INT(OFS_PARM0);
-	PR_CheckEmptyString (s);
+	s = pr_get_string(pr, OFS_PARM0);
+	pr_global(pr, int, OFS_RETURN) = pr_global(pr, int, OFS_PARM0);
+	PR_CheckEmptyString (pr, s);
 
 	for (i=0 ; i<MAX_MODELS ; i++)
 	{
@@ -1024,28 +1032,28 @@ void PF_precache_model ()
 		if (!strcmp(sv.model_precache[i], s))
 			return;
 	}
-	PR_RunError ("PF_precache_model: overflow");
+	PR_RunError (pr, "PF_precache_model: overflow");
 }
 
 
-void PF_coredump ()
+void PF_coredump (progs_state_t *pr)
 {
 	ED_PrintEdicts ();
 }
 
-void PF_traceon ()
+void PF_traceon (progs_state_t *pr)
 {
 	pr_trace = true;
 }
 
-void PF_traceoff ()
+void PF_traceoff (progs_state_t *pr)
 {
 	pr_trace = false;
 }
 
-void PF_eprint ()
+void PF_eprint (progs_state_t *pr)
 {
-	ED_PrintNum (G_EDICTNUM(OFS_PARM0));
+	ED_PrintNum (pr_get_edict_num(pr, OFS_PARM0));
 }
 
 /*
@@ -1055,7 +1063,7 @@ PF_walkmove
 float(float yaw, float dist) walkmove
 ===============
 */
-void PF_walkmove ()
+void PF_walkmove (progs_state_t *pr)
 {
 	edict_t	*ent;
 	float	yaw, dist;
@@ -1063,13 +1071,13 @@ void PF_walkmove ()
 	dfunction_t	*oldf;
 	int 	oldself;
 	
-	ent = PROG_TO_EDICT(pr_global_struct->self);
-	yaw = G_FLOAT(OFS_PARM0);
-	dist = G_FLOAT(OFS_PARM1);
+	ent = PROG_TO_EDICT(pr_int(pr, self));
+	yaw = pr_global(pr, float, OFS_PARM0);
+	dist = pr_global(pr, float, OFS_PARM1);
 	
-	if ( !( (int)ent->v.flags & (FL_ONGROUND|FL_FLY|FL_SWIM) ) )
+	if ( !( (int)ed_float(ent, flags) & (FL_ONGROUND|FL_FLY|FL_SWIM) ) )
 	{
-		G_FLOAT(OFS_RETURN) = 0;
+		pr_global(pr, float, OFS_RETURN) = 0;
 		return;
 	}
 
@@ -1080,15 +1088,15 @@ void PF_walkmove ()
 	move[2] = 0;
 
 // save program state, because SV_movestep may call other progs
-	oldf = pr_xfunction;
-	oldself = pr_global_struct->self;
+	oldf = pr->xfunction;
+	oldself = pr_int(pr, self);
 	
-	G_FLOAT(OFS_RETURN) = SV_movestep(ent, move, true);
+	pr_global(pr, float, OFS_RETURN) = SV_movestep(ent, move, true);
 	
 	
 // restore program state
-	pr_xfunction = oldf;
-	pr_global_struct->self = oldself;
+	pr->xfunction = oldf;
+	pr_int(pr, self) = oldself;
 }
 
 /*
@@ -1098,28 +1106,28 @@ PF_droptofloor
 void() droptofloor
 ===============
 */
-void PF_droptofloor ()
+void PF_droptofloor (progs_state_t *pr)
 {
 	edict_t		*ent;
 	vec3_t		end;
 	trace_t		trace;
 	
-	ent = PROG_TO_EDICT(pr_global_struct->self);
+	ent = PROG_TO_EDICT(pr_int(pr, self));
 
-	VectorCopy (ent->v.origin, end);
+	VectorCopy (ed_vector(ent, origin), end);
 	end[2] -= 256;
 	
-	trace = SV_Move (ent->v.origin, ent->v.mins, ent->v.maxs, end, false, ent);
+	trace = SV_Move (ed_vector(ent, origin), ed_vector(ent, mins), ed_vector(ent, maxs), end, false, ent);
 
 	if (trace.fraction == 1 || trace.allsolid)
-		G_FLOAT(OFS_RETURN) = 0;
+		pr_global(pr, float, OFS_RETURN) = 0;
 	else
 	{
-		VectorCopy (trace.endpos, ent->v.origin);
+		VectorCopy (trace.endpos, ed_vector(ent, origin));
 		SV_LinkEdict (ent, false);
-		ent->v.flags = (int)ent->v.flags | FL_ONGROUND;
-		ent->v.groundentity = EDICT_TO_PROG(trace.ent);
-		G_FLOAT(OFS_RETURN) = 1;
+		ed_float(ent, flags) = (int)ed_float(ent, flags) | FL_ONGROUND;
+		ed_set_edict(ent, groundentity, trace.ent);
+		pr_global(pr, float, OFS_RETURN) = 1;
 	}
 }
 
@@ -1130,15 +1138,15 @@ PF_lightstyle
 void(float style, string value) lightstyle
 ===============
 */
-void PF_lightstyle ()
+void PF_lightstyle (progs_state_t *pr)
 {
 	int		style;
 	char	*val;
 	client_t	*client;
 	int			j;
 	
-	style = G_FLOAT(OFS_PARM0);
-	val = G_STRING(OFS_PARM1);
+	style = pr_global(pr, float, OFS_PARM0);
+	val = pr_get_string(pr, OFS_PARM1);
 
 // change the string in sv
 	sv.lightstyles[style] = val;
@@ -1156,22 +1164,22 @@ void PF_lightstyle ()
 		}
 }
 
-void PF_rint ()
+void PF_rint (progs_state_t *pr)
 {
 	float	f;
-	f = G_FLOAT(OFS_PARM0);
+	f = pr_global(pr, float, OFS_PARM0);
 	if (f > 0)
-		G_FLOAT(OFS_RETURN) = (int)(f + 0.5);
+		pr_global(pr, float, OFS_RETURN) = (int)(f + 0.5);
 	else
-		G_FLOAT(OFS_RETURN) = (int)(f - 0.5);
+		pr_global(pr, float, OFS_RETURN) = (int)(f - 0.5);
 }
-void PF_floor ()
+void PF_floor (progs_state_t *pr)
 {
-	G_FLOAT(OFS_RETURN) = floor(G_FLOAT(OFS_PARM0));
+	pr_global(pr, float, OFS_RETURN) = floor(pr_global(pr, float, OFS_PARM0));
 }
-void PF_ceil ()
+void PF_ceil (progs_state_t *pr)
 {
-	G_FLOAT(OFS_RETURN) = ceil(G_FLOAT(OFS_PARM0));
+	pr_global(pr, float, OFS_RETURN) = ceil(pr_global(pr, float, OFS_PARM0));
 }
 
 
@@ -1180,13 +1188,13 @@ void PF_ceil ()
 PF_checkbottom
 =============
 */
-void PF_checkbottom ()
+void PF_checkbottom (progs_state_t *pr)
 {
 	edict_t	*ent;
 	
-	ent = G_EDICT(OFS_PARM0);
+	ent = pr_get_edict(pr, OFS_PARM0);
 
-	G_FLOAT(OFS_RETURN) = SV_CheckBottom (ent);
+	pr_global(pr, float, OFS_RETURN) = SV_CheckBottom (ent);
 }
 
 /*
@@ -1194,13 +1202,13 @@ void PF_checkbottom ()
 PF_pointcontents
 =============
 */
-void PF_pointcontents ()
+void PF_pointcontents (progs_state_t *pr)
 {
 	float	*v;
 	
-	v = G_VECTOR(OFS_PARM0);
+	v = pr_global_ptr(pr, float, OFS_PARM0);
 
-	G_FLOAT(OFS_RETURN) = SV_PointContents (v);	
+	pr_global(pr, float, OFS_RETURN) = SV_PointContents (v);	
 }
 
 /*
@@ -1210,12 +1218,12 @@ PF_nextent
 entity nextent(entity)
 =============
 */
-void PF_nextent ()
+void PF_nextent (progs_state_t *pr)
 {
 	int		i;
 	edict_t	*ent;
 	
-	i = G_EDICTNUM(OFS_PARM0);
+	i = pr_get_edict_num(pr, OFS_PARM0);
 	while (1)
 	{
 		i++;
@@ -1242,7 +1250,7 @@ vector aim(entity, missilespeed)
 =============
 */
 cvar_t	sv_aim = {"sv_aim", "0.93"};
-void PF_aim ()
+void PF_aim (progs_state_t *pr)
 {
 	edict_t	*ent, *check, *bestent;
 	vec3_t	start, dir, end, bestdir;
@@ -1251,20 +1259,20 @@ void PF_aim ()
 	float	dist, bestdist;
 	float	speed;
 	
-	ent = G_EDICT(OFS_PARM0);
-	speed = G_FLOAT(OFS_PARM1);
+	ent = pr_get_edict(pr, OFS_PARM0);
+	speed = pr_global(pr, float, OFS_PARM1);
 
-	VectorCopy (ent->v.origin, start);
+	VectorCopy (ed_vector(ent, origin), start);
 	start[2] += 20;
 
 // try sending a trace straight
-	VectorCopy (pr_global_struct->v_forward, dir);
+	VectorCopy (pr_vector(pr, v_forward), dir);
 	VectorMA (start, 2048, dir, end);
 	tr = SV_Move (start, vec3_origin, vec3_origin, end, false, ent);
-	if (tr.ent && tr.ent->v.takedamage == DAMAGE_AIM
-	&& (!teamplay.value || ent->v.team <=0 || ent->v.team != tr.ent->v.team) )
+	if (tr.ent && ed_float(tr.ent, takedamage) == DAMAGE_AIM
+	&& (!teamplay.value || ed_float(ent, team) <=0 || ed_float(ent, team) != ed_float(tr.ent, team)) )
 	{
-		VectorCopy (pr_global_struct->v_forward, G_VECTOR(OFS_RETURN));
+		VectorCopy (pr_vector(pr, v_forward), pr_global_ptr(pr, float, OFS_RETURN));
 		return;
 	}
 
@@ -1277,18 +1285,18 @@ void PF_aim ()
 	check = NEXT_EDICT(sv.edicts);
 	for (i=1 ; i<sv.num_edicts ; i++, check = NEXT_EDICT(check) )
 	{
-		if (check->v.takedamage != DAMAGE_AIM)
+		if (ed_float(check, takedamage) != DAMAGE_AIM)
 			continue;
 		if (check == ent)
 			continue;
-		if (teamplay.value && ent->v.team > 0 && ent->v.team == check->v.team)
+		if (teamplay.value && ed_float(ent, team) > 0 && ed_float(ent, team) == ed_float(check, team))
 			continue;	// don't aim at teammate
 		for (j=0 ; j<3 ; j++)
-			end[j] = check->v.origin[j]
-			+ 0.5*(check->v.mins[j] + check->v.maxs[j]);
+			end[j] = ed_vector(check, origin)[j]
+			+ 0.5*(ed_vector(check, mins)[j] + ed_vector(check, maxs)[j]);
 		VectorSubtract (end, start, dir);
 		VectorNormalize (dir);
-		dist = DotProduct (dir, pr_global_struct->v_forward);
+		dist = DotProduct (dir, pr_vector(pr, v_forward));
 		if (dist < bestdist)
 			continue;	// to far to turn
 		tr = SV_Move (start, vec3_origin, vec3_origin, end, false, ent);
@@ -1301,16 +1309,16 @@ void PF_aim ()
 	
 	if (bestent)
 	{
-		VectorSubtract (bestent->v.origin, ent->v.origin, dir);
-		dist = DotProduct (dir, pr_global_struct->v_forward);
-		VectorScale (pr_global_struct->v_forward, dist, end);
+		VectorSubtract (ed_vector(bestent, origin), ed_vector(ent, origin), dir);
+		dist = DotProduct (dir, pr_vector(pr, v_forward));
+		VectorScale (pr_vector(pr, v_forward), dist, end);
 		end[2] = dir[2];
 		VectorNormalize (end);
-		VectorCopy (end, G_VECTOR(OFS_RETURN));	
+		VectorCopy (end, pr_global_ptr(pr, float, OFS_RETURN));	
 	}
 	else
 	{
-		VectorCopy (bestdir, G_VECTOR(OFS_RETURN));
+		VectorCopy (bestdir, pr_global_ptr(pr, float, OFS_RETURN));
 	}
 }
 
@@ -1321,15 +1329,15 @@ PF_changeyaw
 This was a major timewaster in progs, so it was converted to C
 ==============
 */
-void PF_changeyaw ()
+void PF_changeyaw (progs_state_t *pr)
 {
 	edict_t		*ent;
 	float		ideal, current, move, speed;
 	
-	ent = PROG_TO_EDICT(pr_global_struct->self);
-	current = anglemod( ent->v.angles[1] );
-	ideal = ent->v.ideal_yaw;
-	speed = ent->v.yaw_speed;
+	ent = PROG_TO_EDICT(pr_int(pr, self));
+	current = anglemod(ed_vector(ent, angles)[1]);
+	ideal = ed_float(ent, ideal_yaw);
+	speed = ed_float(ent, yaw_speed);
 	
 	if (current == ideal)
 		return;
@@ -1355,7 +1363,7 @@ void PF_changeyaw ()
 			move = -speed;
 	}
 	
-	ent->v.angles[1] = anglemod (current + move);
+	ed_vector(ent, angles)[1] = anglemod(current + move);
 }
 
 /*
@@ -1371,23 +1379,23 @@ MESSAGE WRITING
 #define	MSG_ALL			2		// reliable to all
 #define	MSG_INIT		3		// write to the init string
 
-sizebuf_t *WriteDest ()
+sizebuf_t *WriteDest (progs_state_t *pr)
 {
 	int		entnum;
 	int		dest;
 	edict_t	*ent;
 
-	dest = G_FLOAT(OFS_PARM0);
+	dest = pr_global(pr, float, OFS_PARM0);
 	switch (dest)
 	{
 	case MSG_BROADCAST:
 		return &sv.datagram;
 	
 	case MSG_ONE:
-		ent = PROG_TO_EDICT(pr_global_struct->msg_entity);
+		ent = PROG_TO_EDICT(pr_int(pr, msg_entity));
 		entnum = NUM_FOR_EDICT(ent);
 		if (entnum < 1 || entnum > svs.maxclients)
-			PR_RunError ("WriteDest: not a client");
+			PR_RunError (pr, "WriteDest: not a client");
 		return &svs.clients[entnum-1].message;
 		
 	case MSG_ALL:
@@ -1397,76 +1405,76 @@ sizebuf_t *WriteDest ()
 		return &sv.signon;
 
 	default:
-		PR_RunError ("WriteDest: bad destination");
+		PR_RunError (pr, "WriteDest: bad destination");
 		break;
 	}
 	
 	return NULL;
 }
 
-void PF_WriteByte ()
+void PF_WriteByte (progs_state_t *pr)
 {
-	MSG_WriteByte (WriteDest(), G_FLOAT(OFS_PARM1));
+	MSG_WriteByte (WriteDest(pr), pr_global(pr, float, OFS_PARM1));
 }
 
-void PF_WriteChar ()
+void PF_WriteChar (progs_state_t *pr)
 {
-	MSG_WriteChar (WriteDest(), G_FLOAT(OFS_PARM1));
+	MSG_WriteChar (WriteDest(pr), pr_global(pr, float, OFS_PARM1));
 }
 
-void PF_WriteShort ()
+void PF_WriteShort (progs_state_t *pr)
 {
-	MSG_WriteShort (WriteDest(), G_FLOAT(OFS_PARM1));
+	MSG_WriteShort (WriteDest(pr), pr_global(pr, float, OFS_PARM1));
 }
 
-void PF_WriteLong ()
+void PF_WriteLong (progs_state_t *pr)
 {
-	MSG_WriteLong (WriteDest(), G_FLOAT(OFS_PARM1));
+	MSG_WriteLong (WriteDest(pr), pr_global(pr, float, OFS_PARM1));
 }
 
-void PF_WriteAngle ()
+void PF_WriteAngle (progs_state_t *pr)
 {
-	MSG_WriteAngle (WriteDest(), G_FLOAT(OFS_PARM1));
+	MSG_WriteAngle (WriteDest(pr), pr_global(pr, float, OFS_PARM1));
 }
 
-void PF_WriteCoord ()
+void PF_WriteCoord (progs_state_t *pr)
 {
-	MSG_WriteCoord (WriteDest(), G_FLOAT(OFS_PARM1));
+	MSG_WriteCoord (WriteDest(pr), pr_global(pr, float, OFS_PARM1));
 }
 
-void PF_WriteString ()
+void PF_WriteString (progs_state_t *pr)
 {
-	MSG_WriteString (WriteDest(), G_STRING(OFS_PARM1));
+	MSG_WriteString (WriteDest(pr), pr_get_string(pr, OFS_PARM1));
 }
 
 
-void PF_WriteEntity ()
+void PF_WriteEntity (progs_state_t *pr)
 {
-	MSG_WriteShort (WriteDest(), G_EDICTNUM(OFS_PARM1));
+	MSG_WriteShort (WriteDest(pr), pr_get_edict_num(pr, OFS_PARM1));
 }
 
 //=============================================================================
 
 int SV_ModelIndex (char *name);
 
-void PF_makestatic ()
+void PF_makestatic (progs_state_t *pr)
 {
 	edict_t	*ent;
 	int		i;
 	
-	ent = G_EDICT(OFS_PARM0);
+	ent = pr_get_edict(pr, OFS_PARM0);
 
-	MSG_WriteByte (&sv.signon,svc_spawnstatic);
+	MSG_WriteByte (&sv.signon, svc_spawnstatic);
 
-	MSG_WriteByte (&sv.signon, SV_ModelIndex(PR_GetString(ent->v.model)));
+	MSG_WriteByte (&sv.signon, SV_ModelIndex(ed_get_string(ent, model)));
 
-	MSG_WriteByte (&sv.signon, ent->v.frame);
-	MSG_WriteByte (&sv.signon, ent->v.colormap);
-	MSG_WriteByte (&sv.signon, ent->v.skin);
+	MSG_WriteByte (&sv.signon, ed_float(ent, frame));
+	MSG_WriteByte (&sv.signon, ed_float(ent, colormap));
+	MSG_WriteByte (&sv.signon, ed_float(ent, skin));
 	for (i=0 ; i<3 ; i++)
 	{
-		MSG_WriteCoord(&sv.signon, ent->v.origin[i]);
-		MSG_WriteAngle(&sv.signon, ent->v.angles[i]);
+		MSG_WriteCoord(&sv.signon, ed_vector(ent, origin)[i]);
+		MSG_WriteAngle(&sv.signon, ed_vector(ent, angles)[i]);
 	}
 
 // throw the entity away now
@@ -1480,22 +1488,22 @@ void PF_makestatic ()
 PF_setspawnparms
 ==============
 */
-void PF_setspawnparms ()
+void PF_setspawnparms (progs_state_t *pr)
 {
 	edict_t	*ent;
 	int		i;
 	client_t	*client;
 
-	ent = G_EDICT(OFS_PARM0);
+	ent = pr_get_edict(pr, OFS_PARM0);
 	i = NUM_FOR_EDICT(ent);
 	if (i < 1 || i > svs.maxclients)
-		PR_RunError ("Entity is not a client");
+		PR_RunError (pr, "Entity is not a client");
 
 	// copy spawn parms out of the client_t
 	client = svs.clients + (i-1);
 
 	for (i=0 ; i< NUM_SPAWN_PARMS ; i++)
-		(&pr_global_struct->parm1)[i] = client->spawn_parms[i];
+		(&pr_float(pr, parm1))[i] = client->spawn_parms[i];
 }
 
 /*
@@ -1503,7 +1511,7 @@ void PF_setspawnparms ()
 PF_changelevel
 ==============
 */
-void PF_changelevel ()
+void PF_changelevel (progs_state_t *pr)
 {
 	char	*s1;
 #ifdef QUAKE2
@@ -1514,11 +1522,11 @@ void PF_changelevel ()
 		return;
 	svs.changelevel_issued = true;
 
-	s1 = G_STRING(OFS_PARM0);
+	s1 = pr_get_string(pr, OFS_PARM0);
 #ifdef QUAKE2
-	s2 = G_STRING(OFS_PARM1);
+	s2 = pr_get_string(pr, OFS_PARM1);
 
-	if ((int)pr_global_struct->serverflags & (SFL_NEW_UNIT | SFL_NEW_EPISODE))
+	if ((int)pr_float(pr, serverflags) & (SFL_NEW_UNIT | SFL_NEW_EPISODE))
 		Cbuf_AddText (va("changelevel %s %s\n",s1, s2));
 	else
 		Cbuf_AddText (va("changelevel2 %s %s\n",s1, s2));
@@ -1527,24 +1535,24 @@ void PF_changelevel ()
 #endif
 }
 
-void PF_sin ()
+void PF_sin (progs_state_t *pr)
 {
-	G_FLOAT(OFS_RETURN) = sin(G_FLOAT(OFS_PARM0));
+	pr_global(pr, float, OFS_RETURN) = sinf(pr_global(pr, float, OFS_PARM0));
 }
 
-void PF_cos ()
+void PF_cos (progs_state_t *pr)
 {
-	G_FLOAT(OFS_RETURN) = cos(G_FLOAT(OFS_PARM0));
+	pr_global(pr, float, OFS_RETURN) = cosf(pr_global(pr, float, OFS_PARM0));
 }
 
-void PF_sqrt ()
+void PF_sqrt (progs_state_t *pr)
 {
-	G_FLOAT(OFS_RETURN) = sqrt(G_FLOAT(OFS_PARM0));
+	pr_global(pr, float, OFS_RETURN) = sqrtf(pr_global(pr, float, OFS_PARM0));
 }
 
-void PF_Fixme ()
+void PF_Fixme (progs_state_t *pr)
 {
-	PR_RunError ("unimplemented bulitin");
+	PR_RunError (pr, "unimplemented bulitin");
 }
 
 
@@ -1641,5 +1649,5 @@ PF_setspawnparms
 };
 
 builtin_t *pr_builtins = pr_builtin;
-int pr_numbuiltins = sizeof(pr_builtin)/sizeof(pr_builtin[0]);
+int pr_numbuiltins = lengthof(pr_builtin);
 

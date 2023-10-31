@@ -40,8 +40,8 @@ bool SV_CheckBottom (edict_t *ent)
 	int		x, y;
 	float	mid, bottom;
 	
-	VectorAdd (ent->v.origin, ent->v.mins, mins);
-	VectorAdd (ent->v.origin, ent->v.maxs, maxs);
+	VectorAdd (ed_vector(ent, origin), ed_vector(ent, mins), mins);
+	VectorAdd (ed_vector(ent, origin), ed_vector(ent, maxs), maxs);
 
 // if all of the points under the corners are solid world, don't bother
 // with the tougher checks
@@ -103,7 +103,7 @@ SV_movestep
 Called by monster program code.
 The move will be adjusted for slopes and stairs, but if the move isn't
 possible, no move is done, false is returned, and
-pr_global_struct->trace_normal is set to the normal of the blocking wall
+pr_float(pr, trace_normal) is set to the normal of the blocking wall
 =============
 */
 bool SV_movestep (edict_t *ent, vec3_t move, bool relink)
@@ -115,33 +115,33 @@ bool SV_movestep (edict_t *ent, vec3_t move, bool relink)
 	edict_t		*enemy;
 
 // try the move	
-	VectorCopy (ent->v.origin, oldorg);
-	VectorAdd (ent->v.origin, move, neworg);
+	VectorCopy (ed_vector(ent, origin), oldorg);
+	VectorAdd (ed_vector(ent, origin), move, neworg);
 
 // flying monsters don't step up
-	if ( (int)ent->v.flags & (FL_SWIM | FL_FLY) )
+	if ( (int)ed_float(ent, flags) & (FL_SWIM | FL_FLY) )
 	{
 	// try one move with vertical motion, then one without
 		for (i=0 ; i<2 ; i++)
 		{
-			VectorAdd (ent->v.origin, move, neworg);
-			enemy = PROG_TO_EDICT(ent->v.enemy);
+			VectorAdd (ed_vector(ent, origin), move, neworg);
+			enemy = ed_get_edict(ent, enemy);
 			if (i == 0 && enemy != sv.edicts)
 			{
-				dz = ent->v.origin[2] - PROG_TO_EDICT(ent->v.enemy)->v.origin[2];
+				dz = ed_vector(ent, origin)[2] - ed_vector(ed_get_edict(ent, enemy), origin)[2];
 				if (dz > 40)
 					neworg[2] -= 8;
 				if (dz < 30)
 					neworg[2] += 8;
 			}
-			trace = SV_Move (ent->v.origin, ent->v.mins, ent->v.maxs, neworg, false, ent);
+			trace = SV_Move (ed_vector(ent, origin), ed_vector(ent, mins), ed_vector(ent, maxs), neworg, false, ent);
 	
 			if (trace.fraction == 1)
 			{
-				if ( ((int)ent->v.flags & FL_SWIM) && SV_PointContents(trace.endpos) == CONTENTS_EMPTY )
+				if ( ((int)ed_float(ent, flags) & FL_SWIM) && SV_PointContents(trace.endpos) == CONTENTS_EMPTY )
 					return false;	// swim monster left water
 	
-				VectorCopy (trace.endpos, ent->v.origin);
+				VectorCopy (trace.endpos, ed_vector(ent, origin));
 				if (relink)
 					SV_LinkEdict (ent, true);
 				return true;
@@ -159,7 +159,7 @@ bool SV_movestep (edict_t *ent, vec3_t move, bool relink)
 	VectorCopy (neworg, end);
 	end[2] -= STEPSIZE*2;
 
-	trace = SV_Move (neworg, ent->v.mins, ent->v.maxs, end, false, ent);
+	trace = SV_Move (neworg, ed_vector(ent, mins), ed_vector(ent, maxs), end, false, ent);
 
 	if (trace.allsolid)
 		return false;
@@ -167,19 +167,19 @@ bool SV_movestep (edict_t *ent, vec3_t move, bool relink)
 	if (trace.startsolid)
 	{
 		neworg[2] -= STEPSIZE;
-		trace = SV_Move (neworg, ent->v.mins, ent->v.maxs, end, false, ent);
+		trace = SV_Move (neworg, ed_vector(ent, mins), ed_vector(ent, maxs), end, false, ent);
 		if (trace.allsolid || trace.startsolid)
 			return false;
 	}
 	if (trace.fraction == 1)
 	{
 	// if monster had the ground pulled out, go ahead and fall
-		if ( (int)ent->v.flags & FL_PARTIALGROUND )
+		if ( (int)ed_float(ent, flags) & FL_PARTIALGROUND )
 		{
-			VectorAdd (ent->v.origin, move, ent->v.origin);
+			VectorAdd (ed_vector(ent, origin), move, ed_vector(ent, origin));
 			if (relink)
 				SV_LinkEdict (ent, true);
-			ent->v.flags = (int)ent->v.flags & ~FL_ONGROUND;
+			ed_float(ent, flags) = (int)ed_float(ent, flags) & ~FL_ONGROUND;
 //	Con_Printf ("fall down\n"); 
 			return true;
 		}
@@ -188,27 +188,27 @@ bool SV_movestep (edict_t *ent, vec3_t move, bool relink)
 	}
 
 // check point traces down for dangling corners
-	VectorCopy (trace.endpos, ent->v.origin);
+	VectorCopy (trace.endpos, ed_vector(ent, origin));
 	
 	if (!SV_CheckBottom (ent))
 	{
-		if ( (int)ent->v.flags & FL_PARTIALGROUND )
+		if ( (int)ed_float(ent, flags) & FL_PARTIALGROUND )
 		{	// entity had floor mostly pulled out from underneath it
 			// and is trying to correct
 			if (relink)
 				SV_LinkEdict (ent, true);
 			return true;
 		}
-		VectorCopy (oldorg, ent->v.origin);
+		VectorCopy (oldorg, ed_vector(ent, origin));
 		return false;
 	}
 
-	if ( (int)ent->v.flags & FL_PARTIALGROUND )
+	if ( (int)ed_float(ent, flags) & FL_PARTIALGROUND )
 	{
 //		Con_Printf ("back on ground\n"); 
-		ent->v.flags = (int)ent->v.flags & ~FL_PARTIALGROUND;
+		ed_float(ent, flags) = (int)ed_float(ent, flags) & ~FL_PARTIALGROUND;
 	}
-	ent->v.groundentity = EDICT_TO_PROG(trace.ent);
+	ed_set_edict(ent, groundentity, trace.ent);
 
 // the move is ok
 	if (relink)
@@ -228,27 +228,26 @@ facing it.
 
 ======================
 */
-void PF_changeyaw ();
 bool SV_StepDirection (edict_t *ent, float yaw, float dist)
 {
 	vec3_t		move, oldorigin;
 	float		delta;
 	
-	ent->v.ideal_yaw = yaw;
-	PF_changeyaw();
+	ed_float(ent, ideal_yaw) = yaw;
+	PF_changeyaw(&sv.pr);
 	
 	yaw = yaw*M_PI*2 / 360;
 	move[0] = cos(yaw)*dist;
 	move[1] = sin(yaw)*dist;
 	move[2] = 0;
 
-	VectorCopy (ent->v.origin, oldorigin);
+	VectorCopy (ed_vector(ent, origin), oldorigin);
 	if (SV_movestep (ent, move, false))
 	{
-		delta = ent->v.angles[YAW] - ent->v.ideal_yaw;
+		delta = ed_vector(ent, angles)[YAW] - ed_float(ent, ideal_yaw);
 		if (delta > 45 && delta < 315)
 		{		// not turned far enough, so don't take the step
-			VectorCopy (oldorigin, ent->v.origin);
+			VectorCopy (oldorigin, ed_vector(ent, origin));
 		}
 		SV_LinkEdict (ent, true);
 		return true;
@@ -268,7 +267,7 @@ void SV_FixCheckBottom (edict_t *ent)
 {
 //	Con_Printf ("SV_FixCheckBottom\n");
 	
-	ent->v.flags = (int)ent->v.flags | FL_PARTIALGROUND;
+	ed_float(ent, flags) = (int)ed_float(ent, flags) | FL_PARTIALGROUND;
 }
 
 
@@ -286,11 +285,11 @@ void SV_NewChaseDir (edict_t *actor, edict_t *enemy, float dist)
 	float			d[3];
 	float		tdir, olddir, turnaround;
 
-	olddir = anglemod( (int)(actor->v.ideal_yaw/45)*45 );
+	olddir = anglemod( (int)(ed_float(actor, ideal_yaw)/45)*45 );
 	turnaround = anglemod(olddir - 180);
 
-	deltax = enemy->v.origin[0] - actor->v.origin[0];
-	deltay = enemy->v.origin[1] - actor->v.origin[1];
+	deltax = ed_vector(enemy, origin)[0] - ed_vector(actor, origin)[0];
+	deltay = ed_vector(enemy, origin)[1] - ed_vector(actor, origin)[1];
 	if (deltax>10)
 		d[1]= 0;
 	else if (deltax<-10)
@@ -353,7 +352,7 @@ void SV_NewChaseDir (edict_t *actor, edict_t *enemy, float dist)
 	if (turnaround != DI_NODIR && SV_StepDirection(actor, turnaround, dist) )
 			return;
 
-	actor->v.ideal_yaw = olddir;		// can't move
+	ed_float(actor, ideal_yaw) = olddir;		// can't move
 
 // if a bridge was pulled out from underneath a monster, it may not have
 // a valid standing position at all
@@ -375,9 +374,9 @@ bool SV_CloseEnough (edict_t *ent, edict_t *goal, float dist)
 	
 	for (i=0 ; i<3 ; i++)
 	{
-		if (goal->v.absmin[i] > ent->v.absmax[i] + dist)
+		if (ed_vector(goal, absmin)[i] > ed_vector(ent, absmax)[i] + dist)
 			return false;
-		if (goal->v.absmax[i] < ent->v.absmin[i] - dist)
+		if (ed_vector(goal, absmax)[i] < ed_vector(ent, absmin)[i] - dist)
 			return false;
 	}
 	return true;
@@ -394,23 +393,23 @@ void SV_MoveToGoal ()
 	edict_t		*ent, *goal;
 	float		dist;
 
-	ent = PROG_TO_EDICT(pr_global_struct->self);
-	goal = PROG_TO_EDICT(ent->v.goalentity);
-	dist = G_FLOAT(OFS_PARM0);
+	ent = PROG_TO_EDICT(sv_pr_int(self));
+	goal = ed_get_edict(ent, goalentity);
+	dist = sv.pr.globals[OFS_PARM0];
 
-	if ( !( (int)ent->v.flags & (FL_ONGROUND|FL_FLY|FL_SWIM) ) )
+	if ( !( (int)ed_float(ent, flags) & (FL_ONGROUND|FL_FLY|FL_SWIM) ) )
 	{
-		G_FLOAT(OFS_RETURN) = 0;
+		sv.pr.globals[OFS_RETURN] = 0;
 		return;
 	}
 
 // if the next step hits the enemy, return immediately
-	if ( PROG_TO_EDICT(ent->v.enemy) != sv.edicts &&  SV_CloseEnough (ent, goal, dist) )
+	if ( ed_get_edict(ent, enemy) != sv.edicts &&  SV_CloseEnough (ent, goal, dist) )
 		return;
 
 // bump around...
 	if ( (rand()&3)==1 ||
-	!SV_StepDirection (ent, ent->v.ideal_yaw, dist))
+	!SV_StepDirection (ent, ed_float(ent, ideal_yaw), dist))
 	{
 		SV_NewChaseDir (ent, goal, dist);
 	}

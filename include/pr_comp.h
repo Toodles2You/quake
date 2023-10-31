@@ -5,6 +5,8 @@
 typedef int32_t func_t;
 typedef int32_t string_t;
 
+#define PROG_VERSION 6
+
 typedef enum
 {
 	ev_void,
@@ -14,20 +16,24 @@ typedef enum
 	ev_entity,
 	ev_field,
 	ev_function,
-	ev_pointer
+	ev_pointer,
+	ev_types,
 } etype_t;
 
-#define OFS_NULL 0
-#define OFS_RETURN 1
-#define OFS_PARM0 4 // leave 3 ofs for each parm to hold vectors
-#define OFS_PARM1 7
-#define OFS_PARM2 10
-#define OFS_PARM3 13
-#define OFS_PARM4 16
-#define OFS_PARM5 19
-#define OFS_PARM6 22
-#define OFS_PARM7 25
-#define RESERVED_OFS 28
+enum
+{
+	OFS_NULL = 0,
+	OFS_RETURN = 1,
+	OFS_PARM0 = 4, // leave 3 ofs for each parm to hold vectors
+	OFS_PARM1 = 7,
+	OFS_PARM2 = 10,
+	OFS_PARM3 = 13,
+	OFS_PARM4 = 16,
+	OFS_PARM5 = 19,
+	OFS_PARM6 = 22,
+	OFS_PARM7 = 25,
+	RESERVED_OFS = 28,
+};
 
 enum
 {
@@ -116,7 +122,7 @@ typedef struct statement_s
 
 typedef struct
 {
-	uint16_t type; // if DEF_SAVEGLOBGAL bit is set
+	uint16_t type; // if DEF_SAVEGLOBAL bit is set
 						 // the variable needs to be saved in savegames
 	uint16_t ofs;
 	int32_t s_name;
@@ -140,7 +146,6 @@ typedef struct
 	byte parm_size[MAX_PARMS];
 } dfunction_t;
 
-#define PROG_VERSION 6
 typedef struct
 {
 	int32_t version;

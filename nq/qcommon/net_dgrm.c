@@ -110,7 +110,7 @@ void NET_Ban_f ()
 	}
 	else
 	{
-		if (pr_global_struct->deathmatch && !host_client->privileged)
+		if (sv_pr_float(deathmatch) && !host_client->privileged)
 			return;
 		print = SV_ClientPrintf;
 	}
@@ -646,7 +646,7 @@ static qsocket_t *_Datagram_CheckNewConnections ()
 		MSG_WriteByte(&net_message, playerNumber);
 		MSG_WriteString(&net_message, client->name);
 		MSG_WriteLong(&net_message, client->colors);
-		MSG_WriteLong(&net_message, (int)client->edict->v.frags);
+		MSG_WriteLong(&net_message, (int)ed_float(client->edict, frags));
 		MSG_WriteLong(&net_message, (int)(net_time - client->netconnection->connecttime));
 		MSG_WriteString(&net_message, client->netconnection->address);
 		*((int32_t *)net_message.data) = BigLong(NETFLAG_CTL | (net_message.cursize & NETFLAG_LENGTH_MASK));

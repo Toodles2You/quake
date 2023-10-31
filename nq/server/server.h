@@ -45,6 +45,7 @@ typedef struct
 						  // edict_t is variable sized, but can
 						  // be used to reference the world ent
 	server_state_t state; // some actions are only valid during load
+	progs_state_t pr;
 
 	sizebuf_t datagram;
 	byte datagram_buf[MAX_DATAGRAM];

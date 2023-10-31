@@ -59,18 +59,18 @@ void SV_SetIdealPitch ()
 	int		i, j;
 	int		step, dir, steps;
 
-	if (!((int)sv_player->v.flags & FL_ONGROUND))
+	if (!((int)ed_float(sv_player, flags) & FL_ONGROUND))
 		return;
 		
-	angleval = sv_player->v.angles[YAW] * M_PI*2 / 360;
+	angleval = ed_vector(sv_player, angles)[YAW] * M_PI*2 / 360;
 	sinval = sin(angleval);
 	cosval = cos(angleval);
 
 	for (i=0 ; i<MAX_FORWARD ; i++)
 	{
-		top[0] = sv_player->v.origin[0] + cosval*(i+3)*12;
-		top[1] = sv_player->v.origin[1] + sinval*(i+3)*12;
-		top[2] = sv_player->v.origin[2] + sv_player->v.view_ofs[2];
+		top[0] = ed_vector(sv_player, origin)[0] + cosval*(i+3)*12;
+		top[1] = ed_vector(sv_player, origin)[1] + sinval*(i+3)*12;
+		top[2] = ed_vector(sv_player, origin)[2] + ed_vector(sv_player, view_ofs)[2];
 		
 		bottom[0] = top[0];
 		bottom[1] = top[1];
@@ -103,13 +103,13 @@ void SV_SetIdealPitch ()
 	
 	if (!dir)
 	{
-		sv_player->v.idealpitch = 0;
+		ed_float(sv_player, idealpitch) = 0;
 		return;
 	}
 	
 	if (steps < 2)
 		return;
-	sv_player->v.idealpitch = -dir * sv_idealpitchscale.value;
+	ed_float(sv_player, idealpitch) = -dir * sv_idealpitchscale.value;
 }
 
 
@@ -136,7 +136,7 @@ void SV_UserFriction ()
 // if the leading edge is over a dropoff, increase friction
 	start[0] = stop[0] = origin[0] + vel[0]/speed*16;
 	start[1] = stop[1] = origin[1] + vel[1]/speed*16;
-	start[2] = origin[2] + sv_player->v.mins[2];
+	start[2] = origin[2] + ed_vector(sv_player, mins)[2];
 	stop[2] = start[2] - 34;
 
 	trace = SV_Move (start, vec3_origin, vec3_origin, stop, true, sv_player);
@@ -230,12 +230,12 @@ void DropPunchAngle ()
 {
 	float	len;
 	
-	len = VectorNormalize (sv_player->v.punchangle);
+	len = VectorNormalize (ed_vector(sv_player, punchangle));
 	
 	len -= 10*host_frametime;
 	if (len < 0)
 		len = 0;
-	VectorScale (sv_player->v.punchangle, len, sv_player->v.punchangle);
+	VectorScale (ed_vector(sv_player, punchangle), len, ed_vector(sv_player, punchangle));
 }
 
 /*
@@ -253,7 +253,7 @@ void SV_WaterMove ()
 //
 // user intentions
 //
-	AngleVectors (sv_player->v.v_angle, forward, right, up);
+	AngleVectors (ed_vector(sv_player, v_angle), forward, right, up);
 
 	for (i=0 ; i<3 ; i++)
 		wishvel[i] = forward[i]*cmd.forwardmove + right[i]*cmd.sidemove;
@@ -306,14 +306,14 @@ void SV_WaterMove ()
 
 void SV_WaterJump ()
 {
-	if (sv.time > sv_player->v.teleport_time
-	|| !sv_player->v.waterlevel)
+	if (sv.time > ed_float(sv_player, teleport_time)
+	|| !ed_float(sv_player, waterlevel))
 	{
-		sv_player->v.flags = (int)sv_player->v.flags & ~FL_WATERJUMP;
-		sv_player->v.teleport_time = 0;
+		ed_float(sv_player, flags) = (int)ed_float(sv_player, flags) & ~FL_WATERJUMP;
+		ed_float(sv_player, teleport_time) = 0;
 	}
-	sv_player->v.velocity[0] = sv_player->v.movedir[0];
-	sv_player->v.velocity[1] = sv_player->v.movedir[1];
+	ed_vector(sv_player, velocity)[0] = ed_vector(sv_player, movedir)[0];
+	ed_vector(sv_player, velocity)[1] = ed_vector(sv_player, movedir)[1];
 }
 
 
@@ -329,19 +329,19 @@ void SV_AirMove ()
 	vec3_t		wishvel;
 	float		fmove, smove;
 
-	AngleVectors (sv_player->v.angles, forward, right, up);
+	AngleVectors (ed_vector(sv_player, angles), forward, right, up);
 
 	fmove = cmd.forwardmove;
 	smove = cmd.sidemove;
 	
 // hack to not let you back into teleporter
-	if (sv.time < sv_player->v.teleport_time && fmove < 0)
+	if (sv.time < ed_float(sv_player, teleport_time) && fmove < 0)
 		fmove = 0;
 		
 	for (i=0 ; i<3 ; i++)
 		wishvel[i] = forward[i]*fmove + right[i]*smove;
 
-	if ( (int)sv_player->v.movetype != MOVETYPE_WALK)
+	if ( (int)ed_float(sv_player, movetype) != MOVETYPE_WALK)
 		wishvel[2] = cmd.upmove;
 	else
 		wishvel[2] = 0;
@@ -354,7 +354,7 @@ void SV_AirMove ()
 		wishspeed = sv_maxspeed.value;
 	}
 	
-	if ( sv_player->v.movetype == MOVETYPE_NOCLIP)
+	if ( ed_float(sv_player, movetype) == MOVETYPE_NOCLIP)
 	{	// noclip
 		VectorCopy (wishvel, velocity);
 	}
@@ -381,37 +381,47 @@ void SV_ClientThink ()
 {
 	vec3_t		v_angle;
 
-	if (sv_player->v.movetype == MOVETYPE_NONE)
+	if (ed_float(sv_player, movetype) == MOVETYPE_NONE)
 		return;
 	
-	onground = (int)sv_player->v.flags & FL_ONGROUND;
+	onground = (int)ed_float(sv_player, flags) & FL_ONGROUND;
 
-	origin = sv_player->v.origin;
-	velocity = sv_player->v.velocity;
+	origin = ed_vector(sv_player, origin);
+	velocity = ed_vector(sv_player, velocity);
 
-	DropPunchAngle ();
+	if (ed_field(punchangle))
+	{
+		DropPunchAngle ();
+	}
 	
 //
 // if dead, behave differently
 //
-	if (sv_player->v.health <= 0)
+	if (ed_float(sv_player, health) <= 0)
 		return;
 
 //
 // angles
 // show 1/3 the pitch angle and all the roll angle
 	cmd = host_client->cmd;
-	angles = sv_player->v.angles;
+	angles = ed_vector(sv_player, angles);
 	
-	VectorAdd (sv_player->v.v_angle, sv_player->v.punchangle, v_angle);
-	angles[ROLL] = V_CalcRoll (sv_player->v.angles, sv_player->v.velocity)*4;
-	if (!sv_player->v.fixangle)
+	if (!ed_field(punchangle))
+	{
+		VectorCopy (ed_vector(sv_player, v_angle), v_angle);
+	}
+	else
+	{
+		VectorAdd (ed_vector(sv_player, v_angle), ed_vector(sv_player, punchangle), v_angle);
+	}
+	angles[ROLL] = V_CalcRoll (ed_vector(sv_player, angles), ed_vector(sv_player, velocity))*4;
+	if (!ed_float(sv_player, fixangle))
 	{
 		angles[PITCH] = -v_angle[PITCH]/3;
 		angles[YAW] = v_angle[YAW];
 	}
 
-	if ( (int)sv_player->v.flags & FL_WATERJUMP )
+	if ( (int)ed_float(sv_player, flags) & FL_WATERJUMP )
 	{
 		SV_WaterJump ();
 		return;
@@ -419,8 +429,8 @@ void SV_ClientThink ()
 //
 // walk
 //
-	if ( (sv_player->v.waterlevel >= 2)
-	&& (sv_player->v.movetype != MOVETYPE_NOCLIP) )
+	if ( (ed_float(sv_player, waterlevel) >= 2)
+	&& (ed_float(sv_player, movetype) != MOVETYPE_NOCLIP) )
 	{
 		SV_WaterMove ();
 		return;
@@ -450,7 +460,7 @@ void SV_ReadClientMove (usercmd_t *move)
 	for (i=0 ; i<3 ; i++)
 		angle[i] = MSG_ReadAngle ();
 
-	VectorCopy (angle, host_client->edict->v.v_angle);
+	VectorCopy (angle, ed_vector(host_client->edict, v_angle));
 		
 // read movement
 	move->forwardmove = MSG_ReadShort ();
@@ -459,12 +469,12 @@ void SV_ReadClientMove (usercmd_t *move)
 	
 // read buttons
 	bits = MSG_ReadByte ();
-	host_client->edict->v.button0 = bits & 1;
-	host_client->edict->v.button2 = (bits & 2)>>1;
+	ed_float(host_client->edict, button0) = bits & 1;
+	ed_float(host_client->edict, button2) = (bits & 2)>>1;
 
 	i = MSG_ReadByte ();
 	if (i)
-		host_client->edict->v.impulse = i;
+		ed_float(host_client->edict, impulse) = i;
 }
 
 /*
