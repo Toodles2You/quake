@@ -90,7 +90,10 @@ void Host_Status_f ()
 		else
 			hours = 0;
 		print ("#%-2u %-16.16s  %3i  %2i:%02i:%02i\n", j+1, client->name, (int)ed_float(client->edict, frags), hours, minutes, seconds);
-		print ("   %s\n", client->netconnection->address);
+		if (cmd_source == src_command)
+		{
+			print ("   %s\n", client->netconnection->address);
+		}
 	}
 }
 
