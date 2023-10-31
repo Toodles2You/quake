@@ -443,9 +443,6 @@ void VID_Init(unsigned char *palette)
         exit(1);
     }
 
-    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLEBUFFERS, 1);
-    SDL_GL_SetAttribute(SDL_GL_MULTISAMPLESAMPLES, 8);
-
     window = SDL_CreateWindow(
         "Quake",
         SDL_WINDOWPOS_CENTERED,
