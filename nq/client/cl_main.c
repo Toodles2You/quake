@@ -101,6 +101,7 @@ void CL_Disconnect ()
 {
 // stop sounds (especially looping!)
 	S_StopAllSounds (true);
+	CDAudio_Stop ();
 	
 // bring the console down and fade the colors back to normal
 //	SCR_BringDownConsole ();
