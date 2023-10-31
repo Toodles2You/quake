@@ -40,6 +40,7 @@ typedef struct progs_state_s progs_state_t;
 typedef void (*builtin_t)(progs_state_t *);
 
 #define PR_FIELD(_, name) pr_##name,
+#define PR_FIELD_OPTIONAL(_, name) pr_##name,
 
 typedef enum {
 	#include "pr_globals.h"
@@ -52,6 +53,12 @@ typedef enum {
 } progs_fields_e;
 
 #undef PR_FIELD
+#undef PR_FIELD_OPTIONAL
+
+typedef struct {
+	char *name;
+	bool optional;
+} pr_field_t;
 
 typedef struct progs_state_s {
 	dprograms_t *progs;
@@ -83,7 +90,7 @@ void PR_Init();
 
 void PR_ExecuteProgram(progs_state_t *pr, func_t fnum);
 int PR_LoadProgs(progs_state_t *pr, char *filename, int version, int crc);
-void PR_BuildStructs(progs_state_t *pr, uint32_t *globalStruct, char **globalStrings, uint32_t *fieldStruct, char **fieldStrings);
+void PR_BuildStructs(progs_state_t *pr, uint32_t *globalStruct, pr_field_t *globalFields, uint32_t *fieldStruct, pr_field_t *fields);
 
 ddef_t *PR_GlobalAtOfs (progs_state_t *pr, int ofs);
 char *PR_GlobalString (progs_state_t *pr, int ofs);

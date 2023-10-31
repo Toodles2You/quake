@@ -1025,21 +1025,23 @@ static bool SV_LoadProgs()
 		return false;
 	}
 
-	#define PR_FIELD(_, name) #name,
+	#define PR_FIELD(_, name) {#name, false},
+	#define PR_FIELD_OPTIONAL(_, name) {#name, true},
 
-	char *pr_globals[] =
+	pr_field_t pr_globals[] =
 	{
 		#include "pr_globals.h"
-		NULL
+		{NULL, true}
 	};
 
-	char *pr_fields[] =
+	pr_field_t pr_fields[] =
 	{
 		#include "pr_fields.h"
-		NULL
+		{NULL, true}
 	};
 
 	#undef PR_FIELD
+	#undef PR_FIELD_OPTIONAL
 
 	uint32_t *pr_global_struct = Hunk_AllocName((pr_globals_count + pr_fields_count) * sizeof(uint32_t), "pr_tables");
 	uint32_t *pr_fields_struct = pr_global_struct + pr_globals_count;

@@ -1,6 +1,9 @@
 #ifndef PR_FIELD
 #error "PR_FIELD not defined"
 #endif
+#ifndef PR_FIELD_OPTIONAL
+#error "PR_FIELD_OPTIONAL not defined"
+#endif
 PR_FIELD(int32_t, self)
 PR_FIELD(int32_t, other)
 PR_FIELD(int32_t, world)
@@ -9,7 +12,7 @@ PR_FIELD(float, frametime)
 PR_FIELD(float, force_retouch)
 PR_FIELD(string_t, mapname)
 PR_FIELD(float, deathmatch)
-PR_FIELD(float, coop)
+PR_FIELD_OPTIONAL(float, coop)
 PR_FIELD(float, teamplay)
 PR_FIELD(float, serverflags)
 PR_FIELD(float, total_secrets)
@@ -45,7 +48,7 @@ PR_FIELD(int32_t, trace_ent)
 PR_FIELD(float, trace_inopen)
 PR_FIELD(float, trace_inwater)
 PR_FIELD(int32_t, msg_entity)
-PR_FIELD(func_t, main)
+PR_FIELD_OPTIONAL(func_t, main)
 PR_FIELD(func_t, StartFrame)
 PR_FIELD(func_t, PlayerPreThink)
 PR_FIELD(func_t, PlayerPostThink)

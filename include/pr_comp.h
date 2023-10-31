@@ -122,7 +122,7 @@ typedef struct statement_s
 
 typedef struct
 {
-	uint16_t type; // if DEF_SAVEGLOBGAL bit is set
+	uint16_t type; // if DEF_SAVEGLOBAL bit is set
 						 // the variable needs to be saved in savegames
 	uint16_t ofs;
 	int32_t s_name;
