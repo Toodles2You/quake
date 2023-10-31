@@ -32,18 +32,12 @@ mplane_t	frustum[4];
 
 int			c_brush_polys, c_alias_polys;
 
-bool	envmap;				// true during envmap command capture 
-
 int			currenttexture = -1;		// to avoid unnecessary texture sets
 
 int			cnttextures[2] = {-1, -1};     // cached
 
 int			particletexture;	// little dot for particles
 int			playertextures;		// up to 16 color translated skins
-
-int			mirrortexturenum;	// quake texturenum, not gltexturenum
-bool	mirror;
-mplane_t	*mirror_plane;
 
 //
 // view origin
@@ -77,8 +71,6 @@ cvar_t	r_drawviewmodel = {"r_drawviewmodel","1"};
 cvar_t	r_speeds = {"r_speeds","0"};
 cvar_t	r_fullbright = {"r_fullbright","0"};
 cvar_t	r_lightmap = {"r_lightmap","0"};
-cvar_t	r_shadows = {"r_shadows","0"};
-cvar_t	r_mirroralpha = {"r_mirroralpha","1"};
 cvar_t	r_wateralpha = {"r_wateralpha","1"};
 cvar_t	r_dynamic = {"r_dynamic","1"};
 cvar_t	r_novis = {"r_novis","0"};
@@ -96,9 +88,7 @@ cvar_t	gl_polyblend = {"gl_polyblend","1"};
 cvar_t	gl_flashblend = {"gl_flashblend","0"};
 cvar_t	gl_playermip = {"gl_playermip","0"};
 cvar_t	gl_nocolors = {"gl_nocolors","0"};
-cvar_t	gl_keeptjunctions = {"gl_keeptjunctions","0"};
-cvar_t	gl_reporttjunctions = {"gl_reporttjunctions","0"};
-cvar_t	gl_doubleeyes = {"gl_doubleeys", "1"};
+cvar_t	gl_keeptjunctions = {"gl_keeptjunctions","1"};
 
 extern	cvar_t	gl_ztrick;
 
@@ -283,8 +273,6 @@ float r_avertexnormal_dots[SHADEDOT_QUANT][256] =
 
 float	*shadedots = r_avertexnormal_dots[0];
 
-int	lastposenum;
-
 /*
 =============
 GL_DrawAliasFrame
@@ -296,8 +284,6 @@ void GL_DrawAliasFrame (aliashdr_t *paliashdr, int posenum, bool shade)
 	trivertx_t	*verts;
 	int32_t	*order;
 	int		count;
-
-lastposenum = posenum;
 
 	verts = (trivertx_t *)((byte *)paliashdr + paliashdr->posedata);
 	verts += posenum * paliashdr->poseverts;
@@ -342,70 +328,6 @@ lastposenum = posenum;
 		glEnd ();
 	}
 }
-
-
-/*
-=============
-GL_DrawAliasShadow
-=============
-*/
-extern	vec3_t			lightspot;
-
-void GL_DrawAliasShadow (aliashdr_t *paliashdr, int posenum)
-{
-	trivertx_t	*verts;
-	int32_t	*order;
-	vec3_t	point;
-	float	height, lheight;
-	int		count;
-
-	lheight = currententity->origin[2] - lightspot[2];
-
-	height = 0;
-	verts = (trivertx_t *)((byte *)paliashdr + paliashdr->posedata);
-	verts += posenum * paliashdr->poseverts;
-	order = (int32_t *)((byte *)paliashdr + paliashdr->commands);
-
-	height = -lheight + 1.0;
-
-	while (1)
-	{
-		// get the vertex count and primitive type
-		count = *order++;
-		if (!count)
-			break;		// done
-		if (count < 0)
-		{
-			count = -count;
-			glBegin (GL_TRIANGLE_FAN);
-		}
-		else
-			glBegin (GL_TRIANGLE_STRIP);
-
-		do
-		{
-			// texture coordinates come from the draw list
-			// (skipped for shadows) glTexCoord2fv ((float *)order);
-			order += 2;
-
-			// normals and vertexes come from the frame list
-			point[0] = verts->v[0] * paliashdr->scale[0] + paliashdr->scale_origin[0];
-			point[1] = verts->v[1] * paliashdr->scale[1] + paliashdr->scale_origin[1];
-			point[2] = verts->v[2] * paliashdr->scale[2] + paliashdr->scale_origin[2];
-
-			point[0] -= shadevector[0]*(point[2]+lheight);
-			point[1] -= shadevector[1]*(point[2]+lheight);
-			point[2] = height;
-//			height -= 0.001;
-			glVertex3fv (point);
-
-			verts++;
-		} while (--count);
-
-		glEnd ();
-	}	
-}
-
 
 
 /*
@@ -519,14 +441,8 @@ void R_DrawAliasModel (entity_t *e)
     glPushMatrix ();
 	R_RotateForEntity (e);
 
-	if (!strcmp (clmodel->name, "progs/eyes.mdl") && gl_doubleeyes.value) {
-		glTranslatef (paliashdr->scale_origin[0], paliashdr->scale_origin[1], paliashdr->scale_origin[2] - (22 + 8));
-// double size of eyes, since they are really hard to see in gl
-		glScalef (paliashdr->scale[0]*2, paliashdr->scale[1]*2, paliashdr->scale[2]*2);
-	} else {
-		glTranslatef (paliashdr->scale_origin[0], paliashdr->scale_origin[1], paliashdr->scale_origin[2]);
-		glScalef (paliashdr->scale[0], paliashdr->scale[1], paliashdr->scale[2]);
-	}
+	glTranslatef (paliashdr->scale_origin[0], paliashdr->scale_origin[1], paliashdr->scale_origin[2]);
+	glScalef (paliashdr->scale[0], paliashdr->scale[1], paliashdr->scale[2]);
 
 	anim = (int)(cl.time*10) & 3;
     GL_Bind(paliashdr->gl_texturenum[currententity->skinnum][anim]);
@@ -588,21 +504,6 @@ void R_DrawAliasModel (entity_t *e)
 		glHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_NICEST);
 
 	glPopMatrix ();
-
-	if (r_shadows.value)
-	{
-		glPushMatrix ();
-		R_RotateForEntity (e);
-		glDisable (GL_TEXTURE_2D);
-		glEnable (GL_BLEND);
-		glColor4f (0,0,0,0.5);
-		GL_DrawAliasShadow (paliashdr, lastposenum);
-		glEnable (GL_TEXTURE_2D);
-		glDisable (GL_BLEND);
-		glColor4f (1,1,1,1);
-		glPopMatrix ();
-	}
-
 }
 
 //==================================================================================
@@ -665,9 +566,6 @@ void R_DrawViewModel ()
 	if (chase_active.value)
 		return;
 
-	if (envmap)
-		return;
-
 	if (!r_drawentities.value)
 		return;
 
@@ -687,8 +585,6 @@ void R_DrawViewModel ()
 	glDepthRange (gldepthmin, gldepthmin + 0.3*(gldepthmax-gldepthmin));
 	R_DrawAliasModel (currententity);
 	glDepthRange (gldepthmin, gldepthmax);
-
-	R_SetupGL (r_refdef.fov_x, r_refdef.fov_y, &r_refdef.vrect);
 }
 
 
@@ -869,26 +765,11 @@ void R_SetupGL (float fov_x, float fov_y, vrect_t* vrect)
 	w = x2 - x;
 	h = y - y2;
 
-	if (envmap)
-	{
-		x = y2 = 0;
-		w = h = 256;
-	}
-
 	glViewport (glx + x, gly + y2, w, h);
 
 	R_SetPerspective(fov_x, fov_y, 4, r_zmax.value);
 
-	if (mirror)
-	{
-		if (mirror_plane->normal[2])
-			glScalef (1, -1, 1);
-		else
-			glScalef (-1, 1, 1);
-		glCullFace(GL_BACK);
-	}
-	else
-		glCullFace(GL_FRONT);
+	glCullFace(GL_FRONT);
 
 	glMatrixMode(GL_MODELVIEW);
     glLoadIdentity ();
@@ -1000,73 +881,6 @@ void R_Clear ()
 }
 
 /*
-=============
-R_Mirror
-=============
-*/
-void R_Mirror ()
-{
-	float		d;
-	msurface_t	*s;
-	entity_t	*ent;
-
-	if (!mirror)
-		return;
-
-	memcpy (r_base_world_matrix, r_world_matrix, sizeof(r_base_world_matrix));
-
-	d = DotProduct (r_refdef.vieworg, mirror_plane->normal) - mirror_plane->dist;
-	VectorMA (r_refdef.vieworg, -2*d, mirror_plane->normal, r_refdef.vieworg);
-
-	d = DotProduct (vpn, mirror_plane->normal);
-	VectorMA (vpn, -2*d, mirror_plane->normal, vpn);
-
-	r_refdef.viewangles[0] = -asin (vpn[2])/M_PI*180;
-	r_refdef.viewangles[1] = atan2 (vpn[1], vpn[0])/M_PI*180;
-	r_refdef.viewangles[2] = -r_refdef.viewangles[2];
-
-	ent = &cl_entities[cl.viewentity];
-	if (cl_numvisedicts < MAX_VISEDICTS)
-	{
-		cl_visedicts[cl_numvisedicts] = ent;
-		cl_numvisedicts++;
-	}
-
-	gldepthmin = 0.5;
-	gldepthmax = 1;
-	glDepthRange (gldepthmin, gldepthmax);
-	glDepthFunc (GL_LEQUAL);
-
-	R_RenderScene ();
-	R_DrawWaterSurfaces ();
-
-	gldepthmin = 0;
-	gldepthmax = 0.5;
-	glDepthRange (gldepthmin, gldepthmax);
-	glDepthFunc (GL_LEQUAL);
-
-	// blend on top
-	glEnable (GL_BLEND);
-	glMatrixMode(GL_PROJECTION);
-	if (mirror_plane->normal[2])
-		glScalef (1,-1,1);
-	else
-		glScalef (-1,1,1);
-	glCullFace(GL_FRONT);
-	glMatrixMode(GL_MODELVIEW);
-
-	glLoadMatrixf (r_base_world_matrix);
-
-	glColor4f (1,1,1,r_mirroralpha.value);
-	s = cl.worldmodel->textures[mirrortexturenum]->texturechain;
-	for ( ; s ; s=s->texturechain)
-		R_RenderBrushPoly (s);
-	cl.worldmodel->textures[mirrortexturenum]->texturechain = NULL;
-	glDisable (GL_BLEND);
-	glColor4f (1,1,1,1);
-}
-
-/*
 ================
 R_RenderView
 
@@ -1091,8 +905,6 @@ void R_RenderView ()
 		c_alias_polys = 0;
 	}
 
-	mirror = false;
-
 	if (gl_finish.value)
 		glFinish ();
 
@@ -1108,16 +920,13 @@ void R_RenderView ()
 	glEnable(GL_FOG);
 ********************************************/
 
-	R_RenderScene ();
 	R_DrawViewModel ();
+	R_RenderScene ();
 	R_DrawWaterSurfaces ();
 
 //  More fog right here :)
 //	glDisable(GL_FOG);
 //  End of all fog code...
-
-	// render mirror view
-	R_Mirror ();
 
 	R_PolyBlend ();
 

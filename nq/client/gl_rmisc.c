@@ -97,72 +97,6 @@ void R_InitParticleTexture ()
 
 /*
 ===============
-R_Envmap_f
-
-Grab six views for environment mapping tests
-===============
-*/
-void R_Envmap_f ()
-{
-	byte	buffer[256*256*4];
-
-	glDrawBuffer  (GL_FRONT);
-	glReadBuffer  (GL_FRONT);
-	envmap = true;
-
-	r_refdef.vrect.x = 0;
-	r_refdef.vrect.y = 0;
-	r_refdef.vrect.width = 256;
-	r_refdef.vrect.height = 256;
-
-	r_refdef.viewangles[0] = 0;
-	r_refdef.viewangles[1] = 0;
-	r_refdef.viewangles[2] = 0;
-	GL_BeginRendering (&glx, &gly, &glwidth, &glheight);
-	R_RenderView ();
-	glReadPixels (0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-	COM_WriteFile ("env0.rgb", buffer, sizeof(buffer));		
-
-	r_refdef.viewangles[1] = 90;
-	GL_BeginRendering (&glx, &gly, &glwidth, &glheight);
-	R_RenderView ();
-	glReadPixels (0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-	COM_WriteFile ("env1.rgb", buffer, sizeof(buffer));		
-
-	r_refdef.viewangles[1] = 180;
-	GL_BeginRendering (&glx, &gly, &glwidth, &glheight);
-	R_RenderView ();
-	glReadPixels (0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-	COM_WriteFile ("env2.rgb", buffer, sizeof(buffer));		
-
-	r_refdef.viewangles[1] = 270;
-	GL_BeginRendering (&glx, &gly, &glwidth, &glheight);
-	R_RenderView ();
-	glReadPixels (0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-	COM_WriteFile ("env3.rgb", buffer, sizeof(buffer));		
-
-	r_refdef.viewangles[0] = -90;
-	r_refdef.viewangles[1] = 0;
-	GL_BeginRendering (&glx, &gly, &glwidth, &glheight);
-	R_RenderView ();
-	glReadPixels (0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-	COM_WriteFile ("env4.rgb", buffer, sizeof(buffer));		
-
-	r_refdef.viewangles[0] = 90;
-	r_refdef.viewangles[1] = 0;
-	GL_BeginRendering (&glx, &gly, &glwidth, &glheight);
-	R_RenderView ();
-	glReadPixels (0, 0, 256, 256, GL_RGBA, GL_UNSIGNED_BYTE, buffer);
-	COM_WriteFile ("env5.rgb", buffer, sizeof(buffer));		
-
-	envmap = false;
-	glDrawBuffer  (GL_BACK);
-	glReadBuffer  (GL_BACK);
-	GL_EndRendering ();
-}
-
-/*
-===============
 R_Init
 ===============
 */
@@ -171,7 +105,6 @@ void R_Init ()
 	extern cvar_t gl_finish;
 
 	Cmd_AddCommand ("timerefresh", R_TimeRefresh_f);	
-	Cmd_AddCommand ("envmap", R_Envmap_f);	
 	Cmd_AddCommand ("pointfile", R_ReadPointFile_f);	
 
 	Cvar_RegisterVariable (&r_norefresh);
@@ -179,8 +112,6 @@ void R_Init ()
 	Cvar_RegisterVariable (&r_fullbright);
 	Cvar_RegisterVariable (&r_drawentities);
 	Cvar_RegisterVariable (&r_drawviewmodel);
-	Cvar_RegisterVariable (&r_shadows);
-	Cvar_RegisterVariable (&r_mirroralpha);
 	Cvar_RegisterVariable (&r_wateralpha);
 	Cvar_RegisterVariable (&r_dynamic);
 	Cvar_RegisterVariable (&r_novis);
@@ -205,9 +136,6 @@ void R_Init ()
 	Cvar_RegisterVariable (&gl_nocolors);
 
 	Cvar_RegisterVariable (&gl_keeptjunctions);
-	Cvar_RegisterVariable (&gl_reporttjunctions);
-
-	Cvar_RegisterVariable (&gl_doubleeyes);
 
 	R_InitParticles ();
 	R_InitParticleTexture ();
@@ -366,15 +294,12 @@ void R_NewMap ()
 
 	// identify sky texture
 	skytexturenum = -1;
-	mirrortexturenum = -1;
 	for (i=0 ; i<cl.worldmodel->numtextures ; i++)
 	{
 		if (!cl.worldmodel->textures[i])
 			continue;
 		if (!strncmp(cl.worldmodel->textures[i]->name,"sky",3) )
 			skytexturenum = i;
-		if (!strncmp(cl.worldmodel->textures[i]->name,"window02_1",10) )
-			mirrortexturenum = i;
  		cl.worldmodel->textures[i]->texturechain = NULL;
 	}
 }

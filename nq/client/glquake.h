@@ -127,7 +127,6 @@ extern refdef_t r_refdef;
 extern mleaf_t *r_viewleaf, *r_oldviewleaf;
 extern int d_lightstylevalue[256]; // 8.8 fraction of base light value
 
-extern bool envmap;
 extern int currenttexture;
 extern int cnttextures[2];
 extern int particletexture;
@@ -143,8 +142,6 @@ extern cvar_t r_speeds;
 extern cvar_t r_waterwarp;
 extern cvar_t r_fullbright;
 extern cvar_t r_lightmap;
-extern cvar_t r_shadows;
-extern cvar_t r_mirroralpha;
 extern cvar_t r_wateralpha;
 extern cvar_t r_dynamic;
 extern cvar_t r_novis;
@@ -160,10 +157,8 @@ extern cvar_t gl_smoothmodels;
 extern cvar_t gl_affinemodels;
 extern cvar_t gl_polyblend;
 extern cvar_t gl_keeptjunctions;
-extern cvar_t gl_reporttjunctions;
 extern cvar_t gl_flashblend;
 extern cvar_t gl_nocolors;
-extern cvar_t gl_doubleeyes;
 
 extern int gl_lightmap_format;
 extern int gl_solid_format;
@@ -171,10 +166,6 @@ extern int gl_alpha_format;
 
 extern cvar_t gl_max_size;
 extern cvar_t gl_playermip;
-
-extern int mirrortexturenum; // quake texturenum, not gltexturenum
-extern bool mirror;
-extern mplane_t *mirror_plane;
 
 extern float r_world_matrix[16];
 
