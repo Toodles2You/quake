@@ -148,6 +148,7 @@ extern cvar_t r_novis;
 extern cvar_t r_fence;
 extern cvar_t r_luminescent;
 extern cvar_t r_zmax;
+extern cvar_t r_wireframe;
 
 extern cvar_t gl_clear;
 extern cvar_t gl_cull;

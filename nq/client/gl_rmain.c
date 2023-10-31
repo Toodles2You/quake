@@ -77,6 +77,7 @@ cvar_t	r_novis = {"r_novis","0"};
 cvar_t	r_fence = {"r_fence","1"};
 cvar_t	r_luminescent = {"r_luminescent","1"};
 cvar_t	r_zmax = {"r_zmax","4096"};
+cvar_t	r_wireframe = {"r_wireframe", "0"};
 
 cvar_t	gl_finish = {"gl_finish","0"};
 cvar_t	gl_clear = {"gl_clear","0"};
@@ -835,15 +836,13 @@ R_Clear
 */
 void R_Clear ()
 {
-	if (r_mirroralpha.value != 1.0)
+	if (r_wireframe.value)
 	{
-		if (gl_clear.value)
-			glClear (GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
-		else
-			glClear (GL_DEPTH_BUFFER_BIT);
+		glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 		gldepthmin = 0;
-		gldepthmax = 0.5;
+		gldepthmax = 1;
 		glDepthFunc (GL_LEQUAL);
+    	glPolygonMode(GL_FRONT_AND_BACK, GL_LINE);
 	}
 	else if (gl_ztrick.value)
 	{
@@ -865,6 +864,7 @@ void R_Clear ()
 			gldepthmax = 0.5;
 			glDepthFunc (GL_GEQUAL);
 		}
+    	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 	else
 	{
@@ -875,6 +875,7 @@ void R_Clear ()
 		gldepthmin = 0;
 		gldepthmax = 1;
 		glDepthFunc (GL_LEQUAL);
+    	glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 
 	glDepthRange (gldepthmin, gldepthmax);
@@ -935,5 +936,10 @@ void R_RenderView ()
 //		glFinish ();
 		time2 = Sys_FloatTime ();
 		Con_Printf ("%3i ms  %4i wpoly %4i epoly\n", (int)((time2-time1)*1000), c_brush_polys, c_alias_polys); 
+	}
+
+	if (r_wireframe.value == 1)
+	{
+		glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
 	}
 }

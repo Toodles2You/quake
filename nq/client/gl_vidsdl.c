@@ -207,7 +207,7 @@ void GL_Init()
 
     GL_CheckMultiTextureExtensions();
 
-    glClearColor(1, 0, 0, 0);
+    glClearColor(0.5, 0.5, 0.5, 1);
     glCullFace(GL_FRONT);
     glEnable(GL_TEXTURE_2D);
 
