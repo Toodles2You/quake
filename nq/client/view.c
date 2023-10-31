@@ -836,10 +836,13 @@ void V_CalcRefdef ()
 
 	AngleVectors (angles, forward, right, up);
 
-	for (i=0 ; i<3 ; i++)
-		r_refdef.vieworg[i] += scr_ofsx.value*forward[i]
-			+ scr_ofsy.value*right[i]
-			+ scr_ofsz.value*up[i];
+	if (cl.maxclients < 2)
+	{
+		for (i=0 ; i<3 ; i++)
+			r_refdef.vieworg[i] += scr_ofsx.value*forward[i]
+				+ scr_ofsy.value*right[i]
+				+ scr_ofsz.value*up[i];
+	}
 	
 	
 	V_BoundOffsets ();
@@ -904,20 +907,10 @@ The player's clipping box goes from (-16 -16 -24) to (16 16 32) from
 the entity origin, so any view position inside that will be valid
 ==================
 */
-extern vrect_t	scr_vrect;
-
 void V_RenderView ()
 {
 	if (con_forcedup)
 		return;
-
-// don't allow cheats in multiplayer
-	if (cl.maxclients > 1)
-	{
-		Cvar_Set ("scr_ofsx", "0");
-		Cvar_Set ("scr_ofsy", "0");
-		Cvar_Set ("scr_ofsz", "0");
-	}
 
 	if (cl.intermission)
 	{	// intermission / finale rendering
