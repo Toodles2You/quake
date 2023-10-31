@@ -143,8 +143,8 @@ byte *COM_LoadTempFile(char *path);
 byte *COM_LoadHunkFile(char *path);
 void COM_LoadCacheFile(char *path, struct cache_user_s *cu);
 
-extern struct cvar_s registered;
-
-extern bool standard_quake, rogue, hipnotic;
+extern bool standard_quake;
+extern bool rogue;
+extern bool hipnotic;
 
 #endif /* !COMMON_H */

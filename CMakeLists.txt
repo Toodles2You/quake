@@ -19,6 +19,7 @@ project(Quake VERSION 1.0.9 LANGUAGES C)
 
 set(QUAKE_VERSION ${CMAKE_PROJECT_VERSION} CACHE STRING "Quake version.")
 set(QUAKE_BASEDIR "id1" CACHE STRING "Quake base game directory.")
+option(QUAKE_REGISTERED "Quake full version checks." OFF)
 
 set(QUAKE_DEFS
     QUAKE_VERSION="${QUAKE_VERSION}"
@@ -29,6 +30,10 @@ if(CMAKE_SYSTEM_NAME STREQUAL "Linux")
     list(APPEND QUAKE_DEFS QUAKE_LINUX)
 elseif(CMAKE_SYSTEM_NAME STREQUAL "Windows")
     list(APPEND QUAKE_DEFS QUAKE_WINDOWS)
+endif()
+
+if(QUAKE_REGISTERED)
+    list(APPEND QUAKE_DEFS QUAKE_REGISTERED)
 endif()
 
 set(QUAKE_FLAGS -Wno-format-overflow -Wno-discarded-qualifiers)

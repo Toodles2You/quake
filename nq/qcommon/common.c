@@ -20,38 +20,38 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "bothdef.h"
 
-#define MAX_NUM_ARGVS	50
-#define NUM_SAFE_ARGVS  7
+#define MAX_NUM_ARGVS 50
+#define NUM_SAFE_ARGVS 5
 
-static char     *largv[MAX_NUM_ARGVS + NUM_SAFE_ARGVS + 1];
-static char     *argvdummy = " ";
+static char *largv[MAX_NUM_ARGVS + NUM_SAFE_ARGVS + 1];
+static char *argvdummy = " ";
 
-static char     *safeargvs[NUM_SAFE_ARGVS] =
-	{"-stdvid", "-nolan", "-nosound", "-nocdaudio", "-nojoy", "-nomouse", "-dibonly"};
+static char *safeargvs[NUM_SAFE_ARGVS] =
+{
+	"-nolan",
+	"-nosound",
+	"-nocdaudio",
+	"-nojoy",
+	"-nomouse",
+};
 
-cvar_t  registered = {"registered","0"};
-cvar_t  cmdline = {"cmdline","0", false, true};
+static void COM_InitFilesystem();
 
-bool com_modified;   // set true if using non-id files
-bool static_registered;  // only for startup check, then set
+char com_token[1024];
+int com_argc;
+char **com_argv;
 
-void COM_InitFilesystem ();
+bool standard_quake = true;
+bool rogue;
+bool hipnotic;
 
+#ifdef QUAKE_REGISTERED
 // if a packfile directory differs from this, it is assumed to be hacked
-#define PAK0_COUNT              339
-#define PAK0_CRC                32981
-
-char	com_token[1024];
-int		com_argc;
-char	**com_argv;
-
-#define CMDLINE_LENGTH	256
-char	com_cmdline[CMDLINE_LENGTH];
-
-bool		standard_quake = true, rogue, hipnotic;
+#define PAK0_COUNT 339
+#define PAK0_CRC 32981
 
 // this graphic needs to be in the pak file to use registered features
-unsigned short pop[] =
+static unsigned short pop[] =
 {
  0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000,0x0000
 ,0x0000,0x0000,0x6600,0x0000,0x0000,0x0000,0x6600,0x0000
@@ -70,6 +70,15 @@ unsigned short pop[] =
 ,0x0000,0x0000,0x0000,0x0000,0x6500,0x0000,0x0000,0x0000
 ,0x0000,0x0000,0x0000,0x0000,0x6400,0x0000,0x0000,0x0000
 };
+
+bool static_registered; // only for startup check, then set
+cvar_t registered = {"registered", "0"};
+
+#else
+
+cvar_t registered = {"registered", "1"};
+
+#endif
 
 /*
 
@@ -255,68 +264,57 @@ Handles byte ordering and avoids alignment errors
 
 void MSG_WriteChar (sizebuf_t *sb, int c)
 {
-	byte    *buf;
-	buf = SZ_GetSpace (sb, 1);
+	byte *buf = SZ_GetSpace(sb, 1);
 	buf[0] = c;
 }
 
 void MSG_WriteByte (sizebuf_t *sb, int c)
 {
-	byte    *buf;
-	buf = SZ_GetSpace (sb, 1);
+	byte *buf = SZ_GetSpace(sb, 1);
 	buf[0] = c;
 }
 
 void MSG_WriteShort (sizebuf_t *sb, int c)
 {
-	byte    *buf;
-	buf = SZ_GetSpace (sb, 2);
-	buf[0] = c&0xff;
-	buf[1] = c>>8;
+	byte *buf = SZ_GetSpace(sb, 2);
+	buf[0] = c & 0xff;
+	buf[1] = c >> 8;
 }
 
 void MSG_WriteLong (sizebuf_t *sb, int c)
 {
-	byte    *buf;
-	
-	buf = SZ_GetSpace (sb, 4);
-	buf[0] = c&0xff;
-	buf[1] = (c>>8)&0xff;
-	buf[2] = (c>>16)&0xff;
-	buf[3] = c>>24;
+	byte *buf = SZ_GetSpace(sb, 4);
+	buf[0] = c & 0xff;
+	buf[1] = (c >> 8) & 0xff;
+	buf[2] = (c >> 16) & 0xff;
+	buf[3] = c >> 24;
 }
 
 void MSG_WriteFloat (sizebuf_t *sb, float f)
 {
-	union
-	{
-		float   f;
-		int     l;
-	} dat;
-	
-	
-	dat.f = f;
-	dat.l = LittleLong (dat.l);
-	
-	SZ_Write (sb, &dat.l, 4);
+	union {
+		float f;
+		int32_t l;
+	} dat = {f};
+	MSG_WriteLong(sb, LittleLong(dat.l));
 }
 
 void MSG_WriteString (sizebuf_t *sb, char *s)
 {
 	if (!s)
-		SZ_Write (sb, "", 1);
+		MSG_WriteByte(sb, '\0');
 	else
-		SZ_Write (sb, s, strlen(s)+1);
+		SZ_Write (sb, s, strlen(s) + 1);
 }
 
 void MSG_WriteCoord (sizebuf_t *sb, float f)
 {
-	MSG_WriteShort (sb, (int)(f*8));
+	MSG_WriteShort(sb, (int)(f * 8));
 }
 
 void MSG_WriteAngle (sizebuf_t *sb, float f)
 {
-	MSG_WriteByte (sb, ((int)f*256/360) & 255);
+	MSG_WriteByte(sb, ((int)f * 256 / 360) & 255);
 }
 
 //
@@ -791,6 +789,7 @@ int COM_CheckParm (char *parm)
 	return 0;
 }
 
+#ifdef QUAKE_REGISTERED
 /*
 ================
 COM_CheckRegistered
@@ -801,7 +800,7 @@ Immediately exits out if an alternate game was attempted to be started without
 being registered.
 ================
 */
-void COM_CheckRegistered ()
+static void COM_CheckRegistered (bool modified)
 {
 	int             h;
 	uint16_t  		check[128];
@@ -814,8 +813,10 @@ void COM_CheckRegistered ()
 	{
 		/* Sys_Error ("This dedicated server requires a full registered copy of Quake"); */
 		Con_Printf ("Playing shareware version.\n");
-		if (com_modified)
+		if (modified)
+		{
 			Sys_Error ("You must have the registered version to use modified games");
+		}
 		return;
 	}
 
@@ -825,12 +826,12 @@ void COM_CheckRegistered ()
 	for (i=0 ; i<128 ; i++)
 		if (pop[i] != (uint16_t)BigShort (check[i]))
 			Sys_Error ("Corrupted data file.");
-	
-	Cvar_Set ("cmdline", com_cmdline);
+
 	Cvar_Set ("registered", "1");
 	static_registered = true;
 	Con_Printf ("Playing registered version.\n");
 }
+#endif
 
 
 void COM_Path_f ();
@@ -848,23 +849,6 @@ void COM_InitArgv (int argc, char **argv)
 
 // reconstitute the command line for the cmdline externally visible cvar
 	n = 0;
-
-	for (j=0 ; (j<MAX_NUM_ARGVS) && (j< argc) ; j++)
-	{
-		i = 0;
-
-		while ((n < (CMDLINE_LENGTH - 1)) && argv[j][i])
-		{
-			com_cmdline[n++] = argv[j][i++];
-		}
-
-		if (n < (CMDLINE_LENGTH - 1))
-			com_cmdline[n++] = ' ';
-		else
-			break;
-	}
-
-	com_cmdline[n] = 0;
 
 	safe = false;
 
@@ -941,11 +925,9 @@ void COM_Init (char *basedir)
 	}
 
 	Cvar_RegisterVariable (&registered);
-	Cvar_RegisterVariable (&cmdline);
 	Cmd_AddCommand ("path", COM_Path_f);
 
 	COM_InitFilesystem ();
-	COM_CheckRegistered ();
 }
 
 
@@ -1192,11 +1174,13 @@ static size_t COM_FindFile (char *filename, int *handle, FILE **file)
 		else
 		{               
 	// check a file in the directory tree
+#ifdef QUAKE_REGISTERED
 			if (!static_registered)
 			{       // if not a registered version, don't ever go beyond base
 				if ( strchr (filename, '/') || strchr (filename,'\\'))
 					continue;
 			}
+#endif
 			
 			sprintf (netpath, "%s/%s",search->filename, filename);
 			
@@ -1395,7 +1379,7 @@ Loads the header and directory, adding the files at the beginning
 of the list so they override previous pack files.
 =================
 */
-static pack_t *COM_LoadPackFile (char *packfile)
+static pack_t *COM_LoadPackFile (char *packfile, bool *modified)
 {
 	dpackheader_t   header;
 	size_t i;
@@ -1423,8 +1407,10 @@ static pack_t *COM_LoadPackFile (char *packfile)
 	if (numpackfiles > MAX_FILES_IN_PACK)
 		Sys_Error ("%s has %lu files", packfile, numpackfiles);
 
-	if (numpackfiles != PAK0_COUNT)
-		com_modified = true;    // not the original file
+#ifdef QUAKE_REGISTERED
+	if (modified && numpackfiles != PAK0_COUNT)
+		*modified = true;    // not the original file
+#endif
 
 	newfiles = Hunk_AllocName (numpackfiles * sizeof(packfile_t), "packfile");
 
@@ -1432,11 +1418,16 @@ static pack_t *COM_LoadPackFile (char *packfile)
 	Sys_FileRead (packhandle, (void *)info, header.dirlen);
 
 // crc the directory to check for modifications
-	CRC_Init (&crc);
-	for (i=0 ; i<header.dirlen ; i++)
-		CRC_ProcessByte (&crc, ((byte *)info)[i]);
-	if (crc != PAK0_CRC)
-		com_modified = true;
+#ifdef QUAKE_REGISTERED
+	if (modified)
+	{
+		CRC_Init (&crc);
+		for (i=0 ; i<header.dirlen ; i++)
+			CRC_ProcessByte (&crc, ((byte *)info)[i]);
+		if (crc != PAK0_CRC)
+			*modified = true;
+	}
+#endif
 
 // parse the directory
 	for (i=0 ; i<numpackfiles ; i++)
@@ -1465,7 +1456,7 @@ Sets com_gamedir, adds the directory to the head of the path,
 then loads and adds pak1.pak pak2.pak ... 
 ================
 */
-void COM_AddGameDirectory (char *dir)
+static void COM_AddGameDirectory (char *dir, bool *modified)
 {
 	int                             i;
 	searchpath_t    *search;
@@ -1488,7 +1479,7 @@ void COM_AddGameDirectory (char *dir)
 	for (i=0 ; ; i++)
 	{
 		sprintf (pakfile, "%s/pak%i.pak", dir, i);
-		pak = COM_LoadPackFile (pakfile);
+		pak = COM_LoadPackFile (pakfile, modified);
 		if (!pak)
 			break;
 		search = Hunk_Alloc (sizeof(searchpath_t));
@@ -1503,11 +1494,12 @@ void COM_AddGameDirectory (char *dir)
 COM_InitFilesystem
 ================
 */
-void COM_InitFilesystem ()
+static void COM_InitFilesystem ()
 {
 	int             i, j;
 	char    basedir[MAX_OSPATH];
 	searchpath_t    *search;
+	bool modified = false;
 
 //
 // -basedir <path>
@@ -1548,12 +1540,18 @@ void COM_InitFilesystem ()
 //
 // start up with QUAKE_BASEDIR by default
 //
-	COM_AddGameDirectory (va("%s/"QUAKE_BASEDIR, basedir) );
+	COM_AddGameDirectory (va("%s/"QUAKE_BASEDIR, basedir), &modified);
 
 	if (COM_CheckParm ("-rogue"))
-		COM_AddGameDirectory (va("%s/rogue", basedir) );
+	{
+		modified = true;
+		COM_AddGameDirectory (va("%s/rogue", basedir), NULL);
+	}
 	if (COM_CheckParm ("-hipnotic"))
-		COM_AddGameDirectory (va("%s/hipnotic", basedir) );
+	{
+		modified = true;
+		COM_AddGameDirectory (va("%s/hipnotic", basedir), NULL);
+	}
 
 //
 // -game <gamedir>
@@ -1562,8 +1560,8 @@ void COM_InitFilesystem ()
 	i = COM_CheckParm ("-game");
 	if (i && i < com_argc-1)
 	{
-		com_modified = true;
-		COM_AddGameDirectory (va("%s/%s", basedir, com_argv[i+1]));
+		modified = true;
+		COM_AddGameDirectory (va("%s/%s", basedir, com_argv[i+1]), NULL);
 	}
 
 //
@@ -1573,7 +1571,7 @@ void COM_InitFilesystem ()
 	i = COM_CheckParm ("-path");
 	if (i)
 	{
-		com_modified = true;
+		modified = true;
 		com_searchpaths = NULL;
 		while (++i < com_argc)
 		{
@@ -1583,7 +1581,7 @@ void COM_InitFilesystem ()
 			search = Hunk_Alloc (sizeof(searchpath_t));
 			if ( !strcmp(COM_FileExtension(com_argv[i]), "pak") )
 			{
-				search->pack = COM_LoadPackFile (com_argv[i]);
+				search->pack = COM_LoadPackFile (com_argv[i], NULL);
 				if (!search->pack)
 					Sys_Error ("Couldn't load packfile: %s", com_argv[i]);
 			}
@@ -1593,6 +1591,10 @@ void COM_InitFilesystem ()
 			com_searchpaths = search;
 		}
 	}
+
+#ifdef QUAKE_REGISTERED
+	COM_CheckRegistered (modified);
+#endif
 }
 
 
