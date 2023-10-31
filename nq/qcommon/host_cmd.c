@@ -1456,7 +1456,6 @@ void Host_Give_f ()
    case '7':
    case '8':
    case '9':
-      // MED 01/04/97 added hipnotic give stuff
       if (hipnotic)
       {
          if (t[0] == '6')

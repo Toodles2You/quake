@@ -2368,7 +2368,6 @@ level_t		levels[] =
 	{"dm6", "The Dark Zone"}
 };
 
-//MED 01/06/97 added hipnotic levels
 level_t     hipnoticlevels[] =
 {
    {"start", "Command HQ"},  // 0
@@ -2396,8 +2395,6 @@ level_t     hipnoticlevels[] =
    {"hipdm1", "The Edge of Oblivion"}           // 17
 };
 
-//PGM 01/07/97 added rogue levels
-//PGM 03/02/97 added dmatch level
 level_t		roguelevels[] =
 {
 	{"start",	"Split Decision"},
@@ -2437,7 +2434,6 @@ episode_t	episodes[] =
 	{"Deathmatch Arena", 32, 6}
 };
 
-//MED 01/06/97  added hipnotic episodes
 episode_t   hipnoticepisodes[] =
 {
    {"Scourge of Armagon", 0, 1},
@@ -2448,8 +2444,6 @@ episode_t   hipnoticepisodes[] =
    {"Deathmatch Arena", 17, 1}
 };
 
-//PGM 01/07/97 added rogue episodes
-//PGM 03/02/97 added dmatch episode
 episode_t	rogueepisodes[] =
 {
 	{"Introduction", 0, 1},
@@ -2554,23 +2548,19 @@ void M_GameOptions_Draw ()
 		M_Print (160, 96, va("%i minutes", (int)timelimit.value));
 
 	M_Print (0, 112, "         Episode");
-   //MED 01/06/97 added hipnotic episodes
    if (hipnotic)
       M_Print (160, 112, hipnoticepisodes[startepisode].description);
-   //PGM 01/07/97 added rogue episodes
    else if (rogue)
       M_Print (160, 112, rogueepisodes[startepisode].description);
    else
       M_Print (160, 112, episodes[startepisode].description);
 
 	M_Print (0, 120, "           Level");
-   //MED 01/06/97 added hipnotic episodes
    if (hipnotic)
    {
       M_Print (160, 120, hipnoticlevels[hipnoticepisodes[startepisode].firstLevel + startlevel].description);
       M_Print (160, 128, hipnoticlevels[hipnoticepisodes[startepisode].firstLevel + startlevel].name);
    }
-   //PGM 01/07/97 added rogue episodes
    else if (rogue)
    {
       M_Print (160, 120, roguelevels[rogueepisodes[startepisode].firstLevel + startlevel].description);
@@ -2666,11 +2656,8 @@ void M_NetStart_Change (int dir)
 
 	case 7:
 		startepisode += dir;
-	//MED 01/06/97 added hipnotic count
 		if (hipnotic)
 			count = 6;
-	//PGM 01/07/97 added rogue count
-	//PGM 03/02/97 added 1 for dmatch episode
 		else if (rogue)
 			count = 4;
 		else if (registered.value)
@@ -2689,10 +2676,8 @@ void M_NetStart_Change (int dir)
 
 	case 8:
 		startlevel += dir;
-    //MED 01/06/97 added hipnotic episodes
 		if (hipnotic)
 			count = hipnoticepisodes[startepisode].levels;
-	//PGM 01/06/97 added hipnotic episodes
 		else if (rogue)
 			count = rogueepisodes[startepisode].levels;
 		else

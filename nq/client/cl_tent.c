@@ -208,12 +208,10 @@ void CL_ParseTEnt ()
 	case TE_LIGHTNING3:				// lightning bolts
 		CL_ParseBeam (Mod_ForName("progs/bolt3.mdl", true, false));
 		break;
-	
-// PGM 01/21/97 
+
 	case TE_BEAM:				// grappling hook beam
 		CL_ParseBeam (Mod_ForName("progs/beam.mdl", true, false));
 		break;
-// PGM 01/21/97
 
 	case TE_LAVASPLASH:	
 		pos[0] = MSG_ReadCoord ();

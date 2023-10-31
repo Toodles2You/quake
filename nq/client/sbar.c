@@ -51,13 +51,10 @@ qpic_t      *rsb_invbar[2];
 qpic_t      *rsb_weapons[5];
 qpic_t      *rsb_items[2];
 qpic_t      *rsb_ammo[3];
-qpic_t      *rsb_teambord;		// PGM 01/19/97 - team color border
+qpic_t      *rsb_teambord;
 
-//MED 01/04/97 added two more weapons + 3 alternates for grenade launcher
 qpic_t      *hsb_weapons[7][5];   // 0 is active, 1 is owned, 2-5 are flashes
-//MED 01/04/97 added array to simplify weapon parsing
 int         hipweapons[4] = {HIT_LASER_CANNON_BIT,HIT_MJOLNIR_BIT,4,HIT_PROXIMITY_GUN_BIT};
-//MED 01/04/97 added hipnotic items array
 qpic_t      *hsb_items[2];
 
 void Sbar_MiniDeathmatchOverlay ();
@@ -194,7 +191,6 @@ void Sbar_Init ()
 	sb_ibar = Draw_PicFromWad ("ibar");
 	sb_scorebar = Draw_PicFromWad ("scorebar");
 
-//MED 01/04/97 added new hipnotic weapons
 	if (hipnotic)
 	{
 	  hsb_weapons[0][0] = Draw_PicFromWad ("inv_laser");
@@ -236,9 +232,7 @@ void Sbar_Init ()
 		rsb_items[0] = Draw_PicFromWad ("r_shield1");
         rsb_items[1] = Draw_PicFromWad ("r_agrav1");
 
-// PGM 01/19/97 - team color border
         rsb_teambord = Draw_PicFromWad ("r_teambord");
-// PGM 01/19/97 - team color border
 
 		rsb_ammo[0] = Draw_PicFromWad ("r_ammolava");
 		rsb_ammo[1] = Draw_PicFromWad ("r_ammomulti");
@@ -585,7 +579,6 @@ void Sbar_DrawInventory ()
 		}
 	}
 
-// MED 01/04/97
 // hipnotic weapons
     if (hipnotic)
     {
@@ -681,7 +674,6 @@ void Sbar_DrawInventory ()
          }
          else
          {
-         //MED 01/04/97 changed keys
             if (!hipnotic || (i>1))
             {
                Sbar_DrawPic (192 + i*16, -16, sb_items[i]);
@@ -690,7 +682,6 @@ void Sbar_DrawInventory ()
          if (time && time > cl.time - 2)
             sb_updates = 0;
       }
-   //MED 01/04/97 added hipnotic items
    // hipnotic items
    if (hipnotic)
    {
@@ -829,8 +820,6 @@ void Sbar_DrawFace ()
 	int		f, anim;
 
 #if 0
-// PGM 01/19/97 - team color drawing
-// PGM 03/02/97 - fixed so color swatch only appears in CTF modes
 	if (rogue &&
         (cl.maxclients != 1) &&
         (teamplay.value>3) &&
@@ -879,7 +868,6 @@ void Sbar_DrawFace ()
 		
 		return;
 	}
-// PGM 01/19/97 - team color drawing
 #endif
 
 	if ( (cl.items & (IT_INVISIBILITY | IT_INVULNERABILITY) )
@@ -957,7 +945,6 @@ void Sbar_Draw ()
 		Sbar_DrawPic (0, 0, sb_sbar);
 
    // keys (hipnotic only)
-      //MED 01/04/97 moved keys here so they would not be overwritten
       if (hipnotic)
       {
          if (cl.items & IT_KEY1)
