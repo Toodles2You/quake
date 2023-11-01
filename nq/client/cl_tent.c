@@ -298,7 +298,7 @@ void CL_UpdateTEnts ()
 	// if coming from the player, update the start position
 		if (b->entity == cl.viewentity)
 		{
-			VectorCopy (cl_entities[cl.viewentity].origin, b->start);
+			VectorCopy (cl.entities[cl.viewentity].origin, b->start);
 		}
 
 	// calculate pitch and yaw

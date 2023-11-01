@@ -452,7 +452,7 @@ void R_DrawAliasModel (entity_t *e)
 	// seperately for the players.  Heads are just uncolored.
 	if (currententity->colormap != vid.colormap && !gl_nocolors.value)
 	{
-		i = currententity - cl_entities;
+		i = currententity - cl.entities;
 		if (i >= 1 && i<=cl.maxclients /* && !strcmp (currententity->model->name, "progs/player.mdl") */)
 		    GL_Bind(playertextures - 1 + i);
 	}

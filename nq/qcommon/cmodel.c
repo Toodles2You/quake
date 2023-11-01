@@ -302,6 +302,45 @@ void CMod_LoadVisibility(lump_t *l)
     memcpy(loadcmod->visdata, mod_base + l->fileofs, l->filelen);
 }
 
+
+/*
+================
+CMod_CountEntities
+
+Does exactly what you think it does.
+Toodles TODO: This could save the tokens for later use in ED_LoadFromFile.
+================*/
+static size_t CMod_CountEntities(char *data)
+{
+	size_t i = 0;
+	while (true)
+	{
+		data = COM_Parse(data);
+		if (!data)
+		{
+			break;
+		}
+		if (com_token[0] != '{')
+		{
+			Sys_Error("CMod_CountEntities: found %s when expecting {", com_token);
+		}
+		while (true)
+		{
+			data = COM_Parse(data);
+			if (com_token[0] == '}')
+			{
+				break;
+			}
+			if (!data)
+			{
+				Sys_Error("CMod_CountEntities: EOF without closing brace");
+			}
+		}
+		i++;
+	}
+	return i;
+}
+
 /*
 =================
 CMod_LoadEntities
@@ -312,10 +351,12 @@ void CMod_LoadEntities(lump_t *l)
     if (!loadcmod->world || !l->filelen)
     {
         loadcmod->entities = NULL;
+        loadcmod->numentities = 0;
         return;
     }
     loadcmod->entities = Hunk_AllocName(l->filelen, loadname);
     memcpy(loadcmod->entities, mod_base + l->fileofs, l->filelen);
+    loadcmod->numentities = CMod_CountEntities(loadcmod->entities);
 }
 
 /*

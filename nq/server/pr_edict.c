@@ -635,45 +635,6 @@ sprintf (com_token, "0 %s 0", temp);
 ================
 ED_LoadFromFile
 
-Does exactly what you think it does.
-Toodles TODO: This could save the tokens for later use in ED_LoadFromFile.
-================*/
-size_t ED_CountFromFile(char *data)
-{
-	size_t i = 0;
-	while (true)
-	{
-		data = COM_Parse(data);
-		if (!data)
-		{
-			break;
-		}
-		if (com_token[0] != '{')
-		{
-			Sys_Error("ED_LoadFromFile: found %s when expecting {", com_token);
-		}
-		while (true)
-		{
-			data = COM_Parse(data);
-			if (com_token[0] == '}')
-			{
-				break;
-			}
-			if (!data)
-			{
-				Sys_Error("ED_ParseEntity: EOF without closing brace");
-			}
-		}
-		i++;
-	}
-	return i;
-}
-
-
-/*
-================
-ED_LoadFromFile
-
 The entities are directly placed in the array, rather than allocated with
 ED_Alloc, because otherwise an error loading the map would have entity
 number references out of order.

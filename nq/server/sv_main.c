@@ -1143,19 +1143,18 @@ void SV_SpawnServer (char *server, char *startspot)
 		return;
 	}
 	sv.models[1] = sv.worldmodel;
-	
-	size_t spawnEdicts = ED_CountFromFile(sv.worldmodel->entities);
 
+	size_t numEntities = sv.worldmodel->numentities;
 	// Throw in an extra 20% for good measure.
 	// Round to the next highest multiple of 8, cause why not.
-	sv.max_edicts = (size_t)ceil(spawnEdicts * 1.2 / 8.0) * 8;
+	sv.max_edicts = (size_t)ceil(numEntities * 1.2 / 8.0) * 8;
 
-	if (sv.max_edicts < MAX_EDICTS)
+	if (sv.max_edicts < MIN_EDICTS)
 	{
-		sv.max_edicts = MAX_EDICTS;
+		sv.max_edicts = MIN_EDICTS;
 	}
 
-	Con_DPrintf("SV_SpawnServer: Allocating %lu edicts (Counted %lu)\n", sv.max_edicts, spawnEdicts);
+	Con_DPrintf("SV_SpawnServer: Allocating %lu edicts (Counted %lu)\n", sv.max_edicts, numEntities);
 
 	// Allocate server memory.
 	sv.edicts = Hunk_AllocName(sv.max_edicts * sv.pr.edict_size, "edicts");

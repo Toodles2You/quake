@@ -435,8 +435,8 @@ void SV_PushMove (edict_t *pusher, float movetime)
 	vec3_t		mins, maxs, move;
 	vec3_t		entorig, pushorig;
 	int			num_moved;
-	edict_t		*moved_edict[MAX_EDICTS];
-	vec3_t		moved_from[MAX_EDICTS];
+	edict_t		*moved_edict[MIN_EDICTS];
+	vec3_t		moved_from[MIN_EDICTS];
 
 	if (!ed_vector(pusher, velocity)[0] && !ed_vector(pusher, velocity)[1] && !ed_vector(pusher, velocity)[2])
 	{
@@ -559,8 +559,8 @@ void SV_PushRotate (edict_t *pusher, float movetime)
 	vec3_t		move, a, amove;
 	vec3_t		entorig, pushorig;
 	int			num_moved;
-	edict_t		*moved_edict[MAX_EDICTS];
-	vec3_t		moved_from[MAX_EDICTS];
+	edict_t		*moved_edict[MIN_EDICTS];
+	vec3_t		moved_from[MIN_EDICTS];
 	vec3_t		org, org2;
 	vec3_t		forward, right, up;
 

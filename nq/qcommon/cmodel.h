@@ -95,6 +95,8 @@ typedef struct cmodel_s
 	hull_t hulls[MAX_MAP_HULLS];
 
 	byte *visdata;
+
+	size_t numentities;
 	char *entities;
 } cmodel_t;
 

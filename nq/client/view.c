@@ -359,7 +359,7 @@ void V_ParseDamage ()
 //
 // calculate view angle kicks
 //
-	ent = &cl_entities[cl.viewentity];
+	ent = &cl.entities[cl.viewentity];
 	
 	VectorSubtract (from, ent->origin, from);
 	VectorNormalize (from);
@@ -689,7 +689,7 @@ void V_BoundOffsets ()
 {
 	entity_t	*ent;
 	
-	ent = &cl_entities[cl.viewentity];
+	ent = &cl.entities[cl.viewentity];
 
 // absolutely bound refresh reletive to entity clipping hull
 // so the view can never be inside a solid wall
@@ -734,7 +734,7 @@ void V_CalcViewRoll ()
 {
 	float		side;
 		
-	side = V_CalcRoll (cl_entities[cl.viewentity].angles, cl.velocity);
+	side = V_CalcRoll (cl.entities[cl.viewentity].angles, cl.velocity);
 	r_refdef.viewangles[ROLL] += side;
 
 	if (v_dmg_time > 0)
@@ -765,7 +765,7 @@ void V_CalcIntermissionRefdef ()
 	float		old;
 
 // ent is the player model (visible when out of body)
-	ent = &cl_entities[cl.viewentity];
+	ent = &cl.entities[cl.viewentity];
 // view is the weapon model (only visible from inside body)
 	view = &cl.viewent;
 
@@ -798,7 +798,7 @@ void V_CalcRefdef ()
 	V_DriftPitch ();
 
 // ent is the player model (visible when out of body)
-	ent = &cl_entities[cl.viewentity];
+	ent = &cl.entities[cl.viewentity];
 // view is the weapon model (only visible from inside body)
 	view = &cl.viewent;
 	

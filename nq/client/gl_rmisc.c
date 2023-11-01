@@ -191,7 +191,7 @@ void R_TranslatePlayerSkin (int playernum)
 	//
 	// locate the original skin pixels
 	//
-	currententity = &cl_entities[1+playernum];
+	currententity = &cl.entities[1+playernum];
 	model = currententity->model;
 	if (!model)
 		return;		// player doesn't have a model yet

@@ -79,16 +79,16 @@ entity_t	*CL_EntityNum (int num)
 {
 	if (num >= cl.num_entities)
 	{
-		if (num >= MAX_EDICTS)
+		if (num >= cl.max_entities)
 			Host_Error ("CL_EntityNum: %i is an invalid number",num);
 		while (cl.num_entities<=num)
 		{
-			cl_entities[cl.num_entities].colormap = vid.colormap;
+			cl.entities[cl.num_entities].colormap = vid.colormap;
 			cl.num_entities++;
 		}
 	}
 		
-	return &cl_entities[num];
+	return &cl.entities[num];
 }
 
 
@@ -125,7 +125,7 @@ void CL_ParseStartSoundPacket()
 	ent = channel >> 3;
 	channel &= 7;
 
-	if (ent > MAX_EDICTS)
+	if (ent > cl.max_entities)
 		Host_Error ("CL_ParseStartSoundPacket: ent = %i", ent);
 	
 	for (i=0 ; i<3 ; i++)
@@ -312,7 +312,24 @@ void CL_ParseServerInfo ()
 
 
 // local state
-	cl_entities[0].model = cl.worldmodel = cl.model_precache[1];
+	cl.worldmodel = cl.model_precache[1];
+
+	size_t numEntities = cl.cmodel_precache[1]->numentities;
+	// Throw in an extra 20% for good measure.
+	// Round to the next highest multiple of 8, cause why not.
+	cl.max_entities = (size_t)ceil(numEntities * 1.2 / 8.0) * 8;
+
+	if (cl.max_entities < MIN_EDICTS)
+	{
+		cl.max_entities = MIN_EDICTS;
+	}
+
+	Con_DPrintf("CL_ParseServerInfo: Allocating %lu edicts (Counted %lu)\n", cl.max_entities, numEntities);
+
+	// Allocate server memory.
+	cl.entities = Hunk_AllocName(cl.max_entities * sizeof(entity_t), "cl_edicts");
+
+	cl.entities[0].model = cl.worldmodel;
 	
 	R_NewMap ();
 
