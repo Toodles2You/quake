@@ -118,6 +118,7 @@ char *ED_ParseEdict(char *data, edict_t *ent);
 void ED_WriteGlobals(FILE *f);
 void ED_ParseGlobals(char *data);
 
+size_t ED_CountFromFile(char *data);
 void ED_LoadFromFile(char *data);
 
 void ED_Init();

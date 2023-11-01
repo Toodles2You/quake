@@ -97,8 +97,10 @@ edict_t *ED_Alloc ()
 		}
 	}
 	
-	if (i == MAX_EDICTS)
+	if (i == sv.max_edicts)
+	{
 		Sys_Error ("ED_Alloc: no free edicts");
+	}
 		
 	sv.num_edicts++;
 	e = EDICT_NUM(i);
@@ -633,6 +635,45 @@ sprintf (com_token, "0 %s 0", temp);
 ================
 ED_LoadFromFile
 
+Does exactly what you think it does.
+Toodles TODO: This could save the tokens for later use in ED_LoadFromFile.
+================*/
+size_t ED_CountFromFile(char *data)
+{
+	size_t i = 0;
+	while (true)
+	{
+		data = COM_Parse(data);
+		if (!data)
+		{
+			break;
+		}
+		if (com_token[0] != '{')
+		{
+			Sys_Error("ED_LoadFromFile: found %s when expecting {", com_token);
+		}
+		while (true)
+		{
+			data = COM_Parse(data);
+			if (com_token[0] == '}')
+			{
+				break;
+			}
+			if (!data)
+			{
+				Sys_Error("ED_ParseEntity: EOF without closing brace");
+			}
+		}
+		i++;
+	}
+	return i;
+}
+
+
+/*
+================
+ED_LoadFromFile
+
 The entities are directly placed in the array, rather than allocated with
 ED_Alloc, because otherwise an error loading the map would have entity
 number references out of order.
@@ -647,7 +688,7 @@ to call ED_CallSpawnFunctions () to let the objects initialize themselves.
 void ED_LoadFromFile (char *data)
 {	
 	edict_t		*ent;
-	int			inhibit;
+	size_t		inhibit;
 	dfunction_t	*func;
 	
 	ent = NULL;
@@ -680,7 +721,7 @@ void ED_LoadFromFile (char *data)
 				continue;
 			}
 		}
-		else if ((current_skill == 0 && ((int)ed_float(ent, spawnflags) & SPAWNFLAG_NOT_EASY))
+		else if ((current_skill <= 0 && ((int)ed_float(ent, spawnflags) & SPAWNFLAG_NOT_EASY))
 				|| (current_skill == 1 && ((int)ed_float(ent, spawnflags) & SPAWNFLAG_NOT_MEDIUM))
 				|| (current_skill >= 2 && ((int)ed_float(ent, spawnflags) & SPAWNFLAG_NOT_HARD)) )
 		{
@@ -718,7 +759,7 @@ void ED_LoadFromFile (char *data)
 		PR_ExecuteProgram (&sv.pr, func - sv.pr.functions);
 	}	
 
-	Con_DPrintf ("%i entities inhibited\n", inhibit);
+	Con_DPrintf ("%lu entities inhibited\n", inhibit);
 }
 
 void ED_Init()

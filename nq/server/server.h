@@ -39,8 +39,8 @@ typedef struct
 	struct cmodel_s *models[MAX_MODELS];
 	char *sound_precache[MAX_SOUNDS]; // NULL terminated
 	char *lightstyles[MAX_LIGHTSTYLES];
-	int num_edicts;
-	int max_edicts;
+	size_t num_edicts;
+	size_t max_edicts;
 	edict_t *edicts;	  // can NOT be array indexed, because
 						  // edict_t is variable sized, but can
 						  // be used to reference the world ent

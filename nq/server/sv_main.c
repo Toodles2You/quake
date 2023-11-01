@@ -1116,11 +1116,6 @@ void SV_SpawnServer (char *server, char *startspot)
 		return;
 	}
 
-// allocate server memory
-	sv.max_edicts = MAX_EDICTS;
-	
-	sv.edicts = Hunk_AllocName (sv.max_edicts*sv.pr.edict_size, "edicts");
-
 	sv.datagram.maxsize = sizeof(sv.datagram_buf);
 	sv.datagram.cursize = 0;
 	sv.datagram.data = sv.datagram_buf;
@@ -1132,14 +1127,6 @@ void SV_SpawnServer (char *server, char *startspot)
 	sv.signon.maxsize = sizeof(sv.signon_buf);
 	sv.signon.cursize = 0;
 	sv.signon.data = sv.signon_buf;
-	
-// leave slots at start for clients only
-	sv.num_edicts = svs.maxclients+1;
-	for (i=0 ; i<svs.maxclients ; i++)
-	{
-		ent = EDICT_NUM(i+1);
-		svs.clients[i].edict = ent;
-	}
 	
 	sv.state = ss_loading;
 	sv.paused = false;
@@ -1157,6 +1144,30 @@ void SV_SpawnServer (char *server, char *startspot)
 	}
 	sv.models[1] = sv.worldmodel;
 	
+	size_t spawnEdicts = ED_CountFromFile(sv.worldmodel->entities);
+
+	// Throw in an extra 20% for good measure.
+	// Round to the next highest multiple of 8, cause why not.
+	sv.max_edicts = (size_t)ceil(spawnEdicts * 1.2 / 8.0) * 8;
+
+	if (sv.max_edicts < MAX_EDICTS)
+	{
+		sv.max_edicts = MAX_EDICTS;
+	}
+
+	Con_DPrintf("SV_SpawnServer: Allocating %lu edicts (Counted %lu)\n", sv.max_edicts, spawnEdicts);
+
+	// Allocate server memory.
+	sv.edicts = Hunk_AllocName(sv.max_edicts * sv.pr.edict_size, "edicts");
+	
+	// Leave slots at start for clients only.
+	sv.num_edicts = svs.maxclients + 1;
+	for (i = 0; i < svs.maxclients; i++)
+	{
+		ent = EDICT_NUM(i + 1);
+		svs.clients[i].edict = ent;
+	}
+
 //
 // clear world interaction links
 //
