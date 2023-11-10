@@ -570,6 +570,10 @@ static void Mod_ReadWorldPairs(byte *data)
 			token = v;
 			while (true)
 			{
+				if (!token[0])
+				{
+					break;
+				}
 				next = strchr(token, ';');
 				if (next)
 				{
