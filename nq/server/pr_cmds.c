@@ -243,25 +243,27 @@ void PF_setmodel (progs_state_t *pr)
 {
 	edict_t	*e;
 	char	*m, **check;
-	cmodel_t	*mod;
-	int		i;
+	cmodel_t	*mod = NULL;
+	int		i = 0;
 
 	e = pr_get_edict(pr, OFS_PARM0);
 	m = pr_get_string(pr, OFS_PARM1);
 
 // check to see if model was properly precached
-	for (i=0, check = sv.model_precache ; *check ; i++, check++)
-		if (!strcmp(*check, m))
-			break;
-			
-	if (!*check)
-		PR_RunError (pr, "no precache: %s\n", m);
-		
+	if (m && m[0] > ' ')
+	{
+		for (i=0, check = sv.model_precache ; *check ; i++, check++)
+			if (!strcmp(*check, m))
+				break;
+				
+		if (!*check)
+			PR_RunError (pr, "no precache: %s\n", m);
+
+		mod = sv.models[i];
+	}
 
 	ed_set_string(e, model, m);
 	ed_float(e, modelindex) = i;
-
-	mod = sv.models[(int)ed_float(e, modelindex)];
 	
 	if (mod)
 		SetMinMaxSize (e, mod->mins, mod->maxs, true);
