@@ -1119,6 +1119,7 @@ void SV_SpawnServer (char *server, char *startspot)
 	sv.datagram.maxsize = sizeof(sv.datagram_buf);
 	sv.datagram.cursize = 0;
 	sv.datagram.data = sv.datagram_buf;
+	sv.datagram.allowoverflow = true;
 	
 	sv.reliable_datagram.maxsize = sizeof(sv.reliable_datagram_buf);
 	sv.reliable_datagram.cursize = 0;
