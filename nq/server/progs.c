@@ -381,7 +381,7 @@ void PR_BuildStructs(progs_state_t *pr, uint32_t *globalStruct, pr_field_t *glob
                     Host_Error("PR_LoadProgs: progs.dat globaldefs missing %s\n", globalFields[i].name);
                     break;
                 }
-                Con_DPrintf("PR_LoadProgs: progs.dat globaldefs does not define %s\n", globalFields->name[i]);
+                Con_DPrintf("PR_LoadProgs: progs.dat globaldefs does not define %s\n", globalFields[i].name);
                 continue;
             }
             if (def->type != ev_function)
