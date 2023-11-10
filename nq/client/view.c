@@ -182,7 +182,7 @@ void V_DriftPitch ()
 {
 	float		delta, move;
 
-	if (noclip_anglehack || !cl.onground || cls.demoplayback )
+	if (!cl.onground || cls.demoplayback )
 	{
 		cl.driftmove = 0;
 		cl.pitchvel = 0;

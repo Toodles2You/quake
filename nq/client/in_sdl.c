@@ -434,7 +434,7 @@ void IN_Move(usercmd_t *cmd)
     }
     else
     {
-        if (strafing && noclip_anglehack)
+        if (strafing)
         {
             cmd->upmove -= m_forward.value * mouse[1];
         }

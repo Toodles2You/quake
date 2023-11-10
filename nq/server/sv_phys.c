@@ -1094,12 +1094,14 @@ void SV_Physics_Client (edict_t	*ent, int num)
 		if (!SV_RunThink (ent))
 			return;
 		SV_FlyMove (ent, host_frametime, NULL);
+		ed_float(ent, flags) = (int)ed_float(ent, flags) & ~FL_ONGROUND;
 		break;
 		
 	case MOVETYPE_NOCLIP:
 		if (!SV_RunThink (ent))
 			return;
 		VectorMA (ed_vector(ent, origin), host_frametime, ed_vector(ent, velocity), ed_vector(ent, origin));
+		ed_float(ent, flags) = (int)ed_float(ent, flags) & ~FL_ONGROUND;
 		break;
 		
 	default:

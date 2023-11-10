@@ -238,6 +238,33 @@ void DropPunchAngle ()
 	VectorScale (ed_vector(sv_player, punchangle), len, ed_vector(sv_player, punchangle));
 }
 
+
+static void SV_FlyMove()
+{
+	int i;
+	vec3_t wishvel;
+
+	AngleVectors(ed_vector(sv_player, v_angle), forward, right, up);
+
+	for (i = 0; i < 3; i++)
+	{
+		wishvel[i] = forward[i] * cmd.forwardmove + right[i] * cmd.sidemove;
+
+	}
+	
+	wishvel[2] += cmd.upmove;
+
+	wishspeed = Length(wishvel);
+	if (wishspeed > sv_maxspeed.value)
+	{
+		VectorScale(wishvel, sv_maxspeed.value / wishspeed, wishvel);
+		wishspeed = sv_maxspeed.value;
+	}
+
+	VectorCopy(wishvel, velocity);
+}
+
+
 /*
 ===================
 SV_WaterMove
@@ -354,11 +381,7 @@ void SV_AirMove ()
 		wishspeed = sv_maxspeed.value;
 	}
 	
-	if ( ed_float(sv_player, movetype) == MOVETYPE_NOCLIP)
-	{	// noclip
-		VectorCopy (wishvel, velocity);
-	}
-	else if ( onground )
+	if ( onground )
 	{
 		SV_UserFriction ();
 		SV_Accelerate ();
@@ -421,6 +444,13 @@ void SV_ClientThink ()
 		angles[YAW] = v_angle[YAW];
 	}
 
+	if (ed_float(sv_player, movetype) == MOVETYPE_NOCLIP
+	 || ed_float(sv_player, movetype) == MOVETYPE_FLY)
+	{
+		SV_FlyMove();
+		return;
+	}
+
 	if ( (int)ed_float(sv_player, flags) & FL_WATERJUMP )
 	{
 		SV_WaterJump ();
@@ -429,8 +459,7 @@ void SV_ClientThink ()
 //
 // walk
 //
-	if ( (ed_float(sv_player, waterlevel) >= 2)
-	&& (ed_float(sv_player, movetype) != MOVETYPE_NOCLIP) )
+	if (ed_float(sv_player, waterlevel) >= 2)
 	{
 		SV_WaterMove ();
 		return;

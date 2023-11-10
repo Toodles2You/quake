@@ -23,8 +23,6 @@
 #include "gl_model.h"
 #include "glquake.h"
 
-extern bool noclip_anglehack;
-
 extern cvar_t chase_active;
 
 void Chase_Init();
