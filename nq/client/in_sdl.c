@@ -326,11 +326,6 @@ void IN_Init()
     Cmd_AddCommand("force_centerview", Force_CenterView_f);
 }
 
-void IN_Shutdown()
-{
-    mouse_state = 0;
-}
-
 static void IN_ActivateGrabs()
 {
 	SDL_ShowCursor(SDL_DISABLE);
@@ -365,6 +360,15 @@ static void IN_DeactivateGrabs()
 	SDL_ShowCursor(SDL_ENABLE);
 
     mouse_state &= ~(MOUSE_ACTIVE | MOUSE_RELATIVE);
+}
+
+void IN_Shutdown()
+{
+    if (mouse_state & MOUSE_AVAILABLE)
+    {
+        IN_DeactivateGrabs();
+    }
+    mouse_state = 0;
 }
 
 void IN_Commands()
