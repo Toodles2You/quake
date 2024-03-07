@@ -90,8 +90,6 @@ void VID_HandlePause (qboolean pause);
 void VID_LockBuffer (void);
 void VID_UnlockBuffer (void);
 
-#ifdef GLQUAKE
 qboolean VID_Is8bit(void);
-#endif
 
 #endif /* _VID_H */

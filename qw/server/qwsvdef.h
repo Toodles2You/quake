@@ -51,7 +51,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include "net.h"
 #include "protocol.h"
 #include "cmd.h"
-#include "model.h"
+#include "gl_model.h"
 #include "crc.h"
 #include "progs.h"
 
