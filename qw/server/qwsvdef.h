@@ -39,25 +39,25 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #include <setjmp.h>
 #include <ctype.h>
 
-#include "bothdefs.h"
+#include "../qcommon/bothdefs.h"
 
-#include "common.h"
+#include "../qcommon/common.h"
 #include "bspfile.h"
 #include "sys.h"
-#include "zone.h"
+#include "../qcommon/zone.h"
 #include "mathlib.h"
 
-#include "cvar.h"
-#include "net.h"
-#include "protocol.h"
-#include "cmd.h"
-#include "gl_model.h"
-#include "crc.h"
+#include "../qcommon/cvar.h"
+#include "../qcommon/net.h"
+#include "../client/protocol.h"
+#include "../qcommon/cmd.h"
+#include "../client/gl_model.h"
+#include "../qcommon/crc.h"
 #include "progs.h"
 
 #include "server.h"
 #include "world.h"
-#include "pmove.h"
+#include "../qcommon/pmove.h"
 
 //=============================================================================
 

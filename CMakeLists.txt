@@ -146,6 +146,46 @@ target_link_directories(quake PRIVATE ${SDL_LIBRARY_DIRS})
 target_link_libraries(quake PRIVATE ${QUAKE_LIBRARIES} ${SDL_LIBRARIES} GL dl)
 
 #===============================================================#
+# QuakeWorld dedicated server                                   #
+#===============================================================#
+
+add_executable(quakeds
+    ${COMMON_SRC}
+
+    qw/qcommon/cmd.c
+    qw/qcommon/common.c
+    qw/qcommon/crc.c
+    qw/qcommon/cvar.c
+    qw/qcommon/md4.c
+    qw/qcommon/zone.c
+    qw/qcommon/pmove.c
+    qw/qcommon/pmovetst.c
+    qw/qcommon/net_chan.c
+    qw/qcommon/net_udp.c
+
+    qw/server/pr_cmds.c
+    qw/server/pr_edict.c
+    qw/server/pr_exec.c
+    qw/server/sv_init.c
+    qw/server/sv_main.c
+    qw/server/sv_nchan.c
+    qw/server/sv_ents.c
+    qw/server/sv_send.c
+    qw/server/sv_move.c
+    qw/server/sv_phys.c
+    qw/server/sv_user.c
+    qw/server/sv_ccmds.c
+    qw/server/world.c
+    qw/server/sys_unix.c
+    qw/server/model.c
+)
+
+target_compile_definitions(quakeds PRIVATE ${QUAKE_DEFS} SERVERONLY)
+target_compile_options(quakeds PRIVATE ${QUAKE_FLAGS})
+target_include_directories(quakeds PRIVATE ${QUAKE_DIRS})
+target_link_libraries(quakeds PRIVATE ${QUAKE_LIBRARIES})
+
+#===============================================================#
 # QuakeC Compiler                                               #
 #===============================================================#
 
