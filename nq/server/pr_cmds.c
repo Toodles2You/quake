@@ -1552,6 +1552,52 @@ void PF_sqrt (progs_state_t *pr)
 	pr_global(pr, float, OFS_RETURN) = sqrtf(pr_global(pr, float, OFS_PARM0));
 }
 
+/*
+==============
+PF_logfrag
+
+logfrag (killer, killee)
+==============
+*/
+void PF_logfrag (progs_state_t *pr)
+{
+}
+
+
+/*
+==============
+PF_infokey
+
+string(entity e, string key) infokey
+==============
+*/
+void PF_infokey (progs_state_t *pr)
+{
+}
+
+/*
+==============
+PF_stof
+
+float(string s) stof
+==============
+*/
+void PF_stof (progs_state_t *pr)
+{
+}
+
+
+/*
+==============
+PF_multicast
+
+void(vector where, float set) multicast
+==============
+*/
+void PF_multicast (progs_state_t *pr)
+{
+}
+
 void PF_Fixme (progs_state_t *pr)
 {
 	PR_RunError (pr, "unimplemented bulitin");
@@ -1647,7 +1693,13 @@ PF_precache_model,
 PF_precache_sound,		// precache_sound2 is different only for qcc
 PF_precache_file,
 
-PF_setspawnparms
+PF_setspawnparms,
+
+PF_logfrag,
+
+PF_infokey,
+PF_stof,
+PF_multicast
 };
 
 builtin_t *pr_builtins = pr_builtin;

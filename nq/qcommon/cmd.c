@@ -34,9 +34,6 @@ typedef struct cmdalias_s
 
 cmdalias_t	*cmd_alias;
 
-int trashtest;
-int *trashspot;
-
 bool	cmd_wait;
 
 //=============================================================================

@@ -22,7 +22,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 
 quakeparms_t host_parms;
 
-qboolean	host_initialized;		// true if into command execution (compatability)
+bool	host_initialized;		// true if into command execution (compatability)
 
 double		host_frametime;
 double		realtime;				// without any filtering or bounding
@@ -82,7 +82,7 @@ void Master_Shutdown (void);
 
 //============================================================================
 
-qboolean ServerPaused(void)
+bool ServerPaused(void)
 {
 	return sv.paused;
 }
@@ -122,7 +122,7 @@ void SV_Error (char *error, ...)
 {
 	va_list		argptr;
 	static	char		string[1024];
-	static	qboolean inerror = false;
+	static	bool inerror = false;
 
 	if (inerror)
 		Sys_Error ("SV_Error: recursively entered (%s)", string);
@@ -511,7 +511,7 @@ void SVC_DirectConnect (void)
 	int			edictnum;
 	char		*s;
 	int			clients, spectators;
-	qboolean	spectator;
+	bool	spectator;
 	int			qport;
 	int			version;
 	int			challenge;
@@ -877,7 +877,7 @@ cvar_t	filterban = {"filterban", "1"};
 StringToFilter
 =================
 */
-qboolean StringToFilter (char *s, ipfilter_t *f)
+bool StringToFilter (char *s, ipfilter_t *f)
 {
 	char	num[128];
 	int		i, j;
@@ -1042,7 +1042,7 @@ void SV_SendBan (void)
 SV_FilterPacket
 =================
 */
-qboolean SV_FilterPacket (void)
+bool SV_FilterPacket (void)
 {
 	int		i;
 	unsigned	in;
@@ -1067,7 +1067,7 @@ void SV_ReadPackets (void)
 {
 	int			i;
 	client_t	*cl;
-	qboolean	good;
+	bool	good;
 	int			qport;
 
 	good = false;

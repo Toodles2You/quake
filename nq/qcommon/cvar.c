@@ -86,7 +86,12 @@ char *Cvar_CompleteVariable (char *partial)
 	if (!len)
 		return NULL;
 		
-// check functions
+	// check exact match
+	for (cvar=cvar_vars ; cvar ; cvar=cvar->next)
+		if (!strcmp (partial, cvar->name))
+			return cvar->name;
+
+	// check partial match
 	for (cvar=cvar_vars ; cvar ; cvar=cvar->next)
 		if (!strncmp (partial,cvar->name, len))
 			return cvar->name;
@@ -94,6 +99,10 @@ char *Cvar_CompleteVariable (char *partial)
 	return NULL;
 }
 
+
+#ifdef SERVERONLY
+void SV_SendServerInfoChange(char *key, char *value);
+#endif
 
 /*
 ============
@@ -114,11 +123,29 @@ void Cvar_Set (char *var_name, char *value)
 
 	changed = strcmp(var->string, value);
 	
+#if 0
+	if (var->flags & CVAR_INFO)
+	{
+#ifdef SERVERONLY
+		Info_SetValueForKey (svs.info, var_name, value, MAX_SERVERINFO_STRING);
+		SV_SendServerInfoChange(var_name, value);
+#else
+		Info_SetValueForKey (cls.userinfo, var_name, value, MAX_INFO_STRING);
+		if (cls.state >= ca_connected)
+		{
+			MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
+			SZ_Print (&cls.netchan.message, va("setinfo \"%s\" \"%s\"\n", var_name, value));
+		}
+#endif
+	}
+#endif
+	
 	Z_Free (var->string);	// free the old value string
 	
 	var->string = Z_Malloc (strlen(value)+1);
 	strcpy (var->string, value);
 	var->value = atof (var->string);
+
 	if ((var->flags & CVAR_SERVER) && changed)
 	{
 		if (Host_IsLocalGame ())
@@ -149,7 +176,7 @@ Adds a freestanding variable to the variable list.
 */
 void Cvar_RegisterVariable (cvar_t *variable)
 {
-	char	*oldstr;
+	char	value[512];
 	
 // first check to see if it has allready been defined
 	if (Cvar_FindVar (variable->name))
@@ -165,15 +192,16 @@ void Cvar_RegisterVariable (cvar_t *variable)
 		return;
 	}
 		
-// copy the value off, because future sets will Z_Free it
-	oldstr = variable->string;
-	variable->string = Z_Malloc (strlen(variable->string)+1);	
-	strcpy (variable->string, oldstr);
-	variable->value = atof (variable->string);
-	
 // link the variable in
 	variable->next = cvar_vars;
 	cvar_vars = variable;
+
+// copy the value off, because future sets will Z_Free it
+	strcpy (value, variable->string);
+	variable->string = Z_Malloc (1);	
+	
+// set it through the function to be consistant
+	Cvar_Set (variable->name, value);
 }
 
 /*

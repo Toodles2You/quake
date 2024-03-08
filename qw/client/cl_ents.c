@@ -27,7 +27,7 @@ extern	cvar_t	cl_solid_players;
 
 static struct predicted_player {
 	int flags;
-	qboolean active;
+	bool active;
 	vec3_t origin;	// predicted origin
 } predicted_players[MAX_CLIENTS];
 
@@ -262,13 +262,13 @@ An svc_packetentities has just been parsed, deal with the
 rest of the data stream.
 ==================
 */
-void CL_ParsePacketEntities (qboolean delta)
+void CL_ParsePacketEntities (bool delta)
 {
 	int			oldpacket, newpacket;
 	packet_entities_t	*oldp, *newp, dummy;
 	int			oldindex, newindex;
 	int			word, newnum, oldnum;
-	qboolean	full;
+	bool	full;
 	byte		from;
 
 	newpacket = cls.netchan.incoming_sequence&UPDATE_MASK;
@@ -943,7 +943,7 @@ then with clipping against them.
 This sets up the first phase.
 ===
 */
-void CL_SetUpPlayerPrediction(qboolean dopred)
+void CL_SetUpPlayerPrediction(bool dopred)
 {
 	int				j;
 	player_state_t	*state;

@@ -86,7 +86,7 @@ extern	quakeparms_t host_parms;
 extern	cvar_t		sys_nostdout;
 extern	cvar_t		developer;
 
-extern	qboolean	host_initialized;		// true if into command execution
+extern	bool	host_initialized;		// true if into command execution
 extern	double		host_frametime;
 extern	double		realtime;			// not bounded in any way, changed at
 										// start of every frame, never reset

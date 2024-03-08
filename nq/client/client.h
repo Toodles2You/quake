@@ -44,12 +44,13 @@ enum
 
 typedef struct
 {
+	int key;		// so entities can reuse same entry
 	vec3_t origin;
 	float radius;
 	float die;		// stop lighting after this time
 	float decay;	// drop this each second
 	float minlight; // don't add when contributing less
-	int key;
+	float color[4];
 } dlight_t;
 
 #define MAX_BEAMS 24

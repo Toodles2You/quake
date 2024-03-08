@@ -73,7 +73,7 @@ void SockadrToNetadr (struct sockaddr_in *s, netadr_t *a)
 	a->port = s->sin_port;
 }
 
-qboolean	NET_CompareBaseAdr (netadr_t a, netadr_t b)
+bool	NET_CompareBaseAdr (netadr_t a, netadr_t b)
 {
 	if (a.ip[0] == b.ip[0] && a.ip[1] == b.ip[1] && a.ip[2] == b.ip[2] && a.ip[3] == b.ip[3])
 		return true;
@@ -81,7 +81,7 @@ qboolean	NET_CompareBaseAdr (netadr_t a, netadr_t b)
 }
 
 
-qboolean	NET_CompareAdr (netadr_t a, netadr_t b)
+bool	NET_CompareAdr (netadr_t a, netadr_t b)
 {
 	if (a.ip[0] == b.ip[0] && a.ip[1] == b.ip[1] && a.ip[2] == b.ip[2] && a.ip[3] == b.ip[3] && a.port == b.port)
 		return true;
@@ -116,7 +116,7 @@ idnewt:28000
 192.246.40.70:28000
 =============
 */
-qboolean	NET_StringToAdr (char *s, netadr_t *a)
+bool	NET_StringToAdr (char *s, netadr_t *a)
 {
 	struct hostent	*h;
 	struct sockaddr_in sadr;
@@ -156,7 +156,7 @@ qboolean	NET_StringToAdr (char *s, netadr_t *a)
 
 // Returns true if we can't bind the address locally--in other words, 
 // the IP is NOT one of our interfaces.
-qboolean NET_IsClientLegal(netadr_t *adr)
+bool NET_IsClientLegal(netadr_t *adr)
 {
 	struct sockaddr_in sadr;
 	int newsocket;
@@ -188,7 +188,7 @@ qboolean NET_IsClientLegal(netadr_t *adr)
 
 //=============================================================================
 
-qboolean NET_GetPacket (void)
+bool NET_GetPacket (void)
 {
 	int 	ret;
 	struct sockaddr_in	from;
@@ -236,7 +236,7 @@ int UDP_OpenSocket (int port)
 {
 	int newsocket;
 	struct sockaddr_in address;
-	qboolean _true = true;
+	bool _true = true;
 	int i;
 
 	if ((newsocket = socket (PF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)

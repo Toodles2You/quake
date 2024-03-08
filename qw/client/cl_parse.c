@@ -153,7 +153,7 @@ Returns true if the file exists, otherwise it attempts
 to start a download from the server.
 ===============
 */
-qboolean	CL_CheckOrDownloadFile (char *filename)
+bool	CL_CheckOrDownloadFile (char *filename)
 {
 	FILE	*f;
 
@@ -495,7 +495,7 @@ Con_DPrintf("Upload starting of %d...\n", size);
 	CL_NextUpload();
 } 
 
-qboolean CL_IsUploading(void)
+bool CL_IsUploading(void)
 {
 	if (upload_data)
 		return true;
@@ -527,7 +527,7 @@ void CL_ParseServerData (void)
 	char	*str;
 	FILE	*f;
 	char	fn[MAX_OSPATH];
-	qboolean	cflag = false;
+	bool	cflag = false;
 	extern	char	gamedirfile[MAX_OSPATH];
 	int protover;
 	

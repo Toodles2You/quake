@@ -123,7 +123,7 @@ in a frame.  Not used for pushmove objects, because they must be exact.
 Returns false if the entity removed itself.
 =============
 */
-qboolean SV_RunThink (edict_t *ent)
+bool SV_RunThink (edict_t *ent)
 {
 	float	thinktime;
 
@@ -425,7 +425,7 @@ SV_Push
 
 ============
 */
-qboolean SV_Push (edict_t *pusher, vec3_t move)
+bool SV_Push (edict_t *pusher, vec3_t move)
 {
 	int			i, e;
 	edict_t		*check, *block;
@@ -789,7 +789,7 @@ FIXME: is this true?
 */
 void SV_Physics_Step (edict_t *ent)
 {
-	qboolean	hitsound;
+	bool	hitsound;
 
 // frefall if not onground
 	if ( ! ((int)ent->v.flags & (FL_ONGROUND | FL_FLY | FL_SWIM) ) )

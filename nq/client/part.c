@@ -610,8 +610,17 @@ void R_DrawParticles ()
 	float			frametime;
 	vec3_t			up, right;
 	float			scale;
+	bool			alphaTestEnabled;
 
     GL_Bind(particletexture);
+
+	alphaTestEnabled = glIsEnabled(GL_ALPHA_TEST);
+
+	if (alphaTestEnabled)
+	{
+		glDisable(GL_ALPHA_TEST);
+	}
+
 	glEnable (GL_BLEND);
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glBegin (GL_TRIANGLES);
@@ -661,7 +670,27 @@ void R_DrawParticles ()
 			scale = 1;
 		else
 			scale = 1 + scale * 0.004;
+
+#if 1
+		unsigned char *at;
+		unsigned char theAlpha;
+
+		at = (byte *)&d_8to24table[(int)p->color];
+
+		if (p->type == pt_fire)
+		{
+			theAlpha = 255 * (6 - p->ramp) / 6;
+		}
+		else
+		{
+			theAlpha = 255;
+		}
+
+		glColor4ub (*at, *(at + 1), *(at + 2), theAlpha);
+#else
 		glColor3ubv ((byte *)&d_8to24table[(int)p->color]);
+#endif
+
 		glTexCoord2f (0,0);
 		glVertex3fv (p->org);
 		glTexCoord2f (1,0);
@@ -732,6 +761,12 @@ void R_DrawParticles ()
 
 	glEnd ();
 	glDisable (GL_BLEND);
+
+	if (alphaTestEnabled)
+	{
+		glEnable(GL_ALPHA_TEST);
+	}
+
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 }
 

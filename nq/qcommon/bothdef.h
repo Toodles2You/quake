@@ -197,7 +197,7 @@ enum
 #include "../qcommon/net.h"
 #include "../qcommon/protocol.h"
 #include "../qcommon/cmd.h"
-#include "../qcommon/crc.h"
+#include "crc.h"
 #include "../qcommon/cmodel.h"
 #include "../qcommon/host.h"
 

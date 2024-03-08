@@ -196,4 +196,39 @@ extern bool gl_mtexable;
 void GL_DisableMultitexture();
 void GL_EnableMultitexture();
 
+// gl_warp.c
+void GL_SubdivideSurface(msurface_t *fa);
+void EmitBothSkyLayers(msurface_t *fa);
+void EmitWaterPolys(msurface_t *fa);
+void EmitSkyPolys(msurface_t *fa);
+void R_DrawSkyChain(msurface_t *s);
+
+// gl_draw.c
+int GL_LoadPicTexture(qpic_t *pic);
+void GL_Set2D();
+
+// gl_rmain.c
+bool R_CullBox(vec3_t mins, vec3_t maxs);
+void R_RotateForEntity(entity_t *e);
+
+// gl_rlight.c
+void R_MarkLights(dlight_t *light, int bit, mnode_t *node);
+void R_AnimateLight();
+void R_RenderDlights();
+void R_LightPoint(vec3_t p, vec3_t dest);
+
+// gl_refrag.c
+void R_StoreEfrags(efrag_t **ppefrag);
+
+// gl_mesh.c
+void GL_MakeAliasModelDisplayLists(model_t *m, aliashdr_t *hdr);
+
+// gl_rsurf.c
+void R_DrawBrushModel(entity_t *e);
+void R_DrawWorld();
+void GL_BuildLightmaps();
+
+// gl_ngraph.c
+void R_NetGraph();
+
 #endif /* !_GLQUAKE_H */

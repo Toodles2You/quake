@@ -138,6 +138,8 @@ void R_Init ()
 
 	Cvar_RegisterVariable (&gl_keeptjunctions);
 
+	R_InitBubble ();
+
 	R_InitParticles ();
 	R_InitParticleTexture ();
 

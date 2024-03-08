@@ -36,7 +36,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
 #define MAX_ANGLE_TURN 10
 
 static vec3_t desired_position; // where the camera wants to be
-static qboolean locked = false;
+static bool locked = false;
 static int oldbuttons;
 
 // track high fragger
@@ -47,7 +47,7 @@ cvar_t cl_chasecam = {"cl_chasecam", "0"};
 //cvar_t cl_camera_maxpitch = {"cl_camera_maxpitch", "10" };
 //cvar_t cl_camera_maxyaw = {"cl_camera_maxyaw", "30" };
 
-qboolean cam_forceview;
+bool cam_forceview;
 vec3_t cam_viewangles;
 double cam_lastviewtime;
 
@@ -90,7 +90,7 @@ static float vlen(vec3_t v)
 }
 
 // returns true if weapon model should be drawn in camera mode
-qboolean Cam_DrawViewModel(void)
+bool Cam_DrawViewModel(void)
 {
 	if (!cl.spectator)
 		return true;
@@ -101,7 +101,7 @@ qboolean Cam_DrawViewModel(void)
 }
 
 // returns true if we should draw this player, we don't if we are chase camming
-qboolean Cam_DrawPlayer(int playernum)
+bool Cam_DrawPlayer(int playernum)
 {
 	if (cl.spectator && autocam && locked && cl_chasecam.value && 
 		spec_track == playernum)
@@ -148,7 +148,7 @@ pmtrace_t Cam_DoTrace(vec3_t vec1, vec3_t vec2)
 }
 	
 // Returns distance or 9999 if invalid for some reason
-static float Cam_TryFlyby(player_state_t *self, player_state_t *player, vec3_t vec, qboolean checkvis)
+static float Cam_TryFlyby(player_state_t *self, player_state_t *player, vec3_t vec, bool checkvis)
 {
 	vec3_t v;
 	pmtrace_t trace;
@@ -181,7 +181,7 @@ static float Cam_TryFlyby(player_state_t *self, player_state_t *player, vec3_t v
 }
 
 // Is player visible?
-static qboolean Cam_IsVisible(player_state_t *player, vec3_t vec)
+static bool Cam_IsVisible(player_state_t *player, vec3_t vec)
 {
 	pmtrace_t trace;
 	vec3_t v;
@@ -198,7 +198,7 @@ static qboolean Cam_IsVisible(player_state_t *player, vec3_t vec)
 	return true;
 }
 
-static qboolean InitFlyby(player_state_t *self, player_state_t *player, int checkvis) 
+static bool InitFlyby(player_state_t *self, player_state_t *player, int checkvis) 
 {
     float f, max;
     vec3_t vec, vec2;

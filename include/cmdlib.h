@@ -85,9 +85,7 @@ extern	bool	com_eof;
 char *copystring(char *s);
 
 
-void CRC_Init(unsigned short *crcvalue);
-void CRC_ProcessByte(unsigned short *crcvalue, byte data);
-unsigned short CRC_Value(unsigned short crcvalue);
+#include "crc.h"
 
 void	CreatePath (char *path);
 void CopyFile (char *from, char *to);

@@ -42,15 +42,15 @@ extern	int		net_socket;
 
 void		NET_Init (int port);
 void		NET_Shutdown (void);
-qboolean	NET_GetPacket (void);
+bool	NET_GetPacket (void);
 void		NET_SendPacket (int length, void *data, netadr_t to);
 
-qboolean	NET_CompareAdr (netadr_t a, netadr_t b);
-qboolean	NET_CompareBaseAdr (netadr_t a, netadr_t b);
+bool	NET_CompareAdr (netadr_t a, netadr_t b);
+bool	NET_CompareBaseAdr (netadr_t a, netadr_t b);
 char		*NET_AdrToString (netadr_t a);
 char		*NET_BaseAdrToString (netadr_t a);
-qboolean	NET_StringToAdr (char *s, netadr_t *a);
-qboolean NET_IsClientLegal(netadr_t *adr);
+bool	NET_StringToAdr (char *s, netadr_t *a);
+bool NET_IsClientLegal(netadr_t *adr);
 
 //============================================================================
 
@@ -60,7 +60,7 @@ qboolean NET_IsClientLegal(netadr_t *adr);
 
 typedef struct
 {
-	qboolean	fatal_error;
+	bool	fatal_error;
 
 	float		last_received;		// for timeouts
 
@@ -108,10 +108,10 @@ void Netchan_Init (void);
 void Netchan_Transmit (netchan_t *chan, int length, byte *data);
 void Netchan_OutOfBand (netadr_t adr, int length, byte *data);
 void Netchan_OutOfBandPrint (netadr_t adr, char *format, ...);
-qboolean Netchan_Process (netchan_t *chan);
+bool Netchan_Process (netchan_t *chan);
 void Netchan_Setup (netchan_t *chan, netadr_t adr, int qport);
 
-qboolean Netchan_CanPacket (netchan_t *chan);
-qboolean Netchan_CanReliable (netchan_t *chan);
+bool Netchan_CanPacket (netchan_t *chan);
+bool Netchan_CanReliable (netchan_t *chan);
 
 #endif /* _NET_H */

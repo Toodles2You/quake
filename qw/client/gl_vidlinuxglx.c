@@ -91,9 +91,9 @@ const char *gl_extensions;
 void (*qglColorTableEXT) (int, int, int, int, int, const void*);
 void (*qgl3DfxSetPaletteEXT) (GLuint *);
 
-qboolean is8bit = false;
-qboolean isPermedia = false;
-qboolean gl_mtexable = false;
+bool is8bit = false;
+bool isPermedia = false;
+bool gl_mtexable = false;
 
 /*-----------------------------------------------------------------------*/
 void D_BeginDirectRect (int x, int y, byte *pbitmap, int width, int height)
@@ -396,7 +396,7 @@ void	VID_SetPalette (unsigned char *palette)
 	FILE *f;
 	char s[255];
 	float dist, bestdist;
-	static qboolean palflag = false;
+	static bool palflag = false;
 
 //
 // 8 8 8 encoding
@@ -530,7 +530,7 @@ void GL_EndRendering (void)
 	glXSwapBuffers(dpy, win);
 }
 
-qboolean VID_Is8bit(void)
+bool VID_Is8bit(void)
 {
 	return is8bit;
 }
