@@ -86,15 +86,18 @@ extern int msg_readcount;
 extern bool msg_badread; // set if a read goes beyond end of message
 
 void MSG_BeginReading();
+int MSG_GetReadCount();
 int MSG_ReadChar();
 int MSG_ReadByte();
 int MSG_ReadShort();
 int MSG_ReadLong();
 float MSG_ReadFloat();
 char *MSG_ReadString();
+char *MSG_ReadStringLine();
 
 float MSG_ReadCoord();
 float MSG_ReadAngle();
+float MSG_ReadAngle16();
 
 //============================================================================
 
@@ -115,6 +118,8 @@ extern int com_argc;
 extern char **com_argv;
 
 int COM_CheckParm(char *parm);
+void COM_AddParm(char *parm);
+
 void COM_Init(char *path);
 void COM_InitArgv(int argc, char **argv);
 
@@ -142,9 +147,14 @@ byte *COM_LoadStackFile(char *path, void *buffer, size_t bufsize);
 byte *COM_LoadTempFile(char *path);
 byte *COM_LoadHunkFile(char *path);
 void COM_LoadCacheFile(char *path, struct cache_user_s *cu);
+void COM_Gamedir(char *dir);
 
 extern bool standard_quake;
 extern bool rogue;
 extern bool hipnotic;
+
+unsigned int COM_BlockChecksum(void *buffer, int length);
+void COM_BlockFullChecksum(void *buffer, int len, unsigned char *outbuf);
+byte COM_BlockSequenceCRCByte(byte *base, int length, int sequence);
 
 #endif /* !COMMON_H */

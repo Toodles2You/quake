@@ -74,6 +74,7 @@ cvar_t	r_lightmap = {"r_lightmap","0"};
 cvar_t	r_wateralpha = {"r_wateralpha","1"};
 cvar_t	r_dynamic = {"r_dynamic","1"};
 cvar_t	r_novis = {"r_novis","0"};
+cvar_t	r_netgraph = {"r_netgraph","0"};
 cvar_t	r_fence = {"r_fence","1"};
 cvar_t	r_luminescent = {"r_luminescent","1"};
 cvar_t	r_zmax = {"r_zmax","4096"};

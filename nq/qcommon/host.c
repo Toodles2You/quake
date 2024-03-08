@@ -77,6 +77,8 @@ cvar_t	coop = {"coop","0"};			// 0 or 1
 
 cvar_t	pausable = {"pausable","1"};
 
+extern int cl_framecount;
+
 
 /*
 ================
@@ -678,6 +680,7 @@ void Host_Frame (float time)
 	}
 	
 	host_framecount++;
+	cl_framecount++;
 }
 
 

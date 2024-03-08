@@ -469,6 +469,38 @@ void SCR_DrawNet ()
 	Draw_Pic (scr_vrect.x+64, scr_vrect.y, scr_net);
 }
 
+int cl_framecount;
+
+/*
+==============
+SCR_DrawFPS
+==============
+*/
+void SCR_DrawFPS ()
+{
+	static double lastframetime;
+	static int lastframecount;
+	double t;
+	int x, y;
+	char st[80];
+
+	if (!cl_showfps.value)
+		return;
+
+	t = Sys_FloatTime();
+	if ((t - lastframetime) >= 1.0)
+	{
+		lastframecount = cl_framecount;
+		cl_framecount = 0;
+		lastframetime = t;
+	}
+
+	sprintf(st, "%3d FPS", lastframecount);
+	x = vid.width - strlen(st) * 8 - 8;
+	y = vid.height - sb_lines - 8;
+	Draw_String(x, y, st);
+}
+
 /*
 ==============
 DrawPause
@@ -917,6 +949,11 @@ void SCR_UpdateScreen ()
 	//
 	SCR_TileClear ();
 
+	if (r_netgraph.value)
+	{
+		R_NetGraph ();
+	}
+
 	if (scr_drawdialog)
 	{
 		Sbar_Draw ();
@@ -944,6 +981,7 @@ void SCR_UpdateScreen ()
 			Draw_Crosshair (scr_vrect.x + scr_vrect.width/2, scr_vrect.y + scr_vrect.height/2);
 		
 		SCR_DrawNet ();
+		SCR_DrawFPS ();
 		SCR_DrawTurtle ();
 		SCR_DrawPause ();
 		SCR_CheckDrawCenterString ();

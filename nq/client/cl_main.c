@@ -31,6 +31,7 @@ cvar_t	cl_shownet = {"cl_shownet","0"};	// can be 0, 1, or 2
 cvar_t	cl_nolerp = {"cl_nolerp","0"};
 cvar_t	cl_sbar = {"cl_sbar", "1", CVAR_ARCHIVE};
 cvar_t	cl_maxfps = {"cl_maxfps", "72"};
+cvar_t	cl_showfps = {"cl_showfps", "0"};
 
 cvar_t	lookspring = {"lookspring","0", CVAR_ARCHIVE};
 cvar_t	lookstrafe = {"lookstrafe","0", CVAR_ARCHIVE};
@@ -717,6 +718,7 @@ void CL_Init ()
 	Cvar_RegisterVariable (&cl_nolerp);
 	Cvar_RegisterVariable (&cl_sbar);
 	Cvar_RegisterVariable (&cl_maxfps);
+	Cvar_RegisterVariable (&cl_showfps);
 	Cvar_RegisterVariable (&lookspring);
 	Cvar_RegisterVariable (&lookstrafe);
 	Cvar_RegisterVariable (&sensitivity);

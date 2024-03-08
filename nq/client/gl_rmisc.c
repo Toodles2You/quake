@@ -116,6 +116,7 @@ void R_Init ()
 	Cvar_RegisterVariable (&r_dynamic);
 	Cvar_RegisterVariable (&r_novis);
 	Cvar_RegisterVariable (&r_speeds);
+	Cvar_RegisterVariable (&r_netgraph);
 	Cvar_RegisterVariable (&r_fence);
 	Cvar_RegisterVariable (&r_luminescent);
 	Cvar_RegisterVariable (&r_zmax);
@@ -142,6 +143,9 @@ void R_Init ()
 
 	R_InitParticles ();
 	R_InitParticleTexture ();
+
+	netgraphtexture = texture_extension_number;
+	texture_extension_number++;
 
 	playertextures = texture_extension_number;
 	texture_extension_number += 16;

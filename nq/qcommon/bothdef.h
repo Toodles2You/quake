@@ -36,7 +36,7 @@ enum
 //===========================================
 // per-level limits
 
-#define MIN_EDICTS 600
+#define MIN_EDICTS 768
 #define MAX_LIGHTSTYLES 64
 #define MAX_MODELS 256 // these are sent over the net as bytes
 #define MAX_SOUNDS 256 // so they cannot be blindly increased
@@ -65,6 +65,7 @@ enum
     STAT_TOTALMONSTERS,
     STAT_SECRETS, // bumped on client side by svc_foundsecret
     STAT_MONSTERS, // bumped by svc_killedmonster
+    STAT_ITEMS,
 
     MAX_CL_STATS = 32,
 };
@@ -186,6 +187,16 @@ enum
 
 #define MAX_SCOREBOARD 16
 #define MAX_SCOREBOARDNAME 32
+
+//===========================================
+
+enum
+{
+    PRINT_LOW,    // pickup messages
+    PRINT_MEDIUM, // death messages
+    PRINT_HIGH,   // critical messages
+    PRINT_CHAT,   // chat messages
+};
 
 //===========================================
 

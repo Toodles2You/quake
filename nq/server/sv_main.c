@@ -1200,7 +1200,7 @@ void SV_SpawnServer (char *server, char *startspot)
 			sv_pr_float(coop) = coop.value;
 		}
 	}
-	else
+	else if (pr_field(deathmatch))
 	{
 		sv_pr_float(deathmatch) = deathmatch.value;
 	}

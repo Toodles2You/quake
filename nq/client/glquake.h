@@ -130,6 +130,7 @@ extern int d_lightstylevalue[256]; // 8.8 fraction of base light value
 extern int currenttexture;
 extern int cnttextures[2];
 extern int particletexture;
+extern int netgraphtexture;
 extern int playertextures;
 
 extern int skytexturenum; // index in cl.loadmodel, not gl texture object
@@ -145,6 +146,7 @@ extern cvar_t r_lightmap;
 extern cvar_t r_wateralpha;
 extern cvar_t r_dynamic;
 extern cvar_t r_novis;
+extern cvar_t r_netgraph;
 extern cvar_t r_fence;
 extern cvar_t r_luminescent;
 extern cvar_t r_zmax;

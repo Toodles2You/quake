@@ -1561,6 +1561,29 @@ logfrag (killer, killee)
 */
 void PF_logfrag (progs_state_t *pr)
 {
+#if 0
+	edict_t *ent1, *ent2;
+	int e1, e2;
+	char *s;
+
+	ent1 = G_EDICT(OFS_PARM0);
+	ent2 = G_EDICT(OFS_PARM1);
+
+	e1 = NUM_FOR_EDICT(ent1);
+	e2 = NUM_FOR_EDICT(ent2);
+
+	if (e1 < 1 || e1 > MAX_CLIENTS || e2 < 1 || e2 > MAX_CLIENTS)
+		return;
+
+	s = va("\\%s\\%s\\\n", svs.clients[e1 - 1].name, svs.clients[e2 - 1].name);
+
+	SZ_Print(&svs.log[svs.logsequence & 1], s);
+	if (sv_fraglogfile)
+	{
+		fprintf(sv_fraglogfile, s);
+		fflush(sv_fraglogfile);
+	}
+#endif
 }
 
 
@@ -1573,6 +1596,41 @@ string(entity e, string key) infokey
 */
 void PF_infokey (progs_state_t *pr)
 {
+#if 0
+	edict_t *e;
+	int e1;
+	char *value;
+	char *key;
+	static char ov[256];
+
+	e = G_EDICT(OFS_PARM0);
+	e1 = NUM_FOR_EDICT(e);
+	key = G_STRING(OFS_PARM1);
+
+	if (e1 == 0)
+	{
+		if ((value = Info_ValueForKey(svs.info, key)) == NULL ||
+			!*value)
+			value = Info_ValueForKey(localinfo, key);
+	}
+	else if (e1 <= MAX_CLIENTS)
+	{
+		if (!strcmp(key, "ip"))
+			value = strcpy(ov, NET_BaseAdrToString(svs.clients[e1 - 1].netchan.remote_address));
+		else if (!strcmp(key, "ping"))
+		{
+			int ping = SV_CalcPing(&svs.clients[e1 - 1]);
+			sprintf(ov, "%d", ping);
+			value = ov;
+		}
+		else
+			value = Info_ValueForKey(svs.clients[e1 - 1].userinfo, key);
+	}
+	else
+		value = "";
+
+	RETURN_STRING(value);
+#endif
 }
 
 /*
@@ -1584,6 +1642,7 @@ float(string s) stof
 */
 void PF_stof (progs_state_t *pr)
 {
+	pr_global(pr, float, OFS_RETURN) = atof(pr_get_string(pr, OFS_PARM0));
 }
 
 
@@ -1596,6 +1655,15 @@ void(vector where, float set) multicast
 */
 void PF_multicast (progs_state_t *pr)
 {
+#if 0
+	float *o;
+	int to;
+
+	o = G_VECTOR(OFS_PARM0);
+	to = G_FLOAT(OFS_PARM1);
+
+	SV_Multicast(o, to);
+#endif
 }
 
 void PF_Fixme (progs_state_t *pr)

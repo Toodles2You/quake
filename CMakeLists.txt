@@ -62,6 +62,7 @@ set(QUAKE_LIBRARIES m)
 
 set(COMMON_SRC
     common/crc.c
+    common/md4.c
     common/mathlib.c
 )
 
@@ -94,6 +95,7 @@ set(CLIENT_SRC
     nq/client/gl_draw.c
     nq/client/gl_mesh.c
     nq/client/gl_model.c
+    nq/client/gl_ngraph.c
     nq/client/gl_refrag.c
     nq/client/gl_rlight.c
     nq/client/gl_rmain.c

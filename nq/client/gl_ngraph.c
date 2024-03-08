@@ -1,33 +1,33 @@
 /*
+===========================================================================
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2023 Justin Keller
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+===========================================================================
 */
+
 // gl_ngraph.c
 
-#include "quakedef.h"
+#include "clientdef.h"
 
-extern byte		*draw_chars;				// 8*8 graphic characters
+int	netgraphtexture; // netgraph texture
 
-int	netgraphtexture;	// netgraph texture
-
+#if 0
 #define NET_GRAPHHEIGHT 32
 
-static	byte ngraph_texels[NET_GRAPHHEIGHT][NET_TIMINGS];
+static byte ngraph_texels[NET_GRAPHHEIGHT][NET_TIMINGS];
 
 static void R_LineGraph (int x, int h)
 {
@@ -58,35 +58,16 @@ static void R_LineGraph (int x, int h)
 	for ( ; i<s ; i++)
 		ngraph_texels[NET_GRAPHHEIGHT - i - 1][x] = (byte)0xff;
 }
-
-void Draw_CharToNetGraph (int x, int y, int num)
-{
-	int		row, col;
-	byte	*source;
-	int		drawline;
-	int		nx;
-
-	row = num>>4;
-	col = num&15;
-	source = draw_chars + (row<<10) + (col<<3);
-
-	for (drawline = 8; drawline; drawline--, y++)
-	{
-		for (nx=0 ; nx<8 ; nx++)
-			if (source[nx] != 255)
-				ngraph_texels[y][nx+x] = 0x60 + source[nx];
-		source += 128;
-	}
-}
-
+#endif
 
 /*
 ==============
 R_NetGraph
 ==============
 */
-void R_NetGraph (void)
+void R_NetGraph ()
 {
+#if 0
 	int		a, x, i, y;
 	int lost;
 	char st[80];
@@ -137,5 +118,6 @@ void R_NetGraph (void)
 	glTexCoord2f (0, 1);
 	glVertex2f (x, y+NET_GRAPHHEIGHT);
 	glEnd ();
+#endif
 }
 
