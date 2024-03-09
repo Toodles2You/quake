@@ -6,6 +6,13 @@
 
 enum
 {
+	PORT_CLIENT = 27001,
+	PORT_MASTER = 27000,
+	PORT_SERVER = 27500,
+};
+
+enum
+{
 // if the high bit of the servercmd is set, the low bits are fast update flags:
     U_MOREBITS      = 1 << 0,
     U_ORIGIN1       = 1 << 1,

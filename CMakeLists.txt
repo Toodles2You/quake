@@ -73,12 +73,8 @@ set(QCOMMON_SRC
     nq/qcommon/cvar.c
     nq/qcommon/host_cmd.c
     nq/qcommon/host.c
-    nq/qcommon/net_bsd.c
-    nq/qcommon/net_dgrm.c
-    nq/qcommon/net_loop.c
-    nq/qcommon/net_main.c
+    nq/qcommon/net_chan.c
     nq/qcommon/net_udp.c
-    nq/qcommon/net_vcr.c
     nq/qcommon/sys_linux.c
     nq/qcommon/zone.c
 )

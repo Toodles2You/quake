@@ -781,7 +781,6 @@ void Host_Init (quakeparms_t *parms)
 	Cmd_Init ();	
 	V_Init ();
 	Chase_Init ();
-	Host_InitVCR (parms);
 	COM_Init (parms->basedir);
 	Host_InitLocal ();
 	W_LoadWadFile ("gfx.wad");
@@ -792,7 +791,7 @@ void Host_Init (quakeparms_t *parms)
     ED_Init ();
 	CMod_Init ();
 	Mod_Init ();
-	NET_Init ();
+	NET_Init (PORT_CLIENT, PORT_SERVER);
 	SV_Init ();
 
 	Con_Printf ("Build: "__TIME__" "__DATE__"\n");
