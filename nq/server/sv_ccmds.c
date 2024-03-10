@@ -1,24 +1,24 @@
 /*
+===========================================================================
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2023 Justin Keller
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+===========================================================================
 */
 
-#include "qwsvdef.h"
+#include "serverdef.h"
 
 bool	sv_allow_cheats;
 
@@ -44,8 +44,9 @@ SV_SetMaster_f
 Make a master server current
 ====================
 */
-void SV_SetMaster_f (void)
+void SV_SetMaster_f ()
 {
+	#if 0
 	char	data[2];
 	int		i;
 
@@ -71,20 +72,7 @@ void SV_SetMaster_f (void)
 	}
 
 	svs.last_heartbeat = -99999;
-}
-
-
-/*
-==================
-SV_Quit_f
-==================
-*/
-void SV_Quit_f (void)
-{
-	SV_FinalMessage ("server shutdown\n");
-	Con_Printf ("Shutting down.\n");
-	SV_Shutdown ();
-	Sys_Quit ();
+	#endif
 }
 
 /*
@@ -92,8 +80,9 @@ void SV_Quit_f (void)
 SV_Logfile_f
 ============
 */
-void SV_Logfile_f (void)
+void SV_Logfile_f ()
 {
+	#if 0
 	char	name[MAX_OSPATH];
 
 	if (sv_logfile)
@@ -109,6 +98,7 @@ void SV_Logfile_f (void)
 	sv_logfile = fopen (name, "w");
 	if (!sv_logfile)
 		Con_Printf ("failed.\n");
+	#endif
 }
 
 
@@ -117,8 +107,9 @@ void SV_Logfile_f (void)
 SV_Fraglogfile_f
 ============
 */
-void SV_Fraglogfile_f (void)
+void SV_Fraglogfile_f ()
 {
+	#if 0
 	char	name[MAX_OSPATH];
 	int		i;
 
@@ -152,6 +143,7 @@ void SV_Fraglogfile_f (void)
 	}
 
 	Con_Printf ("Logging frags to %s.\n", name);
+	#endif
 }
 
 
@@ -162,7 +154,7 @@ SV_SetPlayer
 Sets host_client and sv_player to the player with idnum Cmd_Argv(1)
 ==================
 */
-bool SV_SetPlayer (void)
+bool SV_SetPlayer ()
 {
 	client_t	*cl;
 	int			i;
@@ -193,7 +185,7 @@ SV_God_f
 Sets client to godmode
 ==================
 */
-void SV_God_f (void)
+void SV_God_f ()
 {
 	if (!sv_allow_cheats)
 	{
@@ -204,15 +196,14 @@ void SV_God_f (void)
 	if (!SV_SetPlayer ())
 		return;
 
-	sv_player->v.flags = (int)sv_player->v.flags ^ FL_GODMODE;
-	if (!((int)sv_player->v.flags & FL_GODMODE) )
+	ed_float(sv_player, flags) = (int)ed_float(sv_player, flags) ^ FL_GODMODE;
+	if (!((int)ed_float(sv_player, flags) & FL_GODMODE) )
 		SV_ClientPrintf (host_client, PRINT_HIGH, "godmode OFF\n");
 	else
 		SV_ClientPrintf (host_client, PRINT_HIGH, "godmode ON\n");
 }
 
-
-void SV_Noclip_f (void)
+void SV_Notarget_f ()
 {
 	if (!sv_allow_cheats)
 	{
@@ -223,14 +214,33 @@ void SV_Noclip_f (void)
 	if (!SV_SetPlayer ())
 		return;
 
-	if (sv_player->v.movetype != MOVETYPE_NOCLIP)
+	ed_float(sv_player, flags) = (int)ed_float(sv_player, flags) ^ FL_NOTARGET;
+	if (!((int)ed_float(sv_player, flags) & FL_NOTARGET) )
+		SV_ClientPrintf (host_client, PRINT_HIGH, "notarget OFF\n");
+	else
+		SV_ClientPrintf (host_client, PRINT_HIGH, "notarget ON\n");
+}
+
+
+void SV_Noclip_f ()
+{
+	if (!sv_allow_cheats)
 	{
-		sv_player->v.movetype = MOVETYPE_NOCLIP;
+		Con_Printf ("You must run the server with -cheats to enable this command.\n");
+		return;
+	}
+
+	if (!SV_SetPlayer ())
+		return;
+
+	if (ed_float(sv_player, movetype) != MOVETYPE_NOCLIP)
+	{
+		ed_float(sv_player, movetype) = MOVETYPE_NOCLIP;
 		SV_ClientPrintf (host_client, PRINT_HIGH, "noclip ON\n");
 	}
 	else
 	{
-		sv_player->v.movetype = MOVETYPE_WALK;
+		ed_float(sv_player, movetype) = MOVETYPE_WALK;
 		SV_ClientPrintf (host_client, PRINT_HIGH, "noclip OFF\n");
 	}
 }
@@ -241,7 +251,7 @@ void SV_Noclip_f (void)
 SV_Give_f
 ==================
 */
-void SV_Give_f (void)
+void SV_Give_f ()
 {
 	char	*t;
 	int		v;
@@ -260,82 +270,117 @@ void SV_Give_f (void)
 	
 	switch (t[0])
 	{
-	case '2':
-	case '3':
-	case '4':
-	case '5':
-	case '6':
-	case '7':
-	case '8':
-	case '9':
-		sv_player->v.items = (int)sv_player->v.items | IT_SHOTGUN<< (t[0] - '2');
+   case '0':
+   case '1':
+   case '2':
+   case '3':
+   case '4':
+   case '5':
+   case '6':
+   case '7':
+   case '8':
+   case '9':
+      if (hipnotic)
+      {
+         if (t[0] == '6')
+         {
+            if (t[1] == 'a')
+               ed_float(sv_player, items) = (int)ed_float(sv_player, items) | HIT_PROXIMITY_GUN;
+            else
+               ed_float(sv_player, items) = (int)ed_float(sv_player, items) | IT_GRENADE_LAUNCHER;
+         }
+         else if (t[0] == '9')
+            ed_float(sv_player, items) = (int)ed_float(sv_player, items) | HIT_LASER_CANNON;
+         else if (t[0] == '0')
+            ed_float(sv_player, items) = (int)ed_float(sv_player, items) | HIT_MJOLNIR;
+         else if (t[0] >= '2')
+            ed_float(sv_player, items) = (int)ed_float(sv_player, items) | (IT_SHOTGUN << (t[0] - '2'));
+      }
+      else
+      {
+         if (t[0] >= '2')
+            ed_float(sv_player, items) = (int)ed_float(sv_player, items) | (IT_SHOTGUN << (t[0] - '2'));
+      }
 		break;
 	
-	case 's':
-		sv_player->v.ammo_shells = v;
-		break;		
-	case 'n':
-		sv_player->v.ammo_nails = v;
-		break;		
-	case 'r':
-		sv_player->v.ammo_rockets = v;
-		break;		
-	case 'h':
-		sv_player->v.health = v;
-		break;		
-	case 'c':
-		sv_player->v.ammo_cells = v;
-		break;		
-	}
-}
+    case 's':
+		if (ed_field(ammo_shells1))
+		{
+			ed_float(sv_player, ammo_shells1) = v;
+		}
 
+        ed_float(sv_player, ammo_shells) = v;
+        break;		
+    case 'n':
+		if (ed_field(ammo_nails1))
+		{
+			ed_float(sv_player, ammo_nails1) = v;
 
-/*
-======================
-SV_Map_f
-
-handle a 
-map <mapname>
-command from the console or progs.
-======================
-*/
-void SV_Map_f (void)
-{
-	char	level[MAX_QPATH];
-	char	expanded[MAX_QPATH];
-	FILE	*f;
-
-	if (Cmd_Argc() != 2)
-	{
-		Con_Printf ("map <levelname> : continue game on a new level\n");
-		return;
-	}
-	strcpy (level, Cmd_Argv(1));
-
-#if 0
-	if (!strcmp (level, "e1m8"))
-	{	// QuakeWorld can't go to e1m8
-		SV_BroadcastPrintf (PRINT_HIGH, "can't go to low grav level in QuakeWorld...\n");
-		strcpy (level, "e1m5");
-	}
-#endif
-
-	// check to make sure the level exists
-	sprintf (expanded, "maps/%s.bsp", level);
-	COM_FOpenFile (expanded, &f);
-	if (!f)
-	{
-		Con_Printf ("Can't find %s\n", expanded);
-		return;
-	}
-	fclose (f);
-
-	SV_BroadcastCommand ("changing\n");
-	SV_SendMessagesToAll ();
-
-	SV_SpawnServer (level);
-
-	SV_BroadcastCommand ("reconnect\n");
+			if (ed_float(sv_player, weapon) <= IT_LIGHTNING)
+				ed_float(sv_player, ammo_nails) = v;
+		}
+		else
+		{
+			ed_float(sv_player, ammo_nails) = v;
+		}
+        break;		
+    case 'l':
+		if (ed_field(ammo_lava_nails))
+		{
+			ed_float(sv_player, ammo_lava_nails) = v;
+			
+			if (ed_float(sv_player, weapon) > IT_LIGHTNING)
+				ed_float(sv_player, ammo_nails) = v;
+		}
+        break;
+    case 'r':
+		if (ed_field(ammo_rockets1))
+		{
+			ed_float(sv_player, ammo_rockets1) = v;
+			
+			if (ed_float(sv_player, weapon) <= IT_LIGHTNING)
+				ed_float(sv_player, ammo_rockets) = v;
+		}
+		else
+		{
+			ed_float(sv_player, ammo_rockets) = v;
+		}
+        break;		
+    case 'm':
+		if (ed_field(ammo_multi_rockets))
+		{
+			ed_float(sv_player, ammo_multi_rockets) = v;
+			
+				if (ed_float(sv_player, weapon) > IT_LIGHTNING)
+					ed_float(sv_player, ammo_rockets) = v;
+		}
+        break;		
+    case 'h':
+        ed_float(sv_player, health) = v;
+        break;		
+    case 'c':
+		if (ed_field(ammo_cells1))
+		{
+			ed_float(sv_player, ammo_cells1) = v;
+			
+			if (ed_float(sv_player, weapon) <= IT_LIGHTNING)
+				ed_float(sv_player, ammo_cells) = v;
+		}
+		else
+		{
+			ed_float(sv_player, ammo_cells) = v;
+		}
+        break;		
+    case 'p':
+		if (ed_field(ammo_plasma))
+		{
+			ed_float(sv_player, ammo_plasma) = v;
+			
+			if (ed_float(sv_player, weapon) > IT_LIGHTNING)
+				ed_float(sv_player, ammo_cells) = v;
+		}
+        break;		
+    }
 }
 
 
@@ -346,7 +391,7 @@ SV_Kick_f
 Kick a user off of the server
 ==================
 */
-void SV_Kick_f (void)
+void SV_Kick_f ()
 {
 	int			i;
 	client_t	*cl;
@@ -378,7 +423,7 @@ void SV_Kick_f (void)
 SV_Status_f
 ================
 */
-void SV_Status_f (void)
+void SV_Status_f ()
 {
 	int			i, j, l;
 	client_t	*cl;
@@ -411,7 +456,7 @@ void SV_Status_f (void)
 
 			Con_Printf ("%-16.16s  ", cl->name);
 
-			Con_Printf ("%6i %5i", cl->userid, (int)cl->edict->v.frags);
+			Con_Printf ("%6i %5i", cl->userid, (int)ed_float(cl->edict, frags));
 			if (cl->spectator)
 				Con_Printf(" (s)\n");
 			else			
@@ -441,7 +486,7 @@ void SV_Status_f (void)
 		{
 			if (!cl->state)
 				continue;
-			Con_Printf ("%5i %6i ", (int)cl->edict->v.frags,  cl->userid);
+			Con_Printf ("%5i %6i ", (int)ed_float(cl->edict, frags),  cl->userid);
 
 			s = NET_BaseAdrToString ( cl->netchan.remote_address);
 			Con_Printf ("%s", s);
@@ -484,7 +529,7 @@ void SV_Status_f (void)
 SV_ConSay_f
 ==================
 */
-void SV_ConSay_f(void)
+void SV_ConSay_f()
 {
 	client_t *client;
 	int		j;
@@ -519,7 +564,7 @@ void SV_ConSay_f(void)
 SV_Heartbeat_f
 ==================
 */
-void SV_Heartbeat_f (void)
+void SV_Heartbeat_f ()
 {
 	svs.last_heartbeat = -9999;
 }
@@ -542,7 +587,7 @@ SV_Serverinfo_f
 ===========
 */
 char *CopyString(char *s);
-void SV_Serverinfo_f (void)
+void SV_Serverinfo_f ()
 {
 	cvar_t	*var;
 
@@ -587,7 +632,7 @@ SV_Serverinfo_f
 ===========
 */
 char *CopyString(char *s);
-void SV_Localinfo_f (void)
+void SV_Localinfo_f ()
 {
 	if (Cmd_Argc() == 1)
 	{
@@ -618,7 +663,7 @@ SV_User_f
 Examine a users info strings
 ===========
 */
-void SV_User_f (void)
+void SV_User_f ()
 {
 	if (Cmd_Argc() != 2)
 	{
@@ -639,7 +684,7 @@ SV_Gamedir
 Sets the fake *gamedir to a different directory.
 ================
 */
-void SV_Gamedir (void)
+void SV_Gamedir ()
 {
 	char			*dir;
 
@@ -675,7 +720,7 @@ Sets the gamedir and path to a different directory.
 ================
 */
 
-void SV_Floodprot_f (void)
+void SV_Floodprot_f ()
 {
 	int arg1, arg2, arg3;
 	
@@ -715,7 +760,7 @@ void SV_Floodprot_f (void)
 	fp_secondsdead = arg3;
 }
 
-void SV_Floodprotmsg_f (void)
+void SV_Floodprotmsg_f ()
 {
 	if (Cmd_Argc() == 1) {
 		Con_Printf("Current msg: %s\n", fp_msg);
@@ -735,7 +780,7 @@ Sets the gamedir and path to a different directory.
 ================
 */
 extern char	gamedirfile[];
-void SV_Gamedir_f (void)
+void SV_Gamedir_f ()
 {
 	char			*dir;
 
@@ -825,7 +870,7 @@ void SV_Snap (int uid)
 SV_Snap_f
 ================
 */
-void SV_Snap_f (void)
+void SV_Snap_f ()
 {
 	int			uid;
 
@@ -845,7 +890,7 @@ void SV_Snap_f (void)
 SV_Snap
 ================
 */
-void SV_SnapAll_f (void)
+void SV_SnapAll_f ()
 {
 	client_t *cl;
 	int			i;
@@ -863,7 +908,7 @@ void SV_SnapAll_f (void)
 SV_InitOperatorCommands
 ==================
 */
-void SV_InitOperatorCommands (void)
+void SV_InitOperatorCommands ()
 {
 	if (COM_CheckParm ("-cheats"))
 	{
@@ -879,13 +924,12 @@ void SV_InitOperatorCommands (void)
 	Cmd_AddCommand ("kick", SV_Kick_f);
 	Cmd_AddCommand ("status", SV_Status_f);
 
-	Cmd_AddCommand ("map", SV_Map_f);
 	Cmd_AddCommand ("setmaster", SV_SetMaster_f);
 
 	Cmd_AddCommand ("say", SV_ConSay_f);
 	Cmd_AddCommand ("heartbeat", SV_Heartbeat_f);
-	Cmd_AddCommand ("quit", SV_Quit_f);
 	Cmd_AddCommand ("god", SV_God_f);
+	Cmd_AddCommand ("notarget", SV_Notarget_f);
 	Cmd_AddCommand ("give", SV_Give_f);
 	Cmd_AddCommand ("noclip", SV_Noclip_f);
 	Cmd_AddCommand ("serverinfo", SV_Serverinfo_f);

@@ -55,7 +55,7 @@ cvar_t	host_framerate = {"host_framerate","0"};
 cvar_t	host_timescale = {"host_timescale","0"};	// set for slow motion
 cvar_t	host_speeds = {"host_speeds","0"};			// set for running times
 
-cvar_t	sys_ticrate = {"sys_ticrate","0.05"};
+// cvar_t	sys_ticrate = {"sys_ticrate","0.05"};
 cvar_t	serverprofile = {"serverprofile","0"};
 
 cvar_t	fraglimit = {"fraglimit","0", CVAR_SERVER};
@@ -147,57 +147,6 @@ void Host_Error (char *error, ...)
 	longjmp (host_abortserver, 1);
 }
 
-/*
-================
-Host_FindMaxClients
-================
-*/
-void	Host_FindMaxClients ()
-{
-	int		i;
-
-	svs.maxclients = 1;
-		
-	i = COM_CheckParm ("-dedicated");
-	if (i)
-	{
-		cls.state = ca_dedicated;
-		if (i != (com_argc - 1))
-		{
-			svs.maxclients = atoi (com_argv[i+1]);
-		}
-		else
-			svs.maxclients = 8;
-	}
-	else
-		cls.state = ca_disconnected;
-
-	i = COM_CheckParm ("-listen");
-	if (i)
-	{
-		if (cls.state == ca_dedicated)
-			Sys_Error ("Only one of -dedicated or -listen can be specified");
-		if (i != (com_argc - 1))
-			svs.maxclients = atoi (com_argv[i+1]);
-		else
-			svs.maxclients = 8;
-	}
-	if (svs.maxclients < 1)
-		svs.maxclients = 8;
-	else if (svs.maxclients > MAX_SCOREBOARD)
-		svs.maxclients = MAX_SCOREBOARD;
-
-	svs.maxclientslimit = svs.maxclients;
-	if (svs.maxclientslimit < 4)
-		svs.maxclientslimit = 4;
-	svs.clients = Hunk_AllocName (svs.maxclientslimit*sizeof(client_t), "clients");
-
-	if (svs.maxclients > 1)
-		Cvar_SetValue ("deathmatch", 1.0);
-	else
-		Cvar_SetValue ("deathmatch", 0.0);
-}
-
 
 /*
 =======================
@@ -212,7 +161,7 @@ void Host_InitLocal ()
 	Cvar_RegisterVariable (&host_timescale);
 	Cvar_RegisterVariable (&host_speeds);
 
-	Cvar_RegisterVariable (&sys_ticrate);
+	// Cvar_RegisterVariable (&sys_ticrate);
 	Cvar_RegisterVariable (&serverprofile);
 
 	Cvar_RegisterVariable (&fraglimit);
@@ -226,8 +175,6 @@ void Host_InitLocal ()
 	Cvar_RegisterVariable (&coop);
 
 	Cvar_RegisterVariable (&pausable);
-
-	Host_FindMaxClients ();
 	
 	host_time = 1.0;		// so a think at time 0 won't get called
 }
@@ -262,134 +209,63 @@ void Host_WriteConfiguration ()
 	}
 }
 
-
-/*
-=================
-SV_ClientPrintf
-
-Sends text across to be displayed 
-FIXME: make this just a stuffed echo?
-=================
-*/
-void SV_ClientPrintf (char *fmt, ...)
-{
-	va_list		argptr;
-	char		string[1024];
-	
-	va_start (argptr,fmt);
-	vsprintf (string, fmt,argptr);
-	va_end (argptr);
-	
-	MSG_WriteByte (&host_client->message, svc_print);
-	MSG_WriteString (&host_client->message, string);
-}
-
-/*
-=================
-SV_BroadcastPrintf
-
-Sends text to all active clients
-=================
-*/
-void SV_BroadcastPrintf (char *fmt, ...)
-{
-	va_list		argptr;
-	char		string[1024];
-	int			i;
-	
-	va_start (argptr,fmt);
-	vsprintf (string, fmt,argptr);
-	va_end (argptr);
-	
-	for (i=0 ; i<svs.maxclients ; i++)
-		if (svs.clients[i].active && svs.clients[i].spawned)
-		{
-			MSG_WriteByte (&svs.clients[i].message, svc_print);
-			MSG_WriteString (&svs.clients[i].message, string);
-		}
-}
-
-/*
-=================
-Host_ClientCommands
-
-Send text over to the client to be executed
-=================
-*/
-void Host_ClientCommands (char *fmt, ...)
-{
-	va_list		argptr;
-	char		string[1024];
-	
-	va_start (argptr,fmt);
-	vsprintf (string, fmt,argptr);
-	va_end (argptr);
-	
-	MSG_WriteByte (&host_client->message, svc_stufftext);
-	MSG_WriteString (&host_client->message, string);
-}
-
 /*
 =====================
 SV_DropClient
 
-Called when the player is getting totally kicked off the host
-if (crash = true), don't bother sending signofs
+Called when the player is totally leaving the server, either willingly
+or unwillingly.  This is NOT called if the entire server is quiting
+or crashing.
 =====================
 */
-void SV_DropClient (bool crash)
+void SV_DropClient (client_t *drop)
 {
-	int		saveSelf;
-	int		i;
-	client_t *client;
+	// add the disconnect
+	MSG_WriteByte (&drop->netchan.message, svc_disconnect);
 
-	if (!crash)
-	{
-		// send any final messages (don't check for errors)
-		if (NET_CanSendMessage (host_client->netconnection))
+	if (drop->state == cs_spawned)
+		if (!drop->spectator)
 		{
-			MSG_WriteByte (&host_client->message, svc_disconnect);
-			NET_SendMessage (host_client->netconnection, &host_client->message);
-		}
-	
-		if (host_client->edict && host_client->spawned)
-		{
-		// call the prog function for removing a client
-		// this will set the body to a dead frame, among other things
-			saveSelf = sv_pr_int(self);
-			sv_pr_int(self) = EDICT_TO_PROG(host_client->edict);
+			// call the prog function for removing a client
+			// this will set the body to a dead frame, among other things
+			sv_pr_int(self) = EDICT_TO_PROG(drop->edict);
 			sv_pr_execute(ClientDisconnect);
-			sv_pr_int(self) = saveSelf;
+		}
+		else if (pr_field(SpectatorDisconnect))
+		{
+			// call the prog function for removing a client
+			// this will set the body to a dead frame, among other things
+			sv_pr_int(self) = EDICT_TO_PROG(drop->edict);
+			sv_pr_execute(SpectatorDisconnect);
 		}
 
-		Sys_Printf ("Client %s removed\n",host_client->name);
-	}
+	if (drop->spectator)
+		Con_Printf ("Spectator %s removed\n",drop->name);
+	else
+		Con_Printf ("Client %s removed\n",drop->name);
 
-// break the net connection
-	NET_Close (host_client->netconnection);
-	host_client->netconnection = NULL;
-
-// free the client (the body stays around)
-	host_client->active = false;
-	host_client->name[0] = 0;
-	host_client->old_frags = -999999;
-	net_activeconnections--;
-
-// send notification to all clients
-	for (i=0, client = svs.clients ; i<svs.maxclients ; i++, client++)
+	if (drop->download)
 	{
-		if (!client->active)
-			continue;
-		MSG_WriteByte (&client->message, svc_updatename);
-		MSG_WriteByte (&client->message, host_client - svs.clients);
-		MSG_WriteString (&client->message, "");
-		MSG_WriteByte (&client->message, svc_updatefrags);
-		MSG_WriteByte (&client->message, host_client - svs.clients);
-		MSG_WriteShort (&client->message, 0);
-		MSG_WriteByte (&client->message, svc_updatecolors);
-		MSG_WriteByte (&client->message, host_client - svs.clients);
-		MSG_WriteByte (&client->message, 0);
+		fclose (drop->download);
+		drop->download = NULL;
 	}
+	if (drop->upload)
+	{
+		fclose (drop->upload);
+		drop->upload = NULL;
+	}
+	*drop->uploadfn = 0;
+
+	drop->state = cs_zombie;		// become free in a few seconds
+	drop->connection_started = realtime;	// for zombie timeout
+
+	drop->old_frags = 0;
+	ed_float(drop->edict, frags) = 0;
+	drop->name[0] = 0;
+	memset (drop->userinfo, 0, sizeof(drop->userinfo));
+
+// send notification to all remaining clients
+	SV_FullClientUpdate (drop, &sv.reliable_datagram);
 }
 
 /*
@@ -411,55 +287,28 @@ void Host_ShutdownServer(bool crash)
 		return;
 
 	sv.active = false;
+	sv.state = ss_dead;
 
 // stop all client sounds immediately
 	if (cls.state == ca_connected)
 		CL_Disconnect ();
 
-// flush any pending messages - like the score!!!
-	start = Sys_FloatTime();
-	do
+	SZ_Clear (&net_message);
+	MSG_WriteByte (&net_message, svc_disconnect);
+
+	for (i=0, host_client = svs.clients ; i<MAX_CLIENTS ; i++, host_client++)
 	{
-		count = 0;
-		for (i=0, host_client = svs.clients ; i<svs.maxclients ; i++, host_client++)
+		if (host_client->state >= cs_spawned)
 		{
-			if (host_client->active && host_client->message.cursize)
-			{
-				if (NET_CanSendMessage (host_client->netconnection))
-				{
-					NET_SendMessage(host_client->netconnection, &host_client->message);
-					SZ_Clear (&host_client->message);
-				}
-				else
-				{
-					NET_GetMessage(host_client->netconnection);
-					count++;
-				}
-			}
+			Netchan_Transmit (&host_client->netchan, net_message.cursize, net_message.data);
 		}
-		if ((Sys_FloatTime() - start) > 3.0)
-			break;
 	}
-	while (count);
-
-// make sure all the clients know we're disconnecting
-	buf.data = message;
-	buf.maxsize = 4;
-	buf.cursize = 0;
-	MSG_WriteByte(&buf, svc_disconnect);
-	count = NET_SendToAll(&buf, 5);
-	if (count)
-		Con_Printf("Host_ShutdownServer: NET_SendToAll failed for %u clients\n", count);
-
-	for (i=0, host_client = svs.clients ; i<svs.maxclients ; i++, host_client++)
-		if (host_client->active)
-			SV_DropClient(crash);
 
 //
 // clear structures
 //
 	memset (&sv, 0, sizeof(sv));
-	memset (svs.clients, 0, svs.maxclientslimit*sizeof(client_t));
+	memset (svs.clients, 0, MAX_CLIENTS*sizeof(client_t));
 }
 
 
@@ -479,7 +328,6 @@ void Host_ClearMemory ()
 	if (host_hunklevel)
 		Hunk_FreeToLowMark (host_hunklevel);
 
-	cls.signon = 0;
 	memset (&sv, 0, sizeof(sv));
 	memset (&cl, 0, sizeof(cl));
 }
@@ -555,27 +403,55 @@ Host_ServerFrame
 
 ==================
 */
-void Host_ServerFrame ()
+void Host_ServerFrame (float time)
 {
-// run the world state	
-	sv_pr_float(frametime) = host_frametime;
-
-// set the time and clear the general datagram
-	SV_ClearDatagram ();
+	static double	start, end;
 	
-// check for new clients
-	SV_CheckForNewClients ();
-
-// read client messages
-	SV_RunClients ();
+	start = Sys_FloatTime ();
+	svs.stats.idle += start - end;
 	
-// move things around and think
-// always pause in single player if in console or menus
-	if (!sv.paused && (svs.maxclients > 1 || key_dest == key_game) )
+// keep the random time dependent
+	rand ();
+
+// decide the simulation time
+	if (!sv.paused)
+	{
+		realtime += time;
+		sv.time += time;
+	}
+
+// check timeouts
+	SV_CheckTimeouts ();
+
+#if 0
+// toggle the log buffer if full
+	SV_CheckLog ();
+#endif
+
+// move autonomous things around if enough time has passed
+	if (!sv.paused)
 		SV_Physics ();
 
-// send all messages to the clients
+// get packets
+	SV_ReadPackets ();
+
+#if 0
+// check for commands typed to the host
+	Host_GetConsoleCommands ();
+
+// process console commands
+	Cbuf_Execute ();
+#endif
+
+	SV_CheckVars ();
+
+// send messages back to the clients that had packets read this frame
 	SV_SendClientMessages ();
+
+#if 0
+// send a heartbeat to the master if needed
+	Master_Heartbeat ();
+#endif
 }
 
 
@@ -636,7 +512,7 @@ void Host_Frame (float time)
 	Host_GetConsoleCommands ();
 	
 	if (Host_IsLocalGame ())
-		Host_ServerFrame ();
+		Host_ServerFrame (time);
 
 //-------------------
 //
@@ -699,70 +575,20 @@ void Host_Frame (float time)
 	cl_framecount++;
 }
 
-
 //============================================================================
 
-
-extern int vcrFile;
-#define	VCR_SIGNATURE	0x56435231
-// "VCR1"
-
-void Host_InitVCR (quakeparms_t *parms)
+static void Host_InitNet()
 {
-	int		i, len, n;
-	char	*p;
-	
-	if (COM_CheckParm("-playback"))
+	int serverPort = PORT_SERVER;
+	int p = COM_CheckParm ("-port");
+	if (p && p < com_argc)
 	{
-		if (com_argc != 2)
-			Sys_Error("No other parameters allowed with -playback\n");
-
-		Sys_FileOpenRead("quake.vcr", &vcrFile);
-		if (vcrFile == -1)
-			Sys_Error("playback file not found\n");
-
-		Sys_FileRead (vcrFile, &i, sizeof(int32_t));
-		if (i != VCR_SIGNATURE)
-			Sys_Error("Invalid signature in vcr file\n");
-
-		Sys_FileRead (vcrFile, &com_argc, sizeof(int32_t));
-		com_argv = malloc(com_argc * sizeof(char *));
-		com_argv[0] = parms->argv[0];
-		for (i = 0; i < com_argc; i++)
-		{
-			Sys_FileRead (vcrFile, &len, sizeof(int32_t));
-			p = malloc(len);
-			Sys_FileRead (vcrFile, p, len);
-			com_argv[i+1] = p;
-		}
-		com_argc++; /* add one for arg[0] */
-		parms->argc = com_argc;
-		parms->argv = com_argv;
+		serverPort = atoi(com_argv[p+1]);
+		Con_Printf ("Server Port: %i\n", serverPort);
 	}
 
-	if ( (n = COM_CheckParm("-record")) != 0)
-	{
-		vcrFile = Sys_FileOpenWrite("quake.vcr");
-
-		i = VCR_SIGNATURE;
-		Sys_FileWrite(vcrFile, &i, sizeof(int32_t));
-		i = com_argc - 1;
-		Sys_FileWrite(vcrFile, &i, sizeof(int32_t));
-		for (i = 1; i < com_argc; i++)
-		{
-			if (i == n)
-			{
-				len = 10;
-				Sys_FileWrite(vcrFile, &len, sizeof(int32_t));
-				Sys_FileWrite(vcrFile, "-playback", len);
-				continue;
-			}
-			len = strlen(com_argv[i]) + 1;
-			Sys_FileWrite(vcrFile, &len, sizeof(int32_t));
-			Sys_FileWrite(vcrFile, com_argv[i], len);
-		}
-	}
-	
+	NET_Init (PORT_CLIENT, serverPort);
+	Netchan_Init ();
 }
 
 /*
@@ -807,8 +633,7 @@ void Host_Init (quakeparms_t *parms)
     ED_Init ();
 	CMod_Init ();
 	Mod_Init ();
-	NET_Init (PORT_CLIENT, PORT_SERVER);
-	Netchan_Init ();
+	Host_InitNet ();
 	SV_Init ();
 
 	Con_Printf ("Build: "__TIME__" "__DATE__"\n");

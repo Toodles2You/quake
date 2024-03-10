@@ -1,31 +1,35 @@
 /*
+===========================================================================
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2023 Justin Keller
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+===========================================================================
 */
-// sv_main.c -- server main program
 
-#include "qwsvdef.h"
+// sv_send.c -- server main program
 
-#define CHAN_AUTO   0
-#define CHAN_WEAPON 1
-#define CHAN_VOICE  2
-#define CHAN_ITEM   3
-#define CHAN_BODY   4
+#include "serverdef.h"
+
+enum
+{
+	CHAN_AUTO = 0,
+	CHAN_WEAPON,
+	CHAN_VOICE,
+	CHAN_ITEM,
+	CHAN_BODY,
+};
 
 /*
 =============================================================================
@@ -46,7 +50,7 @@ extern cvar_t sv_phs;
 SV_FlushRedirect
 ==================
 */
-void SV_FlushRedirect (void)
+void SV_FlushRedirect ()
 {
 	char	send[8000+6];
 
@@ -59,7 +63,7 @@ void SV_FlushRedirect (void)
 		send[4] = A2C_PRINT;
 		memcpy (send+5, outputbuf, strlen(outputbuf)+1);
 
-		NET_SendPacket (strlen(send)+1, send, net_from);
+		NET_SendPacket (SERVER, strlen(send)+1, send, net_from);
 	}
 	else if (sv_redirected == RD_CLIENT)
 	{
@@ -87,13 +91,13 @@ void SV_BeginRedirect (redirect_t rd)
 	outputbuf[0] = 0;
 }
 
-void SV_EndRedirect (void)
+void SV_EndRedirect ()
 {
 	SV_FlushRedirect ();
 	sv_redirected = RD_NONE;
 }
 
-
+#if 0
 /*
 ================
 Con_Printf
@@ -122,8 +126,8 @@ void Con_Printf (char *fmt, ...)
 	}
 
 	Sys_Printf ("%s", msg);	// also echo to debugging console
-	if (sv_logfile)
-		fprintf (sv_logfile, "%s", msg);
+	// if (sv_logfile)
+	// 	fprintf (sv_logfile, "%s", msg);
 }
 
 /*
@@ -147,6 +151,7 @@ void Con_DPrintf (char *fmt, ...)
 	
 	Con_Printf ("%s", msg);
 }
+#endif
 
 /*
 =============================================================================
@@ -261,7 +266,7 @@ void SV_Multicast (vec3_t origin, int to)
 	int			j;
 	bool	reliable;
 
-	leaf = Mod_PointInLeaf (origin, sv.worldmodel);
+	leaf = CMod_PointInLeaf (origin, sv.worldmodel);
 	if (!leaf)
 		leafnum = 0;
 	else
@@ -302,12 +307,12 @@ void SV_Multicast (vec3_t origin, int to)
 
 		if (to == MULTICAST_PHS_R || to == MULTICAST_PHS) {
 			vec3_t delta;
-			VectorSubtract(origin, client->edict->v.origin, delta);
+			VectorSubtract(origin, ed_vector(client->edict, origin), delta);
 			if (Length(delta) <= 1024)
 				goto inrange;
 		}
 
-		leaf = Mod_PointInLeaf (client->edict->v.origin, sv.worldmodel);
+		leaf = CMod_PointInLeaf (ed_vector(client->edict, origin), sv.worldmodel);
 		if (leaf)
 		{
 			// -1 is because pvs rows are 1 based, not 0 based like leafs
@@ -402,14 +407,20 @@ void SV_StartSound (edict_t *entity, int channel, char *sample, int volume,
 		channel |= SND_ATTENUATION;
 
 	// use the entity origin unless it is a bmodel
-	if (entity->v.solid == SOLID_BSP)
+	if (ed_float(entity, solid) == SOLID_BSP)
 	{
-		for (i=0 ; i<3 ; i++)
-			origin[i] = entity->v.origin[i]+0.5*(entity->v.mins[i]+entity->v.maxs[i]);
+		float *entityOrigin = ed_vector(entity, origin);
+		float *entityMins = ed_vector(entity, mins);
+		float *entityMaxs = ed_vector(entity, maxs);
+
+		for (i = 0; i < 3; i++)
+		{
+			origin[i] = entityOrigin[i] + 0.5 * (entityMins[i] + entityMaxs[i]);
+		}
 	}
 	else
 	{
-		VectorCopy (entity->v.origin, origin);
+		VectorCopy(ed_vector(entity, origin), origin);
 	}
 
 	MSG_WriteByte (&sv.multicast, svc_sound);
@@ -437,9 +448,9 @@ FRAME UPDATES
 ===============================================================================
 */
 
-int		sv_nailmodel, sv_supernailmodel, sv_playermodel;
+int sv_nailmodel, sv_supernailmodel, sv_playermodel;
 
-void SV_FindModelNumbers (void)
+void SV_FindModelNumbers ()
 {
 	int		i;
 
@@ -467,7 +478,7 @@ SV_WriteClientdataToMessage
 
 ==================
 */
-void SV_WriteClientdataToMessage (client_t *client, sizebuf_t *msg)
+static void SV_WriteClientdataToMessage (client_t *client, sizebuf_t *msg)
 {
 	int		i;
 	edict_t	*other;
@@ -484,26 +495,34 @@ void SV_WriteClientdataToMessage (client_t *client, sizebuf_t *msg)
 	}
 
 	// send a damage message if the player got hit this frame
-	if (ent->v.dmg_take || ent->v.dmg_save)
+	if (ed_float(ent, dmg_take) || ed_float(ent, dmg_save))
 	{
-		other = PROG_TO_EDICT(ent->v.dmg_inflictor);
+		other = PROG_TO_EDICT(ed_int(ent, dmg_inflictor));
 		MSG_WriteByte (msg, svc_damage);
-		MSG_WriteByte (msg, ent->v.dmg_save);
-		MSG_WriteByte (msg, ent->v.dmg_take);
+		MSG_WriteByte (msg, ed_float(ent, dmg_save));
+		MSG_WriteByte (msg, ed_float(ent, dmg_take));
+
+		float *otherOrigin = ed_vector(other, origin);
+		float *otherMins = ed_vector(other, mins);
+		float *otherMaxs = ed_vector(other, maxs);
+
 		for (i=0 ; i<3 ; i++)
-			MSG_WriteCoord (msg, other->v.origin[i] + 0.5*(other->v.mins[i] + other->v.maxs[i]));
+			MSG_WriteCoord (msg, otherOrigin[i] + 0.5*(otherMins[i] + otherMaxs[i]));
 	
-		ent->v.dmg_take = 0;
-		ent->v.dmg_save = 0;
+		ed_float(ent, dmg_take) = 0;
+		ed_float(ent, dmg_save) = 0;
 	}
 
-	// a fixangle might get lost in a dropped packet.  Oh well.
-	if ( ent->v.fixangle )
+	// Toodles FIXME: a fixangle might get lost in a dropped packet.  Oh well.
+	if ( ed_float(ent, fixangle) )
 	{
 		MSG_WriteByte (msg, svc_setangle);
+
+		float *entAngles = ed_vector(ent, angles);
+
 		for (i=0 ; i < 3 ; i++)
-			MSG_WriteAngle (msg, ent->v.angles[i] );
-		ent->v.fixangle = 0;
+			MSG_WriteAngle (msg, entAngles[i] );
+		ed_float(ent, fixangle) = 0;
 	}
 }
 
@@ -515,7 +534,7 @@ Performs a delta update of the stats array.  This should only be performed
 when a reliable message can be delivered this frame.
 =======================
 */
-void SV_UpdateClientStats (client_t *client)
+static void SV_UpdateClientStats (client_t *client)
 {
 	edict_t	*ent;
 	int		stats[MAX_CL_STATS];
@@ -529,18 +548,18 @@ void SV_UpdateClientStats (client_t *client)
 	if (client->spectator && client->spec_track > 0)
 		ent = svs.clients[client->spec_track - 1].edict;
 
-	stats[STAT_HEALTH] = ent->v.health;
-	stats[STAT_WEAPON] = SV_ModelIndex(PR_GetString(ent->v.weaponmodel));
-	stats[STAT_AMMO] = ent->v.currentammo;
-	stats[STAT_ARMOR] = ent->v.armorvalue;
-	stats[STAT_SHELLS] = ent->v.ammo_shells;
-	stats[STAT_NAILS] = ent->v.ammo_nails;
-	stats[STAT_ROCKETS] = ent->v.ammo_rockets;
-	stats[STAT_CELLS] = ent->v.ammo_cells;
+	stats[STAT_HEALTH] = ed_float(ent, health);
+	stats[STAT_WEAPON] = SV_ModelIndex(ed_get_string(ent, weaponmodel));
+	stats[STAT_AMMO] = ed_float(ent, currentammo);
+	stats[STAT_ARMOR] = ed_float(ent, armorvalue);
+	stats[STAT_SHELLS] = ed_float(ent, ammo_shells);
+	stats[STAT_NAILS] = ed_float(ent, ammo_nails);
+	stats[STAT_ROCKETS] = ed_float(ent, ammo_rockets);
+	stats[STAT_CELLS] = ed_float(ent, ammo_cells);
 	if (!client->spectator)
-		stats[STAT_ACTIVEWEAPON] = ent->v.weapon;
+		stats[STAT_ACTIVEWEAPON] = ed_float(ent, weapon);
 	// stuff the sigil bits into the high bits of items for sbar
-	stats[STAT_ITEMS] = (int)ent->v.items | ((int)pr_global_struct->serverflags << 28);
+	stats[STAT_ITEMS] = (int)ed_float(ent, items) | ((int)sv_pr_float(serverflags) << 28);
 
 	for (i=0 ; i<MAX_CL_STATS ; i++)
 		if (stats[i] != client->stats[i])
@@ -566,7 +585,7 @@ void SV_UpdateClientStats (client_t *client)
 SV_SendClientDatagram
 =======================
 */
-bool SV_SendClientDatagram (client_t *client)
+static bool SV_SendClientDatagram (client_t *client)
 {
 	byte		buf[MAX_DATAGRAM];
 	sizebuf_t	msg;
@@ -614,7 +633,7 @@ bool SV_SendClientDatagram (client_t *client)
 SV_UpdateToReliableMessages
 =======================
 */
-void SV_UpdateToReliableMessages (void)
+static void SV_UpdateToReliableMessages ()
 {
 	int			i, j;
 	client_t *client;
@@ -631,7 +650,7 @@ void SV_UpdateToReliableMessages (void)
 			host_client->sendinfo = false;
 			SV_FullClientUpdate (host_client, &sv.reliable_datagram);
 		}
-		if (host_client->old_frags != host_client->edict->v.frags)
+		if (host_client->old_frags != ed_float(host_client->edict, frags))
 		{
 			for (j=0, client = svs.clients ; j<MAX_CLIENTS ; j++, client++)
 			{
@@ -639,28 +658,28 @@ void SV_UpdateToReliableMessages (void)
 					continue;
 				ClientReliableWrite_Begin(client, svc_updatefrags, 4);
 				ClientReliableWrite_Byte(client, i);
-				ClientReliableWrite_Short(client, host_client->edict->v.frags);
+				ClientReliableWrite_Short(client, ed_float(host_client->edict, frags));
 			}
 
-			host_client->old_frags = host_client->edict->v.frags;
+			host_client->old_frags = ed_float(host_client->edict, frags);
 		}
 
 		// maxspeed/entgravity changes
 		ent = host_client->edict;
 
-		val = GetEdictFieldValue(ent, "gravity");
-		if (val && host_client->entgravity != val->_float) {
-			host_client->entgravity = val->_float;
+		if (ed_field(gravity) && host_client->entgravity != ed_float(ent, gravity))
+		{
+			host_client->entgravity = ed_float(ent, gravity);
 			ClientReliableWrite_Begin(host_client, svc_entgravity, 5);
 			ClientReliableWrite_Float(host_client, host_client->entgravity);
 		}
-		val = GetEdictFieldValue(ent, "maxspeed");
-		if (val && host_client->maxspeed != val->_float) {
-			host_client->maxspeed = val->_float;
+
+		if (ed_field(maxspeed) && host_client->maxspeed != ed_float(ent, maxspeed))
+		{
+			host_client->maxspeed = ed_float(ent, maxspeed);
 			ClientReliableWrite_Begin(host_client, svc_maxspeed, 5);
 			ClientReliableWrite_Float(host_client, host_client->maxspeed);
 		}
-
 	}
 
 	if (sv.datagram.overflowed)
@@ -686,18 +705,12 @@ void SV_UpdateToReliableMessages (void)
 	SZ_Clear (&sv.datagram);
 }
 
-#ifdef _WIN32
-#pragma optimize( "", off )
-#endif
-
-
-
 /*
 =======================
 SV_SendClientMessages
 =======================
 */
-void SV_SendClientMessages (void)
+void SV_SendClientMessages ()
 {
 	int			i, j;
 	client_t	*c;
@@ -779,12 +792,6 @@ void SV_SendClientMessages (void)
 	}
 }
 
-#ifdef _WIN32
-#pragma optimize( "", on )
-#endif
-
-
-
 /*
 =======================
 SV_SendMessagesToAll
@@ -792,14 +799,18 @@ SV_SendMessagesToAll
 FIXME: does this sequence right?
 =======================
 */
-void SV_SendMessagesToAll (void)
+void SV_SendMessagesToAll ()
 {
 	int			i;
 	client_t	*c;
 
 	for (i=0, c = svs.clients ; i<MAX_CLIENTS ; i++, c++)
+	{
 		if (c->state)		// FIXME: should this only send to active?
+		{
 			c->send_message = true;
+		}
+	}
 	
 	SV_SendClientMessages ();
 }

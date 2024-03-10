@@ -75,7 +75,7 @@ edict_t *ED_Alloc ()
 	int			i;
 	edict_t		*e;
 
-	for ( i=svs.maxclients+1 ; i<sv.num_edicts ; i++)
+	for ( i=MAX_CLIENTS+1 ; i<sv.num_edicts ; i++)
 	{
 		e = EDICT_NUM(i);
 		// the first couple seconds of server time can involve a lot of

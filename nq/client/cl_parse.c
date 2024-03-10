@@ -152,7 +152,7 @@ Returns true if the file exists, otherwise it attempts
 to start a download from the server.
 ===============
 */
-static bool CL_CheckOrDownloadFile (char *filename)
+bool CL_CheckOrDownloadFile (char *filename)
 {
 	FILE	*f;
 
@@ -251,7 +251,7 @@ static void Model_NextDownload ()
 	// done with modellist, request first of static signon messages
 	MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
 //	MSG_WriteString (&cls.netchan.message, va("prespawn %i 0 %i", cl.servercount, cl.worldmodel->checksum2));
-	MSG_WriteString (&cls.netchan.message, va(prespawn_name, cl.servercount, cl.worldmodel->checksum2));
+	MSG_WriteString (&cls.netchan.message, va(prespawn_name, cl.servercount, 0));
 }
 
 /*

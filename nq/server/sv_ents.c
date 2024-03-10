@@ -1,24 +1,24 @@
 /*
+===========================================================================
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2023 Justin Keller
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+===========================================================================
 */
 
-#include "qwsvdef.h"
+#include "serverdef.h"
 
 /*
 =============================================================================
@@ -31,10 +31,10 @@ crosses a waterline.
 =============================================================================
 */
 
-int		fatbytes;
-byte	fatpvs[MAX_MAP_LEAFS/8];
+static int fatbytes;
+static byte fatpvs[MAX_MAP_LEAFS/8];
 
-void SV_AddToFatPVS (vec3_t org, mnode_t *node)
+static void SV_AddToFatPVS (vec3_t org, mnode_t *node)
 {
 	int		i;
 	byte	*pvs;
@@ -48,7 +48,7 @@ void SV_AddToFatPVS (vec3_t org, mnode_t *node)
 		{
 			if (node->contents != CONTENTS_SOLID)
 			{
-				pvs = Mod_LeafPVS ( (mleaf_t *)node, sv.worldmodel);
+				pvs = CMod_LeafPVS ( (mleaf_t *)node, sv.worldmodel);
 				for (i=0 ; i<fatbytes ; i++)
 					fatpvs[i] |= pvs[i];
 			}
@@ -77,10 +77,10 @@ Calculates a PVS that is the inclusive or of all leafs within 8 pixels of the
 given point.
 =============
 */
-byte *SV_FatPVS (vec3_t org)
+static byte *SV_FatPVS (vec3_t org)
 {
 	fatbytes = (sv.worldmodel->numleafs+31)>>3;
-	Q_memset (fatpvs, 0, fatbytes);
+	memset (fatpvs, 0, fatbytes);
 	SV_AddToFatPVS (org, sv.worldmodel->nodes);
 	return fatpvs;
 }
@@ -89,25 +89,34 @@ byte *SV_FatPVS (vec3_t org)
 
 // because there can be a lot of nails, there is a special
 // network protocol for them
+
 #define	MAX_NAILS	32
-edict_t	*nails[MAX_NAILS];
-int		numnails;
 
-extern	int	sv_nailmodel, sv_supernailmodel, sv_playermodel;
+static edict_t *nails[MAX_NAILS];
+static int numnails;
 
-bool SV_AddNailUpdate (edict_t *ent)
+extern int	sv_nailmodel, sv_supernailmodel, sv_playermodel;
+
+static bool SV_AddNailUpdate (edict_t *ent)
 {
-	if (ent->v.modelindex != sv_nailmodel
-		&& ent->v.modelindex != sv_supernailmodel)
+	if (ed_float(ent, modelindex) != sv_nailmodel
+	 && ed_float(ent, modelindex) != sv_supernailmodel)
+	{
 		return false;
+	}
+
 	if (numnails == MAX_NAILS)
+	{
 		return true;
+	}
+
 	nails[numnails] = ent;
 	numnails++;
+
 	return true;
 }
 
-void SV_EmitNailUpdate (sizebuf_t *msg)
+static void SV_EmitNailUpdate (sizebuf_t *msg)
 {
 	byte	bits[6];	// [48 bits] xyzpy 12 12 12 4 8 
 	int		n, i;
@@ -123,11 +132,13 @@ void SV_EmitNailUpdate (sizebuf_t *msg)
 	for (n=0 ; n<numnails ; n++)
 	{
 		ent = nails[n];
-		x = (int)(ent->v.origin[0]+4096)>>1;
-		y = (int)(ent->v.origin[1]+4096)>>1;
-		z = (int)(ent->v.origin[2]+4096)>>1;
-		p = (int)(16*ent->v.angles[0]/360)&15;
-		yaw = (int)(256*ent->v.angles[1]/360)&255;
+		float* entOrigin = ed_vector(ent, origin);
+		float* entAngles = ed_vector(ent, angles);
+		x = (int)(entOrigin[0]+4096)>>1;
+		y = (int)(entOrigin[1]+4096)>>1;
+		z = (int)(entOrigin[2]+4096)>>1;
+		p = (int)(16*entAngles[PITCH]/360)&15;
+		yaw = (int)(256*entAngles[YAW]/360)&255;
 
 		bits[0] = x;
 		bits[1] = (x>>8) | (y<<4);
@@ -152,7 +163,7 @@ Writes part of a packetentities message.
 Can delta from either a baseline or a previous packet_entity
 ==================
 */
-void SV_WriteDelta (entity_state_t *from, entity_state_t *to, sizebuf_t *msg, bool force)
+static void SV_WriteDelta (entity_state_t *from, entity_state_t *to, sizebuf_t *msg, bool force)
 {
 	int		bits;
 	int		i;
@@ -244,10 +255,9 @@ void SV_WriteDelta (entity_state_t *from, entity_state_t *to, sizebuf_t *msg, bo
 SV_EmitPacketEntities
 
 Writes a delta update of a packet_entities_t to the message.
-
 =============
 */
-void SV_EmitPacketEntities (client_t *client, packet_entities_t *to, sizebuf_t *msg)
+static void SV_EmitPacketEntities (client_t *client, packet_entities_t *to, sizebuf_t *msg)
 {
 	edict_t	*ent;
 	client_frame_t	*fromframe;
@@ -316,10 +326,9 @@ void SV_EmitPacketEntities (client_t *client, packet_entities_t *to, sizebuf_t *
 /*
 =============
 SV_WritePlayersToClient
-
 =============
 */
-void SV_WritePlayersToClient (client_t *client, edict_t *clent, byte *pvs, sizebuf_t *msg)
+static void SV_WritePlayersToClient (client_t *client, edict_t *clent, byte *pvs, sizebuf_t *msg)
 {
 	int			i, j;
 	client_t	*cl;
@@ -336,34 +345,43 @@ void SV_WritePlayersToClient (client_t *client, edict_t *clent, byte *pvs, sizeb
 		ent = cl->edict;
 
 		// ZOID visibility tracking
-		if (ent != clent &&
-			!(client->spec_track && client->spec_track - 1 == j)) 
+		if (ent != clent
+		 && !(client->spec_track && client->spec_track - 1 == j)) 
 		{
 			if (cl->spectator)
 				continue;
 
 			// ignore if not touching a PV leaf
 			for (i=0 ; i < ent->num_leafs ; i++)
+			{
 				if (pvs[ent->leafnums[i] >> 3] & (1 << (ent->leafnums[i]&7) ))
+				{
 					break;
+				}
+			}
+
 			if (i == ent->num_leafs)
 				continue;		// not visible
 		}
 		
 		pflags = PF_MSEC | PF_COMMAND;
 		
-		if (ent->v.modelindex != sv_playermodel)
+		if (ed_float(ent, modelindex) != sv_playermodel)
 			pflags |= PF_MODEL;
 		for (i=0 ; i<3 ; i++)
-			if (ent->v.velocity[i])
+		{
+			if (ed_vector(ent, velocity)[i])
+			{
 				pflags |= PF_VELOCITY1<<i;
-		if (ent->v.effects)
+			}
+		}
+		if (ed_float(ent, effects))
 			pflags |= PF_EFFECTS;
-		if (ent->v.skin)
+		if (ed_float(ent, skin))
 			pflags |= PF_SKINNUM;
-		if (ent->v.health <= 0)
+		if (ed_float(ent, health) <= 0)
 			pflags |= PF_DEAD;
-		if (ent->v.mins[2] != -24)
+		if (ed_vector(ent, mins)[2] != -24)
 			pflags |= PF_GIB;
 
 		if (cl->spectator)
@@ -373,22 +391,27 @@ void SV_WritePlayersToClient (client_t *client, edict_t *clent, byte *pvs, sizeb
 		else if (ent == clent)
 		{	// don't send a lot of data on personal entity
 			pflags &= ~(PF_MSEC|PF_COMMAND);
-			if (ent->v.weaponframe)
+			if (ed_float(ent, weaponframe))
 				pflags |= PF_WEAPONFRAME;
 		}
 
-		if (client->spec_track && client->spec_track - 1 == j &&
-			ent->v.weaponframe) 
+		if (client->spec_track
+		 && client->spec_track - 1 == j
+		 && ed_float(ent, weaponframe)) 
+		{
 			pflags |= PF_WEAPONFRAME;
+		}
 
 		MSG_WriteByte (msg, svc_playerinfo);
 		MSG_WriteByte (msg, j);
 		MSG_WriteShort (msg, pflags);
 
 		for (i=0 ; i<3 ; i++)
-			MSG_WriteCoord (msg, ent->v.origin[i]);
+		{
+			MSG_WriteCoord (msg, ed_vector(ent, origin)[i]);
+		}
 		
-		MSG_WriteByte (msg, ent->v.frame);
+		MSG_WriteByte (msg, ed_float(ent, frame));
 
 		if (pflags & PF_MSEC)
 		{
@@ -402,34 +425,39 @@ void SV_WritePlayersToClient (client_t *client, edict_t *clent, byte *pvs, sizeb
 		{
 			cmd = cl->lastcmd;
 
-			if (ent->v.health <= 0)
-			{	// don't show the corpse looking around...
-				cmd.angles[0] = 0;
-				cmd.angles[1] = ent->v.angles[1];
-				cmd.angles[0] = 0;
+			// don't show the corpse looking around...
+			if (ed_float(ent, health) <= 0)
+			{
+				cmd.angles[PITCH] = 0;
+				cmd.angles[YAW] = ed_vector(ent, angles)[YAW];
+				cmd.angles[ROLL] = 0;
 			}
 
-			cmd.buttons = 0;	// never send buttons
-			cmd.impulse = 0;	// never send impulses
+			cmd.buttons = 0; // never send buttons
+			cmd.impulse = 0; // never send impulses
 
 			MSG_WriteDeltaUsercmd (msg, &nullcmd, &cmd);
 		}
 
 		for (i=0 ; i<3 ; i++)
+		{
 			if (pflags & (PF_VELOCITY1<<i) )
-				MSG_WriteShort (msg, ent->v.velocity[i]);
+			{
+				MSG_WriteShort (msg, ed_vector(ent, velocity)[i]);
+			}
+		}
 
 		if (pflags & PF_MODEL)
-			MSG_WriteByte (msg, ent->v.modelindex);
+			MSG_WriteByte (msg, ed_float(ent, modelindex));
 
 		if (pflags & PF_SKINNUM)
-			MSG_WriteByte (msg, ent->v.skin);
+			MSG_WriteByte (msg, ed_float(ent, skin));
 
 		if (pflags & PF_EFFECTS)
-			MSG_WriteByte (msg, ent->v.effects);
+			MSG_WriteByte (msg, ed_float(ent, effects));
 
 		if (pflags & PF_WEAPONFRAME)
-			MSG_WriteByte (msg, ent->v.weaponframe);
+			MSG_WriteByte (msg, ed_float(ent, weaponframe));
 	}
 }
 
@@ -460,7 +488,7 @@ void SV_WriteEntitiesToClient (client_t *client, sizebuf_t *msg)
 
 	// find the client's PVS
 	clent = client->edict;
-	VectorAdd (clent->v.origin, clent->v.view_ofs, org);
+	VectorAdd (ed_vector(clent, origin), ed_vector(clent, view_ofs), org);
 	pvs = SV_FatPVS (org);
 
 	// send over the players in the PVS
@@ -474,14 +502,22 @@ void SV_WriteEntitiesToClient (client_t *client, sizebuf_t *msg)
 
 	for (e=MAX_CLIENTS+1, ent=EDICT_NUM(e) ; e<sv.num_edicts ; e++, ent = NEXT_EDICT(ent))
 	{
+		// don't send if flagged for NODRAW and there are no lighting effects
+		if (ed_float(ent, effects) == EF_NODRAW)
+			continue;
+
 		// ignore ents without visible models
-		if (!ent->v.modelindex || !*PR_GetString(ent->v.model))
+		if (!ed_float(ent, modelindex) || ed_get_string(ent, model)[0] == '\0')
 			continue;
 
 		// ignore if not touching a PV leaf
 		for (i=0 ; i < ent->num_leafs ; i++)
-			if (pvs[ent->leafnums[i] >> 3] & (1 << (ent->leafnums[i]&7) ))
+		{
+			if (pvs[ent->leafnums[i] >> 3] & (1 << (ent->leafnums[i]&7)))
+			{
 				break;
+			}
+		}
 			
 		if (i == ent->num_leafs)
 			continue;		// not visible
@@ -498,13 +534,13 @@ void SV_WriteEntitiesToClient (client_t *client, sizebuf_t *msg)
 
 		state->number = e;
 		state->flags = 0;
-		VectorCopy (ent->v.origin, state->origin);
-		VectorCopy (ent->v.angles, state->angles);
-		state->modelindex = ent->v.modelindex;
-		state->frame = ent->v.frame;
-		state->colormap = ent->v.colormap;
-		state->skinnum = ent->v.skin;
-		state->effects = ent->v.effects;
+		VectorCopy (ed_vector(ent, origin), state->origin);
+		VectorCopy (ed_vector(ent, angles), state->angles);
+		state->modelindex = ed_float(ent, modelindex);
+		state->frame = ed_float(ent, frame);
+		state->colormap = ed_float(ent, colormap);
+		state->skinnum = ed_float(ent, skin);
+		state->effects = ed_float(ent, effects);
 	}
 
 	// encode the packet entities as a delta from the

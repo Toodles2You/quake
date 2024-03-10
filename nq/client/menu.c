@@ -491,7 +491,7 @@ void M_Menu_Save_f ()
 		return;
 	if (cl.intermission)
 		return;
-	if (svs.maxclients != 1)
+	if (MAX_CLIENTS != 1)
 		return;
 	m_entersound = true;
 	m_state = m_save;
@@ -635,8 +635,8 @@ void M_MultiPlayer_Draw ()
 
 	M_DrawTransPic (54, 32 + m_multiplayer_cursor * 20,Draw_CachePic( va("gfx/menudot%i.lmp", f+1 ) ) );
 
-	if (tcpipAvailable)
-		return;
+	// if (tcpipAvailable)
+	// 	return;
 	M_PrintWhite ((320/2) - ((27*8)/2), 148, "No Communications Available");
 }
 
@@ -665,17 +665,18 @@ void M_MultiPlayer_Key (int key)
 		m_entersound = true;
 		switch (m_multiplayer_cursor)
 		{
-		case 0:
-			if (tcpipAvailable)
-				M_Menu_LanConfig_f ();
-			break;
+		// case 0:
+		// 	if (tcpipAvailable)
+		// 		M_Menu_LanConfig_f ();
+		// 	break;
 
-		case 1:
-			if (tcpipAvailable)
-				M_Menu_LanConfig_f ();
-			break;
+		// case 1:
+		// 	if (tcpipAvailable)
+		// 		M_Menu_LanConfig_f ();
+		// 	break;
 
-		case 2:
+		default:
+		// case 2:
 			M_Menu_Setup_f ();
 			break;
 		}
@@ -1848,9 +1849,9 @@ void M_Menu_GameOptions_f ()
 	m_state = m_gameoptions;
 	m_entersound = true;
 	if (maxplayers == 0)
-		maxplayers = svs.maxclients;
+		maxplayers = MAX_CLIENTS;
 	if (maxplayers < 2)
-		maxplayers = svs.maxclientslimit;
+		maxplayers = MAX_CLIENTS;
 }
 
 
@@ -1987,9 +1988,9 @@ void M_NetStart_Change (int dir)
 	{
 	case 1:
 		maxplayers += dir;
-		if (maxplayers > svs.maxclientslimit)
+		if (maxplayers > MAX_CLIENTS)
 		{
-			maxplayers = svs.maxclientslimit;
+			maxplayers = MAX_CLIENTS;
 			m_serverInfoMessage = true;
 			m_serverInfoMessageTime = realtime;
 		}

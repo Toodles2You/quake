@@ -122,9 +122,14 @@ set(SERVER_SRC
     nq/server/pr_cmds.c 
     nq/server/pr_edict.c
     nq/server/pr_exec.c
+    nq/server/sv_ccmds.c
+    nq/server/sv_ents.c
+    nq/server/sv_init.c
     nq/server/sv_main.c
     nq/server/sv_move.c
+    nq/server/sv_nchan.c
     nq/server/sv_phys.c
+    nq/server/sv_send.c
     nq/server/sv_user.c
     nq/server/world.c
 )

@@ -321,6 +321,59 @@ void MSG_WriteAngle (sizebuf_t *sb, float f)
 	MSG_WriteByte(sb, ((int)f * 256 / 360) & 255);
 }
 
+void MSG_WriteAngle16 (sizebuf_t *sb, float f)
+{
+	MSG_WriteShort (sb, (int)(f*65536/360) & 65535);
+}
+
+void MSG_WriteDeltaUsercmd (sizebuf_t *buf, usercmd_t *from, usercmd_t *cmd)
+{
+	int		bits;
+
+//
+// send the movement message
+//
+	bits = 0;
+	if (cmd->angles[0] != from->angles[0])
+		bits |= CM_ANGLE1;
+	if (cmd->angles[1] != from->angles[1])
+		bits |= CM_ANGLE2;
+	if (cmd->angles[2] != from->angles[2])
+		bits |= CM_ANGLE3;
+	if (cmd->forwardmove != from->forwardmove)
+		bits |= CM_FORWARD;
+	if (cmd->sidemove != from->sidemove)
+		bits |= CM_SIDE;
+	if (cmd->upmove != from->upmove)
+		bits |= CM_UP;
+	if (cmd->buttons != from->buttons)
+		bits |= CM_BUTTONS;
+	if (cmd->impulse != from->impulse)
+		bits |= CM_IMPULSE;
+
+    MSG_WriteByte (buf, bits);
+
+	if (bits & CM_ANGLE1)
+		MSG_WriteAngle16 (buf, cmd->angles[0]);
+	if (bits & CM_ANGLE2)
+		MSG_WriteAngle16 (buf, cmd->angles[1]);
+	if (bits & CM_ANGLE3)
+		MSG_WriteAngle16 (buf, cmd->angles[2]);
+	
+	if (bits & CM_FORWARD)
+		MSG_WriteShort (buf, cmd->forwardmove);
+	if (bits & CM_SIDE)
+	  	MSG_WriteShort (buf, cmd->sidemove);
+	if (bits & CM_UP)
+		MSG_WriteShort (buf, cmd->upmove);
+
+ 	if (bits & CM_BUTTONS)
+	  	MSG_WriteByte (buf, cmd->buttons);
+ 	if (bits & CM_IMPULSE)
+	    MSG_WriteByte (buf, cmd->impulse);
+	MSG_WriteByte (buf, cmd->msec);
+}
+
 //
 // reading functions
 //

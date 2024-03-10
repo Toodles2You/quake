@@ -60,7 +60,7 @@ lightstyle_t	cl_lightstyle[MAX_LIGHTSTYLES];
 dlight_t		cl_dlights[MAX_DLIGHTS];
 
 int				cl_numvisedicts;
-entity_t		*cl_visedicts[MAX_VISEDICTS];
+entity_t		*cl_visedicts;
 
 static double connect_time = -1; // for connection retransmits
 
@@ -112,7 +112,7 @@ static void CL_SendConnectPacket ()
 
 	cls.qport = qport.value;
 
-	Info_SetValueForStarKey(cls.userinfo, "*ip", NET_AdrToString(adr), MAX_INFO_STRING);
+	Info_SetValueForStarKey(cls.userinfo, "*ip", "FU", MAX_INFO_STRING);
 
 	//	Con_Printf ("Connecting to %s...\n", cls.servername);
 	sprintf(data, "%c%c%c%cconnect %i %i %i \"%s\"\n",
@@ -128,7 +128,7 @@ CL_CheckForResend
 Resend a connect message if the last one has timed out
 =================
 */
-static void CL_CheckForResend ()
+void CL_CheckForResend ()
 {
 	netadr_t	adr;
 	char	data[2048];

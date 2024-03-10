@@ -656,7 +656,7 @@ Sends the entire command line over to the server
 */
 void Cmd_ForwardToServer ()
 {
-	if (cls.state != ca_connected)
+	if (cls.state == ca_disconnected)
 	{
 		Con_Printf ("Can't \"%s\", not connected\n", Cmd_Argv(0));
 		return;
@@ -665,16 +665,13 @@ void Cmd_ForwardToServer ()
 	if (cls.demoplayback)
 		return;		// not really connected
 
-	MSG_WriteByte (&cls.message, clc_stringcmd);
-	if (strcasecmp(Cmd_Argv(0), "cmd") != 0)
-	{
-		SZ_Print (&cls.message, Cmd_Argv(0));
-		SZ_Print (&cls.message, " ");
-	}
+	MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
+	SZ_Print (&cls.netchan.message, Cmd_Argv(0));
 	if (Cmd_Argc() > 1)
-		SZ_Print (&cls.message, Cmd_Args());
-	else
-		SZ_Print (&cls.message, "\n");
+	{
+		SZ_Print (&cls.netchan.message, " ");
+		SZ_Print (&cls.netchan.message, Cmd_Args());
+	}
 }
 
 

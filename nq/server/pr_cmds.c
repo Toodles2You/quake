@@ -302,11 +302,13 @@ void PF_sprint (progs_state_t *pr)
 	char		*s;
 	client_t	*client;
 	int			entnum;
+	int			level;
 	
 	entnum = pr_get_edict_num(pr, OFS_PARM0);
-	s = PF_VarString(pr, 1);
+	level = pr_global(pr, float, OFS_PARM1);
+	s = PF_VarString(pr, 2);
 	
-	if (entnum < 1 || entnum > svs.maxclients)
+	if (entnum < 1 || entnum > MAX_CLIENTS)
 	{
 		Con_Printf ("tried to sprint to a non-client\n");
 		return;
@@ -314,8 +316,7 @@ void PF_sprint (progs_state_t *pr)
 		
 	client = &svs.clients[entnum-1];
 		
-	MSG_WriteChar (&client->message,svc_print);
-	MSG_WriteString (&client->message, s );
+	SV_ClientPrintf (client, level, "%s", s);
 }
 
 
@@ -337,16 +338,16 @@ void PF_centerprint (progs_state_t *pr)
 	entnum = pr_get_edict_num(pr, OFS_PARM0);
 	s = PF_VarString(pr, 1);
 	
-	if (entnum < 1 || entnum > svs.maxclients)
+	if (entnum < 1 || entnum > MAX_CLIENTS)
 	{
 		Con_Printf ("tried to sprint to a non-client\n");
 		return;
 	}
 		
 	client = &svs.clients[entnum-1];
-		
-	MSG_WriteChar (&client->message,svc_centerprint);
-	MSG_WriteString (&client->message, s );
+
+	ClientReliableWrite_Begin (client, svc_centerprint, 2 + strlen(s));
+	ClientReliableWrite_String (client, s);
 }
 
 
@@ -675,17 +676,17 @@ int PF_newcheckclient (int check)
 
 	if (check < 1)
 		check = 1;
-	if (check > svs.maxclients)
-		check = svs.maxclients;
+	if (check > MAX_CLIENTS)
+		check = MAX_CLIENTS;
 
-	if (check == svs.maxclients)
+	if (check == MAX_CLIENTS)
 		i = 1;
 	else
 		i = check + 1;
 
 	for ( ;  ; i++)
 	{
-		if (i == svs.maxclients+1)
+		if (i == MAX_CLIENTS+1)
 			i = 1;
 
 		ent = EDICT_NUM(i);
@@ -788,13 +789,22 @@ void PF_stuffcmd (progs_state_t *pr)
 	client_t	*old;
 	
 	entnum = pr_get_edict_num(pr, OFS_PARM0);
-	if (entnum < 1 || entnum > svs.maxclients)
+	if (entnum < 1 || entnum > MAX_CLIENTS)
 		PR_RunError (pr, "Parm 0 not a client");
 	str = pr_get_string(pr, OFS_PARM1);	
 	
 	old = host_client;
 	host_client = &svs.clients[entnum-1];
-	Host_ClientCommands ("%s", str);
+
+	if (strcmp(str, "disconnect\n") == 0) {
+		// so long and thanks for all the fish
+		host_client->drop = true;
+		return;
+	}
+
+	ClientReliableWrite_Begin (host_client, svc_stufftext, 2+strlen(str));
+	ClientReliableWrite_String (host_client, str);
+
 	host_client = old;
 }
 
@@ -1157,12 +1167,12 @@ void PF_lightstyle (progs_state_t *pr)
 	if (sv.state != ss_active)
 		return;
 	
-	for (j=0, client = svs.clients ; j<svs.maxclients ; j++, client++)
-		if (client->active || client->spawned)
+	for (j=0, client = svs.clients ; j<MAX_CLIENTS ; j++, client++)
+		if ( client->state == cs_spawned )
 		{
-			MSG_WriteChar (&client->message, svc_lightstyle);
-			MSG_WriteChar (&client->message,style);
-			MSG_WriteString (&client->message, val);
+			ClientReliableWrite_Begin (client, svc_lightstyle, strlen(val)+3);
+			ClientReliableWrite_Char (client, style);
+			ClientReliableWrite_String (client, val);
 		}
 }
 
@@ -1380,6 +1390,7 @@ MESSAGE WRITING
 #define	MSG_ONE			1		// reliable to one (msg_entity)
 #define	MSG_ALL			2		// reliable to all
 #define	MSG_INIT		3		// write to the init string
+#define	MSG_MULTICAST	4		// for multicast()
 
 sizebuf_t *WriteDest (progs_state_t *pr)
 {
@@ -1396,7 +1407,7 @@ sizebuf_t *WriteDest (progs_state_t *pr)
 	case MSG_ONE:
 		ent = PROG_TO_EDICT(pr_int(pr, msg_entity));
 		entnum = NUM_FOR_EDICT(ent);
-		if (entnum < 1 || entnum > svs.maxclients)
+		if (entnum < 1 || entnum > MAX_CLIENTS)
 			PR_RunError (pr, "WriteDest: not a client");
 		return &svs.clients[entnum-1].message;
 		
@@ -1404,7 +1415,12 @@ sizebuf_t *WriteDest (progs_state_t *pr)
 		return &sv.reliable_datagram;
 	
 	case MSG_INIT:
+		if (sv.state != ss_loading)
+			PR_RunError (pr, "PF_Write_*: MSG_INIT can only be written in spawn functions");
 		return &sv.signon;
+
+	case MSG_MULTICAST:
+		return &sv.multicast;
 
 	default:
 		PR_RunError (pr, "WriteDest: bad destination");
@@ -1414,45 +1430,97 @@ sizebuf_t *WriteDest (progs_state_t *pr)
 	return NULL;
 }
 
+static client_t *Write_GetClient (progs_state_t *pr)
+{
+	int		entnum;
+	edict_t	*ent;
+
+	ent = PROG_TO_EDICT(pr_int(pr, msg_entity));
+	entnum = NUM_FOR_EDICT(ent);
+	if (entnum < 1 || entnum > MAX_CLIENTS)
+		PR_RunError (pr, "WriteDest: not a client");
+	return &svs.clients[entnum-1];
+}
+
 void PF_WriteByte (progs_state_t *pr)
 {
-	MSG_WriteByte (WriteDest(pr), pr_global(pr, float, OFS_PARM1));
+	if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
+		client_t *cl = Write_GetClient(pr);
+		ClientReliableCheckBlock(cl, 1);
+		ClientReliableWrite_Byte(cl, pr_global(pr, float, OFS_PARM1));
+	} else
+		MSG_WriteByte (WriteDest(pr), pr_global(pr, float, OFS_PARM1));
 }
 
 void PF_WriteChar (progs_state_t *pr)
 {
-	MSG_WriteChar (WriteDest(pr), pr_global(pr, float, OFS_PARM1));
+	if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
+		client_t *cl = Write_GetClient(pr);
+		ClientReliableCheckBlock(cl, 1);
+		ClientReliableWrite_Char(cl, pr_global(pr, float, OFS_PARM1));
+	} else
+		MSG_WriteChar (WriteDest(pr), pr_global(pr, float, OFS_PARM1));
 }
 
 void PF_WriteShort (progs_state_t *pr)
 {
-	MSG_WriteShort (WriteDest(pr), pr_global(pr, float, OFS_PARM1));
+	if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
+		client_t *cl = Write_GetClient(pr);
+		ClientReliableCheckBlock(cl, 2);
+		ClientReliableWrite_Short(cl, pr_global(pr, float, OFS_PARM1));
+	} else
+		MSG_WriteShort (WriteDest(pr), pr_global(pr, float, OFS_PARM1));
 }
 
 void PF_WriteLong (progs_state_t *pr)
 {
-	MSG_WriteLong (WriteDest(pr), pr_global(pr, float, OFS_PARM1));
+	if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
+		client_t *cl = Write_GetClient(pr);
+		ClientReliableCheckBlock(cl, 4);
+		ClientReliableWrite_Long(cl, pr_global(pr, float, OFS_PARM1));
+	} else
+		MSG_WriteLong (WriteDest(pr), pr_global(pr, float, OFS_PARM1));
 }
 
 void PF_WriteAngle (progs_state_t *pr)
 {
-	MSG_WriteAngle (WriteDest(pr), pr_global(pr, float, OFS_PARM1));
+	if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
+		client_t *cl = Write_GetClient(pr);
+		ClientReliableCheckBlock(cl, 1);
+		ClientReliableWrite_Angle(cl, pr_global(pr, float, OFS_PARM1));
+	} else
+		MSG_WriteAngle (WriteDest(pr), pr_global(pr, float, OFS_PARM1));
 }
 
 void PF_WriteCoord (progs_state_t *pr)
 {
-	MSG_WriteCoord (WriteDest(pr), pr_global(pr, float, OFS_PARM1));
+	if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
+		client_t *cl = Write_GetClient(pr);
+		ClientReliableCheckBlock(cl, 2);
+		ClientReliableWrite_Coord(cl, pr_global(pr, float, OFS_PARM1));
+	} else
+		MSG_WriteCoord (WriteDest(pr), pr_global(pr, float, OFS_PARM1));
 }
 
 void PF_WriteString (progs_state_t *pr)
 {
-	MSG_WriteString (WriteDest(pr), pr_get_string(pr, OFS_PARM1));
+	if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
+		client_t *cl = Write_GetClient(pr);
+		ClientReliableCheckBlock(cl, 1+strlen(pr_get_string(pr, OFS_PARM1)));
+		ClientReliableWrite_String(cl, pr_get_string(pr, OFS_PARM1));
+	} else
+		MSG_WriteString (WriteDest(pr), pr_get_string(pr, OFS_PARM1));
 }
 
 
 void PF_WriteEntity (progs_state_t *pr)
 {
-	MSG_WriteShort (WriteDest(pr), pr_get_edict_num(pr, OFS_PARM1));
+	if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
+		client_t *cl = Write_GetClient(pr);
+		ClientReliableCheckBlock(cl, 2);
+		ClientReliableWrite_Short(cl, pr_get_edict_num(pr, OFS_PARM1));
+	} else
+		MSG_WriteShort (WriteDest(pr), pr_get_edict_num(pr, OFS_PARM1));
 }
 
 //=============================================================================
@@ -1498,7 +1566,7 @@ void PF_setspawnparms (progs_state_t *pr)
 
 	ent = pr_get_edict(pr, OFS_PARM0);
 	i = NUM_FOR_EDICT(ent);
-	if (i < 1 || i > svs.maxclients)
+	if (i < 1 || i > MAX_CLIENTS)
 		PR_RunError (pr, "Entity is not a client");
 
 	// copy spawn parms out of the client_t
@@ -1519,10 +1587,12 @@ void PF_changelevel (progs_state_t *pr)
 #ifdef QUAKE2
 	char	*s2;
 #endif
+	static	int	last_spawncount;
 
-	if (svs.changelevel_issued)
+// make sure we don't issue two changelevels
+	if (svs.spawncount == last_spawncount)
 		return;
-	svs.changelevel_issued = true;
+	last_spawncount = svs.spawncount;
 
 	s1 = pr_get_string(pr, OFS_PARM0);
 #ifdef QUAKE2
@@ -1596,16 +1666,15 @@ string(entity e, string key) infokey
 */
 void PF_infokey (progs_state_t *pr)
 {
-#if 0
 	edict_t *e;
 	int e1;
 	char *value;
 	char *key;
 	static char ov[256];
 
-	e = G_EDICT(OFS_PARM0);
+	e = pr_get_edict(pr, OFS_PARM0);
 	e1 = NUM_FOR_EDICT(e);
-	key = G_STRING(OFS_PARM1);
+	key = pr_get_string(pr, OFS_PARM1);
 
 	if (e1 == 0)
 	{
@@ -1630,7 +1699,6 @@ void PF_infokey (progs_state_t *pr)
 		value = "";
 
 	RETURN_STRING(value);
-#endif
 }
 
 /*
@@ -1655,15 +1723,13 @@ void(vector where, float set) multicast
 */
 void PF_multicast (progs_state_t *pr)
 {
-#if 0
 	float *o;
 	int to;
 
-	o = G_VECTOR(OFS_PARM0);
-	to = G_FLOAT(OFS_PARM1);
+	o = pr_global_ptr(pr, float, OFS_PARM0);
+	to = pr_global(pr, float, OFS_PARM1);
 
 	SV_Multicast(o, to);
-#endif
 }
 
 void PF_Fixme (progs_state_t *pr)
