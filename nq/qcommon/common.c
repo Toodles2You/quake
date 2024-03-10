@@ -20,6 +20,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "bothdef.h"
 
+usercmd_t nullcmd; // guarenteed to be zero
+
 #define MAX_NUM_ARGVS 50
 #define NUM_SAFE_ARGVS 5
 

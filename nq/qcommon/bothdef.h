@@ -180,13 +180,12 @@ enum
 	EF_MUZZLEFLASH	= 1 << 1,
 	EF_BRIGHTLIGHT	= 1 << 2,
 	EF_DIMLIGHT		= 1 << 3,
-	EF_NODRAW		= 1 << 7,
+    EF_FLAG1        = 1 << 4,
+    EF_FLAG2        = 1 << 5,
+    EF_BLUE         = 1 << 6,
+    EF_RED          = 1 << 7,
+	EF_NODRAW		= 1 << 8,
 };
-
-//===========================================
-
-#define MAX_SCOREBOARD 16
-#define MAX_SCOREBOARDNAME 32
 
 //===========================================
 
@@ -211,5 +210,6 @@ enum
 #include "crc.h"
 #include "../qcommon/cmodel.h"
 #include "../qcommon/host.h"
+#include "../qcommon/pmove.h"
 
 #endif /* !_BOTHDEF_H */

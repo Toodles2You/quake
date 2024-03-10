@@ -77,6 +77,9 @@ extern float (*LittleFloat)(float l);
 
 //============================================================================
 
+struct usercmd_s;
+extern struct usercmd_s nullcmd;
+
 void MSG_WriteChar(sizebuf_t *sb, int c);
 void MSG_WriteByte(sizebuf_t *sb, int c);
 void MSG_WriteShort(sizebuf_t *sb, int c);

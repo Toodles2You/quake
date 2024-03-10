@@ -612,11 +612,19 @@ void Host_Frame (float time)
 // process console commands
 	Cbuf_Execute ();
 
-	NET_Poll();
+	// fetch results from server
+	CL_ReadPackets ();
 
 // if running the server locally, make intentions now
-	if (Host_IsLocalGame ())
+	if (cls.state == ca_disconnected)
+	{
+		// resend a connection request if necessary
+		CL_CheckForResend ();
+	}
+	else if (Host_IsLocalGame ())
+	{
 		CL_SendCmd ();
+	}
 	
 //-------------------
 //
@@ -639,15 +647,23 @@ void Host_Frame (float time)
 // if running the server remotely, send intentions now after
 // the incoming messages have been read
 	if (!Host_IsLocalGame ())
+	{
 		CL_SendCmd ();
+	}
 
 	host_time += host_frametime;
 
-// fetch results from server
-	if (cls.state == ca_connected)
-	{
-		CL_ReadFromServer ();
-	}
+	// Set up prediction for other players
+	CL_SetUpPlayerPrediction(false);
+
+	// do client side motion prediction
+	CL_PredictMove ();
+
+	// Set up prediction for other players
+	CL_SetUpPlayerPrediction(true);
+
+	// build a refresh entity list
+	CL_EmitEntities ();
 
 // update video
 	if (host_speeds.value)
@@ -659,7 +675,7 @@ void Host_Frame (float time)
 		time2 = Sys_FloatTime ();
 		
 // update audio
-	if (cls.signon == SIGNONS)
+	if (cls.state == ca_active)
 	{
 		S_Update (r_origin, vpn, vright, vup);
 		CL_DecayLights ();
@@ -792,6 +808,7 @@ void Host_Init (quakeparms_t *parms)
 	CMod_Init ();
 	Mod_Init ();
 	NET_Init (PORT_CLIENT, PORT_SERVER);
+	Netchan_Init ();
 	SV_Init ();
 
 	Con_Printf ("Build: "__TIME__" "__DATE__"\n");

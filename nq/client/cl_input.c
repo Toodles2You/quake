@@ -20,6 +20,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "clientdef.h"
 
+cvar_t	cl_nodelta = {"cl_nodelta","0"};
+
 /*
 ===============================================================================
 
@@ -48,10 +50,10 @@ kbutton_t	in_lookup, in_lookdown, in_moveleft, in_moveright;
 kbutton_t	in_strafe, in_speed, in_use, in_jump, in_attack;
 kbutton_t	in_up, in_down;
 
-int			in_impulse;
+static int			in_impulse;
 
 
-void KeyDown (kbutton_t *b)
+static void KeyDown (kbutton_t *b)
 {
 	int		k;
 	char	*c;
@@ -80,7 +82,7 @@ void KeyDown (kbutton_t *b)
 	b->state |= 1 + 2;	// down + impulse down
 }
 
-void KeyUp (kbutton_t *b)
+static void KeyUp (kbutton_t *b)
 {
 	int		k;
 	char	*c;
@@ -110,49 +112,49 @@ void KeyUp (kbutton_t *b)
 	b->state |= 4; 		// impulse up
 }
 
-void IN_KLookDown () {KeyDown(&in_klook);}
-void IN_KLookUp () {KeyUp(&in_klook);}
-void IN_MLookDown () {KeyDown(&in_mlook);}
-void IN_MLookUp () {
+static void IN_KLookDown () {KeyDown(&in_klook);}
+static void IN_KLookUp () {KeyUp(&in_klook);}
+static void IN_MLookDown () {KeyDown(&in_mlook);}
+static void IN_MLookUp () {
 KeyUp(&in_mlook);
 if ( !(in_mlook.state&1) &&  lookspring.value)
 	V_StartPitchDrift();
 }
-void IN_UpDown() {KeyDown(&in_up);}
-void IN_UpUp() {KeyUp(&in_up);}
-void IN_DownDown() {KeyDown(&in_down);}
-void IN_DownUp() {KeyUp(&in_down);}
-void IN_LeftDown() {KeyDown(&in_left);}
-void IN_LeftUp() {KeyUp(&in_left);}
-void IN_RightDown() {KeyDown(&in_right);}
-void IN_RightUp() {KeyUp(&in_right);}
-void IN_ForwardDown() {KeyDown(&in_forward);}
-void IN_ForwardUp() {KeyUp(&in_forward);}
-void IN_BackDown() {KeyDown(&in_back);}
-void IN_BackUp() {KeyUp(&in_back);}
-void IN_LookupDown() {KeyDown(&in_lookup);}
-void IN_LookupUp() {KeyUp(&in_lookup);}
-void IN_LookdownDown() {KeyDown(&in_lookdown);}
-void IN_LookdownUp() {KeyUp(&in_lookdown);}
-void IN_MoveleftDown() {KeyDown(&in_moveleft);}
-void IN_MoveleftUp() {KeyUp(&in_moveleft);}
-void IN_MoverightDown() {KeyDown(&in_moveright);}
-void IN_MoverightUp() {KeyUp(&in_moveright);}
+static void IN_UpDown() {KeyDown(&in_up);}
+static void IN_UpUp() {KeyUp(&in_up);}
+static void IN_DownDown() {KeyDown(&in_down);}
+static void IN_DownUp() {KeyUp(&in_down);}
+static void IN_LeftDown() {KeyDown(&in_left);}
+static void IN_LeftUp() {KeyUp(&in_left);}
+static void IN_RightDown() {KeyDown(&in_right);}
+static void IN_RightUp() {KeyUp(&in_right);}
+static void IN_ForwardDown() {KeyDown(&in_forward);}
+static void IN_ForwardUp() {KeyUp(&in_forward);}
+static void IN_BackDown() {KeyDown(&in_back);}
+static void IN_BackUp() {KeyUp(&in_back);}
+static void IN_LookupDown() {KeyDown(&in_lookup);}
+static void IN_LookupUp() {KeyUp(&in_lookup);}
+static void IN_LookdownDown() {KeyDown(&in_lookdown);}
+static void IN_LookdownUp() {KeyUp(&in_lookdown);}
+static void IN_MoveleftDown() {KeyDown(&in_moveleft);}
+static void IN_MoveleftUp() {KeyUp(&in_moveleft);}
+static void IN_MoverightDown() {KeyDown(&in_moveright);}
+static void IN_MoverightUp() {KeyUp(&in_moveright);}
 
-void IN_SpeedDown() {KeyDown(&in_speed);}
-void IN_SpeedUp() {KeyUp(&in_speed);}
-void IN_StrafeDown() {KeyDown(&in_strafe);}
-void IN_StrafeUp() {KeyUp(&in_strafe);}
+static void IN_SpeedDown() {KeyDown(&in_speed);}
+static void IN_SpeedUp() {KeyUp(&in_speed);}
+static void IN_StrafeDown() {KeyDown(&in_strafe);}
+static void IN_StrafeUp() {KeyUp(&in_strafe);}
 
-void IN_AttackDown() {KeyDown(&in_attack);}
-void IN_AttackUp() {KeyUp(&in_attack);}
+static void IN_AttackDown() {KeyDown(&in_attack);}
+static void IN_AttackUp() {KeyUp(&in_attack);}
 
-void IN_UseDown () {KeyDown(&in_use);}
-void IN_UseUp () {KeyUp(&in_use);}
-void IN_JumpDown () {KeyDown(&in_jump);}
-void IN_JumpUp () {KeyUp(&in_jump);}
+static void IN_UseDown () {KeyDown(&in_use);}
+static void IN_UseUp () {KeyUp(&in_use);}
+static void IN_JumpDown () {KeyDown(&in_jump);}
+static void IN_JumpUp () {KeyUp(&in_jump);}
 
-void IN_Impulse () {in_impulse=atoi(Cmd_Argv(1));}
+static void IN_Impulse () {in_impulse=atoi(Cmd_Argv(1));}
 
 /*
 ===============
@@ -164,7 +166,7 @@ Returns 0.25 if a key was pressed and released during the frame,
 1.0 if held for the entire time
 ===============
 */
-float CL_KeyState (kbutton_t *key)
+static float CL_KeyState (kbutton_t *key)
 {
 	float		val;
 	bool	impulsedown, impulseup, down;
@@ -225,7 +227,7 @@ CL_AdjustAngles
 Moves the local angle positions
 ================
 */
-void CL_AdjustAngles ()
+static void CL_AdjustAngles ()
 {
 	float	speed;
 	float	up, down;
@@ -267,15 +269,13 @@ CL_BaseMove
 Send the intended movement message to the server
 ================
 */
-void CL_BaseMove (usercmd_t *cmd)
+static void CL_BaseMove (usercmd_t *cmd)
 {	
-	if (cls.signon != SIGNONS)
-		return;
-			
 	CL_AdjustAngles ();
 	
 	memset (cmd, 0, sizeof(*cmd));
 	
+	VectorCopy (cl.viewangles, cmd->angles);
 	if (in_strafe.state & 1)
 	{
 		cmd->sidemove += cl_sidespeed.value * CL_KeyState (&in_right);
@@ -305,63 +305,25 @@ void CL_BaseMove (usercmd_t *cmd)
 	}
 }
 
-
+static int MakeChar (int i)
+{
+	i &= ~3;
+	if (i < -127*4)
+		i = -127*4;
+	if (i > 127*4)
+		i = 127*4;
+	return i;
+}
 
 /*
 ==============
-CL_SendMove
+CL_FinishMove
 ==============
 */
-void CL_SendMove (usercmd_t *cmd)
+static void CL_FinishMove (usercmd_t *cmd)
 {
 	int		i;
-	int		bits;
-	sizebuf_t	buf;
-	byte	data[128];
-	
-	buf.maxsize = 128;
-	buf.cursize = 0;
-	buf.data = data;
-	
-	cl.cmd = *cmd;
-
-//
-// send the movement message
-//
-    MSG_WriteByte (&buf, clc_move);
-
-	MSG_WriteFloat (&buf, cl.mtime[0]);	// so server can get ping times
-
-	for (i=0 ; i<3 ; i++)
-		MSG_WriteAngle (&buf, cl.viewangles[i]);
-	
-    MSG_WriteShort (&buf, cmd->forwardmove);
-    MSG_WriteShort (&buf, cmd->sidemove);
-    MSG_WriteShort (&buf, cmd->upmove);
-
-//
-// send button bits
-//
-	bits = 0;
-	
-	if ( in_attack.state & 3 )
-		bits |= 1;
-	in_attack.state &= ~2;
-	
-	if (in_jump.state & 3)
-		bits |= 2;
-	in_jump.state &= ~2;
-	
-    MSG_WriteByte (&buf, bits);
-
-    MSG_WriteByte (&buf, in_impulse);
-	in_impulse = 0;
-
-//
-// deliver the message
-//
-	if (cls.demoplayback)
-		return;
+	int		ms;
 
 //
 // allways dump the first two message, because it may contain leftover inputs
@@ -369,12 +331,137 @@ void CL_SendMove (usercmd_t *cmd)
 //
 	if (++cl.movemessages <= 2)
 		return;
+//
+// figure button bits
+//	
+	if ( in_attack.state & 3 )
+		cmd->buttons |= 1;
+	in_attack.state &= ~2;
 	
-	if (NET_SendUnreliableMessage (cls.netcon, &buf) == -1)
+	if (in_jump.state & 3)
+		cmd->buttons |= 2;
+	in_jump.state &= ~2;
+
+	// send milliseconds of time to apply the move
+	ms = host_frametime * 1000;
+	if (ms > 250)
+		ms = 100;		// time was unreasonable
+	cmd->msec = ms;
+
+	VectorCopy (cl.viewangles, cmd->angles);
+
+	cmd->impulse = in_impulse;
+	in_impulse = 0;
+
+
+//
+// chop down so no extra bits are kept that the server wouldn't get
+//
+	cmd->forwardmove = MakeChar (cmd->forwardmove);
+	cmd->sidemove = MakeChar (cmd->sidemove);
+	cmd->upmove = MakeChar (cmd->upmove);
+
+	for (i=0 ; i<3 ; i++)
+		cmd->angles[i] = ((int)(cmd->angles[i]*65536.0/360)&65535) * (360.0/65536.0);
+}
+
+/*
+=================
+CL_SendCmd
+=================
+*/
+void CL_SendCmd ()
+{
+	sizebuf_t	buf;
+	byte		data[128];
+	int			i;
+	usercmd_t	*cmd, *oldcmd;
+	int			checksumIndex;
+	int			lost;
+	int			seq_hash;
+
+	if (cls.demoplayback)
+		return; // sendcmds come from the demo
+
+	// save this command off for prediction
+	i = cls.netchan.outgoing_sequence & UPDATE_MASK;
+	cmd = &cl.frames[i].cmd;
+	cl.frames[i].senttime = realtime;
+	cl.frames[i].receivedtime = -1;		// we haven't gotten a reply yet
+
+//	seq_hash = (cls.netchan.outgoing_sequence & 0xffff) ; // ^ QW_CHECK_HASH;
+	seq_hash = cls.netchan.outgoing_sequence;
+
+	// get basic movement from keyboard
+	CL_BaseMove (cmd);
+
+	// allow mice or other external controllers to add to the move
+	IN_Move (cmd);
+
+	// if we are spectator, try autocam
+	// if (cl.spectator)
+	// 	Cam_Track(cmd);
+
+	CL_FinishMove(cmd);
+
+	// Cam_FinishMove(cmd);
+
+// send this and the previous cmds in the message, so
+// if the last packet was dropped, it can be recovered
+	buf.maxsize = 128;
+	buf.cursize = 0;
+	buf.data = data;
+
+	MSG_WriteByte (&buf, clc_move);
+
+	// save the position for a checksum byte
+	checksumIndex = buf.cursize;
+	MSG_WriteByte (&buf, 0);
+
+	// write our lossage percentage
+	lost = CL_CalcNet();
+	MSG_WriteByte (&buf, (byte)lost);
+
+	i = (cls.netchan.outgoing_sequence-2) & UPDATE_MASK;
+	cmd = &cl.frames[i].cmd;
+	MSG_WriteDeltaUsercmd (&buf, &nullcmd, cmd);
+	oldcmd = cmd;
+
+	i = (cls.netchan.outgoing_sequence-1) & UPDATE_MASK;
+	cmd = &cl.frames[i].cmd;
+	MSG_WriteDeltaUsercmd (&buf, oldcmd, cmd);
+	oldcmd = cmd;
+
+	i = (cls.netchan.outgoing_sequence) & UPDATE_MASK;
+	cmd = &cl.frames[i].cmd;
+	MSG_WriteDeltaUsercmd (&buf, oldcmd, cmd);
+
+	// calculate a checksum over the move commands
+	buf.data[checksumIndex] = COM_BlockSequenceCRCByte(
+		buf.data + checksumIndex + 1, buf.cursize - checksumIndex - 1,
+		seq_hash);
+
+	// request delta compression of entities
+	if (cls.netchan.outgoing_sequence - cl.validsequence >= UPDATE_BACKUP-1)
+		cl.validsequence = 0;
+
+	if (cl.validsequence && !cl_nodelta.value && cls.state == ca_active &&
+		!cls.demorecording)
 	{
-		Con_Printf ("CL_SendMove: lost server connection\n");
-		CL_Disconnect ();
+		cl.frames[cls.netchan.outgoing_sequence&UPDATE_MASK].delta_sequence = cl.validsequence;
+		MSG_WriteByte (&buf, clc_delta);
+		MSG_WriteByte (&buf, cl.validsequence&255);
 	}
+	else
+		cl.frames[cls.netchan.outgoing_sequence&UPDATE_MASK].delta_sequence = -1;
+
+	if (cls.demorecording)
+		CL_WriteDemoCmd(cmd);
+
+//
+// deliver the message
+//
+	Netchan_Transmit (&cls.netchan, buf.cursize, buf.data);	
 }
 
 /*
@@ -420,5 +507,6 @@ void CL_InitInput ()
 	Cmd_AddCommand ("+mlook", IN_MLookDown);
 	Cmd_AddCommand ("-mlook", IN_MLookUp);
 
+	Cvar_RegisterVariable (&cl_nodelta);
 }
 

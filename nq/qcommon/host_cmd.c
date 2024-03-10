@@ -348,42 +348,6 @@ void Host_Restart_f ()
 	SV_SpawnServer (mapname, startspot);
 }
 
-/*
-==================
-Host_Reconnect_f
-
-This command causes the client to wait for the signon messages again.
-This is sent just before a server changes levels
-==================
-*/
-void Host_Reconnect_f ()
-{
-	SCR_BeginLoadingPlaque ();
-	cls.signon = 0;		// need new connection messages
-}
-
-/*
-=====================
-Host_Connect_f
-
-User command to connect to server
-=====================
-*/
-void Host_Connect_f ()
-{
-	char	name[MAX_QPATH];
-	
-	cls.demonum = -1;		// stop demo loop in case this fails
-	if (cls.demoplayback)
-	{
-		CL_StopPlayback ();
-		CL_Disconnect ();
-	}
-	strcpy (name, Cmd_Argv(1));
-	CL_EstablishConnection (name);
-	Host_Reconnect_f ();
-}
-
 
 /*
 ===============================================================================
@@ -658,8 +622,8 @@ void Host_Loadgame_f ()
 
 	if (cls.state != ca_dedicated)
 	{
-		CL_EstablishConnection ("local");
-		Host_Reconnect_f ();
+		/*! Toodles FIXME: */
+		Cmd_ExecuteString ("connect local", src_command);
 	}
 }
 
@@ -1150,174 +1114,6 @@ void Host_Pause_f ()
 
 /*
 ==================
-Host_PreSpawn_f
-==================
-*/
-void Host_PreSpawn_f ()
-{
-	if (cmd_source == src_command)
-	{
-		Con_Printf ("prespawn is not valid from the console\n");
-		return;
-	}
-
-	if (host_client->spawned)
-	{
-		Con_Printf ("prespawn not valid -- allready spawned\n");
-		return;
-	}
-	
-	SZ_Write (&host_client->message, sv.signon.data, sv.signon.cursize);
-	MSG_WriteByte (&host_client->message, svc_signonnum);
-	MSG_WriteByte (&host_client->message, 2);
-	host_client->sendsignon = true;
-}
-
-/*
-==================
-Host_Spawn_f
-==================
-*/
-void Host_Spawn_f ()
-{
-	int		i;
-	client_t	*client;
-	edict_t	*ent;
-
-	if (cmd_source == src_command)
-	{
-		Con_Printf ("spawn is not valid from the console\n");
-		return;
-	}
-
-	if (host_client->spawned)
-	{
-		Con_Printf ("Spawn not valid -- allready spawned\n");
-		return;
-	}
-
-// run the entrance script
-	if (sv.loadgame)
-	{	// loaded games are fully inited allready
-		// if this is the last client to be connected, unpause
-		sv.paused = false;
-	}
-	else
-	{
-		// set up the edict
-		ent = host_client->edict;
-
-		ED_ClearEdict (ent);
-		ed_float(ent, colormap) = NUM_FOR_EDICT(ent);
-		ed_float(ent, team) = (host_client->colors & 15) + 1;
-		ed_set_string(ent, netname, host_client->name);
-
-		// copy spawn parms out of the client_t
-
-		for (i=0 ; i< NUM_SPAWN_PARMS ; i++)
-			sv_pr_vector(parm1)[i] = host_client->spawn_parms[i];
-
-		// call the spawn function
-
-		sv_pr_float(time) = sv.time;
-		sv_pr_int(self) = EDICT_TO_PROG(sv_player);
-		sv_pr_execute(ClientConnect);
-
-		if ((Sys_FloatTime() - host_client->netconnection->connecttime) <= sv.time)
-			Sys_Printf ("%s entered the game\n", host_client->name);
-
-		sv_pr_execute(PutClientInServer);
-	}
-
-
-// send all current names, colors, and frag counts
-	SZ_Clear (&host_client->message);
-
-// send time of update
-	MSG_WriteByte (&host_client->message, svc_time);
-	MSG_WriteFloat (&host_client->message, sv.time);
-
-	for (i=0, client = svs.clients ; i<svs.maxclients ; i++, client++)
-	{
-		MSG_WriteByte (&host_client->message, svc_updatename);
-		MSG_WriteByte (&host_client->message, i);
-		MSG_WriteString (&host_client->message, client->name);
-		MSG_WriteByte (&host_client->message, svc_updatefrags);
-		MSG_WriteByte (&host_client->message, i);
-		MSG_WriteShort (&host_client->message, client->old_frags);
-		MSG_WriteByte (&host_client->message, svc_updatecolors);
-		MSG_WriteByte (&host_client->message, i);
-		MSG_WriteByte (&host_client->message, client->colors);
-	}
-	
-// send all current light styles
-	for (i=0 ; i<MAX_LIGHTSTYLES ; i++)
-	{
-		MSG_WriteByte (&host_client->message, svc_lightstyle);
-		MSG_WriteByte (&host_client->message, (char)i);
-		MSG_WriteString (&host_client->message, sv.lightstyles[i]);
-	}
-
-//
-// send some stats
-//
-	MSG_WriteByte (&host_client->message, svc_updatestat);
-	MSG_WriteByte (&host_client->message, STAT_TOTALSECRETS);
-	MSG_WriteLong (&host_client->message, sv_pr_float(total_secrets));
-
-	MSG_WriteByte (&host_client->message, svc_updatestat);
-	MSG_WriteByte (&host_client->message, STAT_TOTALMONSTERS);
-	MSG_WriteLong (&host_client->message, sv_pr_float(total_monsters));
-
-	MSG_WriteByte (&host_client->message, svc_updatestat);
-	MSG_WriteByte (&host_client->message, STAT_SECRETS);
-	MSG_WriteLong (&host_client->message, sv_pr_float(found_secrets));
-
-	MSG_WriteByte (&host_client->message, svc_updatestat);
-	MSG_WriteByte (&host_client->message, STAT_MONSTERS);
-	MSG_WriteLong (&host_client->message, sv_pr_float(killed_monsters));
-
-	
-//
-// send a fixangle
-// Never send a roll angle, because savegames can catch the server
-// in a state where it is expecting the client to correct the angle
-// and it won't happen if the game was just loaded, so you wind up
-// with a permanent head tilt
-	ent = EDICT_NUM( 1 + (host_client - svs.clients) );
-	MSG_WriteByte (&host_client->message, svc_setangle);
-	for (i=0 ; i < 2 ; i++)
-		MSG_WriteAngle (&host_client->message, ed_vector(ent, angles)[i]);
-	MSG_WriteAngle (&host_client->message, 0 );
-
-	SV_WriteClientdataToMessage (sv_player, &host_client->message);
-
-	MSG_WriteByte (&host_client->message, svc_signonnum);
-	MSG_WriteByte (&host_client->message, 3);
-	host_client->sendsignon = true;
-}
-
-/*
-==================
-Host_Begin_f
-==================
-*/
-void Host_Begin_f ()
-{
-	if (cmd_source == src_command)
-	{
-		Con_Printf ("begin is not valid from the console\n");
-		return;
-	}
-
-	host_client->spawned = true;
-}
-
-//===========================================================================
-
-
-/*
-==================
 Host_Kick_f
 
 Kicks a user off of the server
@@ -1767,8 +1563,6 @@ void Host_InitCommands ()
 	Cmd_AddCommand ("restart", Host_Restart_f);
 	Cmd_AddCommand ("changelevel", Host_Changelevel_f);
 	Cmd_AddCommand ("changelevel2", Host_Changelevel2_f);
-	Cmd_AddCommand ("connect", Host_Connect_f);
-	Cmd_AddCommand ("reconnect", Host_Reconnect_f);
 	Cmd_AddCommand ("name", Host_Name_f);
 	Cmd_AddCommand ("noclip", Host_Noclip_f);
 	Cmd_AddCommand ("version", Host_Version_f);
@@ -1778,9 +1572,6 @@ void Host_InitCommands ()
 	Cmd_AddCommand ("color", Host_Color_f);
 	Cmd_AddCommand ("kill", Host_Kill_f);
 	Cmd_AddCommand ("pause", Host_Pause_f);
-	Cmd_AddCommand ("spawn", Host_Spawn_f);
-	Cmd_AddCommand ("begin", Host_Begin_f);
-	Cmd_AddCommand ("prespawn", Host_PreSpawn_f);
 	Cmd_AddCommand ("kick", Host_Kick_f);
 	Cmd_AddCommand ("ping", Host_Ping_f);
 	Cmd_AddCommand ("load", Host_Loadgame_f);

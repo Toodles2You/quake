@@ -1,29 +1,30 @@
 /*
+===========================================================================
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2023 Justin Keller
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+===========================================================================
 */
+
 // cl_ents.c -- entity parsing and management
 
-#include "quakedef.h"
+#include "clientdef.h"
 
-extern	cvar_t	cl_predict_players;
-extern	cvar_t	cl_predict_players2;
-extern	cvar_t	cl_solid_players;
+extern cvar_t cl_predict_players;
+extern cvar_t cl_predict_players2;
+extern cvar_t cl_solid_players;
 
 static struct predicted_player {
 	int flags;
@@ -82,8 +83,7 @@ dlight_t *CL_AllocDlight (int key)
 CL_NewDlight
 ===============
 */
-void CL_NewDlight (int key, float x, float y, float z, float radius, float time,
-				   int type)
+static void CL_NewDlight (int key, float x, float y, float z, float radius, float time, int type)
 {
 	dlight_t	*dl;
 
@@ -123,7 +123,7 @@ CL_DecayLights
 
 ===============
 */
-void CL_DecayLights (void)
+void CL_DecayLights ()
 {
 	int			i;
 	dlight_t	*dl;
@@ -157,7 +157,7 @@ Can go from either a baseline or a previous packet_entity
 ==================
 */
 int	bitcounts[32];	/// just for protocol profiling
-void CL_ParseDelta (entity_state_t *from, entity_state_t *to, int bits)
+static void CL_ParseDelta (entity_state_t *from, entity_state_t *to, int bits)
 {
 	int			i;
 
@@ -225,7 +225,7 @@ void CL_ParseDelta (entity_state_t *from, entity_state_t *to, int bits)
 FlushEntityPacket
 =================
 */
-void FlushEntityPacket (void)
+static void FlushEntityPacket ()
 {
 	int			word;
 	entity_state_t	olde, newe;
@@ -405,7 +405,7 @@ CL_LinkPacketEntities
 
 ===============
 */
-void CL_LinkPacketEntities (void)
+static void CL_LinkPacketEntities ()
 {
 	entity_t			*ent;
 	packet_entities_t	*pack;
@@ -454,6 +454,7 @@ void CL_LinkPacketEntities (void)
 
 		ent->keynum = s1->number;
 		ent->model = model = cl.model_precache[s1->modelindex];
+		ent->cmodel = cl.cmodel_precache[s1->modelindex];
 	
 		// set colormap
 		if (s1->colormap && (s1->colormap < MAX_CLIENTS) 
@@ -569,7 +570,7 @@ int				cl_num_projectiles;
 
 extern int cl_spikeindex;
 
-void CL_ClearProjectiles (void)
+void CL_ClearProjectiles ()
 {
 	cl_num_projectiles = 0;
 }
@@ -581,7 +582,7 @@ CL_ParseProjectiles
 Nails are passed as efficient temporary entities
 =====================
 */
-void CL_ParseProjectiles (void)
+void CL_ParseProjectiles ()
 {
 	int		i, c, j;
 	byte	bits[6];
@@ -614,7 +615,7 @@ CL_LinkProjectiles
 
 =============
 */
-void CL_LinkProjectiles (void)
+static void CL_LinkProjectiles ()
 {
 	int		i;
 	projectile_t	*pr;
@@ -632,6 +633,7 @@ void CL_LinkProjectiles (void)
 		if (pr->modelindex < 1)
 			continue;
 		ent->model = cl.model_precache[pr->modelindex];
+		ent->cmodel = cl.cmodel_precache[pr->modelindex];
 		ent->skinnum = 0;
 		ent->frame = 0;
 		ent->colormap = vid.colormap;
@@ -645,7 +647,7 @@ void CL_LinkProjectiles (void)
 
 extern	int		cl_spikeindex, cl_playerindex, cl_flagindex;
 
-entity_t *CL_NewTempEntity (void);
+entity_t *CL_NewTempEntity ();
 
 /*
 ===================
@@ -654,7 +656,7 @@ CL_ParsePlayerinfo
 */
 extern int parsecountmod;
 extern double parsecounttime;
-void CL_ParsePlayerinfo (void)
+void CL_ParsePlayerinfo ()
 {
 	int			msec;
 	int			flags;
@@ -732,7 +734,7 @@ CL_AddFlagModels
 Called when the CTF flags are set
 ================
 */
-void CL_AddFlagModels (entity_t *ent, int team)
+static void CL_AddFlagModels (entity_t *ent, int team)
 {
 	int		i;
 	float	f;
@@ -768,6 +770,7 @@ void CL_AddFlagModels (entity_t *ent, int team)
 
 	newent = CL_NewTempEntity ();
 	newent->model = cl.model_precache[cl_flagindex];
+	newent->cmodel = cl.cmodel_precache[cl_flagindex];
 	newent->skinnum = team;
 
 	AngleVectors (ent->angles, v_forward, v_right, v_up);
@@ -788,7 +791,7 @@ Create visible entities in the correct position
 for all current players
 =============
 */
-void CL_LinkPlayers (void)
+static void CL_LinkPlayers ()
 {
 	int				j;
 	player_info_t	*info;
@@ -844,6 +847,7 @@ void CL_LinkPlayers (void)
 		ent->keynum = 0;
 
 		ent->model = cl.model_precache[state->modelindex];
+		ent->cmodel = cl.cmodel_precache[state->modelindex];
 		ent->skinnum = state->skinnum;
 		ent->frame = state->frame;
 		ent->colormap = info->translations;
@@ -899,14 +903,14 @@ CL_SetSolid
 Builds all the pmove physents for the current frame
 ===============
 */
-void CL_SetSolidEntities (void)
+void CL_SetSolidEntities ()
 {
 	int		i;
 	frame_t	*frame;
 	packet_entities_t	*pak;
 	entity_state_t		*state;
 
-	pmove.physents[0].model = cl.worldmodel;
+	pmove.physents[0].model = cl.cmodel_precache[1];
 	VectorCopy (vec3_origin, pmove.physents[0].origin);
 	pmove.physents[0].info = 0;
 	pmove.numphysent = 1;
@@ -920,12 +924,12 @@ void CL_SetSolidEntities (void)
 
 		if (!state->modelindex)
 			continue;
-		if (!cl.model_precache[state->modelindex])
+		if (!cl.cmodel_precache[state->modelindex])
 			continue;
-		if ( cl.model_precache[state->modelindex]->hulls[1].firstclipnode 
-			|| cl.model_precache[state->modelindex]->clipbox )
+		if ( cl.cmodel_precache[state->modelindex]->hulls[1].firstclipnode 
+			|| cl.cmodel_precache[state->modelindex]->clipbox )
 		{
-			pmove.physents[pmove.numphysent].model = cl.model_precache[state->modelindex];
+			pmove.physents[pmove.numphysent].model = cl.cmodel_precache[state->modelindex];
 			VectorCopy (state->origin, pmove.physents[pmove.numphysent].origin);
 			pmove.numphysent++;
 		}
@@ -1058,7 +1062,7 @@ Builds the visedicts array for cl.time
 Made up of: clients, packet_entities, nails, and tents
 ===============
 */
-void CL_EmitEntities (void)
+void CL_EmitEntities ()
 {
 	if (cls.state != ca_active)
 		return;

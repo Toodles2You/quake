@@ -75,6 +75,8 @@ set(QCOMMON_SRC
     nq/qcommon/host.c
     nq/qcommon/net_chan.c
     nq/qcommon/net_udp.c
+    nq/qcommon/pmove.c
+    nq/qcommon/pmovetst.c
     nq/qcommon/sys_linux.c
     nq/qcommon/zone.c
 )
@@ -83,6 +85,7 @@ set(CLIENT_SRC
     nq/client/cd_vorbis.c
     nq/client/chase.c
     nq/client/cl_demo.c
+    nq/client/cl_ents.c
     nq/client/cl_input.c
     nq/client/cl_main.c
     nq/client/cl_parse.c

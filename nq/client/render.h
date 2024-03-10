@@ -19,27 +19,23 @@ typedef struct efrag_s
 
 typedef struct entity_s
 {
-	bool forcelink; // model changed
-
-	int update_type;
-
-	entity_state_t baseline; // to fill in defaults in updates
-
-	double msgtime;		   // time of last update
-	vec3_t msg_origins[2]; // last two updates (0 is newest)
+	int keynum; // for matching entities in different frames
 	vec3_t origin;
-	vec3_t msg_angles[2]; // last two updates (0 is newest)
 	vec3_t angles;
 	struct model_s *model; // NULL = no model
 	struct cmodel_s *cmodel; // NULL = no model
-	struct efrag_s *efrag; // linked list of efrags
 	int frame;
-	float syncbase; // for client-side animations
 	byte *colormap;
-	int effects;  // light, particals, etc
-	int skinnum;  // for Alias models
-	int visframe; // last frame this entity was
-				  //  found in an active leaf
+	int skinnum; // for Alias models
+
+	struct player_info_s *scoreboard; // identify player
+
+	float syncbase;
+
+	struct efrag_s *efrag; // linked list of efrags (FIXME)
+	int visframe;		   // last frame this entity was
+						   // found in an active leaf
+						   // only used for static objects
 
 	int dlightframe; // dynamic lighting
 	int dlightbits;
