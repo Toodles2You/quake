@@ -53,16 +53,32 @@ cvar_t	cl_solid_players = {"cl_solid_players", "1"};
 
 client_static_t	cls;
 client_state_t	cl;
-// FIXME: put these on hunk?
+
+entity_state_t	cl_baselines[MIN_EDICTS];
 efrag_t			cl_efrags[MAX_EFRAGS];
 entity_t		cl_static_entities[MAX_STATIC_ENTITIES];
 lightstyle_t	cl_lightstyle[MAX_LIGHTSTYLES];
 dlight_t		cl_dlights[MAX_DLIGHTS];
 
-int				cl_numvisedicts;
-entity_t		*cl_visedicts;
+int				cl_numvisedicts, cl_oldnumvisedicts;
+entity_t		*cl_visedicts, *cl_oldvisedicts;
+entity_t		cl_visedicts_list[2][MAX_VISEDICTS];
 
 static double connect_time = -1; // for connection retransmits
+
+char emodel_name[] = 
+	{ 'e' ^ 0xff, 'm' ^ 0xff, 'o' ^ 0xff, 'd' ^ 0xff, 'e' ^ 0xff, 'l' ^ 0xff, 0 };
+char pmodel_name[] = 
+	{ 'p' ^ 0xff, 'm' ^ 0xff, 'o' ^ 0xff, 'd' ^ 0xff, 'e' ^ 0xff, 'l' ^ 0xff, 0 };
+char prespawn_name[] = 
+	{ 'p'^0xff, 'r'^0xff, 'e'^0xff, 's'^0xff, 'p'^0xff, 'a'^0xff, 'w'^0xff, 'n'^0xff,
+		' '^0xff, '%'^0xff, 'i'^0xff, ' '^0xff, '0'^0xff, ' '^0xff, '%'^0xff, 'i'^0xff, 0 };
+char modellist_name[] = 
+	{ 'm'^0xff, 'o'^0xff, 'd'^0xff, 'e'^0xff, 'l'^0xff, 'l'^0xff, 'i'^0xff, 's'^0xff, 't'^0xff, 
+		' '^0xff, '%'^0xff, 'i'^0xff, ' '^0xff, '%'^0xff, 'i'^0xff, 0 };
+char soundlist_name[] = 
+	{ 's'^0xff, 'o'^0xff, 'u'^0xff, 'n'^0xff, 'd'^0xff, 'l'^0xff, 'i'^0xff, 's'^0xff, 't'^0xff, 
+		' '^0xff, '%'^0xff, 'i'^0xff, ' '^0xff, '%'^0xff, 'i'^0xff, 0 };
 
 /*
 =======================
@@ -495,7 +511,7 @@ void CL_ReadPackets ()
 		//
 		// remote command packet
 		//
-		if (*(int *)net_message.data == -1)
+		if (*(int32_t *)net_message.data == -1)
 		{
 			CL_ConnectionlessPacket();
 			continue;

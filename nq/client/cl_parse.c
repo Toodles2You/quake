@@ -311,7 +311,9 @@ static void CL_RequestNextDownload ()
 	case dl_single:
 		break;
 	case dl_skin:
+		#ifdef FIXME
 		Skin_NextDownload ();
+		#endif
 		break;
 	case dl_model:
 		Model_NextDownload ();
@@ -368,7 +370,7 @@ static void CL_ParseDownload ()
 		if (strncmp(cls.downloadtempname,"skins/",6))
 			sprintf (name, "%s/%s", com_gamedir, cls.downloadtempname);
 		else
-			sprintf (name, "qw/%s", cls.downloadtempname);
+			sprintf (name, QUAKE_BASEDIR"/%s", cls.downloadtempname);
 
 		COM_CreatePath (name);
 
@@ -419,8 +421,8 @@ static void CL_ParseDownload ()
 				sprintf (oldn, "%s/%s", com_gamedir, cls.downloadtempname);
 				sprintf (newn, "%s/%s", com_gamedir, cls.downloadname);
 			} else {
-				sprintf (oldn, "qw/%s", cls.downloadtempname);
-				sprintf (newn, "qw/%s", cls.downloadname);
+				sprintf (oldn, QUAKE_BASEDIR"/%s", cls.downloadtempname);
+				sprintf (newn, QUAKE_BASEDIR"/%s", cls.downloadname);
 			}
 			r = rename (oldn, newn);
 			if (r)
@@ -849,7 +851,7 @@ static void CL_ParseClientdata ()
 CL_NewTranslation
 =====================
 */
-static void CL_NewTranslation (int slot)
+void CL_NewTranslation (int slot)
 {
 	if (slot > MAX_CLIENTS)
 		Sys_Error ("CL_NewTranslation: slot > MAX_CLIENTS");
@@ -872,8 +874,10 @@ static void CL_ProcessUserInfo (int slot, player_info_t *player)
 	else
 		player->spectator = false;
 
+	#ifdef FIXME
 	if (cls.state == ca_active)
 		Skin_Find (player);
+	#endif
 
 	Sbar_Changed ();
 	CL_NewTranslation (slot);
@@ -1119,8 +1123,8 @@ void CL_ParseServerMessage ()
 			i = MSG_ReadByte();
 			if (i >= MAX_LIGHTSTYLES)
 				Sys_Error("svc_lightstyle > MAX_LIGHTSTYLES");
-			Q_strcpy(cl_lightstyle[i].map, MSG_ReadString());
-			cl_lightstyle[i].length = Q_strlen(cl_lightstyle[i].map);
+			strcpy(cl_lightstyle[i].map, MSG_ReadString());
+			cl_lightstyle[i].length = strlen(cl_lightstyle[i].map);
 			break;
 
 		case svc_sound:

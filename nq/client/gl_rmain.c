@@ -451,12 +451,14 @@ void R_DrawAliasModel (entity_t *e)
 
 	// we can't dynamically colormap textures, so they are cached
 	// seperately for the players.  Heads are just uncolored.
+	#ifdef FIXME
 	if (currententity->colormap != vid.colormap && !gl_nocolors.value)
 	{
 		i = currententity - cl.entities;
 		if (i >= 1 && i<=cl.maxclients /* && !strcmp (currententity->model->name, "progs/player.mdl") */)
 		    GL_Bind(playertextures - 1 + i);
 	}
+	#endif
 
 	if (gl_smoothmodels.value)
 		glShadeModel (GL_SMOOTH);
@@ -525,7 +527,7 @@ void R_DrawEntitiesOnList ()
 	// draw sprites seperately, because of alpha blending
 	for (i=0 ; i<cl_numvisedicts ; i++)
 	{
-		currententity = cl_visedicts[i];
+		currententity = cl_visedicts + i;
 
 		switch (currententity->model->type)
 		{
@@ -544,7 +546,7 @@ void R_DrawEntitiesOnList ()
 
 	for (i=0 ; i<cl_numvisedicts ; i++)
 	{
-		currententity = cl_visedicts[i];
+		currententity = cl_visedicts + i;
 
 		switch (currententity->model->type)
 		{
@@ -571,7 +573,7 @@ void R_DrawViewModel ()
 	if (!r_drawentities.value)
 		return;
 
-	if (cl.items & IT_INVISIBILITY)
+	if (cl.stats[STAT_ITEMS] & IT_INVISIBILITY)
 		return;
 
 	if (cl.stats[STAT_HEALTH] <= 0)
@@ -699,10 +701,6 @@ R_SetupFrame
 */
 void R_SetupFrame ()
 {
-// don't allow cheats in multiplayer
-	if (cl.maxclients > 1)
-		Cvar_Set ("r_fullbright", "0");
-
 	R_AnimateLight ();
 
 	r_framecount++;

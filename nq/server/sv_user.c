@@ -659,7 +659,7 @@ static void SV_BeginDownload_f()
 	extern	cvar_t	allow_download_models;
 	extern	cvar_t	allow_download_sounds;
 	extern	cvar_t	allow_download_maps;
-	extern	int		file_from_pak; // ZOID did file come from pak?
+	// extern	int		file_from_pak; // ZOID did file come from pak?
 
 	name = Cmd_Argv(1);
 // hacked by zoid to allow more conrol over download
@@ -706,7 +706,7 @@ static void SV_BeginDownload_f()
 	if (!host_client->download
 		// special check for maps, if it came from a pak file, don't allow
 		// download  ZOID
-		|| (strncmp(name, "maps/", 5) == 0 && file_from_pak))
+		/*|| (strncmp(name, "maps/", 5) == 0 && file_from_pak)*/)
 	{
 		if (host_client->download) {
 			fclose(host_client->download);
@@ -788,11 +788,11 @@ static void SV_Say (bool team)
 	if (*p == '"')
 	{
 		p++;
-		p[Q_strlen(p)-1] = 0;
+		p[strlen(p)-1] = 0;
 	}
 
-	Q_strcat(text, p);
-	Q_strcat(text, "\n");
+	strcat(text, p);
+	strcat(text, "\n");
 
 	Sys_Printf ("%s", text);
 
@@ -1636,7 +1636,7 @@ void SV_ExecuteClientMessage (client_t *cl)
 		switch (c)
 		{
 		default:
-			Con_Printf ("SV_ReadClientMessage: unknown command char\n");
+			Con_Printf ("SV_ReadClientMessage: unknown command char %i\n", c);
 			SV_DropClient (cl);
 			return;
 						

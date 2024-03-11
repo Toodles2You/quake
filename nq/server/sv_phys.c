@@ -1034,7 +1034,7 @@ static void SV_RunEntity (edict_t *ent)
 		SV_Physics_Follow (ent);
 		break;
 	default:
-		SV_Error ("SV_Physics: bad movetype %i", (int)ed_float(ent, movetype));			
+		Host_Error ("SV_Physics: bad movetype %i", (int)ed_float(ent, movetype));			
 	}
 }
 
@@ -1044,7 +1044,7 @@ SV_RunNewmis
 
 ================
 */
-static void SV_RunNewmis ()
+void SV_RunNewmis ()
 {
 	edict_t *ent;
 

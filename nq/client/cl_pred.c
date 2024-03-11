@@ -1,24 +1,24 @@
 /*
+===========================================================================
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2023 Justin Keller
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the GNU General Public License for more details.
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+===========================================================================
 */
-#include "quakedef.h"
-#include "winquake.h"
+
+#include "clientdef.h"
 
 cvar_t	cl_nopred = {"cl_nopred","0"};
 cvar_t	cl_pushlatency = {"pushlatency","-999"};
@@ -34,12 +34,12 @@ try nudging slightly on all axis to
 allow for the cut precision of the net coordinates
 =================
 */
-void CL_NudgePosition (void)
+void CL_NudgePosition ()
 {
 	vec3_t	base;
 	int		x, y;
 
-	if (PM_HullPointContents (&cl.model_precache[1]->hulls[1], 0, pmove.origin) == CONTENTS_EMPTY)
+	if (PM_HullPointContents (&cl.cmodel_precache[1]->hulls[1], 0, pmove.origin) == CONTENTS_EMPTY)
 		return;
 
 	VectorCopy (pmove.origin, base);
@@ -49,7 +49,7 @@ void CL_NudgePosition (void)
 		{
 			pmove.origin[0] = base[0] + x * 1.0/8;
 			pmove.origin[1] = base[1] + y * 1.0/8;
-			if (PM_HullPointContents (&cl.model_precache[1]->hulls[1], 0, pmove.origin) == CONTENTS_EMPTY)
+			if (PM_HullPointContents (&cl.cmodel_precache[1]->hulls[1], 0, pmove.origin) == CONTENTS_EMPTY)
 				return;
 		}
 	}
@@ -109,7 +109,7 @@ void CL_PredictUsercmd (player_state_t *from, player_state_t *to, usercmd_t *u, 
 CL_PredictMove
 ==============
 */
-void CL_PredictMove (void)
+void CL_PredictMove ()
 {
 	int			i;
 	float		f;
@@ -217,7 +217,7 @@ void CL_PredictMove (void)
 CL_InitPrediction
 ==============
 */
-void CL_InitPrediction (void)
+void CL_InitPrediction ()
 {
 	Cvar_RegisterVariable (&cl_pushlatency);
 	Cvar_RegisterVariable (&cl_nopred);

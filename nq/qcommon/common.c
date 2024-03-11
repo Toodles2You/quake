@@ -537,6 +537,41 @@ float MSG_ReadAngle16 ()
 	return MSG_ReadShort() * (360.0/65536);
 }
 
+void MSG_ReadDeltaUsercmd (usercmd_t *from, usercmd_t *move)
+{
+	int bits;
+
+	memcpy (move, from, sizeof(*move));
+
+	bits = MSG_ReadByte ();
+		
+// read current angles
+	if (bits & CM_ANGLE1)
+		move->angles[0] = MSG_ReadAngle16 ();
+	if (bits & CM_ANGLE2)
+		move->angles[1] = MSG_ReadAngle16 ();
+	if (bits & CM_ANGLE3)
+		move->angles[2] = MSG_ReadAngle16 ();
+		
+// read movement
+	if (bits & CM_FORWARD)
+		move->forwardmove = MSG_ReadShort ();
+	if (bits & CM_SIDE)
+		move->sidemove = MSG_ReadShort ();
+	if (bits & CM_UP)
+		move->upmove = MSG_ReadShort ();
+	
+// read buttons
+	if (bits & CM_BUTTONS)
+		move->buttons = MSG_ReadByte ();
+
+	if (bits & CM_IMPULSE)
+		move->impulse = MSG_ReadByte ();
+
+// read time to run command
+	move->msec = MSG_ReadByte ();
+}
+
 
 
 //===========================================================================
@@ -1204,7 +1239,7 @@ COM_CreatePath
 Only used for CopyFile
 ============
 */
-static void    COM_CreatePath (char *path)
+void    COM_CreatePath (char *path)
 {
 	char    *ofs;
 	
@@ -1756,6 +1791,7 @@ static void COM_InitFilesystem ()
 // start up with QUAKE_BASEDIR by default
 //
 	COM_AddGameDirectory (va("%s/"QUAKE_BASEDIR, com_basedir), &modified);
+	COM_AddGameDirectory (va("%s/qw", com_basedir), &modified);
 
 	// any set gamedirs will be freed up to here
 	com_base_searchpaths = com_searchpaths;

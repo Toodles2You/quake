@@ -107,6 +107,7 @@ char *MSG_ReadStringLine();
 float MSG_ReadCoord();
 float MSG_ReadAngle();
 float MSG_ReadAngle16();
+void MSG_ReadDeltaUsercmd(struct usercmd_s *from, struct usercmd_s *cmd);
 
 //============================================================================
 
@@ -156,6 +157,7 @@ byte *COM_LoadStackFile(char *path, void *buffer, size_t bufsize);
 byte *COM_LoadTempFile(char *path);
 byte *COM_LoadHunkFile(char *path);
 void COM_LoadCacheFile(char *path, struct cache_user_s *cu);
+void COM_CreatePath(char *path);
 void COM_Gamedir(char *dir);
 
 extern bool standard_quake;

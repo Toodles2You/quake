@@ -282,7 +282,7 @@ int SV_FlyMove (edict_t *ent, float time, trace_t *steptrace)
 			 break;		// moved the entire distance
 
 		if (!trace.ent)
-			SV_Error ("SV_FlyMove: !trace.ent");
+			Host_Error ("SV_FlyMove: !trace.ent");
 
 		if (trace.plane.normal[2] > 0.7)
 		{
@@ -861,7 +861,7 @@ void SV_RunEntity (edict_t *ent)
 		SV_Physics_Toss (ent);
 		break;
 	default:
-		SV_Error ("SV_Physics: bad movetype %i", (int)ent->v.movetype);			
+		Host_Error ("SV_Physics: bad movetype %i", (int)ent->v.movetype);			
 	}
 }
 

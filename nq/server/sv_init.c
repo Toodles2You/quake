@@ -44,7 +44,7 @@ int SV_ModelIndex (char *name)
 		if (!strcmp(sv.model_precache[i], name))
 			return i;
 	if (i==MAX_MODELS || !sv.model_precache[i])
-		SV_Error ("SV_ModelIndex: model %s not precached", name);
+		Host_Error ("SV_ModelIndex: model %s not precached", name);
 	return i;
 }
 
@@ -61,7 +61,7 @@ void SV_FlushSignon ()
 		return;
 
 	if (sv.num_signon_buffers == MAX_SIGNON_BUFFERS-1)
-		SV_Error ("sv.num_signon_buffers == MAX_SIGNON_BUFFERS-1");
+		Host_Error ("sv.num_signon_buffers == MAX_SIGNON_BUFFERS-1");
 
 	sv.signon_buffer_size[sv.num_signon_buffers-1] = sv.signon.cursize;
 	sv.signon.data = sv.signon_buffers[sv.num_signon_buffers];
@@ -267,7 +267,7 @@ static unsigned int SV_CheckModel(char *mdl)
 
 static bool SV_LoadProgs()
 {
-	if (PR_LoadProgs(&sv.pr, "progs.dat", PROG_VERSION, PROGHEADER_CRC) != 0)
+	if (PR_LoadProgs(&sv.pr, "qwprogs.dat", PROG_VERSION, 0) != 0)
 	{
 		return false;
 	}
@@ -485,6 +485,7 @@ void SV_SpawnServer (char *server, char *startspot)
 	// all spawning is completed, any further precache statements
 	// or prog writes to the signon message are errors
 	sv.state = ss_active;
+	sv.active = true;
 	
 	// run two frames to allow everything to settle
 	host_frametime = 0.1;

@@ -89,7 +89,7 @@ void Host_Map_f ()
 	{
 		if (cls.state != ca_dedicated)
 		{
-			Cmd_ExecuteString ("connect local", src_command);
+			Cmd_ExecuteString ("connect localhost", src_command);
 		}
 	}
 
@@ -443,7 +443,7 @@ void Host_Loadgame_f ()
 	if (cls.state != ca_dedicated)
 	{
 		/*! Toodles FIXME: */
-		Cmd_ExecuteString ("connect local", src_command);
+		Cmd_ExecuteString ("connect localhost", src_command);
 	}
 	#endif
 }

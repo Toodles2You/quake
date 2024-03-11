@@ -628,7 +628,7 @@ void R_DrawParticles ()
 	VectorScale (vup, 1.5, up);
 	VectorScale (vright, 1.5, right);
 
-	frametime = cl.time - cl.oldtime;
+	frametime = host_frametime;
 	time3 = frametime * 15;
 	time2 = frametime * 10; // 15;
 	time1 = frametime * 5;

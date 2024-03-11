@@ -89,6 +89,7 @@ set(CLIENT_SRC
     nq/client/cl_input.c
     nq/client/cl_main.c
     nq/client/cl_parse.c
+    nq/client/cl_pred.c
     nq/client/cl_tent.c
     nq/client/console.c
     nq/client/gl_draw.c

@@ -36,6 +36,8 @@ cmdalias_t	*cmd_alias;
 
 bool	cmd_wait;
 
+cvar_t cl_warncmd = {"cl_warncmd", "0"};
+
 //=============================================================================
 
 /*

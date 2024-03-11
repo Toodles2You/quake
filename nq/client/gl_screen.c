@@ -454,21 +454,6 @@ void SCR_DrawTurtle ()
 	Draw_Pic (scr_vrect.x, scr_vrect.y, scr_turtle);
 }
 
-/*
-==============
-SCR_DrawNet
-==============
-*/
-void SCR_DrawNet ()
-{
-	if (realtime - cl.last_received_message < 0.3)
-		return;
-	if (cls.demoplayback)
-		return;
-
-	Draw_Pic (scr_vrect.x+64, scr_vrect.y, scr_net);
-}
-
 int cl_framecount;
 
 /*
@@ -977,8 +962,7 @@ void SCR_UpdateScreen ()
 	{
 		if (crosshair.value)
 			Draw_Crosshair (scr_vrect.x + scr_vrect.width/2, scr_vrect.y + scr_vrect.height/2);
-		
-		SCR_DrawNet ();
+
 		SCR_DrawFPS ();
 		SCR_DrawTurtle ();
 		SCR_DrawPause ();

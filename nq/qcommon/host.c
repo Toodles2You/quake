@@ -77,6 +77,8 @@ cvar_t	coop = {"coop","0"};			// 0 or 1
 
 cvar_t	pausable = {"pausable","1"};
 
+extern  cvar_t	cl_warncmd;
+
 extern int cl_framecount;
 
 
@@ -157,6 +159,8 @@ void Host_InitLocal ()
 {
 	Host_InitCommands ();
 	
+	Cvar_RegisterVariable (&cl_warncmd);
+	
 	Cvar_RegisterVariable (&host_framerate);
 	Cvar_RegisterVariable (&host_timescale);
 	Cvar_RegisterVariable (&host_speeds);
@@ -175,6 +179,17 @@ void Host_InitLocal ()
 	Cvar_RegisterVariable (&coop);
 
 	Cvar_RegisterVariable (&pausable);
+
+	int i = COM_CheckParm ("-dedicated");
+	if (i)
+	{
+		cls.state = ca_dedicated;
+		Cvar_SetValue("maxclients", atoi(com_argv[i + 1]));
+	}
+	else
+	{
+		cls.state = ca_disconnected;
+	}
 	
 	host_time = 1.0;		// so a think at time 0 won't get called
 }
@@ -207,65 +222,6 @@ void Host_WriteConfiguration ()
 
 		fclose (f);
 	}
-}
-
-/*
-=====================
-SV_DropClient
-
-Called when the player is totally leaving the server, either willingly
-or unwillingly.  This is NOT called if the entire server is quiting
-or crashing.
-=====================
-*/
-void SV_DropClient (client_t *drop)
-{
-	// add the disconnect
-	MSG_WriteByte (&drop->netchan.message, svc_disconnect);
-
-	if (drop->state == cs_spawned)
-		if (!drop->spectator)
-		{
-			// call the prog function for removing a client
-			// this will set the body to a dead frame, among other things
-			sv_pr_int(self) = EDICT_TO_PROG(drop->edict);
-			sv_pr_execute(ClientDisconnect);
-		}
-		else if (pr_field(SpectatorDisconnect))
-		{
-			// call the prog function for removing a client
-			// this will set the body to a dead frame, among other things
-			sv_pr_int(self) = EDICT_TO_PROG(drop->edict);
-			sv_pr_execute(SpectatorDisconnect);
-		}
-
-	if (drop->spectator)
-		Con_Printf ("Spectator %s removed\n",drop->name);
-	else
-		Con_Printf ("Client %s removed\n",drop->name);
-
-	if (drop->download)
-	{
-		fclose (drop->download);
-		drop->download = NULL;
-	}
-	if (drop->upload)
-	{
-		fclose (drop->upload);
-		drop->upload = NULL;
-	}
-	*drop->uploadfn = 0;
-
-	drop->state = cs_zombie;		// become free in a few seconds
-	drop->connection_started = realtime;	// for zombie timeout
-
-	drop->old_frags = 0;
-	ed_float(drop->edict, frags) = 0;
-	drop->name[0] = 0;
-	memset (drop->userinfo, 0, sizeof(drop->userinfo));
-
-// send notification to all remaining clients
-	SV_FullClientUpdate (drop, &sv.reliable_datagram);
 }
 
 /*
@@ -492,12 +448,7 @@ void Host_Frame (float time)
 	CL_ReadPackets ();
 
 // if running the server locally, make intentions now
-	if (cls.state == ca_disconnected)
-	{
-		// resend a connection request if necessary
-		CL_CheckForResend ();
-	}
-	else if (Host_IsLocalGame ())
+	if (Host_IsLocalGame ())
 	{
 		CL_SendCmd ();
 	}
@@ -522,7 +473,12 @@ void Host_Frame (float time)
 
 // if running the server remotely, send intentions now after
 // the incoming messages have been read
-	if (!Host_IsLocalGame ())
+	if (cls.state == ca_disconnected)
+	{
+		// resend a connection request if necessary
+		CL_CheckForResend ();
+	}
+	else if (!Host_IsLocalGame ())
 	{
 		CL_SendCmd ();
 	}

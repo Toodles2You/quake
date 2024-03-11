@@ -112,20 +112,20 @@ void SV_Shutdown (void)
 
 /*
 ================
-SV_Error
+Host_Error
 
 Sends a datagram to all the clients informing them of the server crash,
 then exits
 ================
 */
-void SV_Error (char *error, ...)
+void Host_Error (char *error, ...)
 {
 	va_list		argptr;
 	static	char		string[1024];
 	static	bool inerror = false;
 
 	if (inerror)
-		Sys_Error ("SV_Error: recursively entered (%s)", string);
+		Sys_Error ("Host_Error: recursively entered (%s)", string);
 
 	inerror = true;
 
@@ -133,20 +133,20 @@ void SV_Error (char *error, ...)
 	vsprintf (string,error,argptr);
 	va_end (argptr);
 
-	Con_Printf ("SV_Error: %s\n",string);
+	Con_Printf ("Host_Error: %s\n",string);
 
 	SV_FinalMessage (va("server crashed: %s\n", string));
 		
 	SV_Shutdown ();
 
-	Sys_Error ("SV_Error: %s\n",string);
+	Sys_Error ("Host_Error: %s\n",string);
 }
 
 /*
 ==================
 SV_FinalMessage
 
-Used by SV_Error and SV_Quit_f to send a final message to all connected
+Used by Host_Error and SV_Quit_f to send a final message to all connected
 clients before the server goes down.  The messages are sent immediately,
 not just stuck on the outgoing message list, because the server is going
 to totally exit after returning from this function.
@@ -1615,7 +1615,7 @@ void SV_Init (quakeparms_t *parms)
 	host_parms = *parms;
 
 	if (parms->memsize < MINIMUM_MEMORY)
-		SV_Error ("Only %4.1f megs of memory reported, can't execute game", parms->memsize / (float)0x100000);
+		Host_Error ("Only %4.1f megs of memory reported, can't execute game", parms->memsize / (float)0x100000);
 
 	Memory_Init (parms->membase, parms->memsize);
 	Cbuf_Init ();
@@ -1654,5 +1654,5 @@ void SV_Init (quakeparms_t *parms)
 	if (sv.state == ss_dead)
 		Cmd_ExecuteString ("map start");
 	if (sv.state == ss_dead)
-		SV_Error ("Couldn't spawn a server");
+		Host_Error ("Couldn't spawn a server");
 }

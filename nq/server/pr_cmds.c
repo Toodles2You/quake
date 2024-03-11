@@ -283,9 +283,12 @@ bprint(value)
 void PF_bprint (progs_state_t *pr)
 {
 	char		*s;
+	int			level;
+	
+	level = pr_global(pr, float, OFS_PARM0);
 
-	s = PF_VarString(pr, 0);
-	SV_BroadcastPrintf ("%s", s);
+	s = PF_VarString(pr, 1);
+	SV_BroadcastPrintf (level, "%s", s);
 }
 
 /*
@@ -496,6 +499,7 @@ particle(origin, color, count)
 */
 void PF_particle (progs_state_t *pr)
 {
+	#if 0
 	float		*org, *dir;
 	float		color;
 	float		count;
@@ -505,6 +509,7 @@ void PF_particle (progs_state_t *pr)
 	color = pr_global(pr, float, OFS_PARM2);
 	count = pr_global(pr, float, OFS_PARM3);
 	SV_StartParticle (org, dir, color, count);
+	#endif
 }
 
 
@@ -1405,11 +1410,12 @@ sizebuf_t *WriteDest (progs_state_t *pr)
 		return &sv.datagram;
 	
 	case MSG_ONE:
-		ent = PROG_TO_EDICT(pr_int(pr, msg_entity));
-		entnum = NUM_FOR_EDICT(ent);
-		if (entnum < 1 || entnum > MAX_CLIENTS)
-			PR_RunError (pr, "WriteDest: not a client");
-		return &svs.clients[entnum-1].message;
+		return NULL;
+		// ent = PROG_TO_EDICT(pr_int(pr, msg_entity));
+		// entnum = NUM_FOR_EDICT(ent);
+		// if (entnum < 1 || entnum > MAX_CLIENTS)
+		// 	PR_RunError (pr, "WriteDest: not a client");
+		// return &svs.clients[entnum-1].message;
 		
 	case MSG_ALL:
 		return &sv.reliable_datagram;
@@ -1444,7 +1450,7 @@ static client_t *Write_GetClient (progs_state_t *pr)
 
 void PF_WriteByte (progs_state_t *pr)
 {
-	if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
+	if (pr_global(pr, float, OFS_PARM0) == MSG_ONE) {
 		client_t *cl = Write_GetClient(pr);
 		ClientReliableCheckBlock(cl, 1);
 		ClientReliableWrite_Byte(cl, pr_global(pr, float, OFS_PARM1));
@@ -1454,7 +1460,7 @@ void PF_WriteByte (progs_state_t *pr)
 
 void PF_WriteChar (progs_state_t *pr)
 {
-	if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
+	if (pr_global(pr, float, OFS_PARM0) == MSG_ONE) {
 		client_t *cl = Write_GetClient(pr);
 		ClientReliableCheckBlock(cl, 1);
 		ClientReliableWrite_Char(cl, pr_global(pr, float, OFS_PARM1));
@@ -1464,7 +1470,7 @@ void PF_WriteChar (progs_state_t *pr)
 
 void PF_WriteShort (progs_state_t *pr)
 {
-	if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
+	if (pr_global(pr, float, OFS_PARM0) == MSG_ONE) {
 		client_t *cl = Write_GetClient(pr);
 		ClientReliableCheckBlock(cl, 2);
 		ClientReliableWrite_Short(cl, pr_global(pr, float, OFS_PARM1));
@@ -1474,7 +1480,7 @@ void PF_WriteShort (progs_state_t *pr)
 
 void PF_WriteLong (progs_state_t *pr)
 {
-	if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
+	if (pr_global(pr, float, OFS_PARM0) == MSG_ONE) {
 		client_t *cl = Write_GetClient(pr);
 		ClientReliableCheckBlock(cl, 4);
 		ClientReliableWrite_Long(cl, pr_global(pr, float, OFS_PARM1));
@@ -1484,7 +1490,7 @@ void PF_WriteLong (progs_state_t *pr)
 
 void PF_WriteAngle (progs_state_t *pr)
 {
-	if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
+	if (pr_global(pr, float, OFS_PARM0) == MSG_ONE) {
 		client_t *cl = Write_GetClient(pr);
 		ClientReliableCheckBlock(cl, 1);
 		ClientReliableWrite_Angle(cl, pr_global(pr, float, OFS_PARM1));
@@ -1494,7 +1500,7 @@ void PF_WriteAngle (progs_state_t *pr)
 
 void PF_WriteCoord (progs_state_t *pr)
 {
-	if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
+	if (pr_global(pr, float, OFS_PARM0) == MSG_ONE) {
 		client_t *cl = Write_GetClient(pr);
 		ClientReliableCheckBlock(cl, 2);
 		ClientReliableWrite_Coord(cl, pr_global(pr, float, OFS_PARM1));
@@ -1504,7 +1510,7 @@ void PF_WriteCoord (progs_state_t *pr)
 
 void PF_WriteString (progs_state_t *pr)
 {
-	if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
+	if (pr_global(pr, float, OFS_PARM0) == MSG_ONE) {
 		client_t *cl = Write_GetClient(pr);
 		ClientReliableCheckBlock(cl, 1+strlen(pr_get_string(pr, OFS_PARM1)));
 		ClientReliableWrite_String(cl, pr_get_string(pr, OFS_PARM1));
@@ -1515,7 +1521,7 @@ void PF_WriteString (progs_state_t *pr)
 
 void PF_WriteEntity (progs_state_t *pr)
 {
-	if (G_FLOAT(OFS_PARM0) == MSG_ONE) {
+	if (pr_global(pr, float, OFS_PARM0) == MSG_ONE) {
 		client_t *cl = Write_GetClient(pr);
 		ClientReliableCheckBlock(cl, 2);
 		ClientReliableWrite_Short(cl, pr_get_edict_num(pr, OFS_PARM1));
@@ -1698,7 +1704,7 @@ void PF_infokey (progs_state_t *pr)
 	else
 		value = "";
 
-	RETURN_STRING(value);
+	pr_set_string(pr, OFS_RETURN, value);
 }
 
 /*

@@ -539,16 +539,16 @@ void SV_ConSay_f()
 	if (Cmd_Argc () < 2)
 		return;
 
-	Q_strcpy (text, "console: ");
+	strcpy (text, "console: ");
 	p = Cmd_Args();
 
 	if (*p == '"')
 	{
 		p++;
-		p[Q_strlen(p)-1] = 0;
+		p[strlen(p)-1] = 0;
 	}
 
-	Q_strcat(text, p);
+	strcat(text, p);
 
 	for (j = 0, client = svs.clients; j < MAX_CLIENTS; j++, client++)
 	{
@@ -617,7 +617,7 @@ void SV_Serverinfo_f ()
 	{
 		Z_Free (var->string);	// free the old value string	
 		var->string = CopyString (Cmd_Argv(2));
-		var->value = Q_atof (var->string);
+		var->value = atof (var->string);
 	}
 
 	SV_SendServerInfoChange(Cmd_Argv(1), Cmd_Argv(2));

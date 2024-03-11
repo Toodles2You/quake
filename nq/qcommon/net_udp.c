@@ -131,7 +131,7 @@ bool NET_StringToAdr(char *s, netadr_t *a)
 	else
 	{
 		if (!(h = gethostbyname(copy)))
-			return 0;
+			return false;
 		*(int *)&sadr.sin_addr = *(int *)h->h_addr_list[0];
 	}
 
@@ -283,7 +283,7 @@ static void NET_GetLocalAddress()
 
 	namelen = sizeof(address);
 
-	if (getsockname(net_socket, (struct sockaddr *)&address, &namelen) == -1)
+	if (getsockname(net_socket[SERVER], (struct sockaddr *)&address, &namelen) == -1)
 	{
 		Sys_Error("NET_Init: getsockname:", strerror(errno));
 	}
