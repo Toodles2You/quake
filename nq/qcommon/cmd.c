@@ -628,7 +628,10 @@ void	Cmd_ExecuteString (char *text, cmd_source_t src)
 	{
 		if (!strcasecmp (cmd_argv[0],cmd->name))
 		{
-			cmd->function ();
+			if (!cmd->function)
+				Cmd_ForwardToServer ();
+			else
+				cmd->function ();
 			return;
 		}
 	}

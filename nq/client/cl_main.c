@@ -761,5 +761,14 @@ void CL_Init ()
 	Cmd_AddCommand ("playdemo", CL_PlayDemo_f);
 	Cmd_AddCommand ("timedemo", CL_TimeDemo_f);
 	Cmd_AddCommand ("skins", CL_IgnoreSkins_f);
+
+//
+// forward to server commands
+//
+	Cmd_AddCommand ("kill", NULL);
+	Cmd_AddCommand ("pause", NULL);
+	Cmd_AddCommand ("say", NULL);
+	Cmd_AddCommand ("say_team", NULL);
+	Cmd_AddCommand ("serverinfo", NULL);
 }
 
