@@ -295,12 +295,12 @@ int PR_LoadProgs(progs_state_t *pr, char *filename, int version, int crc)
         ((int32_t *)pr->progs)[i] = LittleLong(((int32_t *)pr->progs)[i]);
     }
 
-    if (version != 0 && version != pr->progs->version)
+    if (version != PROG_VERSION_ANY && version != pr->progs->version)
     {
         Con_Printf("progs.dat has wrong version number (%i should be %i)", pr->progs->version, version);
         return 1;
     }
-    if (crc != 0 && crc != pr->progs->crc)
+    if (crc != PROG_CRC_ANY && crc != pr->progs->crc)
     {
         Con_Printf("progs.dat system vars have been modified, progdefs.h is out of date");
         return 1;

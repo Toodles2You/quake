@@ -267,7 +267,7 @@ static unsigned int SV_CheckModel(char *mdl)
 
 static bool SV_LoadProgs()
 {
-	if (PR_LoadProgs(&sv.pr, "qwprogs.dat", PROG_VERSION, 0) != 0)
+	if (PR_LoadProgs(&sv.pr, "qwprogs.dat", PROG_VERSION_QUAKE, PROG_CRC_ANY) != 0)
 	{
 		return false;
 	}
