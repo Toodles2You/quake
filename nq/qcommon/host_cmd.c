@@ -102,11 +102,16 @@ Host_Map_f
 handle a 
 map <servername>
 command from the console.  Active clients are kicked off.
+
+Toodles TODO: Warn server hosts that this kicks all clients.
 ======================
 */
 void Host_Map_f ()
 {
 	char	level[MAX_QPATH];
+
+	if (cmd_source != src_command)
+		return;
 
 	if (Cmd_Argc() != 2)
 	{
@@ -120,7 +125,7 @@ void Host_Map_f ()
 		return;
 	}
 
-	Host_ChangingLevel ();
+	Host_ShutdownServer (false);
 
 	SV_SpawnServer (level, NULL);
 
@@ -147,6 +152,9 @@ void Host_Changelevel_f ()
 	char	level[MAX_QPATH];
 	char	_startspot[MAX_QPATH];
 	char	*startspot = NULL;
+
+	if (cmd_source != src_command)
+		return;
 
 	if (Cmd_Argc() < 2)
 	{
@@ -652,6 +660,9 @@ void Host_Changelevel2_f ()
 	char	level[MAX_QPATH];
 	char	_startspot[MAX_QPATH];
 	char	*startspot;
+
+	if (cmd_source != src_command)
+		return;
 
 	if (Cmd_Argc() < 2)
 	{
