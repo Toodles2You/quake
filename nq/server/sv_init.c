@@ -379,6 +379,7 @@ void SV_SpawnServer (char *server, char *startspot)
 	}
 
 	sv.time = 1.0;
+	sv.oldtime = 0.9;
 
 	strcpy (sv.name, server);
 	sprintf (sv.modelname,"maps/%s.bsp", server);

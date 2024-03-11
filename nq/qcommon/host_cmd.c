@@ -47,6 +47,53 @@ SERVER TRANSITIONS
 ===============================================================================
 */
 
+static bool Host_CheckLevel (char* server)
+{
+	char expanded[MAX_QPATH];
+	FILE *f;
+
+	// check to make sure the level exists
+	sprintf(expanded, "maps/%s.bsp", server);
+
+	COM_FOpenFile(expanded, &f);
+
+	if (!f)
+	{
+		Con_Printf("Can't find %s\n", expanded);
+		return false;
+	}
+
+	fclose(f);
+
+	return true;
+}
+
+static void Host_ChangingLevel ()
+{
+	if (!Host_IsLocalGame ())
+	{
+		return;
+	}
+
+	SV_BroadcastCommand ("changing\n");
+	SV_SendMessagesToAll ();
+
+#ifdef FIXME
+	if (cls.download)  // don't change when downloading
+	{
+		return;
+	}
+#endif
+
+	if (cls.state != ca_dedicated)
+	{
+		S_StopAllSounds (true);
+		cl.intermission = 0;
+		cls.state = ca_connected;	// not active anymore, but not disconnected
+		Con_Printf ("\nChanging map...\n");
+	}
+}
+
 
 /*
 ======================
@@ -60,8 +107,6 @@ command from the console.  Active clients are kicked off.
 void Host_Map_f ()
 {
 	char	level[MAX_QPATH];
-	char	expanded[MAX_QPATH];
-	FILE	*f;
 
 	if (Cmd_Argc() != 2)
 	{
@@ -70,18 +115,12 @@ void Host_Map_f ()
 	}
 	strcpy (level, Cmd_Argv(1));
 
-	// check to make sure the level exists
-	sprintf (expanded, "maps/%s.bsp", level);
-	COM_FOpenFile (expanded, &f);
-	if (!f)
+	if (!Host_CheckLevel (level))
 	{
-		Con_Printf ("Can't find %s\n", expanded);
 		return;
 	}
-	fclose (f);
 
-	SV_BroadcastCommand ("changing\n");
-	SV_SendMessagesToAll ();
+	Host_ChangingLevel ();
 
 	SV_SpawnServer (level, NULL);
 
@@ -106,10 +145,8 @@ Goes to a new map, taking all clients along
 void Host_Changelevel_f ()
 {
 	char	level[MAX_QPATH];
-	char	expanded[MAX_QPATH];
-	FILE	*f;
 	char	_startspot[MAX_QPATH];
-	char	*startspot;
+	char	*startspot = NULL;
 
 	if (Cmd_Argc() < 2)
 	{
@@ -124,18 +161,12 @@ void Host_Changelevel_f ()
 
 	strcpy (level, Cmd_Argv(1));
 
-	// check to make sure the level exists
-	sprintf (expanded, "maps/%s.bsp", level);
-	COM_FOpenFile (expanded, &f);
-	if (!f)
+	if (!Host_CheckLevel (level))
 	{
-		Con_Printf ("Can't find %s\n", expanded);
 		return;
 	}
-	fclose (f);
 
-	SV_BroadcastCommand ("changing\n");
-	SV_SendMessagesToAll ();
+	Host_ChangingLevel ();
 
 	SV_SpawnServer (level, startspot);
 
@@ -162,7 +193,17 @@ void Host_Restart_f ()
 	strcpy (mapname, sv.name);	// must copy out, because it gets cleared
 								// in sv_spawnserver
 	strcpy(startspot, sv.startspot);
+
+	if (!Host_CheckLevel (mapname))
+	{
+		return;
+	}
+
+	Host_ChangingLevel ();
+
 	SV_SpawnServer (mapname, startspot);
+
+	SV_BroadcastCommand ("reconnect\n");
 }
 
 

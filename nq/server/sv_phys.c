@@ -1078,10 +1078,9 @@ void SV_Physics ()
 {
 	int		i;
 	edict_t	*ent;
-	static double	old_time;
 
 // don't bother running a frame if sys_ticrate seconds haven't passed
-	sv.frametime = sv.time - old_time;
+	sv.frametime = sv.time - sv.oldtime;
 
 	if (sv.frametime < sv_mintic.value)
 	{
@@ -1093,7 +1092,7 @@ void SV_Physics ()
 		sv.frametime = sv_maxtic.value;
 	}
 
-	old_time = sv.time;
+	sv.oldtime = sv.time;
 
 	SV_ProgStartFrame ();
 
