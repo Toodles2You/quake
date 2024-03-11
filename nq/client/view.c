@@ -982,6 +982,9 @@ void V_Init ()
 	Cvar_RegisterVariable (&cl_bobcycle);
 	Cvar_RegisterVariable (&cl_bobup);
 
+	Cvar_RegisterVariable (&cl_pitchmax);
+	Cvar_RegisterVariable (&cl_pitchmin);
+
 	Cvar_RegisterVariable (&v_kicktime);
 	Cvar_RegisterVariable (&v_kickroll);
 	Cvar_RegisterVariable (&v_kickpitch);	

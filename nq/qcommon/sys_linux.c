@@ -393,19 +393,19 @@ int main (int c, char **v)
         newtime = Sys_FloatTime ();
         time = newtime - oldtime;
 
-        // if (cls.state == ca_dedicated)
-        // {
-        //     if (time < sys_ticrate.value)
-        //     {
-		// 		usleep(1);
-        //         continue;       // not time to run a server only tic yet
-        //     }
-        //     time = sys_ticrate.value;
-        // }
+        if (cls.state == ca_dedicated)
+        {
+            if (time < sys_ticrate.value)
+            {
+				usleep(1);
+                continue;       // not time to run a server only tic yet
+            }
+            time = sys_ticrate.value;
+        }
 
-        // if (time > sys_ticrate.value*2)
-        //     oldtime = newtime;
-        // else
+        if (time > sys_ticrate.value*2)
+            oldtime = newtime;
+        else
             oldtime += time;
 
         Host_Frame (time);

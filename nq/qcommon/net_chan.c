@@ -267,7 +267,10 @@ void Netchan_Transmit (netchan_t *chan, int length, byte *data)
 
 	// send the qport if we are a client
 #ifndef SERVERONLY
-	MSG_WriteShort(&send, cls.qport);
+	if (chan->socket == CLIENT)
+	{
+		MSG_WriteShort(&send, cls.qport);
+	}
 #endif
 
 	// copy the reliable message to the packet first
@@ -333,9 +336,9 @@ bool Netchan_Process (netchan_t *chan)
 {
 	uint32_t sequence, sequence_ack;
 	uint32_t reliable_ack, reliable_message;
-#ifdef SERVERONLY
+// #ifdef SERVERONLY
 	int qport;
-#endif
+// #endif
 	int i;
 
 	if (
@@ -351,9 +354,12 @@ bool Netchan_Process (netchan_t *chan)
 	sequence_ack = MSG_ReadLong();
 
 	// read the qport if we are a server
-#ifdef SERVERONLY
-	qport = MSG_ReadShort();
-#endif
+// #ifdef SERVERONLY
+	if (chan->socket != CLIENT)
+	{
+		qport = MSG_ReadShort();
+	}
+// #endif
 
 	reliable_message = sequence >> 31;
 	reliable_ack = sequence_ack >> 31;

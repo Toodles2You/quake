@@ -55,7 +55,7 @@ cvar_t	host_framerate = {"host_framerate","0"};
 cvar_t	host_timescale = {"host_timescale","0"};	// set for slow motion
 cvar_t	host_speeds = {"host_speeds","0"};			// set for running times
 
-// cvar_t	sys_ticrate = {"sys_ticrate","0.05"};
+cvar_t	sys_ticrate = {"sys_ticrate","0.05"};
 cvar_t	serverprofile = {"serverprofile","0"};
 
 cvar_t	fraglimit = {"fraglimit","0", CVAR_SERVER};
@@ -165,7 +165,7 @@ void Host_InitLocal ()
 	Cvar_RegisterVariable (&host_timescale);
 	Cvar_RegisterVariable (&host_speeds);
 
-	// Cvar_RegisterVariable (&sys_ticrate);
+	Cvar_RegisterVariable (&sys_ticrate);
 	Cvar_RegisterVariable (&serverprofile);
 
 	Cvar_RegisterVariable (&fraglimit);
@@ -246,7 +246,7 @@ void Host_ShutdownServer(bool crash)
 	sv.state = ss_dead;
 
 // stop all client sounds immediately
-	if (cls.state == ca_connected)
+	if (cls.state != ca_disconnected)
 		CL_Disconnect ();
 
 	SZ_Clear (&net_message);
@@ -299,7 +299,7 @@ Host_FilterTime
 Returns false if the time is too short to run a frame
 ===================
 */
-bool Host_FilterTime (float time)
+bool Host_FilterTime (double time)
 {
 	realtime += time;
 
@@ -359,7 +359,7 @@ Host_ServerFrame
 
 ==================
 */
-void Host_ServerFrame (float time)
+void Host_ServerFrame (double time)
 {
 	static double	start, end;
 	
@@ -372,7 +372,9 @@ void Host_ServerFrame (float time)
 // decide the simulation time
 	if (!sv.paused)
 	{
+		#ifdef FIXME
 		realtime += time;
+		#endif
 		sv.time += time;
 	}
 
@@ -418,7 +420,7 @@ Host_Frame
 Runs all active servers
 ==================
 */
-void Host_Frame (float time)
+void Host_Frame (double time)
 {
 	static double		time1 = 0;
 	static double		time2 = 0;
@@ -448,7 +450,11 @@ void Host_Frame (float time)
 	CL_ReadPackets ();
 
 // if running the server locally, make intentions now
-	if (Host_IsLocalGame ())
+	if (cls.state == ca_disconnected)
+	{
+
+	}
+	else if (Host_IsLocalGame ())
 	{
 		CL_SendCmd ();
 	}
@@ -463,7 +469,7 @@ void Host_Frame (float time)
 	Host_GetConsoleCommands ();
 	
 	if (Host_IsLocalGame ())
-		Host_ServerFrame (time);
+		Host_ServerFrame (host_frametime);
 
 //-------------------
 //

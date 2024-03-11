@@ -22,6 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../server/serverdef.h"
 
 void Cmd_ForwardToServer ();
+void Cmd_ForwardToServer_f ();
 
 #define	MAX_ALIAS_NAME	32
 
@@ -433,7 +434,7 @@ void Cmd_Init ()
 	Cmd_AddCommand ("exec",Cmd_Exec_f);
 	Cmd_AddCommand ("echo",Cmd_Echo_f);
 	Cmd_AddCommand ("alias",Cmd_Alias_f);
-	Cmd_AddCommand ("cmd", Cmd_ForwardToServer);
+	Cmd_AddCommand ("cmd", Cmd_ForwardToServer_f);
 	Cmd_AddCommand ("wait", Cmd_Wait_f);
 }
 
@@ -672,6 +673,31 @@ void Cmd_ForwardToServer ()
 	if (Cmd_Argc() > 1)
 	{
 		SZ_Print (&cls.netchan.message, " ");
+		SZ_Print (&cls.netchan.message, Cmd_Args());
+	}
+}
+
+// don't forward the first argument
+void Cmd_ForwardToServer_f ()
+{
+	if (cls.state == ca_disconnected)
+	{
+		Con_Printf ("Can't \"%s\", not connected\n", Cmd_Argv(0));
+		return;
+	}
+
+	if (strcasecmp(Cmd_Argv(1), "snap") == 0)
+	{
+		Cbuf_InsertText ("snap\n");
+		return;
+	}
+	
+	if (cls.demoplayback)
+		return;		// not really connected
+
+	if (Cmd_Argc() > 1)
+	{
+		MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
 		SZ_Print (&cls.netchan.message, Cmd_Args());
 	}
 }

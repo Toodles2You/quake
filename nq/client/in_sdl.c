@@ -275,7 +275,7 @@ static void IN_HandleEvent(SDL_Event* event, bool* warp_mouse)
         {
         case SDL_WINDOWEVENT_FOCUS_LOST:
             
-            if (cls.state == ca_connected
+            if (cls.state == ca_active
                 && !cls.demoplayback
                 && key_dest == key_game)
             {
@@ -380,7 +380,7 @@ void IN_Commands()
         return;
 
     if (in_mouse.value
-        && cls.state == ca_connected
+        && cls.state == ca_active
         && !cls.demoplayback
         && key_dest == key_game)
     {

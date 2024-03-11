@@ -543,7 +543,7 @@ void SCR_SetUpToDrawConsole ()
 		return;		// never a console with loading plaque
 		
 // decide on the height of the console
-	con_forcedup = !cl.worldmodel || cls.state == ca_disconnected;
+	con_forcedup = !cl.worldmodel || cls.state != ca_active;
 
 	if (con_forcedup)
 	{
@@ -690,7 +690,7 @@ void SCR_BeginLoadingPlaque ()
 {
 	S_StopAllSounds (true);
 
-	if (cls.state != ca_connected)
+	if (cls.state != ca_active)
 		return;
 	
 // redraw with no console and the loading plaque

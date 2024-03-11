@@ -129,20 +129,29 @@ bool SV_RunThink (edict_t *ent)
 {
 	float	thinktime;
 
-	thinktime = ed_float(ent, nextthink);
-	if (thinktime <= 0 || thinktime > sv.time + host_frametime)
-		return true;
+	do
+	{
+		thinktime = ed_float(ent, nextthink);
+		if (thinktime <= 0)
+			return true;
+		if (thinktime > sv.time + sv.frametime)
+			return true;
 		
-	if (thinktime < sv.time)
-		thinktime = sv.time;	// don't let things stay in the past.
-								// it is possible to start that way
-								// by a trigger with a local time.
-	ed_float(ent, nextthink) = 0;
-	sv_pr_float(time) = thinktime;
-	sv_pr_int(self) = EDICT_TO_PROG(ent);
-	sv_pr_int(other) = EDICT_TO_PROG(sv.edicts);
-	PR_ExecuteProgram (&sv.pr, ed_int(ent, think));
-	return !ent->free;
+		if (thinktime < sv.time)
+			thinktime = sv.time;	// don't let things stay in the past.
+									// it is possible to start that way
+									// by a trigger with a local time.
+		ed_float(ent, nextthink) = 0;
+		sv_pr_float(time) = thinktime;
+		sv_pr_int(self) = EDICT_TO_PROG(ent);
+		sv_pr_int(other) = EDICT_TO_PROG(sv.edicts);
+		PR_ExecuteProgram (&sv.pr, ed_int(ent, think));
+
+		if (ent->free)
+			return false;
+	} while (1);
+
+	return true;
 }
 
 /*
@@ -383,7 +392,7 @@ void SV_AddGravity (edict_t *ent, float scale)
 		ent_gravity = 1.0;
 	}
 
-	ed_vector(ent, velocity)[2] -= ent_gravity * scale * sv_gravity.value * host_frametime;
+	ed_vector(ent, velocity)[2] -= ent_gravity * scale * sv_gravity.value * sv.frametime;
 }
 
 
@@ -703,14 +712,14 @@ void SV_Physics_Pusher (edict_t *ent)
 	oldltime = ed_float(ent, ltime);
 	
 	thinktime = ed_float(ent, nextthink);
-	if (thinktime < ed_float(ent, ltime) + host_frametime)
+	if (thinktime < ed_float(ent, ltime) + sv.frametime)
 	{
 		movetime = thinktime - ed_float(ent, ltime);
 		if (movetime < 0)
 			movetime = 0;
 	}
 	else
-		movetime = host_frametime;
+		movetime = sv.frametime;
 
 	if (movetime)
 	{
@@ -776,8 +785,8 @@ void SV_Physics_Noclip (edict_t *ent)
 	if (!SV_RunThink (ent))
 		return;
 	
-	VectorMA (ed_vector(ent, angles), host_frametime, ed_vector(ent, avelocity), ed_vector(ent, angles));
-	VectorMA (ed_vector(ent, origin), host_frametime, ed_vector(ent, velocity), ed_vector(ent, origin));
+	VectorMA (ed_vector(ent, angles), sv.frametime, ed_vector(ent, avelocity), ed_vector(ent, angles));
+	VectorMA (ed_vector(ent, origin), sv.frametime, ed_vector(ent, velocity), ed_vector(ent, origin));
 
 	SV_LinkEdict (ent, false);
 }
@@ -891,13 +900,13 @@ void SV_Physics_Toss (edict_t *ent)
 #endif
 
 // move angles
-	VectorMA (ed_vector(ent, angles), host_frametime, ed_vector(ent, avelocity), ed_vector(ent, angles));
+	VectorMA (ed_vector(ent, angles), sv.frametime, ed_vector(ent, avelocity), ed_vector(ent, angles));
 
 // move origin
 #ifdef QUAKE2
 	VectorAdd (ed_vector(ent, velocity), ed_vector(ent, basevelocity), ed_vector(ent, velocity));
 #endif
-	VectorScale (ed_vector(ent, velocity), host_frametime, move);
+	VectorScale (ed_vector(ent, velocity), sv.frametime, move);
 	trace = SV_PushEntity (ent, move);
 #ifdef QUAKE2
 	VectorSubtract (ed_vector(ent, velocity), ed_vector(ent, basevelocity), ed_vector(ent, velocity));
@@ -966,7 +975,7 @@ void SV_Physics_Step (edict_t *ent)
 
 		SV_AddGravity (ent, 1.0f);
 		SV_CheckVelocity (ent);
-		SV_FlyMove (ent, host_frametime, NULL);
+		SV_FlyMove (ent, sv.frametime, NULL);
 		SV_LinkEdict (ent, true);
 
 		if ( (int)ed_float(ent, flags) & FL_ONGROUND )	// just hit ground
@@ -989,7 +998,7 @@ void SV_ProgStartFrame ()
 // let the progs know that a new frame has started
 	sv_pr_int(self) = EDICT_TO_PROG(sv.edicts);
 	sv_pr_int(other) = EDICT_TO_PROG(sv.edicts);
-	sv_pr_float(frametime) = host_frametime;
+	sv_pr_float(frametime) = sv.frametime;
 	sv_pr_float(time) = sv.time;
 	sv_pr_execute(StartFrame);
 }
@@ -1053,7 +1062,7 @@ void SV_RunNewmis ()
 		return;
 	}
 	ent = PROG_TO_EDICT(sv_pr_int(newmis));
-	host_frametime = 0.05;
+	// sv.frametime = 0.05;
 	sv_pr_int(newmis) = 0;
 
 	SV_RunEntity(ent);
@@ -1072,19 +1081,19 @@ void SV_Physics ()
 	static double	old_time;
 
 // don't bother running a frame if sys_ticrate seconds haven't passed
-	host_frametime = realtime - old_time;
+	sv.frametime = sv.time - old_time;
 
-	if (host_frametime < sv_mintic.value)
+	if (sv.frametime < sv_mintic.value)
 	{
 		return;
 	}
 
-	if (host_frametime > sv_maxtic.value)
+	if (sv.frametime > sv_maxtic.value)
 	{
-		host_frametime = sv_maxtic.value;
+		sv.frametime = sv_maxtic.value;
 	}
 
-	old_time = realtime;
+	old_time = sv.time;
 
 	SV_ProgStartFrame ();
 

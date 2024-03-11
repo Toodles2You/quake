@@ -66,6 +66,8 @@ entity_t		cl_visedicts_list[2][MAX_VISEDICTS];
 
 static double connect_time = -1; // for connection retransmits
 
+float server_version = 0; // version of server we connected to
+
 char emodel_name[] = 
 	{ 'e' ^ 0xff, 'm' ^ 0xff, 'o' ^ 0xff, 'd' ^ 0xff, 'e' ^ 0xff, 'l' ^ 0xff, 0 };
 char pmodel_name[] = 
@@ -128,7 +130,7 @@ static void CL_SendConnectPacket ()
 
 	cls.qport = qport.value;
 
-	Info_SetValueForStarKey(cls.userinfo, "*ip", "FU", MAX_INFO_STRING);
+	Info_SetValueForStarKey(cls.userinfo, "*ip", NET_AdrToString(adr), MAX_INFO_STRING);
 
 	//	Con_Printf ("Connecting to %s...\n", cls.servername);
 	sprintf(data, "%c%c%c%cconnect %i %i %i \"%s\"\n",
@@ -317,6 +319,116 @@ void CL_Disconnect_f ()
 	CL_Disconnect ();
 	if (Host_IsLocalGame ())
 		Host_ShutdownServer (false);
+}
+
+/*
+==================
+CL_FullServerinfo_f
+
+Sent by server when serverinfo changes
+==================
+*/
+void CL_FullServerinfo_f (void)
+{
+	char *p;
+	float v;
+
+	if (Cmd_Argc() != 2)
+	{
+		Con_Printf ("usage: fullserverinfo <complete info string>\n");
+		return;
+	}
+
+	strcpy (cl.serverinfo, Cmd_Argv(1));
+
+	if ((p = Info_ValueForKey(cl.serverinfo, "*vesion")) && *p) {
+		v = atof(p);
+		if (v) {
+			if (!server_version)
+				Con_Printf("Version %1.2f Server\n", v);
+			server_version = v;
+		}
+	}
+}
+
+/*
+==================
+CL_FullInfo_f
+
+Allow clients to change userinfo
+==================
+Casey was here :)
+*/
+void CL_FullInfo_f (void)
+{
+	char	key[512];
+	char	value[512];
+	char	*o;
+	char	*s;
+
+	if (Cmd_Argc() != 2)
+	{
+		Con_Printf ("fullinfo <complete info string>\n");
+		return;
+	}
+
+	s = Cmd_Argv(1);
+	if (*s == '\\')
+		s++;
+	while (*s)
+	{
+		o = key;
+		while (*s && *s != '\\')
+			*o++ = *s++;
+		*o = 0;
+
+		if (!*s)
+		{
+			Con_Printf ("MISSING VALUE\n");
+			return;
+		}
+
+		o = value;
+		s++;
+		while (*s && *s != '\\')
+			*o++ = *s++;
+		*o = 0;
+
+		if (*s)
+			s++;
+
+		if (!strcasecmp(key, pmodel_name) || !strcasecmp(key, emodel_name))
+			continue;
+
+		Info_SetValueForKey (cls.userinfo, key, value, MAX_INFO_STRING);
+	}
+}
+
+/*
+==================
+CL_SetInfo_f
+
+Allow clients to change userinfo
+==================
+*/
+void CL_SetInfo_f (void)
+{
+	if (Cmd_Argc() == 1)
+	{
+		Info_Print (cls.userinfo);
+		return;
+	}
+	if (Cmd_Argc() != 3)
+	{
+		Con_Printf ("usage: setinfo [ <key> <value> ]\n");
+		return;
+	}
+	if (!strcasecmp(Cmd_Argv(1), pmodel_name) || !strcmp(Cmd_Argv(1), emodel_name))
+		return;
+
+	Info_SetValueForKey (cls.userinfo, Cmd_Argv(1), Cmd_Argv(2), MAX_INFO_STRING);
+	if (cls.state >= ca_connected)
+		Cmd_ForwardToServer ();
 }
 
 
@@ -552,6 +664,33 @@ void CL_ReadPackets ()
 	}
 }
 
+static void simple_crypt(char *buf, int len)
+{
+	while (len--)
+		*buf++ ^= 0xff;
+}
+
+static void CL_FixupModelNames()
+{
+	simple_crypt(emodel_name, sizeof(emodel_name) - 1);
+	simple_crypt(pmodel_name, sizeof(pmodel_name) - 1);
+	simple_crypt(prespawn_name,  sizeof(prespawn_name)  - 1);
+	simple_crypt(modellist_name, sizeof(modellist_name) - 1);
+	simple_crypt(soundlist_name, sizeof(soundlist_name) - 1);
+}
+
+/*! Toodles FIXME: */
+static void CL_IgnoreSkins_f()
+{
+	if (cls.state != ca_active)
+	{	// get next signon phase
+		MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
+		MSG_WriteString (&cls.netchan.message,
+			va("begin %i", cl.servercount));
+		Cache_Report ();		// print remaining memory
+	}
+}
+
 /*
 =================
 CL_Init
@@ -560,6 +699,8 @@ CL_Init
 void CL_Init ()
 {
 	cls.state = ca_disconnected;
+
+	CL_FixupModelNames();
 
 	Info_SetValueForKey (cls.userinfo, "name", "unnamed", MAX_INFO_STRING);
 	Info_SetValueForKey (cls.userinfo, "topcolor", "0", MAX_INFO_STRING);
@@ -611,10 +752,14 @@ void CL_Init ()
 	Cmd_AddCommand ("disconnect", CL_Disconnect_f);
 	Cmd_AddCommand ("changing", CL_Changing_f);
 	Cmd_AddCommand ("reconnect", CL_Reconnect_f);
+	Cmd_AddCommand ("setinfo", CL_SetInfo_f);
+	Cmd_AddCommand ("fullinfo", CL_FullInfo_f);
+	Cmd_AddCommand ("fullserverinfo", CL_FullServerinfo_f);
 	Cmd_AddCommand ("record", CL_Record_f);
 	Cmd_AddCommand ("rerecord", CL_ReRecord_f);
 	Cmd_AddCommand ("stop", CL_Stop_f);
 	Cmd_AddCommand ("playdemo", CL_PlayDemo_f);
 	Cmd_AddCommand ("timedemo", CL_TimeDemo_f);
+	Cmd_AddCommand ("skins", CL_IgnoreSkins_f);
 }
 

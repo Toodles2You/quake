@@ -1428,14 +1428,13 @@ static void SV_RunCmd (usercmd_t *ucmd)
 		playerAngles[ROLL] = SV_CalcRoll(playerAngles, ed_vector(sv_player, velocity)) * 4;
 	}
 
-	host_frametime = ucmd->msec * 0.001;
-	if (host_frametime > 0.1)
-		host_frametime = 0.1;
+	sv.frametime = ucmd->msec * 0.001;
+	if (sv.frametime > 0.1)
+		sv.frametime = 0.1;
 
 	if (!host_client->spectator)
 	{
-		sv_pr_float(frametime) = host_frametime;
-
+		sv_pr_float(frametime) = sv.frametime;
 		sv_pr_float(time) = sv.time;
 		sv_pr_int(self) = EDICT_TO_PROG(sv_player);
 		sv_pr_execute(PlayerPreThink);

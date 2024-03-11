@@ -69,7 +69,7 @@ void Con_ToggleConsole_f ()
 {
 	if (key_dest == key_console)
 	{
-		if (cls.state == ca_connected)
+		if (cls.state == ca_active)
 		{
 			key_dest = key_game;
 			key_lines[edit_line][1] = 0;	// clear any typing
@@ -396,7 +396,7 @@ void Con_Printf (char *fmt, ...)
 	Con_Print (msg);
 	
 // update the screen if the console is displayed
-	if (cls.state != ca_connected && !scr_disabled_for_loading )
+	if (cls.state != ca_active && !scr_disabled_for_loading )
 	{
 	// protect against infinite loop if something in SCR_UpdateScreen calls
 	// Con_Printd
