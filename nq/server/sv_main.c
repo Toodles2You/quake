@@ -1014,6 +1014,9 @@ void SV_Init ()
 	extern cvar_t sv_mintic;
 	extern cvar_t sv_maxtic;
 
+	SV_InitOperatorCommands	();
+	SV_UserInit ();
+
 	Cvar_RegisterVariable (&sv_mintic);
 	Cvar_RegisterVariable (&sv_maxtic);
 
