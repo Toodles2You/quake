@@ -1266,12 +1266,25 @@ void PF_aim (progs_state_t *pr)
 	trace_t	tr;
 	float	dist, bestdist;
 	float	speed;
+	char	*noaim;
 	
 	ent = pr_get_edict(pr, OFS_PARM0);
 	speed = pr_global(pr, float, OFS_PARM1);
 
 	VectorCopy (ed_vector(ent, origin), start);
 	start[2] += 20;
+
+// noaim option
+	i = NUM_FOR_EDICT(ent);
+	if (i > 0 && i < MAX_CLIENTS)
+	{
+		noaim = Info_ValueForKey(svs.clients[i - 1].userinfo, "noaim");
+		if (atoi(noaim) > 0)
+		{
+			VectorCopy(pr_vector(pr, v_forward), pr_global_ptr(pr, float, OFS_RETURN));
+			return;
+		}
+	}
 
 // try sending a trace straight
 	VectorCopy (pr_vector(pr, v_forward), dir);
@@ -1401,12 +1414,15 @@ sizebuf_t *WriteDest (progs_state_t *pr)
 		return &sv.datagram;
 	
 	case MSG_ONE:
+		PR_RunError (pr, "WriteDest: Shouldn't be at MSG_ONE");
 		return NULL;
-		// ent = PROG_TO_EDICT(pr_int(pr, msg_entity));
-		// entnum = NUM_FOR_EDICT(ent);
-		// if (entnum < 1 || entnum > MAX_CLIENTS)
-		// 	PR_RunError (pr, "WriteDest: not a client");
-		// return &svs.clients[entnum-1].message;
+#if 0
+		ent = PROG_TO_EDICT(pr_int(pr, msg_entity));
+		entnum = NUM_FOR_EDICT(ent);
+		if (entnum < 1 || entnum > MAX_CLIENTS)
+			PR_RunError (pr, "WriteDest: not a client");
+		return &svs.clients[entnum-1].message;
+#endif
 		
 	case MSG_ALL:
 		return &sv.reliable_datagram;

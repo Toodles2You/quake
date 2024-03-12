@@ -18,7 +18,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "bothdef.h"
+#include "../server/serverdef.h"
+#include "../client/clientdef.h"
 
 cvar_t	*cvar_vars;
 char	*cvar_null_string = "";
@@ -100,9 +101,7 @@ char *Cvar_CompleteVariable (char *partial)
 }
 
 
-#ifdef SERVERONLY
 void SV_SendServerInfoChange(char *key, char *value);
-#endif
 
 /*
 ============
@@ -122,23 +121,24 @@ void Cvar_Set (char *var_name, char *value)
 	}
 
 	changed = strcmp(var->string, value);
-	
-#if 0
+
 	if (var->flags & CVAR_INFO)
 	{
-#ifdef SERVERONLY
-		Info_SetValueForKey (svs.info, var_name, value, MAX_SERVERINFO_STRING);
-		SV_SendServerInfoChange(var_name, value);
-#else
+		#ifdef FIXME
+		if (Host_IsLocalGame ())
+		{
+			Info_SetValueForKey (svs.info, var_name, value, MAX_SERVERINFO_STRING);
+			SV_SendServerInfoChange(var_name, value);
+		}
+
 		Info_SetValueForKey (cls.userinfo, var_name, value, MAX_INFO_STRING);
 		if (cls.state >= ca_connected)
 		{
 			MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
 			SZ_Print (&cls.netchan.message, va("setinfo \"%s\" \"%s\"\n", var_name, value));
 		}
-#endif
+		#endif
 	}
-#endif
 	
 	Z_Free (var->string);	// free the old value string
 	
@@ -149,7 +149,7 @@ void Cvar_Set (char *var_name, char *value)
 	if ((var->flags & CVAR_SERVER) && changed)
 	{
 		if (Host_IsLocalGame ())
-			SV_BroadcastPrintf ("\"%s\" changed to \"%s\"\n", var->name, var->string);
+			SV_BroadcastPrintf (PRINT_HIGH, "\"%s\" changed to \"%s\"\n", var->name, var->string);
 	}
 }
 

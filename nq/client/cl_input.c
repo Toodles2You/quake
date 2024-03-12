@@ -399,12 +399,12 @@ void CL_SendCmd ()
 	IN_Move (cmd);
 
 	// if we are spectator, try autocam
-	// if (cl.spectator)
-	// 	Cam_Track(cmd);
+	if (cl.spectator)
+		Cam_Track(cmd);
 
 	CL_FinishMove(cmd);
 
-	// Cam_FinishMove(cmd);
+	Cam_FinishMove(cmd);
 
 // send this and the previous cmds in the message, so
 // if the last packet was dropped, it can be recovered

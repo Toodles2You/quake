@@ -1,22 +1,23 @@
 /*
+===========================================================================
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2023 Justin Keller
 
-This program is free software; you can redistribute it and/or
-modify it under the terms of the GNU General Public License
-as published by the Free Software Foundation; either version 2
-of the License, or (at your option) any later version.
+This program is free software: you can redistribute it and/or modify
+it under the terms of the GNU General Public License as published by
+the Free Software Foundation, either version 3 of the License, or
+(at your option) any later version.
 
 This program is distributed in the hope that it will be useful,
 but WITHOUT ANY WARRANTY; without even the implied warranty of
-MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  
-
-See the included (GNU.txt) GNU General Public License for more details.
+MERCHANTABILITY or FITNESS FOR A PARTICULAR PURPOSE.  See the
+GNU General Public License for more details.
 
 You should have received a copy of the GNU General Public License
-along with this program; if not, write to the Free Software
-Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
-
+along with this program.  If not, see <https://www.gnu.org/licenses/>.
+===========================================================================
 */
+
 /* ZOID
  *
  * Player camera tracking in Spectator mode
@@ -25,8 +26,7 @@ Foundation, Inc., 59 Temple Place - Suite 330, Boston, MA  02111-1307, USA.
  * Player moves as a spectator, but the camera tracks and enemy player
  */
 
-#include "quakedef.h"
-#include "winquake.h"
+#include "clientdef.h"
 
 #define	PM_SPECTATORMAXSPEED	500
 #define	PM_STOPSPEED	100
@@ -90,7 +90,7 @@ static float vlen(vec3_t v)
 }
 
 // returns true if weapon model should be drawn in camera mode
-bool Cam_DrawViewModel(void)
+bool Cam_DrawViewModel ()
 {
 	if (!cl.spectator)
 		return true;
@@ -101,7 +101,7 @@ bool Cam_DrawViewModel(void)
 }
 
 // returns true if we should draw this player, we don't if we are chase camming
-bool Cam_DrawPlayer(int playernum)
+bool Cam_DrawPlayer (int playernum)
 {
 	if (cl.spectator && autocam && locked && cl_chasecam.value && 
 		spec_track == playernum)
@@ -109,7 +109,7 @@ bool Cam_DrawPlayer(int playernum)
 	return true;
 }
 
-void Cam_Unlock(void)
+void Cam_Unlock ()
 {
 	if (autocam) {
 		MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
@@ -120,7 +120,7 @@ void Cam_Unlock(void)
 	}
 }
 
-void Cam_Lock(int playernum)
+void Cam_Lock (int playernum)
 {
 	char st[40];
 
@@ -133,7 +133,7 @@ void Cam_Lock(int playernum)
 	Sbar_Changed();
 }
 
-pmtrace_t Cam_DoTrace(vec3_t vec1, vec3_t vec2)
+pmtrace_t Cam_DoTrace (vec3_t vec1, vec3_t vec2)
 {
 #if 0
 	memset(&pmove, 0, sizeof(pmove));
@@ -148,7 +148,7 @@ pmtrace_t Cam_DoTrace(vec3_t vec1, vec3_t vec2)
 }
 	
 // Returns distance or 9999 if invalid for some reason
-static float Cam_TryFlyby(player_state_t *self, player_state_t *player, vec3_t vec, bool checkvis)
+static float Cam_TryFlyby (player_state_t *self, player_state_t *player, vec3_t vec, bool checkvis)
 {
 	vec3_t v;
 	pmtrace_t trace;
@@ -181,7 +181,7 @@ static float Cam_TryFlyby(player_state_t *self, player_state_t *player, vec3_t v
 }
 
 // Is player visible?
-static bool Cam_IsVisible(player_state_t *player, vec3_t vec)
+static bool Cam_IsVisible (player_state_t *player, vec3_t vec)
 {
 	pmtrace_t trace;
 	vec3_t v;
@@ -198,7 +198,7 @@ static bool Cam_IsVisible(player_state_t *player, vec3_t vec)
 	return true;
 }
 
-static bool InitFlyby(player_state_t *self, player_state_t *player, int checkvis) 
+static bool InitFlyby (player_state_t *self, player_state_t *player, int checkvis) 
 {
     float f, max;
     vec3_t vec, vec2;
@@ -288,7 +288,7 @@ static bool InitFlyby(player_state_t *self, player_state_t *player, int checkvis
 	return true;
 }
 
-static void Cam_CheckHighTarget(void)
+static void Cam_CheckHighTarget ()
 {
 	int i, j, max;
 	player_info_t	*s;
@@ -312,7 +312,7 @@ static void Cam_CheckHighTarget(void)
 //
 // Take over the user controls and track a player.
 // We find a nice position to watch the player and move there
-void Cam_Track(usercmd_t *cmd)
+void Cam_Track (usercmd_t *cmd)
 {
 	player_state_t *player, *self;
 	frame_t *frame;
@@ -430,7 +430,7 @@ static float adjustang(float current, float ideal, float speed)
 #endif
 
 #if 0
-void Cam_SetView(void)
+void Cam_SetView ()
 {
 	return;
 	player_state_t *player, *self;
@@ -462,7 +462,7 @@ void Cam_SetView(void)
 }
 #endif
 
-void Cam_FinishMove(usercmd_t *cmd)
+void Cam_FinishMove (usercmd_t *cmd)
 {
 	int i;
 	player_info_t	*s;
@@ -557,13 +557,13 @@ void Cam_FinishMove(usercmd_t *cmd)
 	autocam = locked = false;
 }
 
-void Cam_Reset(void)
+void Cam_Reset ()
 {
 	autocam = CAM_NONE;
 	spec_track = 0;
 }
 
-void CL_InitCam(void)
+void CL_InitCam ()
 {
 	Cvar_RegisterVariable (&cl_hightrack);
 	Cvar_RegisterVariable (&cl_chasecam);

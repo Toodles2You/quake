@@ -21,9 +21,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../client/clientdef.h"
 #include "../server/serverdef.h"
 
-void Cmd_ForwardToServer ();
-void Cmd_ForwardToServer_f ();
-
 #define	MAX_ALIAS_NAME	32
 
 typedef struct cmdalias_s
@@ -33,9 +30,9 @@ typedef struct cmdalias_s
 	char	*value;
 } cmdalias_t;
 
-cmdalias_t	*cmd_alias;
+static cmdalias_t *cmd_alias;
 
-bool	cmd_wait;
+static bool	cmd_wait;
 
 cvar_t cl_warncmd = {"cl_warncmd", "0"};
 
@@ -50,7 +47,7 @@ next frame.  This allows commands like:
 bind g "impulse 5 ; +attack ; wait ; -attack ; impulse 2"
 ============
 */
-void Cmd_Wait_f ()
+static void Cmd_Wait_f ()
 {
 	cmd_wait = true;
 }
@@ -63,7 +60,8 @@ void Cmd_Wait_f ()
 =============================================================================
 */
 
-sizebuf_t	cmd_text;
+static sizebuf_t cmd_text;
+static byte cmd_text_buf[8192];
 
 /*
 ============
@@ -72,7 +70,8 @@ Cbuf_Init
 */
 void Cbuf_Init ()
 {
-	SZ_Alloc (&cmd_text, 8192);		// space for commands and script files
+	cmd_text.data = cmd_text_buf;
+	cmd_text.maxsize = sizeof(cmd_text_buf);
 }
 
 
@@ -126,6 +125,7 @@ void Cbuf_InsertText (char *text)
 		
 // add the entire text of the file
 	Cbuf_AddText (text);
+	SZ_Write (&cmd_text, "\n", 1);
 	
 // add the copied off data
 	if (templen)
@@ -280,7 +280,7 @@ void Cmd_StuffCmds_f ()
 Cmd_Exec_f
 ===============
 */
-void Cmd_Exec_f ()
+static void Cmd_Exec_f ()
 {
 	char	*f;
 	int		mark;
@@ -298,7 +298,10 @@ void Cmd_Exec_f ()
 		Con_Printf ("couldn't exec %s\n",Cmd_Argv(1));
 		return;
 	}
-	Con_Printf ("execing %s\n",Cmd_Argv(1));
+	if (!Cvar_Command () && (cl_warncmd.value || developer.value))
+	{
+		Con_Printf ("execing %s\n", Cmd_Argv(1));
+	}
 	
 	Cbuf_InsertText (f);
 	Hunk_FreeToLowMark (mark);
@@ -312,7 +315,7 @@ Cmd_Echo_f
 Just prints the rest of the line to the console
 ===============
 */
-void Cmd_Echo_f ()
+static void Cmd_Echo_f ()
 {
 	int		i;
 	
@@ -338,7 +341,7 @@ char *CopyString (char *in)
 	return out;
 }
 
-void Cmd_Alias_f ()
+static void Cmd_Alias_f ()
 {
 	cmdalias_t	*a;
 	char		cmd[1024];
@@ -422,24 +425,6 @@ static	cmd_function_t	*cmd_functions;		// possible commands to execute
 
 /*
 ============
-Cmd_Init
-============
-*/
-void Cmd_Init ()
-{
-//
-// register our commands
-//
-	Cmd_AddCommand ("stuffcmds",Cmd_StuffCmds_f);
-	Cmd_AddCommand ("exec",Cmd_Exec_f);
-	Cmd_AddCommand ("echo",Cmd_Echo_f);
-	Cmd_AddCommand ("alias",Cmd_Alias_f);
-	Cmd_AddCommand ("cmd", Cmd_ForwardToServer_f);
-	Cmd_AddCommand ("wait", Cmd_Wait_f);
-}
-
-/*
-============
 Cmd_Argc
 ============
 */
@@ -455,7 +440,7 @@ Cmd_Argv
 */
 char	*Cmd_Argv (int arg)
 {
-	if ( (unsigned)arg >= cmd_argc )
+	if ( arg >= cmd_argc )
 		return cmd_null_string;
 	return cmd_argv[arg];	
 }
@@ -467,6 +452,8 @@ Cmd_Args
 */
 char		*Cmd_Args ()
 {
+	if (!cmd_args)
+		return "";
 	return cmd_args;
 }
 
@@ -603,6 +590,59 @@ char *Cmd_CompleteCommand (char *partial)
 	return NULL;
 }
 
+
+/*
+===================
+Cmd_ForwardToServer
+
+Sends the entire command line over to the server
+===================
+*/
+void Cmd_ForwardToServer ()
+{
+	if (cls.state == ca_disconnected)
+	{
+		Con_Printf ("Can't \"%s\", not connected\n", Cmd_Argv(0));
+		return;
+	}
+	
+	if (cls.demoplayback)
+		return;		// not really connected
+
+	MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
+	SZ_Print (&cls.netchan.message, Cmd_Argv(0));
+	if (Cmd_Argc() > 1)
+	{
+		SZ_Print (&cls.netchan.message, " ");
+		SZ_Print (&cls.netchan.message, Cmd_Args());
+	}
+}
+
+// don't forward the first argument
+static void Cmd_ForwardToServer_f ()
+{
+	if (cls.state == ca_disconnected)
+	{
+		Con_Printf ("Can't \"%s\", not connected\n", Cmd_Argv(0));
+		return;
+	}
+
+	if (strcasecmp(Cmd_Argv(1), "snap") == 0)
+	{
+		Cbuf_InsertText ("snap\n");
+		return;
+	}
+	
+	if (cls.demoplayback)
+		return;		// not really connected
+
+	if (Cmd_Argc() > 1)
+	{
+		MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
+		SZ_Print (&cls.netchan.message, Cmd_Args());
+	}
+}
+
 /*
 ============
 Cmd_ExecuteString
@@ -654,59 +694,6 @@ void	Cmd_ExecuteString (char *text, cmd_source_t src)
 
 
 /*
-===================
-Cmd_ForwardToServer
-
-Sends the entire command line over to the server
-===================
-*/
-void Cmd_ForwardToServer ()
-{
-	if (cls.state == ca_disconnected)
-	{
-		Con_Printf ("Can't \"%s\", not connected\n", Cmd_Argv(0));
-		return;
-	}
-	
-	if (cls.demoplayback)
-		return;		// not really connected
-
-	MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
-	SZ_Print (&cls.netchan.message, Cmd_Argv(0));
-	if (Cmd_Argc() > 1)
-	{
-		SZ_Print (&cls.netchan.message, " ");
-		SZ_Print (&cls.netchan.message, Cmd_Args());
-	}
-}
-
-// don't forward the first argument
-void Cmd_ForwardToServer_f ()
-{
-	if (cls.state == ca_disconnected)
-	{
-		Con_Printf ("Can't \"%s\", not connected\n", Cmd_Argv(0));
-		return;
-	}
-
-	if (strcasecmp(Cmd_Argv(1), "snap") == 0)
-	{
-		Cbuf_InsertText ("snap\n");
-		return;
-	}
-	
-	if (cls.demoplayback)
-		return;		// not really connected
-
-	if (Cmd_Argc() > 1)
-	{
-		MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
-		SZ_Print (&cls.netchan.message, Cmd_Args());
-	}
-}
-
-
-/*
 ================
 Cmd_CheckParm
 
@@ -714,7 +701,6 @@ Returns the position (1 to argc-1) in the command's argument list
 where the given parameter apears, or 0 if not present
 ================
 */
-
 int Cmd_CheckParm (char *parm)
 {
 	int i;
@@ -727,4 +713,22 @@ int Cmd_CheckParm (char *parm)
 			return i;
 			
 	return 0;
+}
+
+/*
+============
+Cmd_Init
+============
+*/
+void Cmd_Init ()
+{
+//
+// register our commands
+//
+	Cmd_AddCommand ("stuffcmds",Cmd_StuffCmds_f);
+	Cmd_AddCommand ("exec",Cmd_Exec_f);
+	Cmd_AddCommand ("echo",Cmd_Echo_f);
+	Cmd_AddCommand ("alias",Cmd_Alias_f);
+	Cmd_AddCommand ("cmd", Cmd_ForwardToServer_f);
+	Cmd_AddCommand ("wait", Cmd_Wait_f);
 }

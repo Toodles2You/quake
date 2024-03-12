@@ -262,8 +262,10 @@ int SV_FlyMove (edict_t *ent, float time, trace_t *steptrace)
 
 	for (bumpcount=0 ; bumpcount<numbumps ; bumpcount++)
 	{
+#if 0
 		if (!ed_vector(ent, velocity)[0] && !ed_vector(ent, velocity)[1] && !ed_vector(ent, velocity)[2])
 			break;
+#endif
 
 		for (i=0 ; i<3 ; i++)
 			end[i] = ed_vector(ent, origin)[i] + time_left * ed_vector(ent, velocity)[i];
@@ -452,11 +454,13 @@ void SV_PushMove (edict_t *pusher, float movetime)
 	edict_t		*moved_edict[MIN_EDICTS];
 	vec3_t		moved_from[MIN_EDICTS];
 
+#if 0
 	if (!ed_vector(pusher, velocity)[0] && !ed_vector(pusher, velocity)[1] && !ed_vector(pusher, velocity)[2])
 	{
 		ed_float(pusher, ltime) += movetime;
 		return;
 	}
+#endif
 
 	for (i=0 ; i<3 ; i++)
 	{

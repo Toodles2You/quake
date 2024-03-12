@@ -30,7 +30,7 @@ key up events are sent even if in console mode
 #define		MAXCMDLINE	256
 char	key_lines[32][MAXCMDLINE];
 int		key_linepos;
-int		shift_down=false;
+static bool	shift_down;
 int		key_lastpress;
 
 int		edit_line=0;
@@ -53,7 +53,7 @@ typedef struct
 	int		keynum;
 } keyname_t;
 
-keyname_t keynames[] =
+static keyname_t keynames[] =
 {
 	{"TAB", K_TAB},
 	{"ENTER", K_ENTER},
@@ -149,6 +149,23 @@ keyname_t keynames[] =
 ==============================================================================
 */
 
+static void CompleteCommand ()
+{
+	char *cmd = Cmd_CompleteCommand (key_lines[edit_line] + 1);
+	if (!cmd)
+	{
+		cmd = Cvar_CompleteVariable (key_lines[edit_line] + 1);
+	}
+
+	if (cmd)
+	{
+		strcpy (key_lines[edit_line] + 1, cmd);
+		key_linepos = strlen(cmd) + 1;
+		key_lines[edit_line][key_linepos] = ' ';
+		key_linepos++;
+		key_lines[edit_line][key_linepos] = 0;
+	}
+}
 
 /*
 ====================
@@ -157,10 +174,8 @@ Key_Console
 Interactive line editing and console scrollback
 ====================
 */
-void Key_Console (int key)
-{
-	char	*cmd;
-	
+static void Key_Console (int key)
+{	
 	if (key == K_ENTER)
 	{
 		Cbuf_AddText (key_lines[edit_line]+1);	// skip the >
@@ -170,7 +185,7 @@ void Key_Console (int key)
 		history_line = edit_line;
 		key_lines[edit_line][0] = ']';
 		key_linepos = 1;
-		if (cls.state != ca_active)
+		if (cls.state == ca_disconnected)
 			SCR_UpdateScreen ();	// force an update, because the command
 									// may take some time
 		return;
@@ -178,18 +193,8 @@ void Key_Console (int key)
 
 	if (key == K_TAB)
 	{	// command completion
-		cmd = Cmd_CompleteCommand (key_lines[edit_line]+1);
-		if (!cmd)
-			cmd = Cvar_CompleteVariable (key_lines[edit_line]+1);
-		if (cmd)
-		{
-			strcpy (key_lines[edit_line]+1, cmd);
-			key_linepos = strlen(cmd)+1;
-			key_lines[edit_line][key_linepos] = ' ';
-			key_linepos++;
-			key_lines[edit_line][key_linepos] = 0;
-			return;
-		}
+		CompleteCommand ();
+		return;
 	}
 	
 	if (key == K_BACKSPACE || key == K_LEFTARROW)
@@ -280,7 +285,7 @@ void Key_Console (int key)
 char chat_buffer[32];
 bool team_message = false;
 
-void Key_Message (int key)
+static void Key_Message (int key)
 {
 	static int chat_bufferlen = 0;
 
@@ -320,7 +325,7 @@ void Key_Message (int key)
 		return;
 	}
 
-	if (chat_bufferlen == 31)
+	if (chat_bufferlen == sizeof(chat_buffer)-1)
 		return; // all full
 
 	chat_buffer[chat_bufferlen++] = key;
@@ -339,7 +344,7 @@ the given string.  Single ascii characters return themselves, while
 the K_* names are matched up.
 ===================
 */
-int Key_StringToKeynum (char *str)
+static int Key_StringToKeynum (char *str)
 {
 	keyname_t	*kn;
 	
@@ -420,7 +425,7 @@ void Key_SetBinding (int keynum, char *binding)
 Key_Unbind_f
 ===================
 */
-void Key_Unbind_f ()
+static void Key_Unbind_f ()
 {
 	int		b;
 
@@ -440,7 +445,7 @@ void Key_Unbind_f ()
 	Key_SetBinding (b, "");
 }
 
-void Key_Unbindall_f ()
+static void Key_Unbindall_f ()
 {
 	int		i;
 	
@@ -455,7 +460,7 @@ void Key_Unbindall_f ()
 Key_Bind_f
 ===================
 */
-void Key_Bind_f ()
+static void Key_Bind_f ()
 {
 	int			i, c, b;
 	char		cmd[1024];
@@ -541,6 +546,8 @@ void Key_Init ()
 	consolekeys[K_UPARROW] = true;
 	consolekeys[K_DOWNARROW] = true;
 	consolekeys[K_BACKSPACE] = true;
+	consolekeys[K_HOME] = true;
+	consolekeys[K_END] = true;
 	consolekeys[K_PGUP] = true;
 	consolekeys[K_PGDN] = true;
 	consolekeys[K_SHIFT] = true;
@@ -618,7 +625,11 @@ void Key_Event (int key, bool down)
 	if (down)
 	{
 		key_repeats[key]++;
-		if (key != K_BACKSPACE && key != K_PAUSE && key_repeats[key] > 1)
+		if (key != K_BACKSPACE 
+		 && key != K_PAUSE 
+		 && key != K_PGUP 
+		 && key != K_PGDN
+		 && key_repeats[key] > 1)
 		{
 			return;	// ignore most autorepeats
 		}

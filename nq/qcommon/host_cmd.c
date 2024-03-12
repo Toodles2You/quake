@@ -75,15 +75,13 @@ static void Host_ChangingLevel ()
 		return;
 	}
 
-	SV_BroadcastCommand ("changing\n");
-	SV_SendMessagesToAll ();
-
-#ifdef FIXME
 	if (cls.download)  // don't change when downloading
 	{
 		return;
 	}
-#endif
+
+	SV_BroadcastCommand ("changing\n");
+	SV_SendMessagesToAll ();
 
 	if (cls.state != ca_dedicated)
 	{

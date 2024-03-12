@@ -836,10 +836,8 @@ static void CL_LinkPlayers ()
 		if (!state->modelindex)
 			continue;
 
-		#ifdef FIXME
 		if (!Cam_DrawPlayer(j))
 			continue;
-		#endif
 
 		// grab an entity to fill in
 		if (cl_numvisedicts == MAX_VISEDICTS)

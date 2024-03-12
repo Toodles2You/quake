@@ -311,9 +311,7 @@ static void CL_RequestNextDownload ()
 	case dl_single:
 		break;
 	case dl_skin:
-		#ifdef FIXME
 		Skin_NextDownload ();
-		#endif
 		break;
 	case dl_model:
 		Model_NextDownload ();
@@ -874,10 +872,8 @@ static void CL_ProcessUserInfo (int slot, player_info_t *player)
 	else
 		player->spectator = false;
 
-	#ifdef FIXME
 	if (cls.state == ca_active)
 		Skin_Find (player);
-	#endif
 
 	Sbar_Changed ();
 	CL_NewTranslation (slot);

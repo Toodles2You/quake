@@ -84,6 +84,7 @@ set(QCOMMON_SRC
 set(CLIENT_SRC
     nq/client/cd_vorbis.c
     nq/client/chase.c
+    nq/client/cl_cam.c
     nq/client/cl_demo.c
     nq/client/cl_ents.c
     nq/client/cl_input.c
@@ -109,6 +110,7 @@ set(CLIENT_SRC
     nq/client/menu.c
     nq/client/part.c
     nq/client/sbar.c
+    nq/client/skin.c
     nq/client/snd_dma.c
     nq/client/snd_mem.c
     nq/client/snd_mix.c

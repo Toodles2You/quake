@@ -372,9 +372,6 @@ void Host_ServerFrame (double time)
 // decide the simulation time
 	if (!sv.paused)
 	{
-		#ifdef FIXME
-		realtime += time;
-		#endif
 		sv.time += time;
 	}
 
