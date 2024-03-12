@@ -275,8 +275,6 @@ typedef struct
 //
 // cvars
 //
-extern cvar_t cl_name;
-extern cvar_t cl_color;
 
 extern cvar_t cl_upspeed;
 extern cvar_t cl_forwardspeed;

@@ -1086,7 +1086,7 @@ static void SV_SetInfo_f ()
 
 	strcpy(oldval, Info_ValueForKey(host_client->userinfo, Cmd_Argv(1)));
 
-	Info_SetValueForKey (host_client->userinfo, Cmd_Argv(1), Cmd_Argv(2), MAX_INFO_STRING);
+	Info_SetValueForKey (host_client->userinfo, Cmd_Argv(1), Cmd_Argv(2), MAX_INFO_STRING, sv_highchars.value);
 // name is extracted below in ExtractFromUserInfo
 //	strncpy (host_client->name, Info_ValueForKey (host_client->userinfo, "name")
 //		, sizeof(host_client->name)-1);	

@@ -925,7 +925,7 @@ static void CL_SetInfo ()
 
 	Con_DPrintf("SETINFO %s: %s=%s\n", player->name, key, value);
 
-	Info_SetValueForKey (player->userinfo, key, value, MAX_INFO_STRING);
+	Info_SetValueForKey (player->userinfo, key, value, MAX_INFO_STRING, true);
 
 	CL_ProcessUserInfo (slot, player);
 }
@@ -949,7 +949,7 @@ static void CL_ServerInfo ()
 
 	Con_DPrintf("SERVERINFO: %s=%s\n", key, value);
 
-	Info_SetValueForKey (cl.serverinfo, key, value, MAX_SERVERINFO_STRING);
+	Info_SetValueForKey (cl.serverinfo, key, value, MAX_SERVERINFO_STRING, true);
 }
 
 /*

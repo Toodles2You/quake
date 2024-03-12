@@ -2003,13 +2003,10 @@ void Info_RemovePrefixedKeys (char *start, char prefix)
 }
 
 
-void Info_SetValueForStarKey (char *s, char *key, char *value, int maxsize)
+void Info_SetValueForStarKey (char *s, char *key, char *value, int maxsize, bool highchars)
 {
 	char	new[1024], *v;
 	int		c;
-#ifdef SERVERONLY
-	extern cvar_t sv_highchars;
-#endif
 
 	if (strstr (key, "\\") || strstr (value, "\\") )
 	{
@@ -2056,9 +2053,9 @@ void Info_SetValueForStarKey (char *s, char *key, char *value, int maxsize)
 	while (*v)
 	{
 		c = (unsigned char)*v++;
-#ifndef SERVERONLY
 		// client only allows highbits on name
-		if (strcasecmp(key, "name") != 0) {
+		if (!highchars || strcasecmp(key, "name") != 0) {
+			// strip high bits
 			c &= 127;
 			if (c < 32 || c > 127)
 				continue;
@@ -2066,21 +2063,13 @@ void Info_SetValueForStarKey (char *s, char *key, char *value, int maxsize)
 			if (strcasecmp(key, "team") == 0)
 				c = tolower(c);
 		}
-#else
-		if (!sv_highchars.value) {
-			c &= 127;
-			if (c < 32 || c > 127)
-				continue;
-		}
-#endif
-//		c &= 127;		// strip high bits
-		if (c > 13) // && c < 127)
+		if (c > 13)
 			*s++ = c;
 	}
 	*s = 0;
 }
 
-void Info_SetValueForKey (char *s, char *key, char *value, int maxsize)
+void Info_SetValueForKey (char *s, char *key, char *value, int maxsize, bool highchars)
 {
 	if (key[0] == '*')
 	{
@@ -2088,7 +2077,7 @@ void Info_SetValueForKey (char *s, char *key, char *value, int maxsize)
 		return;
 	}
 
-	Info_SetValueForStarKey (s, key, value, maxsize);
+	Info_SetValueForStarKey (s, key, value, maxsize, highchars);
 }
 
 void Info_Print (char *s)

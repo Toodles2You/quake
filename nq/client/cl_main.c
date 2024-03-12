@@ -28,10 +28,6 @@ extern cvar_t qport;
 cvar_t	rcon_password = {"rcon_password", ""};
 cvar_t	rcon_address = {"rcon_address", ""};
 
-// these two are not intended to be set directly
-cvar_t	cl_name = {"_cl_name", "player", CVAR_ARCHIVE};
-cvar_t	cl_color = {"_cl_color", "0", CVAR_ARCHIVE};
-
 cvar_t	cl_timeout = {"cl_timeout", "60"};
 cvar_t	cl_shownet = {"cl_shownet","0"};	// can be 0, 1, or 2
 cvar_t	cl_nolerp = {"cl_nolerp","0"};
@@ -56,16 +52,16 @@ cvar_t	cl_solid_players = {"cl_solid_players", "1"};
 //
 // info mirrors
 //
-cvar_t	password = {"password", "", CVAR_INFO};
-cvar_t	spectator = {"spectator", "", CVAR_INFO};
-cvar_t	name = {"name","unnamed", CVAR_ARCHIVE | CVAR_INFO};
-cvar_t	team = {"team","", CVAR_ARCHIVE | CVAR_INFO};
-cvar_t	skin = {"skin","", CVAR_ARCHIVE | CVAR_INFO};
-cvar_t	topcolor = {"topcolor","0", CVAR_ARCHIVE | CVAR_INFO};
-cvar_t	bottomcolor = {"bottomcolor","0", CVAR_ARCHIVE | CVAR_INFO};
-cvar_t	rate = {"rate","2500", CVAR_ARCHIVE | CVAR_INFO};
-cvar_t	noaim = {"noaim","0", CVAR_ARCHIVE | CVAR_INFO};
-cvar_t	msg = {"msg","1", CVAR_ARCHIVE | CVAR_INFO};
+cvar_t	password = {"password", "", CVAR_CLIENT_INFO};
+cvar_t	spectator = {"spectator", "", CVAR_CLIENT_INFO};
+cvar_t	name = {"name", "unnamed", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
+cvar_t	team = {"team","", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
+cvar_t	skin = {"skin","", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
+cvar_t	topcolor = {"topcolor","0", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
+cvar_t	bottomcolor = {"bottomcolor","0", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
+cvar_t	rate = {"rate","2500", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
+cvar_t	noaim = {"noaim","0", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
+cvar_t	msg = {"msg","1", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
 
 client_static_t	cls;
 client_state_t	cl;
@@ -146,7 +142,7 @@ static void CL_SendConnectPacket ()
 
 	cls.qport = qport.value;
 
-	Info_SetValueForStarKey(cls.userinfo, "*ip", NET_AdrToString(adr), MAX_INFO_STRING);
+	Info_SetValueForStarKey(cls.userinfo, "*ip", NET_AdrToString(adr), MAX_INFO_STRING, true);
 
 	//	Con_Printf ("Connecting to %s...\n", cls.servername);
 	sprintf(data, "%c%c%c%cconnect %i %i %i \"%s\"\n",
@@ -575,7 +571,7 @@ static void CL_FullInfo_f (void)
 		if (!strcasecmp(key, pmodel_name) || !strcasecmp(key, emodel_name))
 			continue;
 
-		Info_SetValueForKey (cls.userinfo, key, value, MAX_INFO_STRING);
+		Info_SetValueForKey (cls.userinfo, key, value, MAX_INFO_STRING, true);
 	}
 }
 
@@ -601,7 +597,7 @@ void CL_SetInfo_f (void)
 	if (!strcasecmp(Cmd_Argv(1), pmodel_name) || !strcmp(Cmd_Argv(1), emodel_name))
 		return;
 
-	Info_SetValueForKey (cls.userinfo, Cmd_Argv(1), Cmd_Argv(2), MAX_INFO_STRING);
+	Info_SetValueForKey (cls.userinfo, Cmd_Argv(1), Cmd_Argv(2), MAX_INFO_STRING, true);
 	if (cls.state >= ca_connected)
 		Cmd_ForwardToServer ();
 }
@@ -925,12 +921,11 @@ void CL_Init ()
 
 	CL_FixupModelNames();
 
-	Info_SetValueForKey (cls.userinfo, "name", "unnamed", MAX_INFO_STRING);
-	Info_SetValueForKey (cls.userinfo, "topcolor", "0", MAX_INFO_STRING);
-	Info_SetValueForKey (cls.userinfo, "bottomcolor", "0", MAX_INFO_STRING);
-	Info_SetValueForKey (cls.userinfo, "rate", "2500", MAX_INFO_STRING);
-	Info_SetValueForKey (cls.userinfo, "msg", "1", MAX_INFO_STRING);
-	Info_SetValueForStarKey (cls.userinfo, "*ver", QUAKE_VERSION, MAX_INFO_STRING);
+	Info_SetValueForKey (cls.userinfo, "name", "unnamed", MAX_INFO_STRING, true);
+	Info_SetValueForKey (cls.userinfo, "topcolor", "0", MAX_INFO_STRING, true);
+	Info_SetValueForKey (cls.userinfo, "bottomcolor", "0", MAX_INFO_STRING, true);
+	Info_SetValueForKey (cls.userinfo, "rate", "2500", MAX_INFO_STRING, true);
+	Info_SetValueForKey (cls.userinfo, "msg", "1", MAX_INFO_STRING, true);
 
 	CL_InitInput ();
 	CL_InitTEnts ();
@@ -941,8 +936,6 @@ void CL_Init ()
 //
 // register our commands
 //
-	Cvar_RegisterVariable (&cl_name);
-	Cvar_RegisterVariable (&cl_color);
 	Cvar_RegisterVariable (&cl_upspeed);
 	Cvar_RegisterVariable (&cl_forwardspeed);
 	Cvar_RegisterVariable (&cl_backspeed);
@@ -1023,12 +1016,10 @@ void CL_Init ()
 //
 // forward to server commands
 //
-#ifdef FIXME
 	Cmd_AddCommand ("kill", NULL);
 	Cmd_AddCommand ("pause", NULL);
 	Cmd_AddCommand ("say", NULL);
 	Cmd_AddCommand ("say_team", NULL);
 	Cmd_AddCommand ("serverinfo", NULL);
-#endif
 }
 

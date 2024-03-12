@@ -122,22 +122,20 @@ void Cvar_Set (char *var_name, char *value)
 
 	changed = strcmp(var->string, value);
 
-	if (var->flags & CVAR_INFO)
+	if ((var->flags & CVAR_SERVER_INFO) && Host_IsLocalGame ())
 	{
-		#ifdef FIXME
-		if (Host_IsLocalGame ())
-		{
-			Info_SetValueForKey (svs.info, var_name, value, MAX_SERVERINFO_STRING);
-			SV_SendServerInfoChange(var_name, value);
-		}
+		Info_SetValueForKey (svs.info, var_name, value, MAX_SERVERINFO_STRING, sv_highchars.value);
+		SV_SendServerInfoChange(var_name, value);
+	}
 
-		Info_SetValueForKey (cls.userinfo, var_name, value, MAX_INFO_STRING);
+	if (var->flags & CVAR_CLIENT_INFO)
+	{
+		Info_SetValueForKey (cls.userinfo, var_name, value, MAX_INFO_STRING, sv_highchars.value);
 		if (cls.state >= ca_connected)
 		{
 			MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
 			SZ_Print (&cls.netchan.message, va("setinfo \"%s\" \"%s\"\n", var_name, value));
 		}
-		#endif
 	}
 	
 	Z_Free (var->string);	// free the old value string
@@ -146,10 +144,9 @@ void Cvar_Set (char *var_name, char *value)
 	strcpy (var->string, value);
 	var->value = atof (var->string);
 
-	if ((var->flags & CVAR_SERVER) && changed)
+	if ((var->flags & CVAR_NOTIFY) && changed && Host_IsLocalGame ())
 	{
-		if (Host_IsLocalGame ())
-			SV_BroadcastPrintf (PRINT_HIGH, "\"%s\" changed to \"%s\"\n", var->name, var->string);
+		SV_BroadcastPrintf (PRINT_HIGH, "\"%s\" changed to \"%s\"\n", var->name, var->string);
 	}
 }
 

@@ -609,7 +609,7 @@ void SV_Serverinfo_f ()
 		Con_Printf ("Star variables cannot be changed.\n");
 		return;
 	}
-	Info_SetValueForKey (svs.info, Cmd_Argv(1), Cmd_Argv(2), MAX_SERVERINFO_STRING);
+	Info_SetValueForKey (svs.info, Cmd_Argv(1), Cmd_Argv(2), MAX_SERVERINFO_STRING, sv_highchars.value);
 
 	// if this is a cvar, change it too	
 	var = Cvar_FindVar (Cmd_Argv(1));
@@ -652,7 +652,7 @@ void SV_Localinfo_f ()
 		Con_Printf ("Star variables cannot be changed.\n");
 		return;
 	}
-	Info_SetValueForKey (localinfo, Cmd_Argv(1), Cmd_Argv(2), MAX_LOCALINFO_STRING);
+	Info_SetValueForKey (localinfo, Cmd_Argv(1), Cmd_Argv(2), MAX_LOCALINFO_STRING, sv_highchars.value);
 }
 
 
@@ -709,7 +709,7 @@ void SV_Gamedir ()
 		return;
 	}
 
-	Info_SetValueForStarKey (svs.info, "*gamedir", dir, MAX_SERVERINFO_STRING);
+	Info_SetValueForStarKey (svs.info, "*gamedir", dir, MAX_SERVERINFO_STRING, sv_highchars.value);
 }
 
 /*
@@ -806,7 +806,7 @@ void SV_Gamedir_f ()
 	}
 
 	COM_Gamedir (dir);
-	Info_SetValueForStarKey (svs.info, "*gamedir", dir, MAX_SERVERINFO_STRING);
+	Info_SetValueForStarKey (svs.info, "*gamedir", dir, MAX_SERVERINFO_STRING, sv_highchars.value);
 }
 
 /*
@@ -913,7 +913,7 @@ void SV_InitOperatorCommands ()
 	if (COM_CheckParm ("-cheats"))
 	{
 		sv_allow_cheats = true;
-		Info_SetValueForStarKey (svs.info, "*cheats", "ON", MAX_SERVERINFO_STRING);
+		Info_SetValueForStarKey (svs.info, "*cheats", "ON", MAX_SERVERINFO_STRING, sv_highchars.value);
 	}
 
 	Cmd_AddCommand ("logfile", SV_Logfile_f);

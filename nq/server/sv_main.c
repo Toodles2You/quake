@@ -435,7 +435,7 @@ void SVC_DirectConnect (void)
 		}
 		#endif
 		Info_RemoveKey (userinfo, "spectator"); // remove passwd
-		Info_SetValueForStarKey (userinfo, "*spectator", "1", MAX_INFO_STRING);
+		Info_SetValueForStarKey (userinfo, "*spectator", "1", MAX_INFO_STRING, sv_highchars.value);
 		spectator = true;
 	}
 	else
@@ -748,12 +748,12 @@ void SV_ExtractFromUserinfo (client_t *cl)
 	p[1] = 0;
 
 	if (strcmp(val, newname)) {
-		Info_SetValueForKey (cl->userinfo, "name", newname, MAX_INFO_STRING);
+		Info_SetValueForKey (cl->userinfo, "name", newname, MAX_INFO_STRING, sv_highchars.value);
 		val = Info_ValueForKey (cl->userinfo, "name");
 	}
 
 	if (!val[0] || !strcasecmp(val, "console")) {
-		Info_SetValueForKey (cl->userinfo, "name", "unnamed", MAX_INFO_STRING);
+		Info_SetValueForKey (cl->userinfo, "name", "unnamed", MAX_INFO_STRING, sv_highchars.value);
 		val = Info_ValueForKey (cl->userinfo, "name");
 	}
 
@@ -777,7 +777,7 @@ void SV_ExtractFromUserinfo (client_t *cl)
 					p = val + 4;
 
 			sprintf(newname, "(%d)%-.40s", dupc++, p);
-			Info_SetValueForKey (cl->userinfo, "name", newname, MAX_INFO_STRING);
+			Info_SetValueForKey (cl->userinfo, "name", newname, MAX_INFO_STRING, sv_highchars.value);
 			val = Info_ValueForKey (cl->userinfo, "name");
 		} else
 			break;
@@ -986,9 +986,9 @@ void SV_CheckVars (void)
 
 	Con_Printf ("Updated needpass.\n");
 	if (!v)
-		Info_SetValueForKey (svs.info, "needpass", "", MAX_SERVERINFO_STRING);
+		Info_SetValueForKey (svs.info, "needpass", "", MAX_SERVERINFO_STRING, sv_highchars.value);
 	else
-		Info_SetValueForKey (svs.info, "needpass", va("%i",v), MAX_SERVERINFO_STRING);
+		Info_SetValueForKey (svs.info, "needpass", va("%i",v), MAX_SERVERINFO_STRING, sv_highchars.value);
 	#endif
 }
 
@@ -1054,5 +1054,5 @@ void SV_Init ()
 		sprintf (localmodels[i], "*%i", i);
 	}
 
-	Info_SetValueForStarKey (svs.info, "*version", QUAKE_VERSION, MAX_SERVERINFO_STRING);
+	Info_SetValueForStarKey (svs.info, "*version", QUAKE_VERSION, MAX_SERVERINFO_STRING, sv_highchars.value);
 }

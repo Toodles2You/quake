@@ -271,6 +271,7 @@ char *PR_GlobalStringNoContents(progs_state_t *pr, int ofs)
 int PR_LoadProgs(progs_state_t *pr, char *filename, int version, int crc)
 {
     int i;
+    char num[32];
 
     memset(pr, 0, sizeof(progs_state_t));
 
@@ -288,6 +289,10 @@ int PR_LoadProgs(progs_state_t *pr, char *filename, int version, int crc)
     {
         CRC_ProcessByte(&pr->crc, ((byte *)pr->progs)[i]);
     }
+
+    // add prog crc to the serverinfo
+	sprintf (num, "%i", pr->crc);
+	Info_SetValueForStarKey (svs.info, "*progs", num, MAX_SERVERINFO_STRING, sv_highchars.value);
 
     // byte swap the header
     for (i = 0; i < sizeof(*pr->progs) / sizeof(int32_t); i++)

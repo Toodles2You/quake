@@ -3,9 +3,10 @@
 
 enum
 {
-    CVAR_ARCHIVE 	= 1,  // set to cause it to be saved to vars.rc
-    CVAR_SERVER     = 2,  // notifies players when changed
-	CVAR_INFO       = 4,
+    CVAR_ARCHIVE 	 = 1,  // set to cause it to be saved to vars.rc
+    CVAR_NOTIFY      = 2,  // notifies players when changed
+	CVAR_CLIENT_INFO = 4,
+	CVAR_SERVER_INFO = 8,
 };
 
 typedef struct cvar_s
