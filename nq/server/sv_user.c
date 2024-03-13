@@ -1171,15 +1171,19 @@ void SV_ExecuteUserCommand (char *s)
 
 	SV_BeginRedirect (RD_CLIENT);
 
-	for (u=ucmds ; u->name ; u++)
-		if (!strcmp (Cmd_Argv(0), u->name) )
+	for (u = ucmds; u->name; u++)
+	{
+		if (!strcmp (Cmd_Argv(0), u->name))
 		{
 			u->func ();
 			break;
 		}
+	}
 
 	if (!u->name)
+	{
 		Con_Printf ("Bad user command: %s\n", Cmd_Argv(0));
+	}
 
 	SV_EndRedirect ();
 }

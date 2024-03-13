@@ -32,7 +32,7 @@ typedef struct cmdalias_s
 
 static cmdalias_t *cmd_alias;
 
-static bool	cmd_wait;
+static bool	cmd_wait[2];
 
 cvar_t cl_warncmd = {"cl_warncmd", "0"};
 
@@ -51,7 +51,7 @@ bind g "impulse 5 ; +attack ; wait ; -attack ; impulse 2"
 */
 static void Cmd_Wait_f ()
 {
-	cmd_wait = true;
+	cmd_wait[cmd_source] = true;
 }
 
 /*
@@ -188,10 +188,10 @@ void Cbuf_Execute (cmd_source_e src)
 // execute the command line
 		Cmd_ExecuteString (src, line);
 		
-		if (cmd_wait)
+		if (cmd_wait[src])
 		{	// skip out while text still remains in buffer, leaving it
 			// for next frame
-			cmd_wait = false;
+			cmd_wait[src] = false;
 			break;
 		}
 	}
@@ -578,6 +578,23 @@ bool	Cmd_Exists (cmd_source_e src, char *cmd_name)
 
 
 
+static void Cmd_GetBestCommand (cmd_source_e src, char *partial, int len, char **best, int *bestLen)
+{
+	cmd_function_t *cmd;
+	int curLen;
+
+	for (cmd = cmd_functions[src]; cmd; cmd = cmd->next)
+	{
+		curLen = abs(strlen(cmd->name) - len);
+
+		if (curLen < *bestLen && !strncmp(partial, cmd->name, len))
+		{
+			*best = cmd->name;
+			*bestLen = curLen;
+		}
+	}
+}
+
 /*
 ============
 Cmd_CompleteCommand
@@ -585,9 +602,7 @@ Cmd_CompleteCommand
 */
 char *Cmd_CompleteCommand (cmd_source_e src, char *partial)
 {
-	cmd_function_t	*cmd;
-	int				len;
-	int curLen;
+	int len;
 	char *best = NULL;
 	int bestLen = 256;
 	
@@ -597,14 +612,14 @@ char *Cmd_CompleteCommand (cmd_source_e src, char *partial)
 		return NULL;
 		
 // check functions
-	for (cmd = cmd_functions[src]; cmd; cmd = cmd->next)
-	{
-		curLen = abs(strlen(cmd->name) - len);
+	Cmd_GetBestCommand (src, partial, len, &best, &bestLen);
 
-		if (curLen < bestLen && !strncmp(partial, cmd->name, len))
+	if (src == src_client)
+	{
+		/* Toodles: If running a local server, query server commands, too. */
+		if (Host_IsLocalGame ())
 		{
-			best = cmd->name;
-			bestLen = curLen;
+			Cmd_GetBestCommand (src_server, partial, len, &best, &bestLen);
 		}
 	}
 
@@ -644,11 +659,7 @@ static void Cmd_ForwardToServer_f ()
 {
 	if (cls.state == ca_disconnected)
 	{
-#ifdef FIXME
 		Con_Printf ("Can't \"%s\", not connected\n", Cmd_Argv(0));
-#else
-		Cbuf_AddText (src_server, Cmd_Args());
-#endif
 		return;
 	}
 	
@@ -686,10 +697,7 @@ void	Cmd_ExecuteString (cmd_source_e src, char *text)
 	{
 		if (!strcasecmp (cmd_argv[src][0],cmd->name))
 		{
-			if (!cmd->function)
-				Cmd_ForwardToServer ();
-			else
-				cmd->function ();
+			cmd->function ();
 			return;
 		}
 	}
@@ -705,9 +713,19 @@ void	Cmd_ExecuteString (cmd_source_e src, char *text)
 	}
 	
 // check cvars
-	if (!Cvar_Command (src))
+	if (Cvar_Command (src))
+	{
+		return;
+	}
+
+	if (src == src_client)
+	{
+		Cmd_ForwardToServer ();
+	}
+	else
+	{
 		Con_Printf ("Unknown command \"%s\"\n", Cmd_Argv(0));
-	
+	}
 }
 
 

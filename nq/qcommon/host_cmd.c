@@ -777,13 +777,13 @@ Host_InitCommands
 void Host_InitCommands ()
 {
 	Cmd_AddCommand (src_host, "quit", Host_Quit_f);
-	Cmd_AddCommand (src_server, "map", Host_Map_f);
-	Cmd_AddCommand (src_server, "restart", Host_Restart_f);
-	Cmd_AddCommand (src_server, "changelevel", Host_Changelevel_f);
-	Cmd_AddCommand (src_server, "changelevel2", Host_Changelevel2_f);
+	Cmd_AddCommand (src_host, "map", Host_Map_f);
+	Cmd_AddCommand (src_host, "restart", Host_Restart_f);
+	Cmd_AddCommand (src_host, "changelevel", Host_Changelevel_f);
+	Cmd_AddCommand (src_host, "changelevel2", Host_Changelevel2_f);
 	Cmd_AddCommand (src_host, "version", Host_Version_f);
-	Cmd_AddCommand (src_server, "load", Host_Loadgame_f);
-	Cmd_AddCommand (src_server, "save", Host_Savegame_f);
+	Cmd_AddCommand (src_host, "load", Host_Loadgame_f);
+	Cmd_AddCommand (src_host, "save", Host_Savegame_f);
 
 	Cmd_AddCommand (src_client, "startdemos", Host_Startdemos_f);
 	Cmd_AddCommand (src_client, "demos", Host_Demos_f);
