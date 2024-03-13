@@ -549,7 +549,7 @@ void SVC_DirectConnect (void)
 
 	edictnum = (newcl-svs.clients)+1;
 	
-	Netchan_Setup (&newcl->netchan , adr, SERVER, qport);
+	Netchan_Setup (&newcl->netchan, adr, SERVER, qport);
 
 	newcl->state = cs_connected;
 

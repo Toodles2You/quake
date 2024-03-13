@@ -88,8 +88,6 @@ typedef struct client_s
 	int whensaidhead;	 // Head value for floodprots
 	double lockedtill;
 
-	bool upgradewarn; // did we warn him?
-
 	FILE *upload;
 	char uploadfn[MAX_QPATH];
 	netadr_t snap_from;

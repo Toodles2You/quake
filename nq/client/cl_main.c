@@ -54,7 +54,7 @@ cvar_t	cl_solid_players = {"cl_solid_players", "1"};
 //
 cvar_t	password = {"password", "", CVAR_CLIENT_INFO};
 cvar_t	spectator = {"spectator", "", CVAR_CLIENT_INFO};
-cvar_t	name = {"name", "unnamed", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
+cvar_t	name = {"name", "Player", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
 cvar_t	team = {"team","", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
 cvar_t	skin = {"skin","", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
 cvar_t	topcolor = {"topcolor","0", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
@@ -921,7 +921,7 @@ void CL_Init ()
 
 	CL_FixupModelNames();
 
-	Info_SetValueForKey (cls.userinfo, "name", "unnamed", MAX_INFO_STRING, true);
+	Info_SetValueForKey (cls.userinfo, "name", "Player", MAX_INFO_STRING, true);
 	Info_SetValueForKey (cls.userinfo, "topcolor", "0", MAX_INFO_STRING, true);
 	Info_SetValueForKey (cls.userinfo, "bottomcolor", "0", MAX_INFO_STRING, true);
 	Info_SetValueForKey (cls.userinfo, "rate", "2500", MAX_INFO_STRING, true);

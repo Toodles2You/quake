@@ -14,8 +14,8 @@ typedef enum
 typedef struct
 {
 	byte ip[4];
-	unsigned short port;
-	unsigned short pad;
+	uint16_t port;
+	uint16_t pad;
 } netadr_t;
 
 extern netadr_t net_local_adr;

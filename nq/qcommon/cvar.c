@@ -150,7 +150,7 @@ void Cvar_Set (cmd_source_e src, char *var_name, char *value)
 
 	if (var->flags & CVAR_CLIENT_INFO)
 	{
-		Info_SetValueForKey (cls.userinfo, var_name, value, MAX_INFO_STRING, sv_highchars.value);
+		Info_SetValueForKey (cls.userinfo, var_name, value, MAX_INFO_STRING, true);
 		if (cls.state >= ca_connected)
 		{
 			MSG_WriteByte (&cls.netchan.message, clc_stringcmd);

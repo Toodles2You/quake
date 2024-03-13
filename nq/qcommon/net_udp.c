@@ -49,13 +49,13 @@ void NetadrToSockadr(netadr_t *a, struct sockaddr_in *s)
 	memset(s, 0, sizeof(*s));
 	s->sin_family = AF_INET;
 
-	*(int *)&s->sin_addr = *(int *)&a->ip;
+	*(int32_t *)&s->sin_addr = *(int32_t *)&a->ip;
 	s->sin_port = a->port;
 }
 
 void SockadrToNetadr(struct sockaddr_in *s, netadr_t *a)
 {
-	*(int *)&a->ip = *(int *)&s->sin_addr;
+	*(int32_t *)&a->ip = *(int32_t *)&s->sin_addr;
 	a->port = s->sin_port;
 }
 
@@ -126,13 +126,13 @@ bool NET_StringToAdr(char *s, netadr_t *a)
 
 	if (copy[0] >= '0' && copy[0] <= '9')
 	{
-		*(int *)&sadr.sin_addr = inet_addr(copy);
+		*(int32_t *)&sadr.sin_addr = inet_addr(copy);
 	}
 	else
 	{
 		if (!(h = gethostbyname(copy)))
 			return false;
-		*(int *)&sadr.sin_addr = *(int *)h->h_addr_list[0];
+		*(int32_t *)&sadr.sin_addr = *(int32_t *)h->h_addr_list[0];
 	}
 
 	SockadrToNetadr(&sadr, a);
@@ -259,7 +259,7 @@ int UDP_OpenSocket(int port)
 	}
 	else
 	{
-		address.sin_port = htons((short)port);
+		address.sin_port = htons((uint16_t)port);
 	}
 
 	if (bind(newsocket, (void *)&address, sizeof(address)) == -1)
