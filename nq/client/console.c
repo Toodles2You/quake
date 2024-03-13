@@ -360,6 +360,8 @@ void Con_DebugLog(char *file, char *fmt, ...)
     close(fd);
 }
 
+extern redirect_t sv_redirected;
+extern char outputbuf[8000];
 
 /*
 ================
@@ -378,6 +380,17 @@ void Con_Printf (char *fmt, ...)
 	va_start (argptr,fmt);
 	vsprintf (msg,fmt,argptr);
 	va_end (argptr);
+	
+	// add to redirected message
+	if (sv_redirected)
+	{
+		if (strlen (msg) + strlen(outputbuf) > sizeof(outputbuf) - 1)
+		{
+			SV_FlushRedirect ();
+		}
+		strcat (outputbuf, msg);
+		return;
+	}
 	
 // also echo to debugging console
 	Sys_Printf ("%s", msg);	// also echo to debugging console

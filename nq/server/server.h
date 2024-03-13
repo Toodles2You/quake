@@ -390,13 +390,6 @@ void SV_BroadcastCommand(char *fmt, ...);
 void SV_SendMessagesToAll();
 void SV_FindModelNumbers();
 
-typedef enum
-{
-	RD_NONE,
-	RD_CLIENT,
-	RD_PACKET
-} redirect_t;
-
 void SV_BeginRedirect (redirect_t rd);
 void SV_EndRedirect ();
 
