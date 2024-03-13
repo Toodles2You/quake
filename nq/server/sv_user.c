@@ -58,7 +58,7 @@ This will be sent on the initial connection and upon each server load.
 */
 static void SV_New_f ()
 {
-	char		*gamedir;
+	extern char gamedirfile[];
 	int			playernum;
 
 	if (host_client->state == cs_spawned)
@@ -70,12 +70,6 @@ static void SV_New_f ()
 	// send the info about the new client to all connected clients
 //	SV_FullClientUpdate (host_client, &sv.reliable_datagram);
 //	host_client->sendinfo = true;
-
-	gamedir = Info_ValueForKey (svs.info, "*gamedir");
-	if (gamedir[0] == '\0')
-	{
-		gamedir = QUAKE_BASEDIR;
-	}
 
 //NOTE:  This doesn't go through ClientReliableWrite since it's before the user
 //spawns.  These functions are written to not overflow
@@ -89,7 +83,7 @@ static void SV_New_f ()
 	MSG_WriteByte (&host_client->netchan.message, svc_serverdata);
 	MSG_WriteLong (&host_client->netchan.message, PROTOCOL_VERSION);
 	MSG_WriteLong (&host_client->netchan.message, svs.spawncount);
-	MSG_WriteString (&host_client->netchan.message, gamedir);
+	MSG_WriteString (&host_client->netchan.message, gamedirfile);
 
 	playernum = NUM_FOR_EDICT(host_client->edict)-1;
 	if (host_client->spectator)

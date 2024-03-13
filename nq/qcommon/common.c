@@ -1633,6 +1633,16 @@ static void COM_AddGameDirectory (char *dir, bool *modified)
 	searchpath_t    *search;
 	pack_t                  *pak;
 	char                    pakfile[MAX_OSPATH];
+	char *p;
+
+	if ((p = strrchr(dir, '/')) != NULL)
+	{
+		strcpy(gamedirfile, ++p);
+	}
+	else
+	{
+		strcpy(gamedirfile, p);
+	}
 
 	strcpy (com_gamedir, dir);
 
