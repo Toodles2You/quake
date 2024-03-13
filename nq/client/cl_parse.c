@@ -875,6 +875,11 @@ static void CL_ProcessUserInfo (int slot, player_info_t *player)
 	if (cls.state == ca_active)
 		Skin_Find (player);
 
+	if (slot == cl.playernum)
+	{
+		cl.userid = player->userid;
+	}
+
 	Sbar_Changed ();
 	CL_NewTranslation (slot);
 }

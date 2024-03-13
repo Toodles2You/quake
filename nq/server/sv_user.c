@@ -1176,6 +1176,16 @@ void SV_ExecuteUserCommand (char *s)
 
 	if (!u->name)
 	{
+		/* Toodles: Forward to the server command buffer. */
+		if (Host_IsLocalClient (host_client->userid))
+		{
+			SV_EndRedirect ();
+
+			Cmd_ExecuteString (src_server, s);
+
+			return;
+		}
+		
 		Con_Printf ("Bad user command: %s\n", Cmd_Argv(0));
 	}
 

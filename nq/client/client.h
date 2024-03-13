@@ -257,6 +257,7 @@ typedef struct
 
 	char levelname[40]; // for display on solo scoreboard
 	int playernum;
+	int userid;
 
 	// refresh related state
 	struct model_s *worldmodel; // cl_entitites[0].model

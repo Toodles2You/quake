@@ -675,8 +675,10 @@ bool Host_IsLocalGame()
 	return sv.active;
 }
 
-bool Host_IsLocalClient()
+bool Host_IsLocalClient(int userid)
 {
-	return Host_IsLocalGame () && cls.state != ca_dedicated;
+	return Host_IsLocalGame()
+		&& cls.state != ca_dedicated
+		&& cl.userid == userid;
 }
 
