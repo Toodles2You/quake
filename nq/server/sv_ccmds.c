@@ -166,7 +166,8 @@ bool SV_SetPlayer ()
 	{
 		if (!cl->state)
 			continue;
-		if (cl->userid == idnum)
+		if (cl->userid == idnum
+		 || !strcasecmp(cl->name, Cmd_Argv(1)))
 		{
 			host_client = cl;
 			sv_player = host_client->edict;
@@ -403,7 +404,8 @@ void SV_Kick_f ()
 	{
 		if (!cl->state)
 			continue;
-		if (cl->userid == uid)
+		if (cl->userid == uid
+		 || !strcasecmp(cl->name, Cmd_Argv(1)))
 		{
 			SV_BroadcastPrintf (PRINT_HIGH, "%s was kicked\n", cl->name);
 			// print directly, because the dropped client won't get the

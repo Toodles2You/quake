@@ -421,7 +421,7 @@ static void CL_User_f (void)
 		if (!cl.players[i].name[0])
 			continue;
 		if (cl.players[i].userid == uid
-		|| !strcmp(cl.players[i].name, Cmd_Argv(1)) )
+		 || !strcasecmp(cl.players[i].name, Cmd_Argv(1)))
 		{
 			Info_Print (cl.players[i].userinfo);
 			return;
