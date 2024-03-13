@@ -1644,13 +1644,12 @@ logfrag (killer, killee)
 */
 void PF_logfrag (progs_state_t *pr)
 {
-#if 0
 	edict_t *ent1, *ent2;
 	int e1, e2;
 	char *s;
 
-	ent1 = G_EDICT(OFS_PARM0);
-	ent2 = G_EDICT(OFS_PARM1);
+	ent1 = pr_get_edict(pr, OFS_PARM0);
+	ent2 = pr_get_edict(pr, OFS_PARM1);
 
 	e1 = NUM_FOR_EDICT(ent1);
 	e2 = NUM_FOR_EDICT(ent2);
@@ -1663,10 +1662,9 @@ void PF_logfrag (progs_state_t *pr)
 	SZ_Print(&svs.log[svs.logsequence & 1], s);
 	if (sv_fraglogfile)
 	{
-		fprintf(sv_fraglogfile, s);
+		fprintf(sv_fraglogfile, "%s", s);
 		fflush(sv_fraglogfile);
 	}
-#endif
 }
 
 

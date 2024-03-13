@@ -20,6 +20,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "serverdef.h"
 
+netadr_t master_adr[MAX_MASTERS]; // address of group servers
+
 cvar_t	timeout = {"timeout","65"}; // seconds without any message
 cvar_t	zombietime = {"zombietime", "2"};	// seconds to sink messages
 											// after disconnect
@@ -40,6 +42,7 @@ cvar_t sv_phs = {"sv_phs", "1"};
 cvar_t	maxclients = {"maxclients", "8"};
 cvar_t	maxspectators = {"maxspectators", "8"};
 
+FILE *sv_fraglogfile;
 
 /*
 =====================
@@ -276,29 +279,27 @@ instead of the data.
 */
 void SVC_Log (void)
 {
-	#if 0
-	int		seq;
-	char	data[MAX_DATAGRAM+64];
+	int seq;
+	char data[MAX_DATAGRAM + 64];
 
 	if (Cmd_Argc() == 2)
 		seq = atoi(Cmd_Argv(1));
 	else
 		seq = -1;
 
-	if (seq == svs.logsequence-1 || !sv_fraglogfile)
-	{	// they allready have this data, or we aren't logging frags
+	if (seq == svs.logsequence - 1 || !sv_fraglogfile)
+	{ // they allready have this data, or we aren't logging frags
 		data[0] = A2A_NACK;
-		NET_SendPacket (SERVER, 1, data, net_from);
+		NET_SendPacket(SERVER, 1, data, net_from);
 		return;
 	}
 
-	Con_DPrintf ("sending log %i to %s\n", svs.logsequence-1, NET_AdrToString(net_from));
+	Con_DPrintf("sending log %i to %s\n", svs.logsequence - 1, NET_AdrToString(net_from));
 
-	sprintf (data, "stdlog %i\n", svs.logsequence-1);
-	strcat (data, (char *)svs.log_buf[((svs.logsequence-1)&1)]);
+	sprintf(data, "stdlog %i\n", svs.logsequence - 1);
+	strcat(data, (char *)svs.log_buf[((svs.logsequence - 1) & 1)]);
 
-	NET_SendPacket (SERVER, strlen(data)+1, data, net_from);
-	#endif
+	NET_SendPacket(SERVER, strlen(data) + 1, data, net_from);
 }
 
 /*
@@ -705,6 +706,81 @@ void SV_ConnectionlessPacket (void)
 		, NET_AdrToString (net_from), s);
 }
 
+#define HEARTBEAT_SECONDS 300
+
+/*
+================
+Master_Heartbeat
+
+Send a message to the master every few minutes to
+let it know we are alive, and log information
+================
+*/
+void Master_Heartbeat ()
+{
+	char string[2048];
+	int active;
+	int i;
+
+	if (realtime - svs.last_heartbeat < HEARTBEAT_SECONDS)
+	{
+		return; // not time to send yet
+	}
+
+	svs.last_heartbeat = realtime;
+
+	//
+	// count active users
+	//
+	active = 0;
+	for (i = 0; i < MAX_CLIENTS; i++)
+	{
+		if (svs.clients[i].state == cs_connected
+		 || svs.clients[i].state == cs_spawned)
+		{
+			active++;
+		}
+	}
+
+	svs.heartbeat_sequence++;
+	sprintf(string, "%c\n%i\n%i\n", S2M_HEARTBEAT, svs.heartbeat_sequence, active);
+
+	// send to group master
+	for (i = 0; i < MAX_MASTERS; i++)
+	{
+		if (master_adr[i].port)
+		{
+			Con_Printf("Sending heartbeat to %s\n", NET_AdrToString(master_adr[i]));
+			NET_SendPacket(SERVER, strlen(string), string, master_adr[i]);
+		}
+	}
+}
+
+/*
+=================
+Master_Shutdown
+
+Informs all masters that this server is going down
+=================
+*/
+void Master_Shutdown()
+{
+	char string[2048];
+	int i;
+
+	sprintf(string, "%c\n", S2M_SHUTDOWN);
+
+	// send to group master
+	for (i = 0; i < MAX_MASTERS; i++)
+	{
+		if (master_adr[i].port)
+		{
+			Con_Printf("Sending heartbeat to %s\n", NET_AdrToString(master_adr[i]));
+			NET_SendPacket(SERVER, strlen(string), string, master_adr[i]);
+		}
+	}
+}
+
 /*
 =================
 SV_ExtractFromUserinfo
@@ -1055,4 +1131,16 @@ void SV_Init ()
 	}
 
 	Info_SetValueForStarKey (svs.info, "*version", QUAKE_VERSION, MAX_SERVERINFO_STRING, sv_highchars.value);
+
+	// init fraglog stuff
+	svs.logsequence = 1;
+	svs.logtime = realtime;
+	svs.log[0].data = svs.log_buf[0];
+	svs.log[0].maxsize = sizeof(svs.log_buf[0]);
+	svs.log[0].cursize = 0;
+	svs.log[0].allowoverflow = true;
+	svs.log[1].data = svs.log_buf[1];
+	svs.log[1].maxsize = sizeof(svs.log_buf[1]);
+	svs.log[1].cursize = 0;
+	svs.log[1].allowoverflow = true;
 }

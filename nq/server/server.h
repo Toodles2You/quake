@@ -321,6 +321,8 @@ extern char localmodels[MAX_MODELS][5]; // inline model names for precache
 
 extern char localinfo[MAX_LOCALINFO_STRING + 1];
 
+extern FILE *sv_fraglogfile;
+
 //===========================================================
 
 //
@@ -351,10 +353,9 @@ void SV_InitOperatorCommands();
 void SV_SendServerinfo(client_t *client);
 void SV_ExtractFromUserinfo(client_t *cl);
 
-#if 0
 void Master_Heartbeat();
 void Master_Packet();
-#endif
+void Master_Shutdown ();
 
 //
 // sv_init.c

@@ -245,6 +245,8 @@ void Host_ShutdownServer(bool crash)
 	sv.active = false;
 	sv.state = ss_dead;
 
+	Master_Shutdown ();
+
 // stop all client sounds immediately
 	if (cls.state != ca_disconnected)
 		CL_Disconnect ();
@@ -258,6 +260,12 @@ void Host_ShutdownServer(bool crash)
 		{
 			Netchan_Transmit (&host_client->netchan, net_message.cursize, net_message.data);
 		}
+	}
+
+	if (sv_fraglogfile)
+	{
+		fclose(sv_fraglogfile);
+		sv_fraglogfile = NULL;
 	}
 
 //
@@ -378,10 +386,8 @@ void Host_ServerFrame (double time)
 // check timeouts
 	SV_CheckTimeouts ();
 
-#if 0
 // toggle the log buffer if full
 	SV_CheckLog ();
-#endif
 
 // move autonomous things around if enough time has passed
 	if (!sv.paused)
@@ -398,10 +404,8 @@ void Host_ServerFrame (double time)
 // send messages back to the clients that had packets read this frame
 	SV_SendClientMessages ();
 
-#if 0
 // send a heartbeat to the master if needed
 	Master_Heartbeat ();
-#endif
 }
 
 
