@@ -214,7 +214,7 @@ void SVC_Status (void)
 	int		ping;
 	int		top, bottom;
 
-	Cmd_TokenizeString ("status");
+	Cmd_TokenizeString (src_server, "status");
 	SV_BeginRedirect (RD_PACKET);
 	Con_Printf ("%s\n", svs.info);
 	for (i=0 ; i<MAX_CLIENTS ; i++)
@@ -510,11 +510,11 @@ void SVC_DirectConnect (void)
 
 	// if at server limits, refuse connection
 	if ( maxclients.value > MAX_CLIENTS )
-		Cvar_SetValue ("maxclients", MAX_CLIENTS);
+		Cvar_SetValue (src_server, "maxclients", MAX_CLIENTS);
 	if (maxspectators.value > MAX_CLIENTS)
-		Cvar_SetValue ("maxspectators", MAX_CLIENTS);
+		Cvar_SetValue (src_server, "maxspectators", MAX_CLIENTS);
 	if (maxspectators.value + maxclients.value > MAX_CLIENTS)
-		Cvar_SetValue ("maxspectators", MAX_CLIENTS - maxspectators.value + maxclients.value);
+		Cvar_SetValue (src_server, "maxspectators", MAX_CLIENTS - maxspectators.value + maxclients.value);
 	if ( (spectator && spectators >= (int)maxspectators.value)
 		|| (!spectator && clients >= (int)maxclients.value) )
 	{
@@ -636,7 +636,7 @@ void SVC_RemoteCommand (void)
 			strcat (remaining, " ");
 		}
 
-		Cmd_ExecuteString (remaining, src_command);
+		Cmd_ExecuteString (src_server, remaining);
 
 	}
 
@@ -664,7 +664,7 @@ void SV_ConnectionlessPacket (void)
 
 	s = MSG_ReadStringLine ();
 
-	Cmd_TokenizeString (s);
+	Cmd_TokenizeString (src_server, s);
 
 	c = Cmd_Argv(0);
 
@@ -1017,37 +1017,37 @@ void SV_Init ()
 	SV_InitOperatorCommands	();
 	SV_UserInit ();
 
-	Cvar_RegisterVariable (&sv_mintic);
-	Cvar_RegisterVariable (&sv_maxtic);
+	Cvar_RegisterVariable (src_server, &sv_mintic);
+	Cvar_RegisterVariable (src_server, &sv_maxtic);
 
-	Cvar_RegisterVariable (&maxclients);
-	Cvar_RegisterVariable (&maxspectators);
+	Cvar_RegisterVariable (src_server, &maxclients);
+	Cvar_RegisterVariable (src_server, &maxspectators);
 
-	Cvar_RegisterVariable (&timeout);
-	Cvar_RegisterVariable (&zombietime);
+	Cvar_RegisterVariable (src_server, &timeout);
+	Cvar_RegisterVariable (src_server, &zombietime);
 
-	Cvar_RegisterVariable (&sv_maxvelocity);
-	Cvar_RegisterVariable (&sv_gravity);
-	Cvar_RegisterVariable (&sv_stopspeed);
-	Cvar_RegisterVariable (&sv_maxspeed);
-	Cvar_RegisterVariable (&sv_spectatormaxspeed);
-	Cvar_RegisterVariable (&sv_accelerate);
-	Cvar_RegisterVariable (&sv_airaccelerate);
-	Cvar_RegisterVariable (&sv_wateraccelerate);
-	Cvar_RegisterVariable (&sv_friction);
-	Cvar_RegisterVariable (&sv_waterfriction);
+	Cvar_RegisterVariable (src_server, &sv_maxvelocity);
+	Cvar_RegisterVariable (src_server, &sv_gravity);
+	Cvar_RegisterVariable (src_server, &sv_stopspeed);
+	Cvar_RegisterVariable (src_server, &sv_maxspeed);
+	Cvar_RegisterVariable (src_server, &sv_spectatormaxspeed);
+	Cvar_RegisterVariable (src_server, &sv_accelerate);
+	Cvar_RegisterVariable (src_server, &sv_airaccelerate);
+	Cvar_RegisterVariable (src_server, &sv_wateraccelerate);
+	Cvar_RegisterVariable (src_server, &sv_friction);
+	Cvar_RegisterVariable (src_server, &sv_waterfriction);
 
-	Cvar_RegisterVariable (&sv_aim);
+	Cvar_RegisterVariable (src_server, &sv_aim);
 
-	Cvar_RegisterVariable (&allow_download);
-	Cvar_RegisterVariable (&allow_download_skins);
-	Cvar_RegisterVariable (&allow_download_models);
-	Cvar_RegisterVariable (&allow_download_sounds);
-	Cvar_RegisterVariable (&allow_download_maps);
+	Cvar_RegisterVariable (src_server, &allow_download);
+	Cvar_RegisterVariable (src_server, &allow_download_skins);
+	Cvar_RegisterVariable (src_server, &allow_download_models);
+	Cvar_RegisterVariable (src_server, &allow_download_sounds);
+	Cvar_RegisterVariable (src_server, &allow_download_maps);
 
-	Cvar_RegisterVariable (&sv_highchars);
+	Cvar_RegisterVariable (src_server, &sv_highchars);
 
-	Cvar_RegisterVariable (&sv_phs);
+	Cvar_RegisterVariable (src_server, &sv_phs);
 
 	for (i = 0; i < MAX_MODELS; i++)
 	{

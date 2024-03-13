@@ -953,44 +953,39 @@ V_Init
 */
 void V_Init ()
 {
-	Cmd_AddCommand ("v_cshift", V_cshift_f);	
-	Cmd_AddCommand ("bf", V_BonusFlash_f);
-	Cmd_AddCommand ("centerview", V_StartPitchDrift);
+	Cmd_AddCommand (src_client, "v_cshift", V_cshift_f);	
+	Cmd_AddCommand (src_client, "bf", V_BonusFlash_f);
+	Cmd_AddCommand (src_client, "centerview", V_StartPitchDrift);
 
-	Cvar_RegisterVariable (&v_centermove);
-	Cvar_RegisterVariable (&v_centerspeed);
+	Cvar_RegisterVariable (src_client, &v_centermove);
+	Cvar_RegisterVariable (src_client, &v_centerspeed);
 
-	Cvar_RegisterVariable (&v_iyaw_cycle);
-	Cvar_RegisterVariable (&v_iroll_cycle);
-	Cvar_RegisterVariable (&v_ipitch_cycle);
-	Cvar_RegisterVariable (&v_iyaw_level);
-	Cvar_RegisterVariable (&v_iroll_level);
-	Cvar_RegisterVariable (&v_ipitch_level);
+	Cvar_RegisterVariable (src_client, &v_iyaw_cycle);
+	Cvar_RegisterVariable (src_client, &v_iroll_cycle);
+	Cvar_RegisterVariable (src_client, &v_ipitch_cycle);
+	Cvar_RegisterVariable (src_client, &v_iyaw_level);
+	Cvar_RegisterVariable (src_client, &v_iroll_level);
+	Cvar_RegisterVariable (src_client, &v_ipitch_level);
 
-	// Cvar_RegisterVariable (&v_contentblend);
+	Cvar_RegisterVariable (src_client, &v_idlescale);
+	Cvar_RegisterVariable (src_client, &crosshair);
+	Cvar_RegisterVariable (src_client, &gl_cshiftpercent);
 
-	Cvar_RegisterVariable (&v_idlescale);
-	// Cvar_RegisterVariable (&crosshaircolor);
-	Cvar_RegisterVariable (&crosshair);
-	// Cvar_RegisterVariable (&cl_crossx);
-	// Cvar_RegisterVariable (&cl_crossy);
-	Cvar_RegisterVariable (&gl_cshiftpercent);
+	Cvar_RegisterVariable (src_client, &cl_rollspeed);
+	Cvar_RegisterVariable (src_client, &cl_rollangle);
+	Cvar_RegisterVariable (src_client, &cl_bob);
+	Cvar_RegisterVariable (src_client, &cl_bobcycle);
+	Cvar_RegisterVariable (src_client, &cl_bobup);
 
-	Cvar_RegisterVariable (&cl_rollspeed);
-	Cvar_RegisterVariable (&cl_rollangle);
-	Cvar_RegisterVariable (&cl_bob);
-	Cvar_RegisterVariable (&cl_bobcycle);
-	Cvar_RegisterVariable (&cl_bobup);
+	Cvar_RegisterVariable (src_client, &cl_pitchmax);
+	Cvar_RegisterVariable (src_client, &cl_pitchmin);
 
-	Cvar_RegisterVariable (&cl_pitchmax);
-	Cvar_RegisterVariable (&cl_pitchmin);
-
-	Cvar_RegisterVariable (&v_kicktime);
-	Cvar_RegisterVariable (&v_kickroll);
-	Cvar_RegisterVariable (&v_kickpitch);	
+	Cvar_RegisterVariable (src_client, &v_kicktime);
+	Cvar_RegisterVariable (src_client, &v_kickroll);
+	Cvar_RegisterVariable (src_client, &v_kickpitch);	
 
 	BuildGammaTable (1.0);	// no gamma yet
-	Cvar_RegisterVariable (&v_gamma);
+	Cvar_RegisterVariable (src_client, &v_gamma);
 }
 
 

@@ -818,7 +818,7 @@ void PF_localcmd (progs_state_t *pr)
 	char	*str;
 	
 	str = pr_get_string(pr, OFS_PARM0);	
-	Cbuf_AddText (str);
+	Cbuf_AddText (src_server, str);
 }
 
 /*
@@ -834,7 +834,7 @@ void PF_cvar (progs_state_t *pr)
 	
 	str = pr_get_string(pr, OFS_PARM0);
 	
-	pr_global(pr, float, OFS_RETURN) = Cvar_VariableValue (str);
+	pr_global(pr, float, OFS_RETURN) = Cvar_VariableValue (src_server, str);
 }
 
 /*
@@ -851,7 +851,7 @@ void PF_cvar_set (progs_state_t *pr)
 	var = pr_get_string(pr, OFS_PARM0);
 	val = pr_get_string(pr, OFS_PARM1);
 	
-	Cvar_Set (var, val);
+	Cvar_Set (src_server, var, val);
 }
 
 /*
@@ -1612,11 +1612,11 @@ void PF_changelevel (progs_state_t *pr)
 	s2 = pr_get_string(pr, OFS_PARM1);
 
 	if ((int)pr_float(pr, serverflags) & (SFL_NEW_UNIT | SFL_NEW_EPISODE))
-		Cbuf_AddText (va("changelevel %s %s\n",s1, s2));
+		Cbuf_AddText (src_server, va("changelevel %s %s\n",s1, s2));
 	else
-		Cbuf_AddText (va("changelevel2 %s %s\n",s1, s2));
+		Cbuf_AddText (src_server, va("changelevel2 %s %s\n",s1, s2));
 #else
-	Cbuf_AddText (va("changelevel %s\n",s1));
+	Cbuf_AddText (src_server, va("changelevel %s\n",s1));
 #endif
 }
 

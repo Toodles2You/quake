@@ -21,7 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../server/serverdef.h"
 #include "../client/clientdef.h"
 
-cvar_t	*cvar_vars;
+static cvar_t *cvar_vars[2];
 char	*cvar_null_string = "";
 
 /*
@@ -29,11 +29,11 @@ char	*cvar_null_string = "";
 Cvar_FindVar
 ============
 */
-cvar_t *Cvar_FindVar (char *var_name)
+cvar_t *Cvar_FindVar (cmd_source_e src, char *var_name)
 {
 	cvar_t	*var;
 	
-	for (var=cvar_vars ; var ; var=var->next)
+	for (var=cvar_vars[src] ; var ; var=var->next)
 		if (!strcmp (var_name, var->name))
 			return var;
 
@@ -45,11 +45,11 @@ cvar_t *Cvar_FindVar (char *var_name)
 Cvar_VariableValue
 ============
 */
-float	Cvar_VariableValue (char *var_name)
+float	Cvar_VariableValue (cmd_source_e src, char *var_name)
 {
 	cvar_t	*var;
 	
-	var = Cvar_FindVar (var_name);
+	var = Cvar_FindVar (src, var_name);
 	if (!var)
 		return 0;
 	return atof (var->string);
@@ -61,11 +61,11 @@ float	Cvar_VariableValue (char *var_name)
 Cvar_VariableString
 ============
 */
-char *Cvar_VariableString (char *var_name)
+char *Cvar_VariableString (cmd_source_e src, char *var_name)
 {
 	cvar_t *var;
 	
-	var = Cvar_FindVar (var_name);
+	var = Cvar_FindVar (src, var_name);
 	if (!var)
 		return cvar_null_string;
 	return var->string;
@@ -77,27 +77,32 @@ char *Cvar_VariableString (char *var_name)
 Cvar_CompleteVariable
 ============
 */
-char *Cvar_CompleteVariable (char *partial)
+char *Cvar_CompleteVariable (cmd_source_e src, char *partial)
 {
 	cvar_t		*cvar;
 	int			len;
+	int curLen;
+	char *best = NULL;
+	int bestLen = 256;
 	
 	len = strlen(partial);
 	
 	if (!len)
 		return NULL;
-		
-	// check exact match
-	for (cvar=cvar_vars ; cvar ; cvar=cvar->next)
-		if (!strcmp (partial, cvar->name))
-			return cvar->name;
 
 	// check partial match
-	for (cvar=cvar_vars ; cvar ; cvar=cvar->next)
-		if (!strncmp (partial,cvar->name, len))
-			return cvar->name;
+	for (cvar = cvar_vars[src]; cvar; cvar = cvar->next)
+	{
+		curLen = abs(strlen(cvar->name) - len);
 
-	return NULL;
+		if (curLen < bestLen && !strncmp(partial, cvar->name, len))
+		{
+			best = cvar->name;
+			bestLen = curLen;
+		}
+	}
+
+	return best;
 }
 
 
@@ -108,12 +113,12 @@ void SV_SendServerInfoChange(char *key, char *value);
 Cvar_Set
 ============
 */
-void Cvar_Set (char *var_name, char *value)
+void Cvar_Set (cmd_source_e src, char *var_name, char *value)
 {
 	cvar_t	*var;
 	bool changed;
 	
-	var = Cvar_FindVar (var_name);
+	var = Cvar_FindVar (src, var_name);
 	if (!var)
 	{	// there is an error in C code if this happens
 		Con_Printf ("Cvar_Set: variable %s not found\n", var_name);
@@ -155,12 +160,12 @@ void Cvar_Set (char *var_name, char *value)
 Cvar_SetValue
 ============
 */
-void Cvar_SetValue (char *var_name, float value)
+void Cvar_SetValue (cmd_source_e src, char *var_name, float value)
 {
 	char	val[32];
 	
 	sprintf (val, "%f",value);
-	Cvar_Set (var_name, val);
+	Cvar_Set (src, var_name, val);
 }
 
 
@@ -171,34 +176,41 @@ Cvar_RegisterVariable
 Adds a freestanding variable to the variable list.
 ============
 */
-void Cvar_RegisterVariable (cvar_t *variable)
+void Cvar_RegisterVariable (cmd_source_e src, cvar_t *variable)
 {
 	char	value[512];
+
+	if (src == src_host)
+	{
+		Cvar_RegisterVariable (src_client, variable);
+		Cvar_RegisterVariable (src_server, variable);
+		return;
+	}
 	
 // first check to see if it has allready been defined
-	if (Cvar_FindVar (variable->name))
+	if (Cvar_FindVar (src, variable->name))
 	{
 		Con_Printf ("Can't register variable %s, allready defined\n", variable->name);
 		return;
 	}
 	
 // check for overlap with a command
-	if (Cmd_Exists (variable->name))
+	if (Cmd_Exists (src, variable->name))
 	{
 		Con_Printf ("Cvar_RegisterVariable: %s is a command\n", variable->name);
 		return;
 	}
 		
 // link the variable in
-	variable->next = cvar_vars;
-	cvar_vars = variable;
+	variable->next = cvar_vars[src];
+	cvar_vars[src] = variable;
 
 // copy the value off, because future sets will Z_Free it
 	strcpy (value, variable->string);
 	variable->string = Z_Malloc (1);	
 	
 // set it through the function to be consistant
-	Cvar_Set (variable->name, value);
+	Cvar_Set (src, variable->name, value);
 }
 
 /*
@@ -208,12 +220,12 @@ Cvar_Command
 Handles variable inspection and changing from the console
 ============
 */
-bool	Cvar_Command ()
+bool	Cvar_Command (cmd_source_e src)
 {
 	cvar_t			*v;
 
 // check variables
-	v = Cvar_FindVar (Cmd_Argv(0));
+	v = Cvar_FindVar (src, Cmd_Argv(0));
 	if (!v)
 		return false;
 		
@@ -224,7 +236,7 @@ bool	Cvar_Command ()
 		return true;
 	}
 
-	Cvar_Set (v->name, Cmd_Argv(1));
+	Cvar_Set (src, v->name, Cmd_Argv(1));
 	return true;
 }
 
@@ -241,7 +253,7 @@ void Cvar_WriteVariables (FILE *f)
 {
 	cvar_t	*var;
 	
-	for (var = cvar_vars ; var ; var = var->next)
+	for (var = cvar_vars[src_client] ; var ; var = var->next)
 		if (var->flags & CVAR_ARCHIVE)
 			fprintf (f, "%s \"%s\"\n", var->name, var->string);
 }

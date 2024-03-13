@@ -369,16 +369,16 @@ void Draw_Init ()
 	byte	*ncdata;
 
 
-	Cvar_RegisterVariable (&gl_nobind);
-	Cvar_RegisterVariable (&gl_max_size);
-	Cvar_RegisterVariable (&gl_picmip);
+	Cvar_RegisterVariable (src_client, &gl_nobind);
+	Cvar_RegisterVariable (src_client, &gl_max_size);
+	Cvar_RegisterVariable (src_client, &gl_picmip);
 
 	// 3dfx can only handle 256 wide textures
 	if (!strncasecmp ((char *)gl_renderer, "3dfx",4) ||
 		strstr((char *)gl_renderer, "Glide"))
-		Cvar_Set ("gl_max_size", "256");
+		Cvar_Set (src_client, "gl_max_size", "256");
 
-	Cmd_AddCommand ("gl_texturemode", &Draw_TextureMode_f);
+	Cmd_AddCommand (src_client, "gl_texturemode", &Draw_TextureMode_f);
 
 	// load the console background and the charset
 	// by hand, because we need to write the version

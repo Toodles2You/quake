@@ -950,7 +950,7 @@ static void COM_CheckRegistered (bool modified)
 		if (pop[i] != (uint16_t)BigShort (check[i]))
 			Sys_Error ("Corrupted data file.");
 
-	Cvar_Set ("registered", "1");
+	Cvar_Set (src_client, "registered", "1");
 	static_registered = true;
 	Con_Printf ("Playing registered version.\n");
 }
@@ -1058,8 +1058,8 @@ void COM_Init (char *basedir)
 		LittleFloat = FloatSwap;
 	}
 
-	Cvar_RegisterVariable (&registered);
-	Cmd_AddCommand ("path", COM_Path_f);
+	Cvar_RegisterVariable (src_host, &registered);
+	Cmd_AddCommand (src_host, "path", COM_Path_f);
 
 	COM_InitFilesystem ();
 }

@@ -471,42 +471,42 @@ CL_InitInput
 */
 void CL_InitInput ()
 {
-	Cmd_AddCommand ("+moveup",IN_UpDown);
-	Cmd_AddCommand ("-moveup",IN_UpUp);
-	Cmd_AddCommand ("+movedown",IN_DownDown);
-	Cmd_AddCommand ("-movedown",IN_DownUp);
-	Cmd_AddCommand ("+left",IN_LeftDown);
-	Cmd_AddCommand ("-left",IN_LeftUp);
-	Cmd_AddCommand ("+right",IN_RightDown);
-	Cmd_AddCommand ("-right",IN_RightUp);
-	Cmd_AddCommand ("+forward",IN_ForwardDown);
-	Cmd_AddCommand ("-forward",IN_ForwardUp);
-	Cmd_AddCommand ("+back",IN_BackDown);
-	Cmd_AddCommand ("-back",IN_BackUp);
-	Cmd_AddCommand ("+lookup", IN_LookupDown);
-	Cmd_AddCommand ("-lookup", IN_LookupUp);
-	Cmd_AddCommand ("+lookdown", IN_LookdownDown);
-	Cmd_AddCommand ("-lookdown", IN_LookdownUp);
-	Cmd_AddCommand ("+strafe", IN_StrafeDown);
-	Cmd_AddCommand ("-strafe", IN_StrafeUp);
-	Cmd_AddCommand ("+moveleft", IN_MoveleftDown);
-	Cmd_AddCommand ("-moveleft", IN_MoveleftUp);
-	Cmd_AddCommand ("+moveright", IN_MoverightDown);
-	Cmd_AddCommand ("-moveright", IN_MoverightUp);
-	Cmd_AddCommand ("+speed", IN_SpeedDown);
-	Cmd_AddCommand ("-speed", IN_SpeedUp);
-	Cmd_AddCommand ("+attack", IN_AttackDown);
-	Cmd_AddCommand ("-attack", IN_AttackUp);
-	Cmd_AddCommand ("+use", IN_UseDown);
-	Cmd_AddCommand ("-use", IN_UseUp);
-	Cmd_AddCommand ("+jump", IN_JumpDown);
-	Cmd_AddCommand ("-jump", IN_JumpUp);
-	Cmd_AddCommand ("impulse", IN_Impulse);
-	Cmd_AddCommand ("+klook", IN_KLookDown);
-	Cmd_AddCommand ("-klook", IN_KLookUp);
-	Cmd_AddCommand ("+mlook", IN_MLookDown);
-	Cmd_AddCommand ("-mlook", IN_MLookUp);
+	Cmd_AddCommand (src_client, "+moveup",IN_UpDown);
+	Cmd_AddCommand (src_client, "-moveup",IN_UpUp);
+	Cmd_AddCommand (src_client, "+movedown",IN_DownDown);
+	Cmd_AddCommand (src_client, "-movedown",IN_DownUp);
+	Cmd_AddCommand (src_client, "+left",IN_LeftDown);
+	Cmd_AddCommand (src_client, "-left",IN_LeftUp);
+	Cmd_AddCommand (src_client, "+right",IN_RightDown);
+	Cmd_AddCommand (src_client, "-right",IN_RightUp);
+	Cmd_AddCommand (src_client, "+forward",IN_ForwardDown);
+	Cmd_AddCommand (src_client, "-forward",IN_ForwardUp);
+	Cmd_AddCommand (src_client, "+back",IN_BackDown);
+	Cmd_AddCommand (src_client, "-back",IN_BackUp);
+	Cmd_AddCommand (src_client, "+lookup", IN_LookupDown);
+	Cmd_AddCommand (src_client, "-lookup", IN_LookupUp);
+	Cmd_AddCommand (src_client, "+lookdown", IN_LookdownDown);
+	Cmd_AddCommand (src_client, "-lookdown", IN_LookdownUp);
+	Cmd_AddCommand (src_client, "+strafe", IN_StrafeDown);
+	Cmd_AddCommand (src_client, "-strafe", IN_StrafeUp);
+	Cmd_AddCommand (src_client, "+moveleft", IN_MoveleftDown);
+	Cmd_AddCommand (src_client, "-moveleft", IN_MoveleftUp);
+	Cmd_AddCommand (src_client, "+moveright", IN_MoverightDown);
+	Cmd_AddCommand (src_client, "-moveright", IN_MoverightUp);
+	Cmd_AddCommand (src_client, "+speed", IN_SpeedDown);
+	Cmd_AddCommand (src_client, "-speed", IN_SpeedUp);
+	Cmd_AddCommand (src_client, "+attack", IN_AttackDown);
+	Cmd_AddCommand (src_client, "-attack", IN_AttackUp);
+	Cmd_AddCommand (src_client, "+use", IN_UseDown);
+	Cmd_AddCommand (src_client, "-use", IN_UseUp);
+	Cmd_AddCommand (src_client, "+jump", IN_JumpDown);
+	Cmd_AddCommand (src_client, "-jump", IN_JumpUp);
+	Cmd_AddCommand (src_client, "impulse", IN_Impulse);
+	Cmd_AddCommand (src_client, "+klook", IN_KLookDown);
+	Cmd_AddCommand (src_client, "-klook", IN_KLookUp);
+	Cmd_AddCommand (src_client, "+mlook", IN_MLookDown);
+	Cmd_AddCommand (src_client, "-mlook", IN_MLookUp);
 
-	Cvar_RegisterVariable (&cl_nodelta);
+	Cvar_RegisterVariable (src_client, &cl_nodelta);
 }
 

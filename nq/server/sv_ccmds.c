@@ -612,7 +612,7 @@ void SV_Serverinfo_f ()
 	Info_SetValueForKey (svs.info, Cmd_Argv(1), Cmd_Argv(2), MAX_SERVERINFO_STRING, sv_highchars.value);
 
 	// if this is a cvar, change it too	
-	var = Cvar_FindVar (Cmd_Argv(1));
+	var = Cvar_FindVar (src_server, Cmd_Argv(1));
 	if (var)
 	{
 		Z_Free (var->string);	// free the old value string	
@@ -810,100 +810,6 @@ void SV_Gamedir_f ()
 }
 
 /*
-================
-SV_Snap
-================
-*/
-void SV_Snap (int uid)
-{
-	client_t *cl;
-	char		pcxname[80]; 
-	char		checkname[MAX_OSPATH];
-	int			i;
-
-	for (i = 0, cl = svs.clients; i < MAX_CLIENTS; i++, cl++)
-	{
-		if (!cl->state)
-			continue;
-		if (cl->userid == uid)
-			break;
-	}
-	if (i >= MAX_CLIENTS) {
-		Con_Printf ("userid not found\n");
-		return;
-	}
-
-	sprintf(pcxname, "%d-00.pcx", uid);
-
-	sprintf(checkname, "%s/snap", gamedirfile);
-	Sys_mkdir(gamedirfile);
-	Sys_mkdir(checkname);
-		
-	for (i=0 ; i<=99 ; i++) 
-	{ 
-		pcxname[strlen(pcxname) - 6] = i/10 + '0'; 
-		pcxname[strlen(pcxname) - 5] = i%10 + '0'; 
-		sprintf (checkname, "%s/snap/%s", gamedirfile, pcxname);
-		if (Sys_FileTime(checkname) == -1)
-			break;	// file doesn't exist
-	} 
-	if (i==100) 
-	{
-		Con_Printf ("Snap: Couldn't create a file, clean some out.\n"); 
-		return;
-	}
-	strcpy(cl->uploadfn, checkname);
-
-	memcpy(&cl->snap_from, &net_from, sizeof(net_from));
-	if (sv_redirected != RD_NONE)
-		cl->remote_snap = true;
-	else
-		cl->remote_snap = false;
-
-	ClientReliableWrite_Begin (cl, svc_stufftext, 24);
-	ClientReliableWrite_String (cl, "cmd snap");
-	Con_Printf ("Requesting snap from user %d...\n", uid);
-}
-
-/*
-================
-SV_Snap_f
-================
-*/
-void SV_Snap_f ()
-{
-	int			uid;
-
-	if (Cmd_Argc() != 2)
-	{
-		Con_Printf ("Usage:  snap <userid>\n");
-		return;
-	}
-
-	uid = atoi(Cmd_Argv(1));
-
-	SV_Snap(uid);
-}
-
-/*
-================
-SV_Snap
-================
-*/
-void SV_SnapAll_f ()
-{
-	client_t *cl;
-	int			i;
-
-	for (i = 0, cl = svs.clients; i < MAX_CLIENTS; i++, cl++)
-	{
-		if (cl->state < cs_connected || cl->spectator)
-			continue;
-		SV_Snap(cl->userid);
-	}
-}
-
-/*
 ==================
 SV_InitOperatorCommands
 ==================
@@ -916,29 +822,27 @@ void SV_InitOperatorCommands ()
 		Info_SetValueForStarKey (svs.info, "*cheats", "ON", MAX_SERVERINFO_STRING, sv_highchars.value);
 	}
 
-	Cmd_AddCommand ("logfile", SV_Logfile_f);
-	Cmd_AddCommand ("fraglogfile", SV_Fraglogfile_f);
+	Cmd_AddCommand (src_server, "logfile", SV_Logfile_f);
+	Cmd_AddCommand (src_server, "fraglogfile", SV_Fraglogfile_f);
 
-	Cmd_AddCommand ("snap", SV_Snap_f);
-	Cmd_AddCommand ("snapall", SV_SnapAll_f);
-	Cmd_AddCommand ("kick", SV_Kick_f);
-	Cmd_AddCommand ("status", SV_Status_f);
+	Cmd_AddCommand (src_server, "kick", SV_Kick_f);
+	Cmd_AddCommand (src_server, "status", SV_Status_f);
 
-	Cmd_AddCommand ("setmaster", SV_SetMaster_f);
+	Cmd_AddCommand (src_server, "setmaster", SV_SetMaster_f);
 
-	Cmd_AddCommand ("say", SV_ConSay_f);
-	Cmd_AddCommand ("heartbeat", SV_Heartbeat_f);
-	Cmd_AddCommand ("god", SV_God_f);
-	Cmd_AddCommand ("notarget", SV_Notarget_f);
-	Cmd_AddCommand ("give", SV_Give_f);
-	Cmd_AddCommand ("noclip", SV_Noclip_f);
-	Cmd_AddCommand ("serverinfo", SV_Serverinfo_f);
-	Cmd_AddCommand ("localinfo", SV_Localinfo_f);
-	Cmd_AddCommand ("user", SV_User_f);
-	Cmd_AddCommand ("gamedir", SV_Gamedir_f);
-	Cmd_AddCommand ("sv_gamedir", SV_Gamedir);
-	Cmd_AddCommand ("floodprot", SV_Floodprot_f);
-	Cmd_AddCommand ("floodprotmsg", SV_Floodprotmsg_f);
+	Cmd_AddCommand (src_server, "say", SV_ConSay_f);
+	Cmd_AddCommand (src_server, "heartbeat", SV_Heartbeat_f);
+	Cmd_AddCommand (src_server, "god", SV_God_f);
+	Cmd_AddCommand (src_server, "notarget", SV_Notarget_f);
+	Cmd_AddCommand (src_server, "give", SV_Give_f);
+	Cmd_AddCommand (src_server, "noclip", SV_Noclip_f);
+	Cmd_AddCommand (src_server, "serverinfo", SV_Serverinfo_f);
+	Cmd_AddCommand (src_server, "localinfo", SV_Localinfo_f);
+	Cmd_AddCommand (src_server, "user", SV_User_f);
+	Cmd_AddCommand (src_server, "gamedir", SV_Gamedir_f);
+	Cmd_AddCommand (src_server, "sv_gamedir", SV_Gamedir);
+	Cmd_AddCommand (src_server, "floodprot", SV_Floodprot_f);
+	Cmd_AddCommand (src_server, "floodprotmsg", SV_Floodprotmsg_f);
 
 	cl_warncmd.value = 1;
 }

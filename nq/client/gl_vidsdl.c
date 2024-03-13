@@ -405,8 +405,8 @@ void VID_Init(unsigned char *palette)
     int width, height;
     bool fullscreen;
 
-    Cvar_RegisterVariable(&vid_mode);
-    Cvar_RegisterVariable(&gl_ztrick);
+    Cvar_RegisterVariable(src_client, &vid_mode);
+    Cvar_RegisterVariable(src_client, &gl_ztrick);
 
     vid.maxwarpwidth = WARP_WIDTH;
     vid.maxwarpheight = WARP_HEIGHT;

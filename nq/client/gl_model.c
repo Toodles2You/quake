@@ -45,7 +45,7 @@ Mod_Init
 */
 void Mod_Init()
 {
-	Cvar_RegisterVariable(&gl_subdivide_size);
+	Cvar_RegisterVariable(src_client, &gl_subdivide_size);
 }
 
 /*
@@ -597,7 +597,7 @@ static void Mod_ReadWorldPairs(byte *data)
 		}
 	}
 
-	Cvar_SetValue("r_zmax", zmax);
+	Cvar_SetValue(src_client, "r_zmax", zmax);
 }
 
 /*

@@ -488,9 +488,9 @@ void CL_Color_f (void)
 		bottom = 13;
 	
 	sprintf (num, "%i", top);
-	Cvar_Set ("topcolor", num);
+	Cvar_Set (src_client, "topcolor", num);
 	sprintf (num, "%i", bottom);
-	Cvar_Set ("bottomcolor", num);
+	Cvar_Set (src_client, "bottomcolor", num);
 }
 
 /*
@@ -644,7 +644,7 @@ void CL_NextDemo ()
 	}
 
 	sprintf (str,"playdemo %s\n", cls.demos[cls.demonum]);
-	Cbuf_InsertText (str);
+	Cbuf_InsertText (src_client, str);
 	cls.demonum++;
 }
 
@@ -936,90 +936,81 @@ void CL_Init ()
 //
 // register our commands
 //
-	Cvar_RegisterVariable (&cl_upspeed);
-	Cvar_RegisterVariable (&cl_forwardspeed);
-	Cvar_RegisterVariable (&cl_backspeed);
-	Cvar_RegisterVariable (&cl_sidespeed);
-	Cvar_RegisterVariable (&cl_movespeedkey);
-	Cvar_RegisterVariable (&cl_yawspeed);
-	Cvar_RegisterVariable (&cl_pitchspeed);
-	Cvar_RegisterVariable (&cl_anglespeedkey);
-	Cvar_RegisterVariable (&cl_shownet);
-	Cvar_RegisterVariable (&cl_nolerp);
-	Cvar_RegisterVariable (&cl_sbar);
-	Cvar_RegisterVariable (&cl_maxfps);
-	Cvar_RegisterVariable (&cl_showfps);
-	Cvar_RegisterVariable (&cl_timeout);
-	Cvar_RegisterVariable (&lookspring);
-	Cvar_RegisterVariable (&lookstrafe);
-	Cvar_RegisterVariable (&sensitivity);
+	Cvar_RegisterVariable (src_client, &cl_upspeed);
+	Cvar_RegisterVariable (src_client, &cl_forwardspeed);
+	Cvar_RegisterVariable (src_client, &cl_backspeed);
+	Cvar_RegisterVariable (src_client, &cl_sidespeed);
+	Cvar_RegisterVariable (src_client, &cl_movespeedkey);
+	Cvar_RegisterVariable (src_client, &cl_yawspeed);
+	Cvar_RegisterVariable (src_client, &cl_pitchspeed);
+	Cvar_RegisterVariable (src_client, &cl_anglespeedkey);
+	Cvar_RegisterVariable (src_client, &cl_shownet);
+	Cvar_RegisterVariable (src_client, &cl_nolerp);
+	Cvar_RegisterVariable (src_client, &cl_sbar);
+	Cvar_RegisterVariable (src_client, &cl_maxfps);
+	Cvar_RegisterVariable (src_client, &cl_showfps);
+	Cvar_RegisterVariable (src_client, &cl_timeout);
+	Cvar_RegisterVariable (src_client, &lookspring);
+	Cvar_RegisterVariable (src_client, &lookstrafe);
+	Cvar_RegisterVariable (src_client, &sensitivity);
 
-	Cvar_RegisterVariable (&m_pitch);
-	Cvar_RegisterVariable (&m_yaw);
-	Cvar_RegisterVariable (&m_forward);
-	Cvar_RegisterVariable (&m_side);
+	Cvar_RegisterVariable (src_client, &m_pitch);
+	Cvar_RegisterVariable (src_client, &m_yaw);
+	Cvar_RegisterVariable (src_client, &m_forward);
+	Cvar_RegisterVariable (src_client, &m_side);
 
-	Cvar_RegisterVariable (&rcon_password);
-	Cvar_RegisterVariable (&rcon_address);
+	Cvar_RegisterVariable (src_client, &rcon_password);
+	Cvar_RegisterVariable (src_client, &rcon_address);
 
-	Cvar_RegisterVariable (&entlatency);
-	Cvar_RegisterVariable (&cl_predict_players2);
-	Cvar_RegisterVariable (&cl_predict_players);
-	Cvar_RegisterVariable (&cl_solid_players);
+	Cvar_RegisterVariable (src_client, &entlatency);
+	Cvar_RegisterVariable (src_client, &cl_predict_players2);
+	Cvar_RegisterVariable (src_client, &cl_predict_players);
+	Cvar_RegisterVariable (src_client, &cl_solid_players);
 
-	Cvar_RegisterVariable (&baseskin);
-	Cvar_RegisterVariable (&noskins);
+	Cvar_RegisterVariable (src_client, &baseskin);
+	Cvar_RegisterVariable (src_client, &noskins);
 
 	//
 	// info mirrors
 	//
-	Cvar_RegisterVariable (&name);
-	Cvar_RegisterVariable (&password);
-	Cvar_RegisterVariable (&spectator);
-	Cvar_RegisterVariable (&skin);
-	Cvar_RegisterVariable (&team);
-	Cvar_RegisterVariable (&topcolor);
-	Cvar_RegisterVariable (&bottomcolor);
-	Cvar_RegisterVariable (&rate);
-	Cvar_RegisterVariable (&msg);
-	Cvar_RegisterVariable (&noaim);
+	Cvar_RegisterVariable (src_client, &name);
+	Cvar_RegisterVariable (src_client, &password);
+	Cvar_RegisterVariable (src_client, &spectator);
+	Cvar_RegisterVariable (src_client, &skin);
+	Cvar_RegisterVariable (src_client, &team);
+	Cvar_RegisterVariable (src_client, &topcolor);
+	Cvar_RegisterVariable (src_client, &bottomcolor);
+	Cvar_RegisterVariable (src_client, &rate);
+	Cvar_RegisterVariable (src_client, &msg);
+	Cvar_RegisterVariable (src_client, &noaim);
 
-	Cmd_AddCommand ("changing", CL_Changing_f);
-	Cmd_AddCommand ("disconnect", CL_Disconnect_f);
-	Cmd_AddCommand ("record", CL_Record_f);
-	Cmd_AddCommand ("rerecord", CL_ReRecord_f);
-	Cmd_AddCommand ("stop", CL_Stop_f);
-	Cmd_AddCommand ("playdemo", CL_PlayDemo_f);
-	Cmd_AddCommand ("timedemo", CL_TimeDemo_f);
+	Cmd_AddCommand (src_client, "changing", CL_Changing_f);
+	Cmd_AddCommand (src_client, "disconnect", CL_Disconnect_f);
+	Cmd_AddCommand (src_client, "record", CL_Record_f);
+	Cmd_AddCommand (src_client, "rerecord", CL_ReRecord_f);
+	Cmd_AddCommand (src_client, "stop", CL_Stop_f);
+	Cmd_AddCommand (src_client, "playdemo", CL_PlayDemo_f);
+	Cmd_AddCommand (src_client, "timedemo", CL_TimeDemo_f);
 
-	Cmd_AddCommand ("skins", Skin_Skins_f);
-	Cmd_AddCommand ("allskins", Skin_AllSkins_f);
+	Cmd_AddCommand (src_client, "skins", Skin_Skins_f);
+	Cmd_AddCommand (src_client, "allskins", Skin_AllSkins_f);
 
-	Cmd_AddCommand ("connect", CL_Connect_f);
-	Cmd_AddCommand ("reconnect", CL_Reconnect_f);
+	Cmd_AddCommand (src_client, "connect", CL_Connect_f);
+	Cmd_AddCommand (src_client, "reconnect", CL_Reconnect_f);
 
-	Cmd_AddCommand ("rcon", CL_Rcon_f);
-	Cmd_AddCommand ("packet", CL_Packet_f);
-	Cmd_AddCommand ("user", CL_User_f);
-	Cmd_AddCommand ("users", CL_Users_f);
+	Cmd_AddCommand (src_client, "rcon", CL_Rcon_f);
+	Cmd_AddCommand (src_client, "packet", CL_Packet_f);
+	Cmd_AddCommand (src_client, "user", CL_User_f);
+	Cmd_AddCommand (src_client, "users", CL_Users_f);
 
-	Cmd_AddCommand ("setinfo", CL_SetInfo_f);
-	Cmd_AddCommand ("fullinfo", CL_FullInfo_f);
-	Cmd_AddCommand ("fullserverinfo", CL_FullServerinfo_f);
+	Cmd_AddCommand (src_client, "setinfo", CL_SetInfo_f);
+	Cmd_AddCommand (src_client, "fullinfo", CL_FullInfo_f);
+	Cmd_AddCommand (src_client, "fullserverinfo", CL_FullServerinfo_f);
 
-	Cmd_AddCommand ("color", CL_Color_f);
-	Cmd_AddCommand ("download", CL_Download_f);
+	Cmd_AddCommand (src_client, "color", CL_Color_f);
+	Cmd_AddCommand (src_client, "download", CL_Download_f);
 
-	Cmd_AddCommand ("nextul", CL_NextUpload);
-	Cmd_AddCommand ("stopul", CL_StopUpload);
-
-//
-// forward to server commands
-//
-	Cmd_AddCommand ("kill", NULL);
-	Cmd_AddCommand ("pause", NULL);
-	Cmd_AddCommand ("say", NULL);
-	Cmd_AddCommand ("say_team", NULL);
-	Cmd_AddCommand ("serverinfo", NULL);
+	Cmd_AddCommand (src_client, "nextul", CL_NextUpload);
+	Cmd_AddCommand (src_client, "stopul", CL_StopUpload);
 }
 

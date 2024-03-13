@@ -329,14 +329,14 @@ void SV_SpawnServer (char *server, char *startspot)
 // make cvars consistant
 //
 	if (coop.value)
-		Cvar_SetValue ("deathmatch", 0);
+		Cvar_SetValue (src_server, "deathmatch", 0);
 	current_skill = (int)(skill.value + 0.5);
 	if (current_skill < 0)
 		current_skill = 0;
 	if (current_skill > 3)
 		current_skill = 3;
 
-	Cvar_SetValue ("skill", (float)current_skill);
+	Cvar_SetValue (src_server, "skill", (float)current_skill);
 
 //
 // set up the new server

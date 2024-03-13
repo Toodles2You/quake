@@ -556,10 +556,10 @@ static void CL_ParseServerData ()
 		sprintf(fn, "%s/%s", com_gamedir, "config.cfg");
 		if ((f = fopen(fn, "r")) != NULL) {
 			fclose(f);
-			Cbuf_AddText ("cl_warncmd 0\n");
-			Cbuf_AddText("exec config.cfg\n");
-			Cbuf_AddText("exec frontend.cfg\n");
-			Cbuf_AddText ("cl_warncmd 1\n");
+			Cbuf_AddText (src_client, "cl_warncmd 0\n");
+			Cbuf_AddText(src_client, "exec config.cfg\n");
+			Cbuf_AddText(src_client, "exec frontend.cfg\n");
+			Cbuf_AddText (src_client, "cl_warncmd 1\n");
 		}
 	}
 
@@ -1097,7 +1097,7 @@ void CL_ParseServerMessage ()
 		case svc_stufftext:
 			s = MSG_ReadString();
 			Con_DPrintf("stufftext: %s\n", s);
-			Cbuf_AddText(s);
+			Cbuf_AddText(src_client, s);
 			break;
 
 		case svc_damage:
@@ -1105,7 +1105,7 @@ void CL_ParseServerMessage ()
 			break;
 
 		case svc_serverdata:
-			Cbuf_Execute(); // make sure any stuffed commands are done
+			Cbuf_Execute(src_client); // make sure any stuffed commands are done
 			CL_ParseServerData();
 			vid.recalc_refdef = true; // leave full screen intermission
 			break;
@@ -1220,7 +1220,7 @@ void CL_ParseServerMessage ()
 			break;
 
 		case svc_sellscreen:
-			Cmd_ExecuteString("help", src_command);
+			Cmd_ExecuteString(src_client, "help");
 			break;
 
 		case svc_smallkick:

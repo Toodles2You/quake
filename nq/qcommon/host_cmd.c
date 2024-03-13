@@ -108,9 +108,6 @@ void Host_Map_f ()
 {
 	char	level[MAX_QPATH];
 
-	if (cmd_source != src_command)
-		return;
-
 	if (Cmd_Argc() != 2)
 	{
 		Con_Printf ("map <levelname> : continue game on a new level\n");
@@ -131,7 +128,7 @@ void Host_Map_f ()
 	{
 		if (cls.state != ca_dedicated)
 		{
-			Cmd_ExecuteString ("connect localhost", src_command);
+			Cmd_ExecuteString (src_client, "connect localhost");
 		}
 	}
 
@@ -150,9 +147,6 @@ void Host_Changelevel_f ()
 	char	level[MAX_QPATH];
 	char	_startspot[MAX_QPATH];
 	char	*startspot = NULL;
-
-	if (cmd_source != src_command)
-		return;
 
 	if (Cmd_Argc() < 2)
 	{
@@ -194,8 +188,6 @@ void Host_Restart_f ()
 	if (cls.demoplayback || !Host_IsLocalGame ())
 		return;
 
-	if (cmd_source != src_command)
-		return;
 	strcpy (mapname, sv.name);	// must copy out, because it gets cleared
 								// in sv_spawnserver
 	strcpy(startspot, sv.startspot);
@@ -260,9 +252,6 @@ void Host_Savegame_f ()
 	FILE	*f;
 	int		i;
 	char	comment[SAVEGAME_COMMENT_LENGTH+1];
-
-	if (cmd_source != src_command)
-		return;
 
 	if (!Host_IsLocalGame ())
 	{
@@ -365,9 +354,6 @@ void Host_Loadgame_f ()
 	int		version;
 	float			spawn_parms[NUM_SPAWN_PARMS];
 
-	if (cmd_source != src_command)
-		return;
-
 	if (Cmd_Argc() != 2)
 	{
 		Con_Printf ("load <savename> : load a game\n");
@@ -404,11 +390,11 @@ void Host_Loadgame_f ()
 // this silliness is so we can load 1.06 save files, which have float skill values
 	fscanf (f, "%f\n", &tfloat);
 	current_skill = (int)(tfloat + 0.1);
-	Cvar_SetValue ("skill", (float)current_skill);
+	Cvar_SetValue (src_server, "skill", (float)current_skill);
 
-	Cvar_SetValue ("deathmatch", 0);
-	Cvar_SetValue ("coop", 0);
-	Cvar_SetValue ("teamplay", 0);
+	Cvar_SetValue (src_server, "deathmatch", 0);
+	Cvar_SetValue (src_server, "coop", 0);
+	Cvar_SetValue (src_server, "teamplay", 0);
 
 	fscanf (f, "%s\n",mapname);
 	fscanf (f, "%f\n",&time);
@@ -490,7 +476,7 @@ void Host_Loadgame_f ()
 	if (cls.state != ca_dedicated)
 	{
 		/*! Toodles FIXME: */
-		Cmd_ExecuteString ("connect localhost", src_command);
+		Cmd_ExecuteString (src_client, "connect localhost");
 	}
 	#endif
 }
@@ -583,7 +569,7 @@ int LoadGamestate(char *level, char *startspot)
 //	for (i=0 ; i<NUM_SPAWN_PARMS ; i++)
 //		fscanf (f, "%f\n", &spawn_parms[i]);
 	fscanf (f, "%f\n", &sk);
-	Cvar_SetValue ("skill", sk);
+	Cvar_SetValue (src_server, "skill", sk);
 
 	fscanf (f, "%s\n",mapname);
 	fscanf (f, "%f\n",&time);
@@ -659,9 +645,6 @@ void Host_Changelevel2_f ()
 	char	_startspot[MAX_QPATH];
 	char	*startspot;
 
-	if (cmd_source != src_command)
-		return;
-
 	if (Cmd_Argc() < 2)
 	{
 		Con_Printf ("changelevel2 <levelname> : continue game on a new level in the unit\n");
@@ -725,7 +708,7 @@ void Host_Startdemos_f ()
 	if (cls.state == ca_dedicated)
 	{
 		if (!Host_IsLocalGame ())
-			Cbuf_AddText ("map start\n");
+			Cbuf_AddText (src_server, "map start\n");
 		return;
 	}
 
@@ -793,18 +776,18 @@ Host_InitCommands
 */
 void Host_InitCommands ()
 {
-	Cmd_AddCommand ("quit", Host_Quit_f);
-	Cmd_AddCommand ("map", Host_Map_f);
-	Cmd_AddCommand ("restart", Host_Restart_f);
-	Cmd_AddCommand ("changelevel", Host_Changelevel_f);
-	Cmd_AddCommand ("changelevel2", Host_Changelevel2_f);
-	Cmd_AddCommand ("version", Host_Version_f);
-	Cmd_AddCommand ("load", Host_Loadgame_f);
-	Cmd_AddCommand ("save", Host_Savegame_f);
+	Cmd_AddCommand (src_host, "quit", Host_Quit_f);
+	Cmd_AddCommand (src_server, "map", Host_Map_f);
+	Cmd_AddCommand (src_server, "restart", Host_Restart_f);
+	Cmd_AddCommand (src_server, "changelevel", Host_Changelevel_f);
+	Cmd_AddCommand (src_server, "changelevel2", Host_Changelevel2_f);
+	Cmd_AddCommand (src_host, "version", Host_Version_f);
+	Cmd_AddCommand (src_server, "load", Host_Loadgame_f);
+	Cmd_AddCommand (src_server, "save", Host_Savegame_f);
 
-	Cmd_AddCommand ("startdemos", Host_Startdemos_f);
-	Cmd_AddCommand ("demos", Host_Demos_f);
-	Cmd_AddCommand ("stopdemo", Host_Stopdemo_f);
+	Cmd_AddCommand (src_client, "startdemos", Host_Startdemos_f);
+	Cmd_AddCommand (src_client, "demos", Host_Demos_f);
+	Cmd_AddCommand (src_client, "stopdemo", Host_Stopdemo_f);
 
-	Cmd_AddCommand ("mcache", Mod_Print);
+	Cmd_AddCommand (src_client, "mcache", Mod_Print);
 }

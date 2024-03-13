@@ -151,10 +151,10 @@ static keyname_t keynames[] =
 
 static void CompleteCommand ()
 {
-	char *cmd = Cmd_CompleteCommand (key_lines[edit_line] + 1);
+	char *cmd = Cmd_CompleteCommand (src_client, key_lines[edit_line] + 1);
 	if (!cmd)
 	{
-		cmd = Cvar_CompleteVariable (key_lines[edit_line] + 1);
+		cmd = Cvar_CompleteVariable (src_client, key_lines[edit_line] + 1);
 	}
 
 	if (cmd)
@@ -178,8 +178,8 @@ static void Key_Console (int key)
 {	
 	if (key == K_ENTER)
 	{
-		Cbuf_AddText (key_lines[edit_line]+1);	// skip the >
-		Cbuf_AddText ("\n");
+		Cbuf_AddText (src_client, key_lines[edit_line]+1);	// skip the >
+		Cbuf_AddText (src_client, "\n");
 		Con_Printf ("%s\n",key_lines[edit_line]);
 		edit_line = (edit_line + 1) & 31;
 		history_line = edit_line;
@@ -292,11 +292,11 @@ static void Key_Message (int key)
 	if (key == K_ENTER)
 	{
 		if (team_message)
-			Cbuf_AddText ("say_team \"");
+			Cbuf_AddText (src_client, "say_team \"");
 		else
-			Cbuf_AddText ("say \"");
-		Cbuf_AddText(chat_buffer);
-		Cbuf_AddText("\"\n");
+			Cbuf_AddText (src_client, "say \"");
+		Cbuf_AddText(src_client, chat_buffer);
+		Cbuf_AddText(src_client, "\"\n");
 
 		key_dest = key_game;
 		chat_bufferlen = 0;
@@ -589,9 +589,9 @@ void Key_Init ()
 //
 // register our functions
 //
-	Cmd_AddCommand ("bind",Key_Bind_f);
-	Cmd_AddCommand ("unbind",Key_Unbind_f);
-	Cmd_AddCommand ("unbindall",Key_Unbindall_f);
+	Cmd_AddCommand (src_client, "bind",Key_Bind_f);
+	Cmd_AddCommand (src_client, "unbind",Key_Unbind_f);
+	Cmd_AddCommand (src_client, "unbindall",Key_Unbindall_f);
 
 
 }
@@ -687,7 +687,7 @@ void Key_Event (int key, bool down)
 		if (kb && kb[0] == '+')
 		{
 			sprintf (cmd, "-%s %i\n", kb+1, key);
-			Cbuf_AddText (cmd);
+			Cbuf_AddText (src_client, cmd);
 		}
 		if (keyshift[key] != key)
 		{
@@ -695,7 +695,7 @@ void Key_Event (int key, bool down)
 			if (kb && kb[0] == '+')
 			{
 				sprintf (cmd, "-%s %i\n", kb+1, key);
-				Cbuf_AddText (cmd);
+				Cbuf_AddText (src_client, cmd);
 			}
 		}
 		return;
@@ -723,12 +723,12 @@ void Key_Event (int key, bool down)
 			if (kb[0] == '+')
 			{	// button commands add keynum as a parm
 				sprintf (cmd, "%s %i\n", kb, key);
-				Cbuf_AddText (cmd);
+				Cbuf_AddText (src_client, cmd);
 			}
 			else
 			{
-				Cbuf_AddText (kb);
-				Cbuf_AddText ("\n");
+				Cbuf_AddText (src_client, kb);
+				Cbuf_AddText (src_client, "\n");
 			}
 		}
 		return;

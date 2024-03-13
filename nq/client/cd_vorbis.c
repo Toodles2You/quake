@@ -347,8 +347,8 @@ int CDAudio_Init()
     queuenum = 0;
     cd_state |= CD_ENABLED;
 
-    Cmd_AddCommand("cd", CD_f);
-    Cvar_RegisterVariable(&bgmfade);
+    Cmd_AddCommand(src_client, "cd", CD_f);
+    Cvar_RegisterVariable(src_client, &bgmfade);
 
     Con_Printf("CD Audio Initialized\n");
 

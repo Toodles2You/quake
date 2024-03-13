@@ -104,40 +104,40 @@ void R_Init ()
 {
 	extern cvar_t gl_finish;
 
-	Cmd_AddCommand ("timerefresh", R_TimeRefresh_f);	
-	Cmd_AddCommand ("pointfile", R_ReadPointFile_f);	
+	Cmd_AddCommand (src_client, "timerefresh", R_TimeRefresh_f);	
+	Cmd_AddCommand (src_client, "pointfile", R_ReadPointFile_f);	
 
-	Cvar_RegisterVariable (&r_norefresh);
-	Cvar_RegisterVariable (&r_lightmap);
-	Cvar_RegisterVariable (&r_fullbright);
-	Cvar_RegisterVariable (&r_drawentities);
-	Cvar_RegisterVariable (&r_drawviewmodel);
-	Cvar_RegisterVariable (&r_wateralpha);
-	Cvar_RegisterVariable (&r_dynamic);
-	Cvar_RegisterVariable (&r_novis);
-	Cvar_RegisterVariable (&r_speeds);
-	Cvar_RegisterVariable (&r_netgraph);
-	Cvar_RegisterVariable (&r_fence);
-	Cvar_RegisterVariable (&r_luminescent);
-	Cvar_RegisterVariable (&r_zmax);
-	Cvar_RegisterVariable (&r_wireframe);
+	Cvar_RegisterVariable (src_client, &r_norefresh);
+	Cvar_RegisterVariable (src_client, &r_lightmap);
+	Cvar_RegisterVariable (src_client, &r_fullbright);
+	Cvar_RegisterVariable (src_client, &r_drawentities);
+	Cvar_RegisterVariable (src_client, &r_drawviewmodel);
+	Cvar_RegisterVariable (src_client, &r_wateralpha);
+	Cvar_RegisterVariable (src_client, &r_dynamic);
+	Cvar_RegisterVariable (src_client, &r_novis);
+	Cvar_RegisterVariable (src_client, &r_speeds);
+	Cvar_RegisterVariable (src_client, &r_netgraph);
+	Cvar_RegisterVariable (src_client, &r_fence);
+	Cvar_RegisterVariable (src_client, &r_luminescent);
+	Cvar_RegisterVariable (src_client, &r_zmax);
+	Cvar_RegisterVariable (src_client, &r_wireframe);
 
-	Cvar_RegisterVariable (&gl_finish);
-	Cvar_RegisterVariable (&gl_clear);
-	Cvar_RegisterVariable (&gl_texsort);
+	Cvar_RegisterVariable (src_client, &gl_finish);
+	Cvar_RegisterVariable (src_client, &gl_clear);
+	Cvar_RegisterVariable (src_client, &gl_texsort);
 
  	if (gl_mtexable)
-		Cvar_SetValue ("gl_texsort", 0.0);
+		Cvar_SetValue (src_client, "gl_texsort", 0.0);
 
-	Cvar_RegisterVariable (&gl_cull);
-	Cvar_RegisterVariable (&gl_smoothmodels);
-	Cvar_RegisterVariable (&gl_affinemodels);
-	Cvar_RegisterVariable (&gl_polyblend);
-	Cvar_RegisterVariable (&gl_flashblend);
-	Cvar_RegisterVariable (&gl_playermip);
-	Cvar_RegisterVariable (&gl_nocolors);
+	Cvar_RegisterVariable (src_client, &gl_cull);
+	Cvar_RegisterVariable (src_client, &gl_smoothmodels);
+	Cvar_RegisterVariable (src_client, &gl_affinemodels);
+	Cvar_RegisterVariable (src_client, &gl_polyblend);
+	Cvar_RegisterVariable (src_client, &gl_flashblend);
+	Cvar_RegisterVariable (src_client, &gl_playermip);
+	Cvar_RegisterVariable (src_client, &gl_nocolors);
 
-	Cvar_RegisterVariable (&gl_keeptjunctions);
+	Cvar_RegisterVariable (src_client, &gl_keeptjunctions);
 
 	R_InitBubble ();
 

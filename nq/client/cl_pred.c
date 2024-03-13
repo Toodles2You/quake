@@ -117,7 +117,7 @@ void CL_PredictMove ()
 	int			oldphysent;
 
 	if (cl_pushlatency.value > 0)
-		Cvar_Set ("pushlatency", "0");
+		Cvar_Set (src_client, "pushlatency", "0");
 
 	if (cl.paused)
 		return;
@@ -143,13 +143,7 @@ void CL_PredictMove ()
 	// we can now render a frame
 	if (cls.state == ca_onserver)
 	{	// first update is the final signon stage
-		char		text[1024];
-
 		cls.state = ca_active;
-		sprintf (text, "QuakeWorld: %s", cls.servername);
-#ifdef _WIN32
-		SetWindowText (mainwindow, text);
-#endif
 	}
 
 	if (cl_nopred.value)
@@ -219,7 +213,7 @@ CL_InitPrediction
 */
 void CL_InitPrediction ()
 {
-	Cvar_RegisterVariable (&cl_pushlatency);
-	Cvar_RegisterVariable (&cl_nopred);
+	Cvar_RegisterVariable (src_client, &cl_pushlatency);
+	Cvar_RegisterVariable (src_client, &cl_nopred);
 }
 

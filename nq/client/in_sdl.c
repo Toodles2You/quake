@@ -319,11 +319,11 @@ void IN_Init()
     mouse_state = MOUSE_AVAILABLE;
     mouse[0] = mouse[1] = 0;
     
-    Cvar_RegisterVariable(&in_mouse);
-    Cvar_RegisterVariable(&m_rawinput);
-    Cvar_RegisterVariable(&m_filter);
-    Cvar_RegisterVariable(&m_look);
-    Cmd_AddCommand("force_centerview", Force_CenterView_f);
+    Cvar_RegisterVariable(src_client, &in_mouse);
+    Cvar_RegisterVariable(src_client, &m_rawinput);
+    Cvar_RegisterVariable(src_client, &m_filter);
+    Cvar_RegisterVariable(src_client, &m_look);
+    Cmd_AddCommand(src_client, "force_centerview", Force_CenterView_f);
 }
 
 static void IN_ActivateGrabs()

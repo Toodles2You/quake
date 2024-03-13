@@ -565,10 +565,8 @@ void Cam_Reset ()
 
 void CL_InitCam ()
 {
-	Cvar_RegisterVariable (&cl_hightrack);
-	Cvar_RegisterVariable (&cl_chasecam);
-//	Cvar_RegisterVariable (&cl_camera_maxpitch);
-//	Cvar_RegisterVariable (&cl_camera_maxyaw);
+	Cvar_RegisterVariable (src_client, &cl_hightrack);
+	Cvar_RegisterVariable (src_client, &cl_chasecam);
 }
 
 

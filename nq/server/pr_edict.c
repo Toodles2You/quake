@@ -715,10 +715,10 @@ void ED_LoadFromFile (char *data)
 
 void ED_Init()
 {
-	Cmd_AddCommand ("edict", ED_PrintEdict_f);
-	Cmd_AddCommand ("edicts", ED_PrintEdicts);
-	Cmd_AddCommand ("edictcount", ED_Count);
-	Cvar_RegisterVariable (&nomonsters);
+	Cmd_AddCommand (src_server, "edict", ED_PrintEdict_f);
+	Cmd_AddCommand (src_server, "edicts", ED_PrintEdicts);
+	Cmd_AddCommand (src_server, "edictcount", ED_Count);
+	Cvar_RegisterVariable (src_server, &nomonsters);
 }
 
 edict_t *EDICT_NUM(int n)

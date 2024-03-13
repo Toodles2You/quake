@@ -171,27 +171,27 @@ void S_Init ()
 	if (COM_CheckParm("-simsound"))
 		fakedma = true;
 
-	Cmd_AddCommand("play", S_Play);
-	Cmd_AddCommand("playvol", S_PlayVol);
-	Cmd_AddCommand("stopsound", S_StopAllSoundsC);
-	Cmd_AddCommand("soundlist", S_SoundList);
-	Cmd_AddCommand("soundinfo", S_SoundInfo_f);
+	Cmd_AddCommand(src_client, "play", S_Play);
+	Cmd_AddCommand(src_client, "playvol", S_PlayVol);
+	Cmd_AddCommand(src_client, "stopsound", S_StopAllSoundsC);
+	Cmd_AddCommand(src_client, "soundlist", S_SoundList);
+	Cmd_AddCommand(src_client, "soundinfo", S_SoundInfo_f);
 
-	Cvar_RegisterVariable(&nosound);
-	Cvar_RegisterVariable(&volume);
-	Cvar_RegisterVariable(&precache);
-	Cvar_RegisterVariable(&loadas8bit);
-	Cvar_RegisterVariable(&bgmvolume);
-	Cvar_RegisterVariable(&bgmbuffer);
-	Cvar_RegisterVariable(&ambient_level);
-	Cvar_RegisterVariable(&ambient_fade);
-	Cvar_RegisterVariable(&snd_noextraupdate);
-	Cvar_RegisterVariable(&snd_show);
-	Cvar_RegisterVariable(&_snd_mixahead);
+	Cvar_RegisterVariable(src_client, &nosound);
+	Cvar_RegisterVariable(src_client, &volume);
+	Cvar_RegisterVariable(src_client, &precache);
+	Cvar_RegisterVariable(src_client, &loadas8bit);
+	Cvar_RegisterVariable(src_client, &bgmvolume);
+	Cvar_RegisterVariable(src_client, &bgmbuffer);
+	Cvar_RegisterVariable(src_client, &ambient_level);
+	Cvar_RegisterVariable(src_client, &ambient_fade);
+	Cvar_RegisterVariable(src_client, &snd_noextraupdate);
+	Cvar_RegisterVariable(src_client, &snd_show);
+	Cvar_RegisterVariable(src_client, &_snd_mixahead);
 
 	if (host_parms.memsize < 0x800000)
 	{
-		Cvar_Set ("loadas8bit", "1");
+		Cvar_Set (src_client, "loadas8bit", "1");
 		Con_Printf ("loading all sounds as 8bit\n");
 	}
 

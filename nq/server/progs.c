@@ -428,6 +428,6 @@ void PR_BuildStructs(progs_state_t *pr, uint32_t *globalStruct, pr_field_t *glob
 
 void PR_Init()
 {
-    Cmd_AddCommand("profile", PR_Profile_f);
+    Cmd_AddCommand(src_server, "profile", PR_Profile_f);
 }
 

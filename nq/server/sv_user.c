@@ -1118,14 +1118,6 @@ static void SV_ShowServerinfo_f ()
 	Info_Print (svs.info);
 }
 
-static void SV_NoSnap_f()
-{
-	if (*host_client->uploadfn) {
-		*host_client->uploadfn = 0;
-		SV_BroadcastPrintf (PRINT_HIGH, "%s refused remote screenshot\n", host_client->name);
-	}
-}
-
 typedef struct
 {
 	char	*name;
@@ -1161,8 +1153,6 @@ ucmd_t ucmds[] =
 	{"nextdl", SV_NextDownload_f},
 
 	{"ptrack", SV_PTrack_f}, //ZOID - used with autocam
-
-	{"snap", SV_NoSnap_f},
 	
 	{NULL, NULL}
 };
@@ -1176,7 +1166,7 @@ void SV_ExecuteUserCommand (char *s)
 {
 	ucmd_t	*u;
 	
-	Cmd_TokenizeString (s);
+	Cmd_TokenizeString (src_server, s);
 	sv_player = host_client->edict;
 
 	SV_BeginRedirect (RD_CLIENT);
@@ -1735,9 +1725,9 @@ SV_UserInit
 */
 void SV_UserInit ()
 {
-	Cvar_RegisterVariable (&sv_rollspeed);
-	Cvar_RegisterVariable (&sv_rollangle);
-	Cvar_RegisterVariable (&sv_spectalk);
-	Cvar_RegisterVariable (&sv_mapcheck);
+	Cvar_RegisterVariable (src_server, &sv_rollspeed);
+	Cvar_RegisterVariable (src_server, &sv_rollangle);
+	Cvar_RegisterVariable (src_server, &sv_spectalk);
+	Cvar_RegisterVariable (src_server, &sv_mapcheck);
 }
 

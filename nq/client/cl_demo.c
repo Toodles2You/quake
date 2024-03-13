@@ -294,9 +294,6 @@ stop recording a demo
 */
 void CL_Stop_f ()
 {
-	if (cmd_source != src_command)
-		return;
-
 	if (!cls.demorecording)
 	{
 		Con_Printf ("Not recording a demo.\n");
@@ -402,9 +399,6 @@ void CL_Record_f ()
 	player_info_t *player;
 	extern	char gamedirfile[];
 	int seq = 1;
-
-	if (cmd_source != src_command)
-		return;
 
 	c = Cmd_Argc();
 	if (c != 2)
@@ -692,9 +686,6 @@ void CL_ReRecord_f ()
 	int		c;
 	char	name[MAX_OSPATH];
 
-	if (cmd_source != src_command)
-		return;
-
 	c = Cmd_Argc();
 	if (c != 2)
 	{
@@ -744,9 +735,6 @@ void CL_PlayDemo_f ()
 	char	name[256];
 	int c;
 	bool neg = false;
-
-	if (cmd_source != src_command)
-		return;
 
 	if (Cmd_Argc() != 2)
 	{
@@ -810,9 +798,6 @@ timedemo [demoname]
 */
 void CL_TimeDemo_f ()
 {
-	if (cmd_source != src_command)
-		return;
-
 	if (Cmd_Argc() != 2)
 	{
 		Con_Printf ("timedemo <demoname> : gets demo speeds\n");

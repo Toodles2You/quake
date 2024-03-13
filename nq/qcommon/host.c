@@ -159,32 +159,32 @@ void Host_InitLocal ()
 {
 	Host_InitCommands ();
 	
-	Cvar_RegisterVariable (&cl_warncmd);
+	Cvar_RegisterVariable (src_client, &cl_warncmd);
 	
-	Cvar_RegisterVariable (&host_framerate);
-	Cvar_RegisterVariable (&host_timescale);
-	Cvar_RegisterVariable (&host_speeds);
+	Cvar_RegisterVariable (src_host, &host_framerate);
+	Cvar_RegisterVariable (src_host, &host_timescale);
+	Cvar_RegisterVariable (src_host, &host_speeds);
 
-	Cvar_RegisterVariable (&sys_ticrate);
-	Cvar_RegisterVariable (&serverprofile);
+	Cvar_RegisterVariable (src_host, &sys_ticrate);
+	Cvar_RegisterVariable (src_server, &serverprofile);
 
-	Cvar_RegisterVariable (&fraglimit);
-	Cvar_RegisterVariable (&timelimit);
-	Cvar_RegisterVariable (&teamplay);
-	Cvar_RegisterVariable (&samelevel);
-	Cvar_RegisterVariable (&noexit);
-	Cvar_RegisterVariable (&skill);
-	Cvar_RegisterVariable (&developer);
-	Cvar_RegisterVariable (&deathmatch);
-	Cvar_RegisterVariable (&coop);
+	Cvar_RegisterVariable (src_server, &fraglimit);
+	Cvar_RegisterVariable (src_server, &timelimit);
+	Cvar_RegisterVariable (src_server, &teamplay);
+	Cvar_RegisterVariable (src_server, &samelevel);
+	Cvar_RegisterVariable (src_server, &noexit);
+	Cvar_RegisterVariable (src_server, &skill);
+	Cvar_RegisterVariable (src_server, &developer);
+	Cvar_RegisterVariable (src_server, &deathmatch);
+	Cvar_RegisterVariable (src_server, &coop);
 
-	Cvar_RegisterVariable (&pausable);
+	Cvar_RegisterVariable (src_server, &pausable);
 
 	int i = COM_CheckParm ("-dedicated");
 	if (i)
 	{
 		cls.state = ca_dedicated;
-		Cvar_SetValue("maxclients", atoi(com_argv[i + 1]));
+		Cvar_SetValue(src_server, "maxclients", atoi(com_argv[i + 1]));
 	}
 	else
 	{
@@ -348,7 +348,7 @@ void Host_GetConsoleCommands ()
 		cmd = Sys_ConsoleInput ();
 		if (!cmd)
 			break;
-		Cbuf_AddText (cmd);
+		Cbuf_AddText (src_server, cmd);
 	}
 }
 
@@ -390,13 +390,8 @@ void Host_ServerFrame (double time)
 // get packets
 	SV_ReadPackets ();
 
-#if 0
-// check for commands typed to the host
-	Host_GetConsoleCommands ();
-
 // process console commands
-	Cbuf_Execute ();
-#endif
+	Cbuf_Execute (src_server);
 
 	SV_CheckVars ();
 
@@ -441,7 +436,7 @@ void Host_Frame (double time)
 	IN_Commands ();
 
 // process console commands
-	Cbuf_Execute ();
+	Cbuf_Execute (src_client);
 
 	// fetch results from server
 	CL_ReadPackets ();
@@ -466,7 +461,13 @@ void Host_Frame (double time)
 	Host_GetConsoleCommands ();
 	
 	if (Host_IsLocalGame ())
+	{
 		Host_ServerFrame (host_frametime);
+	}
+	else
+	{
+		Cbuf_Execute (src_server);
+	}
 
 //-------------------
 //
@@ -488,17 +489,20 @@ void Host_Frame (double time)
 
 	host_time += host_frametime;
 
-	// Set up prediction for other players
-	CL_SetUpPlayerPrediction(false);
+	if (cls.state >= ca_connected)
+	{
+		// Set up prediction for other players
+		CL_SetUpPlayerPrediction(false);
 
-	// do client side motion prediction
-	CL_PredictMove ();
+		// do client side motion prediction
+		CL_PredictMove ();
 
-	// Set up prediction for other players
-	CL_SetUpPlayerPrediction(true);
+		// Set up prediction for other players
+		CL_SetUpPlayerPrediction(true);
 
-	// build a refresh entity list
-	CL_EmitEntities ();
+		// build a refresh entity list
+		CL_EmitEntities ();
+	}
 
 // update video
 	if (host_speeds.value)
@@ -620,7 +624,7 @@ void Host_Init (quakeparms_t *parms)
 		CL_Init ();
 	}
 
-	Cbuf_InsertText ("exec quake.rc\n");
+	Cbuf_InsertText (src_client, "exec quake.rc\n");
 
 	Hunk_AllocName (0, "-HOST_HUNKLEVEL-");
 	host_hunklevel = Hunk_LowMark ();

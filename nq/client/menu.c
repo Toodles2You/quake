@@ -427,9 +427,9 @@ void M_SinglePlayer_Key (int key)
 					break;
 			key_dest = key_game;
 			if (Host_IsLocalGame ())
-				Cbuf_AddText ("disconnect\n");
-			Cbuf_AddText ("maxplayers 1\n");
-			Cbuf_AddText ("map start\n");
+				Cbuf_AddText (src_client, "disconnect\n");
+			Cbuf_AddText (src_server, "maxplayers 1\n");
+			Cbuf_AddText (src_server, "map start\n");
 			break;
 
 		case 1:
@@ -556,7 +556,7 @@ void M_Load_Key (int k)
 		SCR_BeginLoadingPlaque ();
 
 	// issue the load command
-		Cbuf_AddText (va ("load s%i\n", load_cursor) );
+		Cbuf_AddText (src_server, va ("load s%i\n", load_cursor) );
 		return;
 
 	case K_UPARROW:
@@ -589,7 +589,7 @@ void M_Save_Key (int k)
 	case K_ENTER:
 		m_state = m_none;
 		key_dest = key_game;
-		Cbuf_AddText (va("save s%i\n", load_cursor));
+		Cbuf_AddText (src_server, va("save s%i\n", load_cursor));
 		return;
 
 	case K_UPARROW:
@@ -808,11 +808,11 @@ forward:
 
 		// setup_cursor == 4 (OK)
 		if (strcmp(cl_name.string, setup_myname) != 0)
-			Cbuf_AddText ( va ("name \"%s\"\n", setup_myname) );
+			Cbuf_AddText (src_client, va ("name \"%s\"\n", setup_myname) );
 		if (strcmp(hostname.string, setup_hostname) != 0)
-			Cvar_Set("hostname", setup_hostname);
+			Cvar_Set(src_server, "hostname", setup_hostname);
 		if (setup_top != setup_oldtop || setup_bottom != setup_oldbottom)
-			Cbuf_AddText( va ("color %i %i\n", setup_top, setup_bottom) );
+			Cbuf_AddText(src_client, va ("color %i %i\n", setup_top, setup_bottom) );
 		m_entersound = true;
 		M_Menu_MultiPlayer_f ();
 		break;
@@ -895,7 +895,7 @@ void M_AdjustSliders (int dir)
 			scr_viewsize.value = 30;
 		if (scr_viewsize.value > 120)
 			scr_viewsize.value = 120;
-		Cvar_SetValue ("viewsize", scr_viewsize.value);
+		Cvar_SetValue (src_client, "viewsize", scr_viewsize.value);
 		break;
 	case 4:	// gamma
 		v_gamma.value -= dir * 0.05;
@@ -903,7 +903,7 @@ void M_AdjustSliders (int dir)
 			v_gamma.value = 0.5;
 		if (v_gamma.value > 1)
 			v_gamma.value = 1;
-		Cvar_SetValue ("gamma", v_gamma.value);
+		Cvar_SetValue (src_client, "gamma", v_gamma.value);
 		break;
 	case 5:	// mouse speed
 		sensitivity.value += dir * 0.5;
@@ -911,7 +911,7 @@ void M_AdjustSliders (int dir)
 			sensitivity.value = 1;
 		if (sensitivity.value > 11)
 			sensitivity.value = 11;
-		Cvar_SetValue ("sensitivity", sensitivity.value);
+		Cvar_SetValue (src_client, "sensitivity", sensitivity.value);
 		break;
 	case 6:	// music volume
 		bgmvolume.value += dir * 0.1;
@@ -919,7 +919,7 @@ void M_AdjustSliders (int dir)
 			bgmvolume.value = 0;
 		if (bgmvolume.value > 1)
 			bgmvolume.value = 1;
-		Cvar_SetValue ("bgmvolume", bgmvolume.value);
+		Cvar_SetValue (src_client, "bgmvolume", bgmvolume.value);
 		break;
 	case 7:	// sfx volume
 		volume.value += dir * 0.1;
@@ -927,36 +927,36 @@ void M_AdjustSliders (int dir)
 			volume.value = 0;
 		if (volume.value > 1)
 			volume.value = 1;
-		Cvar_SetValue ("volume", volume.value);
+		Cvar_SetValue (src_client, "volume", volume.value);
 		break;
 
 	case 8:	// allways run
 		if (cl_forwardspeed.value > 200)
 		{
-			Cvar_SetValue ("cl_forwardspeed", 200);
-			Cvar_SetValue ("cl_backspeed", 200);
+			Cvar_SetValue (src_client, "cl_forwardspeed", 200);
+			Cvar_SetValue (src_client, "cl_backspeed", 200);
 		}
 		else
 		{
-			Cvar_SetValue ("cl_forwardspeed", 400);
-			Cvar_SetValue ("cl_backspeed", 400);
+			Cvar_SetValue (src_client, "cl_forwardspeed", 400);
+			Cvar_SetValue (src_client, "cl_backspeed", 400);
 		}
 		break;
 
 	case 9:	// in_mouse
-		Cvar_SetValue ("in_mouse", !in_mouse.value);
+		Cvar_SetValue (src_client, "in_mouse", !in_mouse.value);
 		break;
 
 	case 10:	// invert mouse
-		Cvar_SetValue ("m_pitch", -m_pitch.value);
+		Cvar_SetValue (src_client, "m_pitch", -m_pitch.value);
 		break;
 
 	case 11:	// lookspring
-		Cvar_SetValue ("lookspring", !lookspring.value);
+		Cvar_SetValue (src_client, "lookspring", !lookspring.value);
 		break;
 
 	case 12:	// lookstrafe
-		Cvar_SetValue ("lookstrafe", !lookstrafe.value);
+		Cvar_SetValue (src_client, "lookstrafe", !lookstrafe.value);
 		break;
 	}
 }
@@ -1067,7 +1067,7 @@ void M_Options_Key (int k)
 			Con_ToggleConsole_f ();
 			break;
 		case 2:
-			Cbuf_AddText ("exec default.cfg\n");
+			Cbuf_AddText (src_client, "exec default.cfg\n");
 			break;
 		case 13:
 			M_Menu_Video_f ();
@@ -1257,7 +1257,7 @@ void M_Keys_Key (int k)
 		else if (k != '`')
 		{
 			sprintf (cmd, "bind \"%s\" \"%s\"\n", Key_KeynumToString (k), bindnames[keys_cursor][0]);
-			Cbuf_InsertText (cmd);
+			Cbuf_InsertText (src_client, cmd);
 		}
 
 		bind_grab = false;
@@ -1626,7 +1626,7 @@ void M_LanConfig_Key (int key)
 			break;
 		}
 
-		Cbuf_AddText ("stopdemo\n");
+		Cbuf_AddText (src_client, "stopdemo\n");
 		net_hostport = lanConfig_port;
 
 		if (lanConfig_cursor == 2)
@@ -1646,7 +1646,7 @@ void M_LanConfig_Key (int key)
 			m_return_onerror = true;
 			key_dest = key_game;
 			m_state = m_none;
-			Cbuf_AddText ( va ("connect \"%s\"\n", lanConfig_joinname) );
+			Cbuf_AddText (src_client, va ("connect \"%s\"\n", lanConfig_joinname) );
 			break;
 		}
 
@@ -2010,7 +2010,7 @@ void M_NetStart_Change (int dir)
 		break;
 
 	case 2:
-		Cvar_SetValue ("coop", coop.value ? 0 : 1);
+		Cvar_SetValue (src_server, "coop", coop.value ? 0 : 1);
 		break;
 
 	case 3:
@@ -2019,35 +2019,35 @@ void M_NetStart_Change (int dir)
 		else
 			count = 2;
 
-		Cvar_SetValue ("teamplay", teamplay.value + dir);
+		Cvar_SetValue (src_server, "teamplay", teamplay.value + dir);
 		if (teamplay.value > count)
-			Cvar_SetValue ("teamplay", 0);
+			Cvar_SetValue (src_server, "teamplay", 0);
 		else if (teamplay.value < 0)
-			Cvar_SetValue ("teamplay", count);
+			Cvar_SetValue (src_server, "teamplay", count);
 		break;
 
 	case 4:
-		Cvar_SetValue ("skill", skill.value + dir);
+		Cvar_SetValue (src_server, "skill", skill.value + dir);
 		if (skill.value > 3)
-			Cvar_SetValue ("skill", 0);
+			Cvar_SetValue (src_server, "skill", 0);
 		if (skill.value < 0)
-			Cvar_SetValue ("skill", 3);
+			Cvar_SetValue (src_server, "skill", 3);
 		break;
 
 	case 5:
-		Cvar_SetValue ("fraglimit", fraglimit.value + dir*10);
+		Cvar_SetValue (src_server, "fraglimit", fraglimit.value + dir*10);
 		if (fraglimit.value > 100)
-			Cvar_SetValue ("fraglimit", 0);
+			Cvar_SetValue (src_server, "fraglimit", 0);
 		if (fraglimit.value < 0)
-			Cvar_SetValue ("fraglimit", 100);
+			Cvar_SetValue (src_server, "fraglimit", 100);
 		break;
 
 	case 6:
-		Cvar_SetValue ("timelimit", timelimit.value + dir*5);
+		Cvar_SetValue (src_server, "timelimit", timelimit.value + dir*5);
 		if (timelimit.value > 60)
-			Cvar_SetValue ("timelimit", 0);
+			Cvar_SetValue (src_server, "timelimit", 0);
 		if (timelimit.value < 0)
-			Cvar_SetValue ("timelimit", 60);
+			Cvar_SetValue (src_server, "timelimit", 60);
 		break;
 
 	case 7:
@@ -2131,17 +2131,17 @@ void M_GameOptions_Key (int key)
 		if (gameoptions_cursor == 0)
 		{
 			if (Host_IsLocalGame ())
-				Cbuf_AddText ("disconnect\n");
-			Cbuf_AddText ("listen 0\n");	// so host_netport will be re-examined
-			Cbuf_AddText ( va ("maxplayers %u\n", maxplayers) );
+				Cbuf_AddText (src_client, "disconnect\n");
+			Cbuf_AddText (src_server, "listen 0\n");	// so host_netport will be re-examined
+			Cbuf_AddText (src_server, va ("maxplayers %u\n", maxplayers) );
 			SCR_BeginLoadingPlaque ();
 
 			if (hipnotic)
-				Cbuf_AddText ( va ("map %s\n", hipnoticlevels[hipnoticepisodes[startepisode].firstLevel + startlevel].name) );
+				Cbuf_AddText (src_server, va ("map %s\n", hipnoticlevels[hipnoticepisodes[startepisode].firstLevel + startlevel].name) );
 			else if (rogue)
-				Cbuf_AddText ( va ("map %s\n", roguelevels[rogueepisodes[startepisode].firstLevel + startlevel].name) );
+				Cbuf_AddText (src_server, va ("map %s\n", roguelevels[rogueepisodes[startepisode].firstLevel + startlevel].name) );
 			else
-				Cbuf_AddText ( va ("map %s\n", levels[episodes[startepisode].firstLevel + startlevel].name) );
+				Cbuf_AddText (src_server, va ("map %s\n", levels[episodes[startepisode].firstLevel + startlevel].name) );
 
 			return;
 		}
@@ -2305,7 +2305,7 @@ void M_ServerList_Key (int k)
 		slist_sorted = false;
 		key_dest = key_game;
 		m_state = m_none;
-		Cbuf_AddText ( va ("connect \"%s\"\n", hostcache[slist_cursor].cname) );
+		Cbuf_AddText (src_client, va ("connect \"%s\"\n", hostcache[slist_cursor].cname) );
 		break;
 
 	default:
@@ -2322,21 +2322,21 @@ void M_ServerList_Key (int k)
 
 void M_Init ()
 {
-	Cmd_AddCommand ("togglemenu", M_ToggleMenu_f);
+	Cmd_AddCommand (src_client, "togglemenu", M_ToggleMenu_f);
 
-	Cmd_AddCommand ("menu_main", M_Menu_Main_f);
-	Cmd_AddCommand ("menu_singleplayer", M_Menu_SinglePlayer_f);
-	Cmd_AddCommand ("menu_load", M_Menu_Load_f);
-	Cmd_AddCommand ("menu_save", M_Menu_Save_f);
-	Cmd_AddCommand ("menu_multiplayer", M_Menu_MultiPlayer_f);
+	Cmd_AddCommand (src_client, "menu_main", M_Menu_Main_f);
+	Cmd_AddCommand (src_client, "menu_singleplayer", M_Menu_SinglePlayer_f);
+	Cmd_AddCommand (src_client, "menu_load", M_Menu_Load_f);
+	Cmd_AddCommand (src_client, "menu_save", M_Menu_Save_f);
+	Cmd_AddCommand (src_client, "menu_multiplayer", M_Menu_MultiPlayer_f);
 	#ifdef FIXME
-	Cmd_AddCommand ("menu_setup", M_Menu_Setup_f);
+	Cmd_AddCommand (src_client, "menu_setup", M_Menu_Setup_f);
 	#endif
-	Cmd_AddCommand ("menu_options", M_Menu_Options_f);
-	Cmd_AddCommand ("menu_keys", M_Menu_Keys_f);
-	Cmd_AddCommand ("menu_video", M_Menu_Video_f);
-	Cmd_AddCommand ("help", M_Menu_Help_f);
-	Cmd_AddCommand ("menu_quit", M_Menu_Quit_f);
+	Cmd_AddCommand (src_client, "menu_options", M_Menu_Options_f);
+	Cmd_AddCommand (src_client, "menu_keys", M_Menu_Keys_f);
+	Cmd_AddCommand (src_client, "menu_video", M_Menu_Video_f);
+	Cmd_AddCommand (src_client, "help", M_Menu_Help_f);
+	Cmd_AddCommand (src_client, "menu_quit", M_Menu_Quit_f);
 }
 
 

@@ -310,19 +310,19 @@ static void SCR_CalcRefdef ()
 	
 // bound viewsize
 	if (scr_viewsize.value < 30)
-		Cvar_Set ("viewsize","30");
+		Cvar_Set (src_client, "viewsize","30");
 	if (scr_viewsize.value > 120)
-		Cvar_Set ("viewsize","120");
+		Cvar_Set (src_client, "viewsize","120");
 
 // bound field of view
 	if (scr_fov.value < 10)
-		Cvar_Set ("fov","10");
+		Cvar_Set (src_client, "fov","10");
 	if (scr_fov.value > 170)
-		Cvar_Set ("fov","170");
+		Cvar_Set (src_client, "fov","170");
 	if (scr_viewmodelfov.value < 10)
-		Cvar_Set ("viewmodel_fov","10");
+		Cvar_Set (src_client, "viewmodel_fov","10");
 	if (scr_viewmodelfov.value > 170)
-		Cvar_Set ("viewmodel_fov","170");
+		Cvar_Set (src_client, "viewmodel_fov","170");
 
 // intermission is always full screen	
 	if (cl.intermission)
@@ -377,7 +377,7 @@ Keybinding command
 */
 void SCR_SizeUp_f ()
 {
-	Cvar_SetValue ("viewsize",scr_viewsize.value+10);
+	Cvar_SetValue (src_client, "viewsize",scr_viewsize.value+10);
 	vid.recalc_refdef = 1;
 }
 
@@ -391,7 +391,7 @@ Keybinding command
 */
 void SCR_SizeDown_f ()
 {
-	Cvar_SetValue ("viewsize",scr_viewsize.value-10);
+	Cvar_SetValue (src_client, "viewsize",scr_viewsize.value-10);
 	vid.recalc_refdef = 1;
 }
 
@@ -405,22 +405,22 @@ SCR_Init
 void SCR_Init ()
 {
 
-	Cvar_RegisterVariable (&scr_fov);
-	Cvar_RegisterVariable (&scr_viewmodelfov);
-	Cvar_RegisterVariable (&scr_viewsize);
-	Cvar_RegisterVariable (&scr_conspeed);
-	Cvar_RegisterVariable (&scr_showturtle);
-	Cvar_RegisterVariable (&scr_showpause);
-	Cvar_RegisterVariable (&scr_centertime);
-	Cvar_RegisterVariable (&scr_printspeed);
-	Cvar_RegisterVariable (&gl_triplebuffer);
+	Cvar_RegisterVariable (src_client, &scr_fov);
+	Cvar_RegisterVariable (src_client, &scr_viewmodelfov);
+	Cvar_RegisterVariable (src_client, &scr_viewsize);
+	Cvar_RegisterVariable (src_client, &scr_conspeed);
+	Cvar_RegisterVariable (src_client, &scr_showturtle);
+	Cvar_RegisterVariable (src_client, &scr_showpause);
+	Cvar_RegisterVariable (src_client, &scr_centertime);
+	Cvar_RegisterVariable (src_client, &scr_printspeed);
+	Cvar_RegisterVariable (src_client, &gl_triplebuffer);
 
 //
 // register our commands
 //
-	Cmd_AddCommand ("screenshot",SCR_ScreenShot_f);
-	Cmd_AddCommand ("sizeup",SCR_SizeUp_f);
-	Cmd_AddCommand ("sizedown",SCR_SizeDown_f);
+	Cmd_AddCommand (src_client, "screenshot",SCR_ScreenShot_f);
+	Cmd_AddCommand (src_client, "sizeup",SCR_SizeUp_f);
+	Cmd_AddCommand (src_client, "sizedown",SCR_SizeDown_f);
 
 	scr_ram = Draw_PicFromWad ("ram");
 	scr_net = Draw_PicFromWad ("net");
