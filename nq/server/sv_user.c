@@ -247,7 +247,6 @@ static void SV_PreSpawn_f ()
 
 //		Con_DPrintf("Client check = %d\n", check);
 
-		#if 0
 		if (sv_mapcheck.value && check != sv.worldmodel->checksum &&
 			check != sv.worldmodel->checksum2) {
 			SV_ClientPrintf (host_client, PRINT_HIGH, 
@@ -257,7 +256,6 @@ static void SV_PreSpawn_f ()
 			SV_DropClient (host_client); 
 			return;
 		}
-		#endif
 		host_client->checksum = check;
 	}
 

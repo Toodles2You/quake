@@ -98,6 +98,9 @@ typedef struct cmodel_s
 
 	size_t numentities;
 	char *entities;
+
+	unsigned int checksum;
+	unsigned int checksum2;
 } cmodel_t;
 
 extern const vec3_t hull_sizes[MAX_MAP_HULLS][2];

@@ -718,6 +718,33 @@ void CMod_LoadBrushModel(cmodel_t *mod, void *buffer)
         ((int32_t *)header)[i] = LittleLong(((int32_t *)header)[i]);
     }
 
+// checksum all of the map, except for entities
+	mod->checksum = 0;
+	mod->checksum2 = 0;
+
+	for (i = 0; i < HEADER_LUMPS; i++)
+    {
+		if (i == LUMP_ENTITIES)
+        {
+			continue;
+        }
+
+		mod->checksum ^=
+            COM_BlockChecksum(
+                mod_base + header->lumps[i].fileofs, 
+                header->lumps[i].filelen);
+
+		if (i == LUMP_VISIBILITY || i == LUMP_LEAFS || i == LUMP_NODES)
+        {
+			continue;
+        }
+
+		mod->checksum2 ^=
+            COM_BlockChecksum(
+                mod_base + header->lumps[i].fileofs, 
+                header->lumps[i].filelen);
+	}
+
     // load into heap
     CMod_LoadEntities   (&header->lumps[LUMP_ENTITIES]);
     CMod_LoadPlanes     (&header->lumps[LUMP_PLANES]);
