@@ -698,7 +698,10 @@ static void SV_BeginDownload_f()
 	if (!host_client->download
 		// special check for maps, if it came from a pak file, don't allow
 		// download  ZOID
-		/*|| (strncmp(name, "maps/", 5) == 0 && file_from_pak)*/)
+		#ifdef FIXME
+		|| (strncmp(name, "maps/", 5) == 0 && file_from_pak)
+		#endif
+		)
 	{
 		if (host_client->download) {
 			fclose(host_client->download);

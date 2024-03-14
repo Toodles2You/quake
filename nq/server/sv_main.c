@@ -42,7 +42,36 @@ cvar_t sv_phs = {"sv_phs", "1"};
 cvar_t	maxclients = {"maxclients", "8"};
 cvar_t	maxspectators = {"maxspectators", "8"};
 
+cvar_t	hostname = {"hostname", "Quake", CVAR_SERVER_INFO};
+
 FILE *sv_fraglogfile;
+
+/*
+==================
+SV_FinalMessage
+
+Used by Host_Error and SV_Quit_f to send a final message to all connected
+clients before the server goes down.  The messages are sent immediately,
+not just stuck on the outgoing message list, because the server is going
+to totally exit after returning from this function.
+==================
+*/
+void SV_FinalMessage (char *message)
+{
+	int			i;
+	client_t	*cl;
+	
+	SZ_Clear (&net_message);
+	MSG_WriteByte (&net_message, svc_print);
+	MSG_WriteByte (&net_message, PRINT_HIGH);
+	MSG_WriteString (&net_message, message);
+	MSG_WriteByte (&net_message, svc_disconnect);
+
+	for (i=0, cl = svs.clients ; i<MAX_CLIENTS ; i++, cl++)
+		if (cl->state >= cs_spawned)
+			Netchan_Transmit (&cl->netchan, net_message.cursize
+			, net_message.data);
+}
 
 /*
 =====================
@@ -425,7 +454,7 @@ void SVC_DirectConnect (void)
 	s = Info_ValueForKey (userinfo, "spectator");
 	if (s[0] && strcmp(s, "0"))
 	{
-		#if 0
+#ifdef FIXME
 		if (spectator_password.string[0] && 
 			strcasecmp(spectator_password.string, "none") &&
 			strcmp(spectator_password.string, s) )
@@ -434,7 +463,7 @@ void SVC_DirectConnect (void)
 			Netchan_OutOfBandPrint (SERVER, net_from, "%c\nrequires a spectator password\n\n", A2C_PRINT);
 			return;
 		}
-		#endif
+#endif
 		Info_RemoveKey (userinfo, "spectator"); // remove passwd
 		Info_SetValueForStarKey (userinfo, "*spectator", "1", MAX_INFO_STRING, sv_highchars.value);
 		spectator = true;
@@ -442,7 +471,7 @@ void SVC_DirectConnect (void)
 	else
 	{
 		s = Info_ValueForKey (userinfo, "password");
-		#if 0
+#ifdef FIXME
 		if (password.string[0] && 
 			strcasecmp(password.string, "none") &&
 			strcmp(password.string, s) )
@@ -451,7 +480,7 @@ void SVC_DirectConnect (void)
 			Netchan_OutOfBandPrint (SERVER, net_from, "%c\nserver requires a password\n\n", A2C_PRINT);
 			return;
 		}
-		#endif
+#endif
 		spectator = false;
 		Info_RemoveKey (userinfo, "password"); // remove passwd
 	}
@@ -585,18 +614,19 @@ void SVC_DirectConnect (void)
 	newcl->sendinfo = true;
 }
 
-int Rcon_Validate (void)
+static bool Rcon_Validate ()
 {
-	#if 0
+#ifdef FIXME
 	if (!strlen (rcon_password.string))
-		return 0;
+		return false;
 
 	if (strcmp (Cmd_Argv(1), rcon_password.string) )
-		return 0;
+		return false;
 
-	return 1;
-	#endif
-	return 0;
+	return true;
+#else
+	return false;
+#endif
 }
 
 /*
@@ -901,25 +931,249 @@ void SV_ExtractFromUserinfo (client_t *cl)
 }
 
 /*
+==============================================================================
+
+PACKET FILTERING
+ 
+
+You can add or remove addresses from the filter list with:
+
+addip <ip>
+removeip <ip>
+
+The ip address is specified in dot format, and any unspecified digits will match any value, so you can specify an entire class C network with "addip 192.246.40".
+
+Removeip will only remove an address specified exactly the same way.  You cannot addip a subnet, then removeip a single host.
+
+listip
+Prints the current list of filters.
+
+writeip
+Dumps "addip <ip>" commands to listip.cfg so it can be execed at a later date.  The filter lists are not saved and restored by default, because I beleive it would cause too much confusion.
+
+filterban <0 or 1>
+
+If 1 (the default), then ip addresses matching the current list will be prohibited from entering the game.  This is the default setting.
+
+If 0, then only addresses matching the list will be allowed.  This lets you easily set up a private game, or a game that only allows players from your local network.
+
+
+==============================================================================
+*/
+
+typedef struct
+{
+	uint32_t mask;
+	uint32_t compare;
+} ipfilter_t;
+
+#define MAX_IPFILTERS 1024
+
+static ipfilter_t ipfilters[MAX_IPFILTERS];
+static int numipfilters;
+
+static cvar_t filterban = {"filterban", "1"};
+
+/*
+=================
+StringToFilter
+=================
+*/
+static bool StringToFilter (char *s, ipfilter_t *f)
+{
+	char	num[128];
+	int		i, j;
+	byte	b[4];
+	byte	m[4];
+	
+	for (i=0 ; i<4 ; i++)
+	{
+		b[i] = 0;
+		m[i] = 0;
+	}
+	
+	for (i=0 ; i<4 ; i++)
+	{
+		if (*s < '0' || *s > '9')
+		{
+			Con_Printf ("Bad filter address: %s\n", s);
+			return false;
+		}
+		
+		j = 0;
+		while (*s >= '0' && *s <= '9')
+		{
+			num[j++] = *s++;
+		}
+		num[j] = 0;
+		b[i] = atoi(num);
+		if (b[i] != 0)
+			m[i] = 255;
+
+		if (!*s)
+			break;
+		s++;
+	}
+	
+	f->mask = *(uint32_t *)m;
+	f->compare = *(uint32_t *)b;
+	
+	return true;
+}
+
+/*
+=================
+SV_AddIP_f
+=================
+*/
+static void SV_AddIP_f ()
+{
+	int i;
+
+	for (i = 0; i < numipfilters; i++)
+	{
+		if (ipfilters[i].compare == 0xffffffff)
+		{
+			break; // free spot
+		}
+	}
+
+	if (i == numipfilters)
+	{
+		if (numipfilters == MAX_IPFILTERS)
+		{
+			Con_Printf("IP filter list is full\n");
+			return;
+		}
+		numipfilters++;
+	}
+
+	if (!StringToFilter(Cmd_Argv(1), &ipfilters[i]))
+	{
+		ipfilters[i].compare = 0xffffffff;
+	}
+}
+
+/*
+=================
+SV_RemoveIP_f
+=================
+*/
+static void SV_RemoveIP_f ()
+{
+	ipfilter_t f;
+	int i, j;
+
+	if (!StringToFilter(Cmd_Argv(1), &f))
+	{
+		return;
+	}
+
+	for (i = 0; i < numipfilters; i++)
+	{
+		if (ipfilters[i].mask == f.mask && ipfilters[i].compare == f.compare)
+		{
+			for (j = i + 1; j < numipfilters; j++)
+			{
+				ipfilters[j - 1] = ipfilters[j];
+			}
+			numipfilters--;
+			Con_Printf("Removed.\n");
+			return;
+		}
+	}
+
+	Con_Printf("Didn't find %s.\n", Cmd_Argv(1));
+}
+
+/*
+=================
+SV_ListIP_f
+=================
+*/
+static void SV_ListIP_f ()
+{
+	int i;
+	byte b[4];
+
+	Con_Printf("Filter list:\n");
+	for (i = 0; i < numipfilters; i++)
+	{
+		*(uint32_t *)b = ipfilters[i].compare;
+		Con_Printf("%3i.%3i.%3i.%3i\n", b[0], b[1], b[2], b[3]);
+	}
+}
+
+/*
+=================
+SV_WriteIP_f
+=================
+*/
+static void SV_WriteIP_f ()
+{
+	FILE *f;
+	char name[MAX_OSPATH];
+	byte b[4];
+	int i;
+
+	sprintf(name, "%s/listip.cfg", com_gamedir);
+
+	Con_Printf("Writing %s.\n", name);
+
+	f = fopen(name, "wb");
+	if (!f)
+	{
+		Con_Printf("Couldn't open %s\n", name);
+		return;
+	}
+
+	for (i = 0; i < numipfilters; i++)
+	{
+		*(uint32_t *)b = ipfilters[i].compare;
+		fprintf(f, "addip %i.%i.%i.%i\n", b[0], b[1], b[2], b[3]);
+	}
+
+	fclose(f);
+}
+
+/*
+=================
+SV_SendBan
+=================
+*/
+static void SV_SendBan ()
+{
+	char data[128];
+
+	data[0] = data[1] = data[2] = data[3] = 0xff;
+	data[4] = A2C_PRINT;
+	data[5] = 0;
+	strcat(data, "\nbanned.\n");
+
+	NET_SendPacket(SERVER, strlen(data), data, net_from);
+}
+
+/*
 =================
 SV_FilterPacket
 =================
 */
-bool SV_FilterPacket (void)
+static bool SV_FilterPacket ()
 {
-	return false;
-	#if 0
-	int		i;
-	unsigned	in;
-	
-	in = *(unsigned *)net_from.ip;
+	int i;
+	uint32_t in;
 
-	for (i=0 ; i<numipfilters ; i++)
-		if ( (in & ipfilters[i].mask) == ipfilters[i].compare)
+	in = *(uint32_t *)net_from.ip;
+
+	for (i = 0; i < numipfilters; i++)
+	{
+		if ((in & ipfilters[i].mask) == ipfilters[i].compare)
+		{
 			return filterban.value;
+		}
+	}
 
 	return !filterban.value;
-	#endif
 }
 
 /*
@@ -939,7 +1193,7 @@ void SV_ReadPackets (void)
 	{
 		if (SV_FilterPacket ())
 		{
-			// SV_SendBan ();	// tell them we aren't listening...
+			SV_SendBan ();	// tell them we aren't listening...
 			continue;
 		}
 
@@ -1043,9 +1297,9 @@ SV_CheckVars
 
 ===================
 */
-void SV_CheckVars (void)
+void SV_CheckVars ()
 {
-	#if 0
+#ifdef FIXME
 	static char *pw, *spw;
 	int			v;
 
@@ -1065,7 +1319,7 @@ void SV_CheckVars (void)
 		Info_SetValueForKey (svs.info, "needpass", "", MAX_SERVERINFO_STRING, sv_highchars.value);
 	else
 		Info_SetValueForKey (svs.info, "needpass", va("%i",v), MAX_SERVERINFO_STRING, sv_highchars.value);
-	#endif
+#endif
 }
 
 /*
@@ -1098,6 +1352,7 @@ void SV_Init ()
 
 	Cvar_RegisterVariable (src_server, &maxclients);
 	Cvar_RegisterVariable (src_server, &maxspectators);
+	Cvar_RegisterVariable (src_server, &hostname);
 
 	Cvar_RegisterVariable (src_server, &timeout);
 	Cvar_RegisterVariable (src_server, &zombietime);
@@ -1115,6 +1370,8 @@ void SV_Init ()
 
 	Cvar_RegisterVariable (src_server, &sv_aim);
 
+	Cvar_RegisterVariable (src_server, &filterban);
+
 	Cvar_RegisterVariable (src_server, &allow_download);
 	Cvar_RegisterVariable (src_server, &allow_download_skins);
 	Cvar_RegisterVariable (src_server, &allow_download_models);
@@ -1124,6 +1381,11 @@ void SV_Init ()
 	Cvar_RegisterVariable (src_server, &sv_highchars);
 
 	Cvar_RegisterVariable (src_server, &sv_phs);
+
+	Cmd_AddCommand (src_server, "addip", SV_AddIP_f);
+	Cmd_AddCommand (src_server, "removeip", SV_RemoveIP_f);
+	Cmd_AddCommand (src_server, "listip", SV_ListIP_f);
+	Cmd_AddCommand (src_server, "writeip", SV_WriteIP_f);
 
 	for (i = 0; i < MAX_MODELS; i++)
 	{

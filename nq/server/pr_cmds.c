@@ -499,7 +499,7 @@ particle(origin, color, count)
 */
 void PF_particle (progs_state_t *pr)
 {
-	#if 0
+#ifdef FIXME
 	float		*org, *dir;
 	float		color;
 	float		count;
@@ -509,7 +509,7 @@ void PF_particle (progs_state_t *pr)
 	color = pr_global(pr, float, OFS_PARM2);
 	count = pr_global(pr, float, OFS_PARM3);
 	SV_StartParticle (org, dir, color, count);
-	#endif
+#endif
 }
 
 
@@ -906,7 +906,7 @@ void PF_dprint (progs_state_t *pr)
 	Con_DPrintf ("%s",PF_VarString(pr, 0));
 }
 
-char	pr_string_temp[128];
+static char pr_string_temp[128];
 
 void PF_ftos (progs_state_t *pr)
 {
@@ -1414,9 +1414,10 @@ sizebuf_t *WriteDest (progs_state_t *pr)
 		return &sv.datagram;
 	
 	case MSG_ONE:
+#if 1
 		PR_RunError (pr, "WriteDest: Shouldn't be at MSG_ONE");
 		return NULL;
-#if 0
+#else
 		ent = PROG_TO_EDICT(pr_int(pr, msg_entity));
 		entnum = NUM_FOR_EDICT(ent);
 		if (entnum < 1 || entnum > MAX_CLIENTS)
@@ -1679,9 +1680,7 @@ void PF_infokey (progs_state_t *pr)
 {
 	edict_t *e;
 	int e1;
-	char *value;
 	char *key;
-	static char ov[256];
 
 	e = pr_get_edict(pr, OFS_PARM0);
 	e1 = NUM_FOR_EDICT(e);
@@ -1689,27 +1688,34 @@ void PF_infokey (progs_state_t *pr)
 
 	if (e1 == 0)
 	{
-		if ((value = Info_ValueForKey(svs.info, key)) == NULL ||
-			!*value)
-			value = Info_ValueForKey(localinfo, key);
+		strcpy(pr_string_temp, Info_ValueForKey(svs.info, key));
+		if (pr_string_temp[0] == '\0')
+		{	
+			strcpy(pr_string_temp, Info_ValueForKey(localinfo, key));
+		}
 	}
 	else if (e1 <= MAX_CLIENTS)
 	{
 		if (!strcmp(key, "ip"))
-			value = strcpy(ov, NET_BaseAdrToString(svs.clients[e1 - 1].netchan.remote_address));
+		{
+			strcpy(pr_string_temp, NET_BaseAdrToString(svs.clients[e1 - 1].netchan.remote_address));
+		}
 		else if (!strcmp(key, "ping"))
 		{
 			int ping = SV_CalcPing(&svs.clients[e1 - 1]);
-			sprintf(ov, "%d", ping);
-			value = ov;
+			sprintf(pr_string_temp, "%d", ping);
 		}
 		else
-			value = Info_ValueForKey(svs.clients[e1 - 1].userinfo, key);
+		{
+			strcpy(pr_string_temp, Info_ValueForKey(svs.clients[e1 - 1].userinfo, key));
+		}
 	}
 	else
-		value = "";
+	{
+		pr_string_temp[0] = '\0';
+	}
 
-	pr_set_string(pr, OFS_RETURN, value);
+	pr_set_string(pr, OFS_RETURN, pr_string_temp);
 }
 
 /*
