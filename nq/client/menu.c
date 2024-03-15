@@ -1866,8 +1866,6 @@ episode_t	rogueepisodes[] =
 int	startepisode;
 int	startlevel;
 int maxplayers;
-bool m_serverInfoMessage = false;
-double m_serverInfoMessageTime;
 
 void M_Menu_GameOptions_f ()
 {
@@ -1985,24 +1983,6 @@ void M_GameOptions_Draw ()
 
 // line cursor
 	M_DrawCharacter (144, gameoptions_cursor_table[gameoptions_cursor], 12+((int)(realtime*4)&1));
-
-	if (m_serverInfoMessage)
-	{
-		if ((realtime - m_serverInfoMessageTime) < 5.0)
-		{
-			x = (320-26*8)/2;
-			M_DrawTextBox (x, 138, 24, 4);
-			x += 8;
-			M_Print (x, 146, "  More than 4 players   ");
-			M_Print (x, 154, " requires using command ");
-			M_Print (x, 162, "line parameters; please ");
-			M_Print (x, 170, "   see techinfo.txt.    ");
-		}
-		else
-		{
-			m_serverInfoMessage = false;
-		}
-	}
 }
 
 
@@ -2017,11 +1997,11 @@ void M_NetStart_Change (int dir)
 		if (maxplayers > MAX_CLIENTS)
 		{
 			maxplayers = MAX_CLIENTS;
-			m_serverInfoMessage = true;
-			m_serverInfoMessageTime = realtime;
 		}
 		if (maxplayers < 2)
+		{
 			maxplayers = 2;
+		}
 		break;
 
 	case 2:
