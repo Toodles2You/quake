@@ -91,6 +91,7 @@ cvar_t	gl_flashblend = {"gl_flashblend","0"};
 cvar_t	gl_playermip = {"gl_playermip","0"};
 cvar_t	gl_nocolors = {"gl_nocolors","0"};
 cvar_t	gl_keeptjunctions = {"gl_keeptjunctions","1"};
+cvar_t	gl_partblend = {"gl_partblend", "0"};
 
 extern	cvar_t	gl_ztrick;
 

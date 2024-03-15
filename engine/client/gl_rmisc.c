@@ -136,8 +136,8 @@ void R_Init ()
 	Cvar_RegisterVariable (src_client, &gl_flashblend);
 	Cvar_RegisterVariable (src_client, &gl_playermip);
 	Cvar_RegisterVariable (src_client, &gl_nocolors);
-
 	Cvar_RegisterVariable (src_client, &gl_keeptjunctions);
+	Cvar_RegisterVariable (src_client, &gl_partblend);
 
 	R_InitBubble ();
 

@@ -677,7 +677,7 @@ void R_DrawParticles ()
 
 		at = (byte *)&d_8to24table[(int)p->color];
 
-		if (p->type == pt_fire)
+		if (gl_partblend.value && p->type == pt_fire)
 		{
 			theAlpha = 255 * (6 - p->ramp) / 6;
 		}
