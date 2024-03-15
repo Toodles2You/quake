@@ -37,7 +37,7 @@ int			currenttexture = -1;		// to avoid unnecessary texture sets
 int			cnttextures[2] = {-1, -1};     // cached
 
 int			particletexture;	// little dot for particles
-int			playertextures;		// up to 16 color translated skins
+int			playertextures;		// up to MAX_CLIENTS color translated skins
 
 //
 // view origin
@@ -451,14 +451,20 @@ void R_DrawAliasModel (entity_t *e)
 
 	// we can't dynamically colormap textures, so they are cached
 	// seperately for the players.  Heads are just uncolored.
-	#ifdef FIXME
-	if (currententity->colormap != vid.colormap && !gl_nocolors.value)
+	if (currententity->scoreboard && !gl_nocolors.value)
 	{
-		i = currententity - cl.entities;
-		if (i >= 1 && i<=cl.maxclients /* && !strcmp (currententity->model->name, "progs/player.mdl") */)
-		    GL_Bind(playertextures - 1 + i);
+		i = currententity->scoreboard - cl.players;
+		if (!currententity->scoreboard->skin)
+		{
+			Skin_Find(currententity->scoreboard);
+			R_TranslatePlayerSkin(i);
+		}
+
+		if (i >= 0 && i < MAX_CLIENTS)
+		{
+			GL_Bind(playertextures + i);
+		}
 	}
-	#endif
 
 	if (gl_smoothmodels.value)
 		glShadeModel (GL_SMOOTH);
