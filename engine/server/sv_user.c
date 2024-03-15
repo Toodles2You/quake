@@ -350,22 +350,45 @@ static void SV_Spawn_f ()
 	// set up the edict
 	ent = host_client->edict;
 
-	ED_ClearEdict (ent);
+	if (sv.loadgame)
+	{
+		if (ed_field(gravity))
+		{
+			host_client->entgravity = ed_float(ent, gravity);
+		}
+		else
+		{
+			host_client->entgravity = 1.0;
+		}
+
+		if (ed_field(maxspeed))
+		{
+			host_client->maxspeed = ed_float(ent, maxspeed);
+		}
+		else
+		{
+			host_client->maxspeed = sv_maxspeed.value;
+		}
+	}
+	else
+	{
+		ED_ClearEdict (ent);
+
+		host_client->entgravity = 1.0;
+		if (ed_field(gravity))
+		{
+			ed_float(ent, gravity) = 1.0f;
+		}
+
+		host_client->maxspeed = sv_maxspeed.value;
+		if (ed_field(maxspeed))
+		{
+			ed_float(ent, maxspeed) = sv_maxspeed.value;
+		}
+	}
+
 	ed_float(ent, colormap) = NUM_FOR_EDICT(ent);
-	ed_float(ent, team) = 0; // FIXME
 	ed_set_string(ent, netname, host_client->name);
-
-	host_client->entgravity = 1.0;
-	if (ed_field(gravity))
-	{
-		ed_float(ent, gravity) = 1.0f;
-	}
-
-	host_client->maxspeed = sv_maxspeed.value;
-	if (ed_field(maxspeed))
-	{
-		ed_float(ent, maxspeed) = sv_maxspeed.value;
-	}
 
 //
 // force stats to be updated
@@ -445,7 +468,13 @@ static void SV_Begin_f ()
 		return;
 	}
 
-	if (host_client->spectator)
+	// loaded games are fully inited allready
+	if (sv.loadgame)
+	{
+		// if this is the last client to be connected, unpause
+		sv.paused = false;
+	}
+	else if (host_client->spectator)
 	{
 		SV_SpawnSpectator ();
 

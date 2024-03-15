@@ -176,6 +176,7 @@ typedef struct
 	double lastchecktime; // for monster ai
 
 	bool paused; // are we paused?
+	bool loadgame;
 
 	// check player/eyes models for hacks
 	unsigned model_player_checksum;

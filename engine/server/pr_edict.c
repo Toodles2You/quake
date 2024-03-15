@@ -410,7 +410,7 @@ void ED_ParseGlobals (char *data)
 			continue;
 		}
 
-		if (!ED_ParseEpair ((void *)&sv.pr.globals, key, com_token))
+		if (!ED_ParseEpair (sv.pr.globals, key, com_token))
 			Host_Error ("ED_ParseGlobals: parse error");
 	}
 }

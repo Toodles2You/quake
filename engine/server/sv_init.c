@@ -326,8 +326,6 @@ void SV_SpawnServer (char *server, char *startspot)
 
 	Con_DPrintf ("SpawnServer: %s\n", server);
 	
-	SV_SaveSpawnparms ();
-
 	svs.spawncount++; // any partially connected client will be
 					  // restarted
 

@@ -116,11 +116,9 @@ char *PR_ValueString(progs_state_t *pr, etype_t type, eval_t *val)
     case ev_string:
         sprintf(line, "%s", PR_GetString(pr, val->string));
         break;
-#if 0
 	case ev_entity:
 		sprintf (line, "entity %i", NUM_FOR_EDICT(PROG_TO_EDICT(val->edict)) );
 		break;
-#endif
     case ev_function:
         f = pr->functions + val->function;
         sprintf(line, "%s()", PR_GetString(pr, f->s_name));
@@ -171,11 +169,9 @@ char *PR_UglyValueString(progs_state_t *pr, etype_t type, eval_t *val)
     case ev_string:
         sprintf(line, "%s", PR_GetString(pr, val->string));
         break;
-#if 0
 	case ev_entity:
 		sprintf (line, "%i", NUM_FOR_EDICT(PROG_TO_EDICT(val->edict)));
 		break;
-#endif
     case ev_function:
         f = pr->functions + val->function;
         sprintf(line, "%s", PR_GetString(pr, f->s_name));

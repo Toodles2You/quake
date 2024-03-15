@@ -416,6 +416,7 @@ void SVC_DirectConnect (void)
 	int			qport;
 	int			version;
 	int			challenge;
+	float			spawn_parms[NUM_SPAWN_PARMS];
 
 	version = atoi(Cmd_Argv(1));
 	if (version != PROTOCOL_QUAKEWORLD)
@@ -565,6 +566,10 @@ void SVC_DirectConnect (void)
 		return;
 	}
 
+	if (sv.loadgame)
+	{
+		memcpy (spawn_parms, svs.clients->spawn_parms, sizeof(spawn_parms));
+	}
 	
 	// build a new connection
 	// accept the new client
@@ -599,9 +604,16 @@ void SVC_DirectConnect (void)
 	newcl->lockedtill = 0;
 
 	// call the progs to get default spawn parms for the new client
-	sv_pr_execute(SetNewParms);
-	for (i=0 ; i<NUM_SPAWN_PARMS ; i++)
-		newcl->spawn_parms[i] = (&sv_pr_float(parm1))[i];
+	if (sv.loadgame)
+	{
+		memcpy (newcl->spawn_parms, spawn_parms, sizeof(spawn_parms));
+	}
+	else
+	{
+		sv_pr_execute(SetNewParms);
+		for (i=0 ; i<NUM_SPAWN_PARMS ; i++)
+			newcl->spawn_parms[i] = (&sv_pr_float(parm1))[i];
+	}
 
 	if (newcl->spectator)
 		Con_Printf ("Spectator %s connected\n", newcl->name);

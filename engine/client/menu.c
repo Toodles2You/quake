@@ -489,11 +489,7 @@ void M_Menu_Load_f ()
 
 void M_Menu_Save_f ()
 {
-	if (!Host_IsLocalGame ())
-		return;
 	if (cl.intermission)
-		return;
-	if (MAX_CLIENTS != 1)
 		return;
 	m_entersound = true;
 	m_state = m_save;
@@ -551,7 +547,7 @@ void M_Load_Key (int k)
 
 	// Host_Loadgame_f can't bring up the loading plaque because too much
 	// stack space has been used, so do it now
-		SCR_BeginLoadingPlaque ();
+		// SCR_BeginLoadingPlaque ();
 
 	// issue the load command
 		Cbuf_AddText (src_server, va ("load s%i\n", load_cursor) );

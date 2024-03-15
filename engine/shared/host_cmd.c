@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "../client/clientdef.h"
 #include "../server/serverdef.h"
 
+extern cvar_t	maxclients;
 extern cvar_t	pausable;
 
 int	current_skill;
@@ -122,6 +123,8 @@ void Host_Map_f ()
 
 	Host_ShutdownServer (false);
 
+	svs.serverflags = 0;
+
 	SV_SpawnServer (level, NULL);
 
 	if (Host_IsLocalGame ())
@@ -131,8 +134,6 @@ void Host_Map_f ()
 			Cmd_ExecuteString (src_client, "connect localhost");
 		}
 	}
-
-	SV_BroadcastCommand ("reconnect\n");
 }
 
 /*
@@ -168,6 +169,8 @@ void Host_Changelevel_f ()
 
 	Host_ChangingLevel ();
 
+	SV_SaveSpawnparms ();
+
 	SV_SpawnServer (level, startspot);
 
 	SV_BroadcastCommand ("reconnect\n");
@@ -184,6 +187,7 @@ void Host_Restart_f ()
 {
 	char	mapname[MAX_QPATH];
 	char	startspot[MAX_QPATH];
+	int		i;
 
 	if (cls.demoplayback || !Host_IsLocalGame ())
 		return;
@@ -198,6 +202,15 @@ void Host_Restart_f ()
 	}
 
 	Host_ChangingLevel ();
+
+	for (i = 0, host_client = svs.clients; i < MAX_CLIENTS; i++, host_client++)
+	{
+		if (host_client->state != cs_spawned)
+			continue;
+
+		// needs to reconnect
+		host_client->state = cs_connected;
+	}
 
 	SV_SpawnServer (mapname, startspot);
 
@@ -247,7 +260,6 @@ Host_Savegame_f
 */
 void Host_Savegame_f ()
 {
-	#if 0
 	char	name[256];
 	FILE	*f;
 	int		i;
@@ -265,7 +277,7 @@ void Host_Savegame_f ()
 		return;
 	}
 
-	if (svs.maxclients != 1)
+	if (maxclients.value > 1)
 	{
 		Con_Printf ("Can't save multiplayer games.\n");
 		return;
@@ -283,9 +295,10 @@ void Host_Savegame_f ()
 		return;
 	}
 		
-	for (i=0 ; i<svs.maxclients ; i++)
+	for (i=0 ; i<MAX_CLIENTS ; i++)
 	{
-		if (svs.clients[i].active && (ed_float(svs.clients[i].edict, health) <= 0) )
+		if (svs.clients[i].state == cs_spawned
+		 && (ed_float(svs.clients[i].edict, health) <= 0) )
 		{
 			Con_Printf ("Can't savegame with a dead player\n");
 			return;
@@ -331,7 +344,6 @@ void Host_Savegame_f ()
 	}
 	fclose (f);
 	Con_Printf ("done.\n");
-	#endif
 }
 
 
@@ -342,13 +354,12 @@ Host_Loadgame_f
 */
 void Host_Loadgame_f ()
 {
-	#if 0
 	char	name[MAX_OSPATH];
 	FILE	*f;
 	char	mapname[MAX_QPATH];
 	float	time, tfloat;
 	char	str[32768], *start;
-	int		i, r;
+	int		i, r, j;
 	edict_t	*ent;
 	int		entnum;
 	int		version;
@@ -475,15 +486,12 @@ void Host_Loadgame_f ()
 
 	if (cls.state != ca_dedicated)
 	{
-		/*! Toodles FIXME: */
 		Cmd_ExecuteString (src_client, "connect localhost");
 	}
-	#endif
 }
 
 void SaveGamestate()
 {
-	#if 0
 	char	name[256];
 	FILE	*f;
 	int		i;
@@ -520,7 +528,7 @@ void SaveGamestate()
 	}
 
 
-	for (i=svs.maxclients+1 ; i<sv.num_edicts ; i++)
+	for (i=MAX_CLIENTS+1 ; i<sv.num_edicts ; i++)
 	{
 		ent = EDICT_NUM(i);
 		if ((int)ed_float(ent, flags) & FL_ARCHIVE_OVERRIDE)
@@ -531,12 +539,10 @@ void SaveGamestate()
 	}
 	fclose (f);
 	Con_Printf ("done.\n");
-	#endif
 }
 
 int LoadGamestate(char *level, char *startspot)
 {
-	#if 0
 	char	name[MAX_OSPATH];
 	FILE	*f;
 	char	mapname[MAX_QPATH];
@@ -635,7 +641,6 @@ int LoadGamestate(char *level, char *startspot)
 //		svs.clients->spawn_parms[i] = spawn_parms[i];
 
 	return 0;
-	#endif
 }
 
 // changing levels within a unit
