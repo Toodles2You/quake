@@ -94,7 +94,7 @@ void Netchan_Init ()
 	Cvar_RegisterVariable(src_host, &showpackets);
 	Cvar_RegisterVariable(src_host, &showdrop);
 	Cvar_RegisterVariable(src_host, &qport);
-	Cvar_SetValue(src_host, "qport", port);
+	Cvar_SetValue(src_client, "qport", port);
 }
 
 /*
