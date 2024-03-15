@@ -63,6 +63,8 @@ cvar_t	crosshair = {"crosshair", "0", CVAR_ARCHIVE};
 
 cvar_t	gl_cshiftpercent = {"gl_cshiftpercent", "100"};
 
+cvar_t v_contentblend = {"v_contentblend", "1"};
+
 float	v_dmg_time, v_dmg_roll, v_dmg_pitch;
 
 extern	int			in_forward, in_forward2, in_back;
@@ -416,26 +418,27 @@ Underwater, lava, etc each has a color shift
 */
 void V_SetContentsColor (int contents)
 {
-	// if (!v_contentblend.value) {
+	if (!v_contentblend.value)
+	{
 		cl.cshifts[CSHIFT_CONTENTS] = cshift_empty;
-	// 	return;
-	// }
+		return;
+	}
 
-	// switch (contents)
-	// {
-	// case CONTENTS_EMPTY:
-	// 	cl.cshifts[CSHIFT_CONTENTS] = cshift_empty;
-	// 	break;
-	// case CONTENTS_LAVA:
-	// 	cl.cshifts[CSHIFT_CONTENTS] = cshift_lava;
-	// 	break;
-	// case CONTENTS_SOLID:
-	// case CONTENTS_SLIME:
-	// 	cl.cshifts[CSHIFT_CONTENTS] = cshift_slime;
-	// 	break;
-	// default:
-	// 	cl.cshifts[CSHIFT_CONTENTS] = cshift_water;
-	// }
+	switch (contents)
+	{
+	case CONTENTS_EMPTY:
+		cl.cshifts[CSHIFT_CONTENTS] = cshift_empty;
+		break;
+	case CONTENTS_LAVA:
+		cl.cshifts[CSHIFT_CONTENTS] = cshift_lava;
+		break;
+	case CONTENTS_SOLID:
+	case CONTENTS_SLIME:
+		cl.cshifts[CSHIFT_CONTENTS] = cshift_slime;
+		break;
+	default:
+		cl.cshifts[CSHIFT_CONTENTS] = cshift_water;
+	}
 }
 
 /*
@@ -966,6 +969,8 @@ void V_Init ()
 	Cvar_RegisterVariable (src_client, &v_iyaw_level);
 	Cvar_RegisterVariable (src_client, &v_iroll_level);
 	Cvar_RegisterVariable (src_client, &v_ipitch_level);
+
+	Cvar_RegisterVariable (src_client, &v_contentblend);
 
 	Cvar_RegisterVariable (src_client, &v_idlescale);
 	Cvar_RegisterVariable (src_client, &crosshair);

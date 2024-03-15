@@ -36,20 +36,18 @@ enum {
 	m_load,
 	m_save,
 	m_multiplayer,
-	#ifdef FIXME
 	m_setup,
-	#endif
 	m_options,
 	m_video,
 	m_keys,
 	m_help,
 	m_quit,
-	#ifdef FIXME
 	m_lanconfig,
 	m_gameoptions,
+#ifdef FIXME
 	m_search,
 	m_slist
-	#endif
+#endif
 } m_state;
 
 void M_Menu_Main_f ();
@@ -639,9 +637,9 @@ void M_MultiPlayer_Draw ()
 
 	M_DrawTransPic (54, 32 + m_multiplayer_cursor * 20,Draw_CachePic( va("gfx/menudot%i.lmp", f+1 ) ) );
 
-	// if (tcpipAvailable)
-	// 	return;
+#if 0
 	M_PrintWhite ((320/2) - ((27*8)/2), 148, "No Communications Available");
+#endif
 }
 
 
@@ -667,31 +665,30 @@ void M_MultiPlayer_Key (int key)
 
 	case K_ENTER:
 		m_entersound = true;
-		#ifdef FIXME
 		switch (m_multiplayer_cursor)
 		{
 		case 0:
-			if (tcpipAvailable)
-				M_Menu_LanConfig_f ();
+			M_Menu_LanConfig_f ();
 			break;
 
 		case 1:
-			if (tcpipAvailable)
-				M_Menu_LanConfig_f ();
+			M_Menu_LanConfig_f ();
 			break;
 
 		case 2:
 			M_Menu_Setup_f ();
 			break;
 		}
-		#endif
 	}
 }
 
-#ifdef FIXME
 
 //=============================================================================
 /* SETUP MENU */
+
+extern cvar_t name;
+extern cvar_t topcolor;
+extern cvar_t bottomcolor;
 
 int		setup_cursor = 4;
 int		setup_cursor_table[] = {40, 56, 80, 104, 140};
@@ -710,10 +707,10 @@ void M_Menu_Setup_f ()
 	key_dest = key_menu;
 	m_state = m_setup;
 	m_entersound = true;
-	strcpy(setup_myname, cl_name.string);
+	strcpy(setup_myname, name.string);
 	strcpy(setup_hostname, hostname.string);
-	setup_top = setup_oldtop = ((int)cl_color.value) >> 4;
-	setup_bottom = setup_oldbottom = ((int)cl_color.value) & 15;
+	setup_top = setup_oldtop = ((int)topcolor.value) >> 4;
+	setup_bottom = setup_oldbottom = ((int)bottomcolor.value) & 15;
 }
 
 
@@ -807,7 +804,7 @@ forward:
 			goto forward;
 
 		// setup_cursor == 4 (OK)
-		if (strcmp(cl_name.string, setup_myname) != 0)
+		if (strcmp(name.string, setup_myname) != 0)
 			Cbuf_AddText (src_client, va ("name \"%s\"\n", setup_myname) );
 		if (strcmp(hostname.string, setup_hostname) != 0)
 			Cvar_Set(src_server, "hostname", setup_hostname);
@@ -864,7 +861,6 @@ forward:
 		setup_bottom = 13;
 }
 
-#endif
 
 //=============================================================================
 /* OPTIONS MENU */
@@ -1490,7 +1486,6 @@ void M_Quit_Draw ()
 	M_Print (64, 108, quitMessage[msgNumber*4+3]);
 }
 
-#ifdef FIXME
 
 //=============================================================================
 /* LAN CONFIG MENU */
@@ -1519,7 +1514,11 @@ void M_Menu_LanConfig_f ()
 	}
 	if (StartingGame && lanConfig_cursor == 3)
 		lanConfig_cursor = 1;
-	lanConfig_port = DEFAULTnet_hostport;
+#ifndef FIXME
+	if (JoiningGame && lanConfig_cursor == 2)
+		lanConfig_cursor = 3;
+#endif
+	lanConfig_port = PORT_SERVER;
 	sprintf(lanConfig_portname, "%u", lanConfig_port);
 
 	m_return_onerror = false;
@@ -1549,7 +1548,7 @@ void M_LanConfig_Draw ()
 	M_Print (basex, lanConfig_cursor_table[0], "Address:");
 	if (lanConfig_showAddress == 2)
 	{
-		M_Print (basex+9*8, lanConfig_cursor_table[0], my_tcpip_address);
+		M_Print (basex+9*8, lanConfig_cursor_table[0], NET_BaseAdrToString(net_local_adr));
 	}
 	else if (lanConfig_showAddress == 1)
 	{
@@ -1566,7 +1565,9 @@ void M_LanConfig_Draw ()
 
 	if (JoiningGame)
 	{
+#ifdef FIXME
 		M_Print (basex, lanConfig_cursor_table[2], "Search for local games...");
+#endif
 		M_Print (basex, 108, "Join game at:");
 		M_DrawTextBox (basex+8, lanConfig_cursor_table[3]-8, 22, 1);
 		M_Print (basex+16, lanConfig_cursor_table[3], lanConfig_joinname);
@@ -1603,6 +1604,10 @@ void M_LanConfig_Key (int key)
 	case K_UPARROW:
 		S_LocalSound ("misc/menu1.wav");
 		lanConfig_cursor--;
+#ifndef FIXME
+		if (JoiningGame && lanConfig_cursor == 2)
+			lanConfig_cursor = 1;
+#endif
 		if (lanConfig_cursor < 0)
 			lanConfig_cursor = NUM_LANCONFIG_CMDS-1;
 		break;
@@ -1610,6 +1615,10 @@ void M_LanConfig_Key (int key)
 	case K_DOWNARROW:
 		S_LocalSound ("misc/menu1.wav");
 		lanConfig_cursor++;
+#ifndef FIXME
+		if (JoiningGame && lanConfig_cursor == 2)
+			lanConfig_cursor = 3;
+#endif
 		if (lanConfig_cursor >= NUM_LANCONFIG_CMDS)
 			lanConfig_cursor = 0;
 		break;
@@ -1627,7 +1636,9 @@ void M_LanConfig_Key (int key)
 		}
 
 		Cbuf_AddText (src_client, "stopdemo\n");
+#ifdef FIXME
 		net_hostport = lanConfig_port;
+#endif
 
 		if (lanConfig_cursor == 2)
 		{
@@ -1636,7 +1647,9 @@ void M_LanConfig_Key (int key)
 				M_Menu_GameOptions_f ();
 				break;
 			}
+#ifdef FIXME
 			M_Menu_Search_f();
+#endif
 			break;
 		}
 
@@ -1694,10 +1707,12 @@ void M_LanConfig_Key (int key)
 	}
 
 	if (StartingGame && lanConfig_cursor == 3)
+	{
 		if (key == K_UPARROW)
 			lanConfig_cursor = 2;
 		else
 			lanConfig_cursor = 0;
+	}
 
 	l =  atoi(lanConfig_portname);
 	if (l > 65535)
@@ -2154,6 +2169,8 @@ void M_GameOptions_Key (int key)
 //=============================================================================
 /* SEARCH MENU */
 
+#ifdef FIXME
+
 bool	searchComplete = false;
 double		searchCompleteTime;
 
@@ -2329,9 +2346,7 @@ void M_Init ()
 	Cmd_AddCommand (src_client, "menu_load", M_Menu_Load_f);
 	Cmd_AddCommand (src_client, "menu_save", M_Menu_Save_f);
 	Cmd_AddCommand (src_client, "menu_multiplayer", M_Menu_MultiPlayer_f);
-	#ifdef FIXME
 	Cmd_AddCommand (src_client, "menu_setup", M_Menu_Setup_f);
-	#endif
 	Cmd_AddCommand (src_client, "menu_options", M_Menu_Options_f);
 	Cmd_AddCommand (src_client, "menu_keys", M_Menu_Keys_f);
 	Cmd_AddCommand (src_client, "menu_video", M_Menu_Video_f);
@@ -2389,11 +2404,9 @@ void M_Draw ()
 		M_MultiPlayer_Draw ();
 		break;
 
-	#ifdef FIXME
 	case m_setup:
 		M_Setup_Draw ();
 		break;
-	#endif
 
 	case m_options:
 		M_Options_Draw ();
@@ -2415,7 +2428,6 @@ void M_Draw ()
 		M_Quit_Draw ();
 		break;
 
-	#ifdef FIXME
 	case m_lanconfig:
 		M_LanConfig_Draw ();
 		break;
@@ -2424,6 +2436,7 @@ void M_Draw ()
 		M_GameOptions_Draw ();
 		break;
 
+#ifdef FIXME
 	case m_search:
 		M_Search_Draw ();
 		break;
@@ -2431,7 +2444,7 @@ void M_Draw ()
 	case m_slist:
 		M_ServerList_Draw ();
 		break;
-	#endif
+#endif
 	}
 
 	if (m_entersound)
@@ -2471,11 +2484,9 @@ void M_Keydown (int key)
 		M_MultiPlayer_Key (key);
 		return;
 
-	#ifdef FIXME
 	case m_setup:
 		M_Setup_Key (key);
 		return;
-	#endif
 
 	case m_options:
 		M_Options_Key (key);
@@ -2497,7 +2508,6 @@ void M_Keydown (int key)
 		M_Quit_Key (key);
 		return;
 
-	#ifdef FIXME
 	case m_lanconfig:
 		M_LanConfig_Key (key);
 		return;
@@ -2506,6 +2516,7 @@ void M_Keydown (int key)
 		M_GameOptions_Key (key);
 		return;
 
+#ifdef FIXME
 	case m_search:
 		M_Search_Key (key);
 		break;
@@ -2513,7 +2524,7 @@ void M_Keydown (int key)
 	case m_slist:
 		M_ServerList_Key (key);
 		return;
-	#endif
+#endif
 	}
 }
 

@@ -1288,6 +1288,8 @@ static void COM_CopyFile (char *netpath, char *cachepath)
 	Sys_FileClose (out);    
 }
 
+bool file_from_pak; // global indicating file came from pack file ZOID
+
 /*
 ===========
 COM_FindFile
@@ -1305,6 +1307,8 @@ static size_t COM_FindFile (char *filename, int *handle, FILE **file)
 	size_t i;
 	int h;
 	int findtime, cachetime;
+
+	file_from_pak = false;
 
 	if (file && handle)
 		Sys_Error ("COM_FindFile: both handle and file set");
@@ -1339,6 +1343,7 @@ static size_t COM_FindFile (char *filename, int *handle, FILE **file)
 							fseek (*file, pak->files[i].filepos, SEEK_SET);
 					}
 					com_filesize = pak->files[i].filelen;
+					file_from_pak = true;
 					return com_filesize;
 				}
 		}

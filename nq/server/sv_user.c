@@ -651,7 +651,7 @@ static void SV_BeginDownload_f()
 	extern	cvar_t	allow_download_models;
 	extern	cvar_t	allow_download_sounds;
 	extern	cvar_t	allow_download_maps;
-	// extern	int		file_from_pak; // ZOID did file come from pak?
+	extern	bool	file_from_pak; // ZOID did file come from pak?
 
 	name = Cmd_Argv(1);
 // hacked by zoid to allow more conrol over download
@@ -695,13 +695,9 @@ static void SV_BeginDownload_f()
 	host_client->downloadsize = COM_FOpenFile (name, &host_client->download);
 	host_client->downloadcount = 0;
 
-	if (!host_client->download
-		// special check for maps, if it came from a pak file, don't allow
-		// download  ZOID
-		#ifdef FIXME
-		|| (strncmp(name, "maps/", 5) == 0 && file_from_pak)
-		#endif
-		)
+	// special check for maps, if it came from a pak file, don't allow
+	// download  ZOID
+	if (!host_client->download || (file_from_pak && strncmp(name, "maps/", 5) == 0))
 	{
 		if (host_client->download) {
 			fclose(host_client->download);
