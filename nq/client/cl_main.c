@@ -25,9 +25,6 @@ extern cvar_t qport;
 // we need to declare some mouse variables here, because the menu system
 // references them even when on a unix system.
 
-cvar_t	rcon_password = {"rcon_password", ""};
-cvar_t	rcon_address = {"rcon_address", ""};
-
 cvar_t	cl_timeout = {"cl_timeout", "60"};
 cvar_t	cl_shownet = {"cl_shownet","0"};	// can be 0, 1, or 2
 cvar_t	cl_nolerp = {"cl_nolerp","0"};
@@ -52,8 +49,6 @@ cvar_t	cl_solid_players = {"cl_solid_players", "1"};
 //
 // info mirrors
 //
-cvar_t	password = {"password", "", CVAR_CLIENT_INFO};
-cvar_t	spectator = {"spectator", "", CVAR_CLIENT_INFO};
 cvar_t	name = {"name", "Player", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
 cvar_t	team = {"team","", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
 cvar_t	skin = {"skin","", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
@@ -253,7 +248,7 @@ static void CL_Rcon_f ()
 	int		i;
 	netadr_t	to;
 
-	if (!rcon_password.string)
+	if (!strlen(rcon_password.string))
 	{
 		Con_Printf ("You must set 'rcon_password' before\n"
 					"issuing an rcon command.\n");
@@ -959,9 +954,6 @@ void CL_Init ()
 	Cvar_RegisterVariable (src_client, &m_forward);
 	Cvar_RegisterVariable (src_client, &m_side);
 
-	Cvar_RegisterVariable (src_client, &rcon_password);
-	Cvar_RegisterVariable (src_client, &rcon_address);
-
 	Cvar_RegisterVariable (src_client, &entlatency);
 	Cvar_RegisterVariable (src_client, &cl_predict_players2);
 	Cvar_RegisterVariable (src_client, &cl_predict_players);
@@ -974,8 +966,6 @@ void CL_Init ()
 	// info mirrors
 	//
 	Cvar_RegisterVariable (src_client, &name);
-	Cvar_RegisterVariable (src_client, &password);
-	Cvar_RegisterVariable (src_client, &spectator);
 	Cvar_RegisterVariable (src_client, &skin);
 	Cvar_RegisterVariable (src_client, &team);
 	Cvar_RegisterVariable (src_client, &topcolor);

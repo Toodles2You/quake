@@ -51,6 +51,12 @@ jmp_buf 	host_abortserver;
 byte		*host_basepal;
 byte		*host_colormap;
 
+cvar_t	rcon_password = {"rcon_password", ""};
+cvar_t	rcon_address = {"rcon_address", ""};
+
+cvar_t	password = {"password", "", CVAR_CLIENT_INFO};
+cvar_t	spectator_password = {"spectator", "", CVAR_CLIENT_INFO};
+
 cvar_t	host_framerate = {"host_framerate","0"};
 cvar_t	host_timescale = {"host_timescale","0"};	// set for slow motion
 cvar_t	host_speeds = {"host_speeds","0"};			// set for running times
@@ -160,6 +166,12 @@ void Host_InitLocal ()
 	Host_InitCommands ();
 	
 	Cvar_RegisterVariable (src_client, &cl_warncmd);
+
+	Cvar_RegisterVariable (src_host, &rcon_password);
+	Cvar_RegisterVariable (src_client, &rcon_address);
+
+	Cvar_RegisterVariable (src_host, &password);
+	Cvar_RegisterVariable (src_host, &spectator_password);
 	
 	Cvar_RegisterVariable (src_host, &host_framerate);
 	Cvar_RegisterVariable (src_host, &host_timescale);

@@ -454,7 +454,6 @@ void SVC_DirectConnect (void)
 	s = Info_ValueForKey (userinfo, "spectator");
 	if (s[0] && strcmp(s, "0"))
 	{
-#ifdef FIXME
 		if (spectator_password.string[0] && 
 			strcasecmp(spectator_password.string, "none") &&
 			strcmp(spectator_password.string, s) )
@@ -463,7 +462,6 @@ void SVC_DirectConnect (void)
 			Netchan_OutOfBandPrint (SERVER, net_from, "%c\nrequires a spectator password\n\n", A2C_PRINT);
 			return;
 		}
-#endif
 		Info_RemoveKey (userinfo, "spectator"); // remove passwd
 		Info_SetValueForStarKey (userinfo, "*spectator", "1", MAX_INFO_STRING, sv_highchars.value);
 		spectator = true;
@@ -471,7 +469,6 @@ void SVC_DirectConnect (void)
 	else
 	{
 		s = Info_ValueForKey (userinfo, "password");
-#ifdef FIXME
 		if (password.string[0] && 
 			strcasecmp(password.string, "none") &&
 			strcmp(password.string, s) )
@@ -480,7 +477,6 @@ void SVC_DirectConnect (void)
 			Netchan_OutOfBandPrint (SERVER, net_from, "%c\nserver requires a password\n\n", A2C_PRINT);
 			return;
 		}
-#endif
 		spectator = false;
 		Info_RemoveKey (userinfo, "password"); // remove passwd
 	}
@@ -616,7 +612,6 @@ void SVC_DirectConnect (void)
 
 static bool Rcon_Validate ()
 {
-#ifdef FIXME
 	if (!strlen (rcon_password.string))
 		return false;
 
@@ -624,9 +619,6 @@ static bool Rcon_Validate ()
 		return false;
 
 	return true;
-#else
-	return false;
-#endif
 }
 
 /*
@@ -1299,7 +1291,6 @@ SV_CheckVars
 */
 void SV_CheckVars ()
 {
-#ifdef FIXME
 	static char *pw, *spw;
 	int			v;
 
@@ -1319,7 +1310,6 @@ void SV_CheckVars ()
 		Info_SetValueForKey (svs.info, "needpass", "", MAX_SERVERINFO_STRING, sv_highchars.value);
 	else
 		Info_SetValueForKey (svs.info, "needpass", va("%i",v), MAX_SERVERINFO_STRING, sv_highchars.value);
-#endif
 }
 
 /*
