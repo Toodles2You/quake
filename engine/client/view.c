@@ -888,14 +888,23 @@ void V_CalcRefdef ()
 
 /*
 =============
-DropPunchAngle
+V_DropPunchAngle
 =============
 */
-void DropPunchAngle ()
+static void V_DropPunchAngle ()
 {
-	cl.punchangle -= 10*host_frametime;
-	if (cl.punchangle < 0)
-		cl.punchangle = 0;
+	if (cl.punchangle != 0.0f)
+	{
+		int sign = signbit(cl.punchangle);
+		int s = sign ? -10 : 10;
+
+		cl.punchangle -= s * host_frametime;
+
+		if (sign != signbit(cl.punchangle))
+		{
+			cl.punchangle = 0.0f;
+		}
+	}
 }
 
 /*
@@ -920,7 +929,7 @@ cl.simangles[ROLL] = 0;	// FIXME @@@
 	view_frame = &cl.frames[cls.netchan.incoming_sequence & UPDATE_MASK];
 	view_message = &view_frame->playerstate[cl.playernum];
 
-	DropPunchAngle ();
+	V_DropPunchAngle ();
 	if (cl.intermission)
 	{	// intermission / finale rendering
 		V_CalcIntermissionRefdef ();	

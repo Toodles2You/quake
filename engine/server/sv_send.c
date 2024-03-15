@@ -689,6 +689,8 @@ void SV_SendClientMessages ()
 	int			i, j;
 	client_t	*c;
 
+	SV_SendCompatibilityMessages ();
+
 // update frags, names, etc
 	SV_UpdateToReliableMessages ();
 
@@ -764,6 +766,8 @@ void SV_SendClientMessages ()
 			Netchan_Transmit (&c->netchan, 0, NULL);	// just update reliable
 			
 	}
+
+	SV_CleanupEnts ();
 }
 
 /*

@@ -436,6 +436,8 @@ static void CL_LinkPacketEntities ()
 			CL_NewDlight (s1->number, s1->origin[0], s1->origin[1], s1->origin[2], 200 + (rand()&31), 0.1, 1);
 		else if (s1->effects & EF_RED)
 			CL_NewDlight (s1->number, s1->origin[0], s1->origin[1], s1->origin[2], 200 + (rand()&31), 0.1, 2);
+		else if (s1->effects & EF_MUZZLEFLASH)
+			CL_NewDlight (s1->number, s1->origin[0], s1->origin[1], s1->origin[2], 200 + (rand()&31), 0.1, 0);
 		else if (s1->effects & EF_BRIGHTLIGHT)
 			CL_NewDlight (s1->number, s1->origin[0], s1->origin[1], s1->origin[2] + 16, 400 + (rand()&31), 0.1, 0);
 		else if (s1->effects & EF_DIMLIGHT)

@@ -409,6 +409,8 @@ void SV_Status_f();
 //
 // sv_ents.c
 //
+void SV_SendCompatibilityMessages();
+void SV_CleanupEnts();
 void SV_WriteEntitiesToClient(client_t *client, sizebuf_t *msg);
 
 //

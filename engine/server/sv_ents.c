@@ -464,6 +464,75 @@ static void SV_WritePlayersToClient (client_t *client, edict_t *clent, byte *pvs
 
 /*
 =============
+SV_SendCompatibilityMessages
+=============
+*/
+void SV_SendCompatibilityMessages ()
+{
+	int e;
+	edict_t *ent;
+	float* punchangle;
+	client_t *cl;
+
+	for (e = 0, cl = svs.clients; e < MAX_CLIENTS; e++, cl++)
+	{
+		if (cl->state != cs_spawned)
+		{
+			continue;
+		}
+
+		ent = cl->edict;
+		punchangle = ed_vector(ent, punchangle);
+
+		/* Send the player view punch to the client. */
+		if (ed_field(punchangle))
+		{
+			if (punchangle[PITCH] <= -4.0f)
+			{
+				ClientReliableWrite_Begin (cl, svc_bigkick, 1);
+			}
+			else if (punchangle[PITCH] <= -2.0f)
+			{
+				ClientReliableWrite_Begin (cl, svc_smallkick, 1);
+			}
+
+			punchangle[PITCH] = punchangle[YAW] = punchangle[ROLL] = 0.0f;
+		}
+
+		/* Send player muzzle flashes & unset the bit. */
+		if ((int)ed_float(ent, effects) & EF_MUZZLEFLASH)
+		{
+			MSG_WriteByte (&sv.multicast, svc_muzzleflash);
+			MSG_WriteShort (&sv.multicast, NUM_FOR_EDICT (ent));
+
+			SV_Multicast (ed_vector(ent, origin), MULTICAST_PVS);
+
+			ed_float(ent, effects) = (int)ed_float(ent, effects) & ~EF_MUZZLEFLASH;
+		}
+	}
+}
+
+
+/*
+=============
+SV_CleanupEnts
+=============
+*/
+void SV_CleanupEnts ()
+{
+	int e;
+	edict_t *ent;
+
+	/* Clear non-player muzzle flashes. */
+	for (e = MAX_CLIENTS + 1, ent = EDICT_NUM(e); e < sv.num_edicts; e++, ent = NEXT_EDICT(ent))
+	{
+		ed_float(ent, effects) = (int)ed_float(ent, effects) & ~EF_MUZZLEFLASH;
+	}
+}
+
+
+/*
+=============
 SV_WriteEntitiesToClient
 
 Encodes the current state of the world as
