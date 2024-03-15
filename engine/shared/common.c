@@ -1806,7 +1806,6 @@ static void COM_InitFilesystem ()
 // start up with QUAKE_BASEDIR by default
 //
 	COM_AddGameDirectory (va("%s/"QUAKE_BASEDIR, com_basedir), &modified);
-	COM_AddGameDirectory (va("%s/qw", com_basedir), &modified);
 
 	// any set gamedirs will be freed up to here
 	com_base_searchpaths = com_searchpaths;

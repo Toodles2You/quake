@@ -81,7 +81,7 @@ static void SV_New_f ()
 
 	// send the serverdata
 	MSG_WriteByte (&host_client->netchan.message, svc_serverdata);
-	MSG_WriteLong (&host_client->netchan.message, PROTOCOL_VERSION);
+	MSG_WriteLong (&host_client->netchan.message, svs.protocol);
 	MSG_WriteLong (&host_client->netchan.message, svs.spawncount);
 	MSG_WriteString (&host_client->netchan.message, gamedirfile);
 
@@ -108,6 +108,10 @@ static void SV_New_f ()
 	// send music
 	MSG_WriteByte (&host_client->netchan.message, svc_cdtrack);
 	MSG_WriteByte (&host_client->netchan.message, ed_float(sv.edicts, sounds));
+	if (svs.protocol == PROTOCOL_NETQUAKE)
+	{
+		MSG_WriteByte (&host_client->netchan.message, 3);
+	}
 
 	// send server info string
 	MSG_WriteByte (&host_client->netchan.message, svc_stufftext);

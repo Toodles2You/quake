@@ -127,6 +127,7 @@ typedef struct
 
 typedef struct
 {
+	int protocol;
 	int spawncount; // number of servers spawned since start,
 					// used to check late spawns
 	client_t clients[MAX_CLIENTS];
@@ -382,6 +383,7 @@ void SV_SetMoveVars();
 void SV_SendClientMessages();
 
 void SV_Multicast(vec3_t origin, int to);
+void SV_StartParticle(vec3_t org, vec3_t dir, int color, int count);
 void SV_StartSound(edict_t *entity, int channel, char *sample, int volume, float attenuation);
 void SV_ClientPrintf(client_t *cl, int level, char *fmt, ...);
 void SV_BroadcastPrintf(int level, char *fmt, ...);

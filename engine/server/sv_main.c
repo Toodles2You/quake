@@ -39,8 +39,8 @@ cvar_t sv_phs = {"sv_phs", "1"};
 //
 // game rules mirrored in svs.info
 //
-cvar_t	maxclients = {"maxclients", "8"};
-cvar_t	maxspectators = {"maxspectators", "8"};
+cvar_t	maxclients = {"maxclients", "1"};
+cvar_t	maxspectators = {"maxspectators", "0"};
 
 cvar_t	hostname = {"hostname", "Quake", CVAR_SERVER_INFO};
 
@@ -418,9 +418,9 @@ void SVC_DirectConnect (void)
 	int			challenge;
 
 	version = atoi(Cmd_Argv(1));
-	if (version != PROTOCOL_VERSION)
+	if (version != PROTOCOL_QUAKEWORLD)
 	{
-		Netchan_OutOfBandPrint (SERVER, net_from, "%c\nServer is version %i.\n", A2C_PRINT, PROTOCOL_VERSION);
+		Netchan_OutOfBandPrint (SERVER, net_from, "%c\nServer is version %i.\n", A2C_PRINT, PROTOCOL_QUAKEWORLD);
 		Con_Printf ("* rejected connect from version %i\n", version);
 		return;
 	}

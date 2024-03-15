@@ -280,7 +280,7 @@ int PR_LoadProgs(progs_state_t *pr, char *filename, int version, int crc)
     pr->progs = (dprograms_t *)COM_LoadHunkFile(filename);
     if (!pr->progs)
     {
-        Con_Printf("PR_LoadProgs: couldn't load progs.dat");
+        Con_DPrintf("PR_LoadProgs: couldn't load progs.dat");
         return 1;
     }
     Con_DPrintf("Programs occupy %iK.\n", com_filesize / 1024);

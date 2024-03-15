@@ -499,7 +499,6 @@ particle(origin, color, count)
 */
 void PF_particle (progs_state_t *pr)
 {
-#ifdef FIXME
 	float		*org, *dir;
 	float		color;
 	float		count;
@@ -509,7 +508,6 @@ void PF_particle (progs_state_t *pr)
 	color = pr_global(pr, float, OFS_PARM2);
 	count = pr_global(pr, float, OFS_PARM3);
 	SV_StartParticle (org, dir, color, count);
-#endif
 }
 
 

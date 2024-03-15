@@ -442,7 +442,7 @@ void CL_Record_f ()
 
 // send the serverdata
 	MSG_WriteByte (&buf, svc_serverdata);
-	MSG_WriteLong (&buf, PROTOCOL_VERSION);
+	MSG_WriteLong (&buf, PROTOCOL_QUAKEWORLD);
 	MSG_WriteLong (&buf, cl.servercount);
 	MSG_WriteString (&buf, gamedirfile);
 

@@ -168,6 +168,7 @@ void CL_ParseTEnt ()
 	int		rnd;
 	explosion_t	*ex;
 	int		cnt;
+	int		colorStart, colorLength;
 
 	type = MSG_ReadByte ();
 	switch (type)
@@ -291,26 +292,62 @@ void CL_ParseTEnt ()
 		break;
 
 	case TE_GUNSHOT:			// bullet hitting wall
-		cnt = MSG_ReadByte ();
+		if (cl.serverprotocol == PROTOCOL_NETQUAKE)
+		{
+			cnt = 1;
+		}
+		else
+		{
+			cnt = MSG_ReadByte ();
+		}
 		pos[0] = MSG_ReadCoord ();
 		pos[1] = MSG_ReadCoord ();
 		pos[2] = MSG_ReadCoord ();
 		R_RunParticleEffect (pos, vec3_origin, 0, 20 * cnt);
 		break;
 
-	case TE_BLOOD:				// bullets hitting body
-		cnt = MSG_ReadByte ();
-		pos[0] = MSG_ReadCoord ();
-		pos[1] = MSG_ReadCoord ();
-		pos[2] = MSG_ReadCoord ();
-		R_RunParticleEffect (pos, vec3_origin, 73, 20 * cnt);
+	case TE_BLOOD:				
+		if (cl.serverprotocol == PROTOCOL_NETQUAKE)
+		{
+			// color mapped explosion
+			pos[0] = MSG_ReadCoord ();
+			pos[1] = MSG_ReadCoord ();
+			pos[2] = MSG_ReadCoord ();
+			colorStart = MSG_ReadByte ();
+			colorLength = MSG_ReadByte ();
+			R_ParticleExplosion2 (pos, colorStart, colorLength);
+			dl = CL_AllocDlight (0);
+			VectorCopy (pos, dl->origin);
+			dl->radius = 350;
+			dl->die = cl.time + 0.5;
+			dl->decay = 300;
+			S_StartSound (-1, 0, cl_sfx_r_exp3, pos, 1, 1);
+		}
+		else
+		{
+			// bullets hitting body
+			cnt = MSG_ReadByte ();
+			pos[0] = MSG_ReadCoord ();
+			pos[1] = MSG_ReadCoord ();
+			pos[2] = MSG_ReadCoord ();
+			R_RunParticleEffect (pos, vec3_origin, 73, 20 * cnt);
+		}
 		break;
 
-	case TE_LIGHTNINGBLOOD:		// lightning hitting body
-		pos[0] = MSG_ReadCoord ();
-		pos[1] = MSG_ReadCoord ();
-		pos[2] = MSG_ReadCoord ();
-		R_RunParticleEffect (pos, vec3_origin, 225, 50);
+	case TE_LIGHTNINGBLOOD:
+		if (cl.serverprotocol == PROTOCOL_NETQUAKE)
+		{
+			// grappling hook beam
+			CL_ParseBeam (Mod_ForName("progs/beam.mdl", true, false));
+		}
+		else
+		{
+			// lightning hitting body
+			pos[0] = MSG_ReadCoord ();
+			pos[1] = MSG_ReadCoord ();
+			pos[2] = MSG_ReadCoord ();
+			R_RunParticleEffect (pos, vec3_origin, 225, 50);
+		}
 		break;
 
 	default:

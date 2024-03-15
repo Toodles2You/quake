@@ -141,7 +141,7 @@ static void CL_SendConnectPacket ()
 
 	//	Con_Printf ("Connecting to %s...\n", cls.servername);
 	sprintf(data, "%c%c%c%cconnect %i %i %i \"%s\"\n",
-			255, 255, 255, 255, PROTOCOL_VERSION, cls.qport, cls.challenge, cls.userinfo);
+			255, 255, 255, 255, PROTOCOL_QUAKEWORLD, cls.qport, cls.challenge, cls.userinfo);
 
 	NET_SendPacket(CLIENT, strlen(data), data, adr);
 }

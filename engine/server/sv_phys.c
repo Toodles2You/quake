@@ -1015,12 +1015,15 @@ SV_RunEntity
 */
 static void SV_RunEntity (edict_t *ent)
 {
-	if (ed_float(ent, lastruntime) == (float)realtime)
+	if (ed_field(lastruntime))
 	{
-		return;
-	}
+		if (ed_float(ent, lastruntime) == (float)realtime)
+		{
+			return;
+		}
 
-	ed_float(ent, lastruntime) = (float)realtime;
+		ed_float(ent, lastruntime) = (float)realtime;
+	}
 
 	switch ((int)ed_float(ent, movetype))
 	{
@@ -1061,7 +1064,7 @@ void SV_RunNewmis ()
 {
 	edict_t *ent;
 
-	if (!sv_pr_int(newmis))
+	if (!pr_field(newmis) || !sv_pr_int(newmis))
 	{
 		return;
 	}

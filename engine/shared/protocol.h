@@ -6,8 +6,6 @@ enum
 {
     PROTOCOL_NETQUAKE = 15,
     PROTOCOL_QUAKEWORLD = 28,
-
-    PROTOCOL_VERSION = PROTOCOL_QUAKEWORLD,
 };
 
 enum
@@ -121,6 +119,7 @@ enum
     svc_lightstyle          = 12, // [byte] [string]
     svc_updatefrags         = 14, // [byte] [short]
     svc_stopsound           = 16, // <see code>
+    svc_particle            = 18, // [vec3] <variable>
     svc_damage              = 19,
 	
     svc_spawnstatic         = 20,

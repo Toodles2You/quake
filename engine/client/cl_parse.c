@@ -521,7 +521,6 @@ static void CL_ParseServerData ()
 	char	fn[MAX_OSPATH];
 	bool	cflag = false;
 	extern	char	gamedirfile[MAX_OSPATH];
-	int protover;
 	
 	Con_DPrintf ("Serverdata packet received.\n");
 //
@@ -530,11 +529,20 @@ static void CL_ParseServerData ()
 	CL_ClearState ();
 
 // parse protocol version number
-// allow 2.2 and 2.29 demos to play
-	protover = MSG_ReadLong ();
-	if (protover != PROTOCOL_VERSION && 
-		!(cls.demoplayback && (protover == 26 || protover == 27 || protover == 28)))
-		Host_Error ("Server returned version %i, not %i\nYou probably need to upgrade.\nCheck http://www.quakeworld.net/", protover, PROTOCOL_VERSION);
+	cl.serverprotocol = MSG_ReadLong ();
+
+	if (!cls.demoplayback
+	 && cl.serverprotocol != PROTOCOL_QUAKEWORLD
+	 && cl.serverprotocol != PROTOCOL_NETQUAKE)
+	{
+		Host_Error(
+			"Server returned version %i, not %i or %i\n",
+			cl.serverprotocol,
+			PROTOCOL_QUAKEWORLD,
+			PROTOCOL_NETQUAKE);
+	}
+
+	Con_Printf ("Using protocol %i\n", cl.serverprotocol);
 
 	cl.servercount = MSG_ReadLong ();
 
@@ -1166,6 +1174,10 @@ void CL_ParseServerMessage ()
 			cl.players[i].entertime = realtime - MSG_ReadFloat();
 			break;
 
+		case svc_particle:
+			R_ParseParticleEffect();
+			break;
+
 		case svc_spawnbaseline:
 			i = MSG_ReadShort();
 			CL_ParseBaseline(&cl_baselines[i]);
@@ -1202,18 +1214,26 @@ void CL_ParseServerMessage ()
 
 		case svc_cdtrack:
 			cl.cdtrack = MSG_ReadByte();
-			CDAudio_Play((byte)cl.cdtrack, true);
+			i = 1;
+			if (cl.serverprotocol == PROTOCOL_NETQUAKE)
+			{
+				i = MSG_ReadByte();
+			}
+			CDAudio_Play((byte)cl.cdtrack, i);
 			break;
 
 		case svc_intermission:
 			cl.intermission = 1;
 			cl.completed_time = realtime;
 			vid.recalc_refdef = true; // go to full screen
-			for (i = 0; i < 3; i++)
-				cl.simorg[i] = MSG_ReadCoord();
-			for (i = 0; i < 3; i++)
-				cl.simangles[i] = MSG_ReadAngle();
-			VectorCopy(vec3_origin, cl.simvel);
+			if (cl.serverprotocol == PROTOCOL_QUAKEWORLD)
+			{
+				for (i = 0; i < 3; i++)
+					cl.simorg[i] = MSG_ReadCoord();
+				for (i = 0; i < 3; i++)
+					cl.simangles[i] = MSG_ReadAngle();
+				VectorCopy(vec3_origin, cl.simvel);
+			}
 			break;
 
 		case svc_finale:

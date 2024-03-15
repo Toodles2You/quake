@@ -280,6 +280,35 @@ inrange:
 	SZ_Clear (&sv.multicast);
 }
 
+/*  
+==================
+SV_StartParticle
+
+Make sure the event gets sent to all clients
+==================
+*/
+void SV_StartParticle(vec3_t org, vec3_t dir, int color, int count)
+{
+	int i, v;
+
+	MSG_WriteByte (&sv.multicast, svc_particle);
+	MSG_WriteCoord (&sv.multicast, org[0]);
+	MSG_WriteCoord (&sv.multicast, org[1]);
+	MSG_WriteCoord (&sv.multicast, org[2]);
+	for (i = 0; i < 3; i++)
+	{
+		v = dir[i] * 16;
+		if (v > 127)
+			v = 127;
+		else if (v < -128)
+			v = -128;
+		MSG_WriteChar (&sv.multicast, v);
+	}
+	MSG_WriteByte (&sv.multicast, count);
+	MSG_WriteByte (&sv.multicast, color);
+
+	SV_Multicast (org, MULTICAST_PVS);
+}
 
 /*  
 ==================

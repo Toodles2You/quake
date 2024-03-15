@@ -189,6 +189,7 @@ extern client_static_t cls;
 //
 typedef struct
 {
+	int serverprotocol;
 	int servercount; // server identification for prespawns
 
 	char serverinfo[MAX_SERVERINFO_STRING];
