@@ -66,75 +66,75 @@ set(COMMON_SRC
     common/mathlib.c
 )
 
-set(QCOMMON_SRC
-    nq/qcommon/cmd.c
-    nq/qcommon/cmodel.c
-    nq/qcommon/common.c
-    nq/qcommon/cvar.c
-    nq/qcommon/host_cmd.c
-    nq/qcommon/host.c
-    nq/qcommon/net_chan.c
-    nq/qcommon/net_udp.c
-    nq/qcommon/pmove.c
-    nq/qcommon/pmovetst.c
-    nq/qcommon/sys_linux.c
-    nq/qcommon/zone.c
+set(SHARED_SRC
+    engine/shared/cmd.c
+    engine/shared/cmodel.c
+    engine/shared/common.c
+    engine/shared/cvar.c
+    engine/shared/host_cmd.c
+    engine/shared/host.c
+    engine/shared/net_chan.c
+    engine/shared/net_udp.c
+    engine/shared/pmove.c
+    engine/shared/pmovetst.c
+    engine/shared/sys_linux.c
+    engine/shared/zone.c
 )
 
 set(CLIENT_SRC
-    nq/client/cd_vorbis.c
-    nq/client/chase.c
-    nq/client/cl_cam.c
-    nq/client/cl_demo.c
-    nq/client/cl_ents.c
-    nq/client/cl_input.c
-    nq/client/cl_main.c
-    nq/client/cl_parse.c
-    nq/client/cl_pred.c
-    nq/client/cl_tent.c
-    nq/client/console.c
-    nq/client/gl_draw.c
-    nq/client/gl_mesh.c
-    nq/client/gl_model.c
-    nq/client/gl_ngraph.c
-    nq/client/gl_refrag.c
-    nq/client/gl_rlight.c
-    nq/client/gl_rmain.c
-    nq/client/gl_rmisc.c
-    nq/client/gl_rsurf.c
-    nq/client/gl_screen.c
-    nq/client/gl_vidsdl.c
-    nq/client/gl_warp.c
-    nq/client/in_sdl.c
-    nq/client/keys.c
-    nq/client/menu.c
-    nq/client/part.c
-    nq/client/sbar.c
-    nq/client/skin.c
-    nq/client/snd_dma.c
-    nq/client/snd_mem.c
-    nq/client/snd_mix.c
-    nq/client/snd_sdl.c
-    nq/client/stb_vorbis.c
-    nq/client/view.c
-    nq/client/wad.c
+    engine/client/cd_vorbis.c
+    engine/client/chase.c
+    engine/client/cl_cam.c
+    engine/client/cl_demo.c
+    engine/client/cl_ents.c
+    engine/client/cl_input.c
+    engine/client/cl_main.c
+    engine/client/cl_parse.c
+    engine/client/cl_pred.c
+    engine/client/cl_tent.c
+    engine/client/console.c
+    engine/client/gl_draw.c
+    engine/client/gl_mesh.c
+    engine/client/gl_model.c
+    engine/client/gl_ngraph.c
+    engine/client/gl_refrag.c
+    engine/client/gl_rlight.c
+    engine/client/gl_rmain.c
+    engine/client/gl_rmisc.c
+    engine/client/gl_rsurf.c
+    engine/client/gl_screen.c
+    engine/client/gl_vidsdl.c
+    engine/client/gl_warp.c
+    engine/client/in_sdl.c
+    engine/client/keys.c
+    engine/client/menu.c
+    engine/client/part.c
+    engine/client/sbar.c
+    engine/client/skin.c
+    engine/client/snd_dma.c
+    engine/client/snd_mem.c
+    engine/client/snd_mix.c
+    engine/client/snd_sdl.c
+    engine/client/stb_vorbis.c
+    engine/client/view.c
+    engine/client/wad.c
 )
 
 set(SERVER_SRC
-    nq/server/progs.c
-    nq/server/pr_cmds.c 
-    nq/server/pr_edict.c
-    nq/server/pr_exec.c
-    nq/server/sv_ccmds.c
-    nq/server/sv_ents.c
-    nq/server/sv_init.c
-    nq/server/sv_main.c
-    nq/server/sv_move.c
-    nq/server/sv_nchan.c
-    nq/server/sv_phys.c
-    nq/server/sv_send.c
-    nq/server/sv_user.c
-    nq/server/world.c
+    engine/server/progs.c
+    engine/server/pr_cmds.c 
+    engine/server/pr_edict.c
+    engine/server/pr_exec.c
+    engine/server/sv_ccmds.c
+    engine/server/sv_ents.c
+    engine/server/sv_init.c
+    engine/server/sv_main.c
+    engine/server/sv_move.c
+    engine/server/sv_nchan.c
+    engine/server/sv_phys.c
+    engine/server/sv_send.c
+    engine/server/sv_user.c
+    engine/server/world.c
 )
 
 #===============================================================#
@@ -143,7 +143,7 @@ set(SERVER_SRC
 
 add_executable(quake
     ${COMMON_SRC}
-    ${QCOMMON_SRC}
+    ${SHARED_SRC}
     ${CLIENT_SRC}
     ${SERVER_SRC}
 )

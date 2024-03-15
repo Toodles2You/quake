@@ -2,7 +2,7 @@
 #ifndef _CLIENTDEF_H
 #define _CLIENTDEF_H
 
-#include "../qcommon/bothdef.h"
+#include "../shared/bothdef.h"
 
 #include "bspfile.h"
 #include "vid.h"

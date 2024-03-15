@@ -199,17 +199,17 @@ enum
 
 //===========================================
 
-#include "../qcommon/common.h"
-#include "../qcommon/sys.h"
-#include "../qcommon/zone.h"
+#include "../shared/common.h"
+#include "../shared/sys.h"
+#include "../shared/zone.h"
 #include "mathlib.h"
-#include "../qcommon/cmd.h"
-#include "../qcommon/cvar.h"
-#include "../qcommon/net.h"
-#include "../qcommon/protocol.h"
+#include "../shared/cmd.h"
+#include "../shared/cvar.h"
+#include "../shared/net.h"
+#include "../shared/protocol.h"
 #include "crc.h"
-#include "../qcommon/cmodel.h"
-#include "../qcommon/host.h"
-#include "../qcommon/pmove.h"
+#include "../shared/cmodel.h"
+#include "../shared/host.h"
+#include "../shared/pmove.h"
 
 #endif /* !_BOTHDEF_H */
