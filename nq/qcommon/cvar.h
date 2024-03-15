@@ -15,7 +15,7 @@ typedef struct cvar_s
 	char *string;
 	unsigned int flags;
 	float value;
-	struct cvar_s *next;
+	struct cvar_s *next[2];
 } cvar_t;
 
 void Cvar_RegisterVariable(cmd_source_e src, cvar_t *variable);

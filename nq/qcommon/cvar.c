@@ -33,7 +33,7 @@ cvar_t *Cvar_FindVar (cmd_source_e src, char *var_name)
 {
 	cvar_t	*var;
 	
-	for (var=cvar_vars[src] ; var ; var=var->next)
+	for (var=cvar_vars[src] ; var ; var=var->next[src])
 		if (!strcmp (var_name, var->name))
 			return var;
 
@@ -77,7 +77,7 @@ static void Cvar_GetBestVariable (cmd_source_e src, char *partial, int len, char
 	cvar_t *cvar;
 	int curLen;
 
-	for (cvar = cvar_vars[src]; cvar; cvar = cvar->next)
+	for (cvar = cvar_vars[src]; cvar; cvar = cvar->next[src])
 	{
 		curLen = abs(strlen(cvar->name) - len);
 
@@ -217,7 +217,7 @@ void Cvar_RegisterVariable (cmd_source_e src, cvar_t *variable)
 	}
 		
 // link the variable in
-	variable->next = cvar_vars[src];
+	variable->next[src] = cvar_vars[src];
 	cvar_vars[src] = variable;
 
 // copy the value off, because future sets will Z_Free it
@@ -268,7 +268,7 @@ void Cvar_WriteVariables (FILE *f)
 {
 	cvar_t	*var;
 	
-	for (var = cvar_vars[src_client] ; var ; var = var->next)
+	for (var = cvar_vars[src_client] ; var ; var = var->next[src_client])
 		if (var->flags & CVAR_ARCHIVE)
 			fprintf (f, "%s \"%s\"\n", var->name, var->string);
 }

@@ -410,7 +410,7 @@ static void Cmd_Alias_f ()
 
 typedef struct cmd_function_s
 {
-	struct cmd_function_s	*next;
+	struct cmd_function_s	*next[2];
 	char					*name;
 	xcommand_t				function;
 } cmd_function_t;
@@ -542,7 +542,7 @@ void	Cmd_AddCommand (cmd_source_e src, char *cmd_name, xcommand_t function)
 	}
 	
 // fail if the command already exists
-	for (cmd=cmd_functions[src] ; cmd ; cmd=cmd->next)
+	for (cmd=cmd_functions[src] ; cmd ; cmd=cmd->next[src])
 	{
 		if (!strcmp (cmd_name, cmd->name))
 		{
@@ -554,7 +554,7 @@ void	Cmd_AddCommand (cmd_source_e src, char *cmd_name, xcommand_t function)
 	cmd = Hunk_Alloc (sizeof(cmd_function_t));
 	cmd->name = cmd_name;
 	cmd->function = function;
-	cmd->next = cmd_functions[src];
+	cmd->next[src] = cmd_functions[src];
 	cmd_functions[src] = cmd;
 }
 
@@ -567,7 +567,7 @@ bool	Cmd_Exists (cmd_source_e src, char *cmd_name)
 {
 	cmd_function_t	*cmd;
 
-	for (cmd=cmd_functions[src] ; cmd ; cmd=cmd->next)
+	for (cmd=cmd_functions[src] ; cmd ; cmd=cmd->next[src])
 	{
 		if (!strcmp (cmd_name,cmd->name))
 			return true;
@@ -583,7 +583,7 @@ static void Cmd_GetBestCommand (cmd_source_e src, char *partial, int len, char *
 	cmd_function_t *cmd;
 	int curLen;
 
-	for (cmd = cmd_functions[src]; cmd; cmd = cmd->next)
+	for (cmd = cmd_functions[src]; cmd; cmd = cmd->next[src])
 	{
 		curLen = abs(strlen(cmd->name) - len);
 
@@ -693,7 +693,7 @@ void	Cmd_ExecuteString (cmd_source_e src, char *text)
 		return;		// no tokens
 
 // check functions
-	for (cmd=cmd_functions[src] ; cmd ; cmd=cmd->next)
+	for (cmd=cmd_functions[src] ; cmd ; cmd=cmd->next[src])
 	{
 		if (!strcasecmp (cmd_argv[src][0],cmd->name))
 		{
