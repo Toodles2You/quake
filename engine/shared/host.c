@@ -275,6 +275,8 @@ void Host_ShutdownServer(bool crash)
 		}
 	}
 
+	NET_Close (SERVER);
+
 	if (sv_fraglogfile)
 	{
 		fclose(sv_fraglogfile);
@@ -560,6 +562,8 @@ void Host_Frame (double time)
 
 //============================================================================
 
+extern cvar_t qport;
+
 static void Host_InitNet()
 {
 	int serverPort = PORT_SERVER;
@@ -570,8 +574,9 @@ static void Host_InitNet()
 		Con_Printf ("Server Port: %i\n", serverPort);
 	}
 
-	NET_Init (PORT_CLIENT, serverPort);
+	NET_Init ();
 	Netchan_Init ();
+	NET_Open (CLIENT, qport.value);
 }
 
 /*
@@ -654,6 +659,22 @@ void Host_Init (quakeparms_t *parms)
 	Sys_Printf ("========Quake Initialized=========\n");	
 }
 
+/*
+===============
+Host_InitServer
+===============
+*/
+void Host_InitServer()
+{
+	int port = PORT_SERVER;
+	int p = COM_CheckParm("-port");
+	if (p && p < com_argc)
+	{
+		port = atoi(com_argv[p + 1]);
+	}
+
+	NET_Open (SERVER, port);
+}
 
 /*
 ===============

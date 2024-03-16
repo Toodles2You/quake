@@ -271,27 +271,77 @@ int UDP_OpenSocket(int port)
 	return newsocket;
 }
 
-static void NET_GetLocalAddress()
+/*
+====================
+NET_GetLocalAddress
+====================
+*/
+netadr_t NET_GetLocalAddress()
 {
 	char buff[MAXHOSTNAMELEN];
 	struct sockaddr_in address;
 	int namelen;
 
-	gethostname(buff, MAXHOSTNAMELEN);
-	buff[MAXHOSTNAMELEN - 1] = 0;
-
-	NET_StringToAdr(buff, &net_local_adr);
-
-	namelen = sizeof(address);
-
-	if (getsockname(net_socket[SERVER], (struct sockaddr *)&address, &namelen) == -1)
+	if (!net_local_adr.ip[0])
 	{
-		Sys_Error("NET_Init: getsockname:", strerror(errno));
+		bool isOpen = net_socket[SERVER];
+		if (!isOpen)
+		{
+			Host_InitServer();
+		}
+
+		gethostname(buff, MAXHOSTNAMELEN);
+		buff[MAXHOSTNAMELEN - 1] = 0;
+
+		NET_StringToAdr(buff, &net_local_adr);
+
+		namelen = sizeof(address);
+
+		if (getsockname(net_socket[SERVER], (struct sockaddr *)&address, &namelen) == -1)
+		{
+			Sys_Error("NET_Init: getsockname:", strerror(errno));
+		}
+
+		net_local_adr.port = address.sin_port;
+
+		Con_Printf("IP address %s\n", NET_AdrToString(net_local_adr));
+
+		if (!isOpen)
+		{
+			NET_Close(SERVER);
+		}
 	}
 
-	net_local_adr.port = address.sin_port;
+	return net_local_adr;
+}
 
-	Con_Printf("IP address %s\n", NET_AdrToString(net_local_adr));
+/*
+====================
+NET_Close
+====================
+*/
+void NET_Close(netsocket_e sock)
+{
+	if (net_socket[sock])
+	{
+		close(net_socket[sock]);
+		net_socket[sock] = 0;
+	}
+}
+
+/*
+====================
+NET_Open
+====================
+*/
+void NET_Open(netsocket_e sock, int port)
+{
+	NET_Close(sock);
+
+	//
+	// open the communications socket
+	//
+	net_socket[sock] = UDP_OpenSocket(port);
 }
 
 /*
@@ -299,14 +349,8 @@ static void NET_GetLocalAddress()
 NET_Init
 ====================
 */
-void NET_Init(int clientPort, int serverPort)
+void NET_Init()
 {
-	//
-	// open the single socket to be used for all communications
-	//
-	net_socket[CLIENT] = UDP_OpenSocket(clientPort);
-	net_socket[SERVER] = UDP_OpenSocket(serverPort);
-
 	//
 	// init the message buffer
 	//
@@ -328,6 +372,6 @@ NET_Shutdown
 */
 void NET_Shutdown()
 {
-	close(net_socket[SERVER]);
-	close(net_socket[CLIENT]);
+	NET_Close(SERVER);
+	NET_Close(CLIENT);
 }

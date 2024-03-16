@@ -46,6 +46,7 @@ void Host_Error(char *error, ...);
 void Host_EndGame(char *message, ...);
 void Host_Frame(double time);
 void Host_Quit_f();
+void Host_InitServer();
 void Host_ShutdownServer(bool crash);
 bool Host_IsLocalGame();
 bool Host_IsLocalClient(int userid);

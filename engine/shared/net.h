@@ -18,7 +18,6 @@ typedef struct
 	uint16_t pad;
 } netadr_t;
 
-extern netadr_t net_local_adr;
 extern netadr_t net_from; // address of who sent the packet
 extern sizebuf_t net_message;
 
@@ -26,10 +25,13 @@ extern cvar_t hostname;
 
 extern int net_socket[NUM_SOCKETS];
 
-void NET_Init(int clientPort, int serverPort);
+void NET_Init();
 void NET_Shutdown();
 bool NET_GetPacket(netsocket_e sock);
 void NET_SendPacket(netsocket_e sock, int length, void *data, netadr_t to);
+void NET_Open(netsocket_e sock, int port);
+void NET_Close(netsocket_e sock);
+netadr_t NET_GetLocalAddress();
 
 bool NET_CompareAdr(netadr_t a, netadr_t b);
 bool NET_CompareBaseAdr(netadr_t a, netadr_t b);

@@ -420,7 +420,7 @@ void SV_Status_f ()
 	avg = 1000*svs.stats.latched_active / STATFRAMES;
 	pak = (float)svs.stats.latched_packets/ STATFRAMES;
 
-	Con_Printf ("net address      : %s\n",NET_AdrToString (net_local_adr));
+	Con_Printf ("net address      : %s\n",NET_AdrToString (NET_GetLocalAddress ()));
 	Con_Printf ("cpu utilization  : %3i%%\n",(int)cpu);
 	Con_Printf ("avg response time: %i ms\n",(int)avg);
 	Con_Printf ("packets/frame    : %5.2f (%d)\n", pak, num_prstr);

@@ -122,6 +122,7 @@ void Host_Map_f ()
 	}
 
 	Host_ShutdownServer (false);
+	Host_InitServer ();
 
 	svs.serverflags = 0;
 
@@ -395,6 +396,9 @@ void Host_Loadgame_f ()
 		Con_Printf ("Savegame is version %i, not %i\n", version, SAVEGAME_VERSION);
 		return;
 	}
+
+	Host_ShutdownServer (false);
+
 	fscanf (f, "%s\n", str);
 	for (i=0 ; i<NUM_SPAWN_PARMS ; i++)
 		fscanf (f, "%f\n", &spawn_parms[i]);
@@ -410,8 +414,8 @@ void Host_Loadgame_f ()
 	fscanf (f, "%s\n",mapname);
 	fscanf (f, "%f\n",&time);
 
-	CL_Disconnect_f ();
-	
+	Host_InitServer ();
+
 	SV_SpawnServer (mapname, NULL);
 
 	if (!Host_IsLocalGame ())
