@@ -754,7 +754,7 @@ void SV_SendClientMessages ()
 		if (!c->send_message)
 			continue;
 		c->send_message = false;	// try putting this after choke?
-		if (!sv.paused && !Netchan_CanPacket (&c->netchan))
+		if (!Host_IsPaused() && !Netchan_CanPacket (&c->netchan))
 		{
 			c->chokecount++;
 			continue;		// bandwidth choke

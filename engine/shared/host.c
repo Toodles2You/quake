@@ -84,6 +84,7 @@ cvar_t	coop = {"coop","0"};			// 0 or 1
 cvar_t	pausable = {"pausable","1"};
 
 extern  cvar_t	cl_warncmd;
+extern cvar_t	maxclients;
 
 extern int cl_framecount;
 
@@ -390,7 +391,7 @@ void Host_ServerFrame (double time)
 	rand ();
 
 // decide the simulation time
-	if (!sv.paused)
+	if (!Host_IsPaused())
 	{
 		sv.time += time;
 	}
@@ -402,7 +403,7 @@ void Host_ServerFrame (double time)
 	SV_CheckLog ();
 
 // move autonomous things around if enough time has passed
-	if (!sv.paused)
+	if (!Host_IsPaused())
 		SV_Physics ();
 
 // get packets
@@ -507,14 +508,17 @@ void Host_Frame (double time)
 
 	if (cls.state >= ca_connected)
 	{
-		// Set up prediction for other players
-		CL_SetUpPlayerPrediction(false);
+		if (!Host_IsPaused ())
+		{
+			// Set up prediction for other players
+			CL_SetUpPlayerPrediction(false);
 
-		// do client side motion prediction
-		CL_PredictMove ();
+			// do client side motion prediction
+			CL_PredictMove ();
 
-		// Set up prediction for other players
-		CL_SetUpPlayerPrediction(true);
+			// Set up prediction for other players
+			CL_SetUpPlayerPrediction(true);
+		}
 
 		// build a refresh entity list
 		CL_EmitEntities ();
@@ -696,5 +700,10 @@ bool Host_IsLocalClient(int userid)
 	return Host_IsLocalGame()
 		&& cls.state != ca_dedicated
 		&& cl.userid == userid;
+}
+
+bool Host_IsPaused()
+{
+	return sv.paused || (maxclients.value <= 1 && key_dest != key_game);
 }
 

@@ -305,12 +305,12 @@ void Netchan_Transmit (netchan_t *chan, int length, byte *data)
 	{
 		chan->cleartime += send.cursize * chan->rate;
 	}
-#ifdef SERVERONLY
-	if (sv.paused)
+// #ifdef SERVERONLY
+	if (chan->socket == SERVER && Host_IsPaused())
 	{
 		chan->cleartime = realtime;
 	}
-#endif
+// #endif
 
 	if (showpackets.value)
 	{

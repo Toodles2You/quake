@@ -894,7 +894,7 @@ void SV_ExtractFromUserinfo (client_t *cl)
 	}
 	
 	if (strncmp(val, cl->name, strlen(cl->name))) {
-		if (!sv.paused) {
+		if (!Host_IsPaused()) {
 			if (!cl->lastnametime || realtime - cl->lastnametime > 5) {
 				cl->lastnamecount = 0;
 				cl->lastnametime = realtime;
@@ -1289,7 +1289,7 @@ void SV_CheckTimeouts (void)
 			cl->state = cs_free;	// can now be reused
 		}
 	}
-	if (sv.paused && !nclients) {
+	if (Host_IsPaused() && !nclients) {
 		// nobody left, unpause the server
 		SV_TogglePause("Pause released since no players are left.\n");
 	}

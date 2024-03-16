@@ -523,7 +523,7 @@ static void SV_Begin_f ()
 		SV_BroadcastPrintf (PRINT_HIGH, "%s WARNING: non standard player/eyes model detected\n", host_client->name);
 
 	// if we are paused, tell the client
-	if (sv.paused) {
+	if (Host_IsPaused()) {
 		ClientReliableWrite_Begin (host_client, svc_setpause, 2);
 		ClientReliableWrite_Byte (host_client, sv.paused);
 		SV_ClientPrintf(host_client, PRINT_HIGH, "Server is paused.\n");
@@ -781,7 +781,7 @@ static void SV_Say (bool team)
 	}
 
 	if (fp_messages) {
-		if (!sv.paused && realtime<host_client->lockedtill) {
+		if (!Host_IsPaused() && realtime<host_client->lockedtill) {
 			SV_ClientPrintf(host_client, PRINT_CHAT,
 				"You can't talk for %d more seconds\n", 
 					(int) (host_client->lockedtill - realtime));
@@ -790,7 +790,7 @@ static void SV_Say (bool team)
 		tmp = host_client->whensaidhead - fp_messages + 1;
 		if (tmp < 0)
 			tmp = 10+tmp;
-		if (!sv.paused &&
+		if (!Host_IsPaused() &&
 			host_client->whensaid[tmp] && (realtime-host_client->whensaid[tmp] < fp_persecond)) {
 			host_client->lockedtill = realtime + fp_secondsdead;
 			if (fp_msg[0])
@@ -1706,7 +1706,7 @@ void SV_ExecuteClientMessage (client_t *cl)
 				return;
 			}
 
-			if (!sv.paused) {
+			if (!Host_IsPaused()) {
 				SV_PreRunCmd();
 
 				if (net_drop < 20)

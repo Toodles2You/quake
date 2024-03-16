@@ -49,6 +49,7 @@ void Host_Quit_f();
 void Host_ShutdownServer(bool crash);
 bool Host_IsLocalGame();
 bool Host_IsLocalClient(int userid);
+bool Host_IsPaused();
 
 extern int current_skill;	// skill level for currently loaded level (in case
 							//  the user changes the cvar while the level is
