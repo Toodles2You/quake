@@ -33,11 +33,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 netadr_t net_local_adr;
 
 netadr_t net_from;
-sizebuf_t net_message;
+sizebuf_t net_message[NUM_SOCKETS];
 int net_socket[NUM_SOCKETS];
 
 #define MAX_UDP_PACKET 8192
-byte net_message_buffer[MAX_UDP_PACKET];
+static byte net_message_buffer[NUM_SOCKETS][MAX_UDP_PACKET];
 
 int gethostname(char *, int);
 int close(int);
@@ -182,7 +182,13 @@ bool NET_GetPacket(netsocket_e sock)
 
 	fromlen = sizeof(from);
 
-	ret = recvfrom(net_socket[sock], net_message_buffer, sizeof(net_message_buffer), 0, (struct sockaddr *)&from, &fromlen);
+	ret = recvfrom(
+		net_socket[sock],
+		net_message_buffer[sock],
+		sizeof(net_message_buffer[sock]),
+		0,
+		(struct sockaddr *)&from,
+		&fromlen);
 
 	if (ret == -1)
 	{
@@ -194,7 +200,7 @@ bool NET_GetPacket(netsocket_e sock)
 		return false;
 	}
 
-	net_message.cursize = ret;
+	net_message[sock].cursize = ret;
 	SockadrToNetadr(&from, &net_from);
 
 	return ret;
@@ -352,10 +358,13 @@ NET_Init
 void NET_Init()
 {
 	//
-	// init the message buffer
+	// init the message buffers
 	//
-	net_message.maxsize = sizeof(net_message_buffer);
-	net_message.data = net_message_buffer;
+	net_message[CLIENT].maxsize = sizeof(net_message_buffer[CLIENT]);
+	net_message[CLIENT].data = net_message_buffer[CLIENT];
+
+	net_message[SERVER].maxsize = sizeof(net_message_buffer[SERVER]);
+	net_message[SERVER].data = net_message_buffer[SERVER];
 
 	//
 	// determine my name & address

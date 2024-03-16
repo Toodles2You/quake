@@ -94,7 +94,7 @@ void MSG_WriteDeltaUsercmd(sizebuf_t *sb, struct usercmd_s *from, struct usercmd
 extern int msg_readcount;
 extern bool msg_badread; // set if a read goes beyond end of message
 
-void MSG_BeginReading();
+void MSG_BeginReading(int socket);
 int MSG_GetReadCount();
 int MSG_ReadChar();
 int MSG_ReadByte();

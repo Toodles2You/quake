@@ -61,16 +61,16 @@ void SV_FinalMessage (char *message)
 	int			i;
 	client_t	*cl;
 	
-	SZ_Clear (&net_message);
-	MSG_WriteByte (&net_message, svc_print);
-	MSG_WriteByte (&net_message, PRINT_HIGH);
-	MSG_WriteString (&net_message, message);
-	MSG_WriteByte (&net_message, svc_disconnect);
+	SZ_Clear (&net_message[SERVER]);
+	MSG_WriteByte (&net_message[SERVER], svc_print);
+	MSG_WriteByte (&net_message[SERVER], PRINT_HIGH);
+	MSG_WriteString (&net_message[SERVER], message);
+	MSG_WriteByte (&net_message[SERVER], svc_disconnect);
 
 	for (i=0, cl = svs.clients ; i<MAX_CLIENTS ; i++, cl++)
 		if (cl->state >= cs_spawned)
-			Netchan_Transmit (&cl->netchan, net_message.cursize
-			, net_message.data);
+			Netchan_Transmit (&cl->netchan, net_message[SERVER].cursize
+			, net_message[SERVER].data);
 }
 
 /*
@@ -650,7 +650,7 @@ void SVC_RemoteCommand (void)
 
 	if (!Rcon_Validate ()) {
 		Con_Printf ("Bad rcon from %s:\n%s\n"
-			, NET_AdrToString (net_from), net_message.data+4);
+			, NET_AdrToString (net_from), net_message[SERVER].data+4);
 
 		SV_BeginRedirect (RD_PACKET);
 
@@ -659,7 +659,7 @@ void SVC_RemoteCommand (void)
 	} else {
 
 		Con_Printf ("Rcon from %s:\n%s\n"
-			, NET_AdrToString (net_from), net_message.data+4);
+			, NET_AdrToString (net_from), net_message[SERVER].data+4);
 
 		SV_BeginRedirect (RD_PACKET);
 
@@ -694,7 +694,7 @@ void SV_ConnectionlessPacket (void)
 	char	*s;
 	char	*c;
 
-	MSG_BeginReading ();
+	MSG_BeginReading (SERVER);
 	MSG_ReadLong ();		// skip the -1 marker
 
 	s = MSG_ReadStringLine ();
@@ -1202,7 +1202,7 @@ void SV_ReadPackets (void)
 		}
 
 		// check for connectionless packet (0xffffffff) first
-		if (*(int32_t *)net_message.data == -1)
+		if (*(int32_t *)net_message[SERVER].data == -1)
 		{
 			SV_ConnectionlessPacket ();
 			continue;
@@ -1210,7 +1210,7 @@ void SV_ReadPackets (void)
 		
 		// read the qport out of the message so we can fix up
 		// stupid address translating routers
-		MSG_BeginReading ();
+		MSG_BeginReading (SERVER);
 		MSG_ReadLong ();		// sequence number
 		MSG_ReadLong ();		// sequence number
 		qport = MSG_ReadShort () & 0xffff;

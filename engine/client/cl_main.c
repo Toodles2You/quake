@@ -709,7 +709,7 @@ static void CL_ConnectionlessPacket ()
 	char *s;
 	int c;
 
-	MSG_BeginReading();
+	MSG_BeginReading(CLIENT);
 	MSG_ReadLong(); // skip the -1
 
 	c = MSG_ReadByte();
@@ -802,13 +802,15 @@ void CL_ReadPackets ()
 		//
 		// remote command packet
 		//
-		if (*(int32_t *)net_message.data == -1)
+		if (*(int32_t *)net_message[CLIENT].data == -1)
 		{
 			CL_ConnectionlessPacket();
 			continue;
 		}
 
-		if (net_message.cursize < 8)
+		MSG_BeginReading(CLIENT);
+
+		if (net_message[CLIENT].cursize < 8)
 		{
 			Con_Printf("%s: Runt packet\n", NET_AdrToString(net_from));
 			continue;

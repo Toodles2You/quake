@@ -349,7 +349,7 @@ bool Netchan_Process (netchan_t *chan)
 		return false;
 
 	// get sequence numbers
-	MSG_BeginReading();
+	MSG_BeginReading(chan->socket);
 	sequence = MSG_ReadLong();
 	sequence_ack = MSG_ReadLong();
 
@@ -369,7 +369,7 @@ bool Netchan_Process (netchan_t *chan)
 
 	if (showpackets.value)
 	{
-		Con_Printf("<-- s=%i(%i) a=%i(%i) %i\n", sequence, reliable_message, sequence_ack, reliable_ack, net_message.cursize);
+		Con_Printf("<-- s=%i(%i) a=%i(%i) %i\n", sequence, reliable_message, sequence_ack, reliable_ack, net_message[chan->socket].cursize);
 	}
 
 	//

@@ -24,7 +24,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 int	netgraphtexture; // netgraph texture
 
-#if 0
 #define NET_GRAPHHEIGHT 32
 
 static byte ngraph_texels[NET_GRAPHHEIGHT][NET_TIMINGS];
@@ -58,7 +57,6 @@ static void R_LineGraph (int x, int h)
 	for ( ; i<s ; i++)
 		ngraph_texels[NET_GRAPHHEIGHT - i - 1][x] = (byte)0xff;
 }
-#endif
 
 /*
 ==============
@@ -67,7 +65,6 @@ R_NetGraph
 */
 void R_NetGraph ()
 {
-#if 0
 	int		a, x, i, y;
 	int lost;
 	char st[80];
@@ -118,6 +115,5 @@ void R_NetGraph ()
 	glTexCoord2f (0, 1);
 	glVertex2f (x, y+NET_GRAPHHEIGHT);
 	glEnd ();
-#endif
 }
 

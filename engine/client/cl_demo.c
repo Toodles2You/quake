@@ -231,12 +231,12 @@ static bool CL_GetDemoMessage ()
 
 	case dem_read:
 		// get the next message
-		fread(&net_message.cursize, 4, 1, cls.demofile);
-		net_message.cursize = LittleLong(net_message.cursize);
-		// Con_Printf("read: %ld bytes\n", net_message.cursize);
-		if (net_message.cursize > MAX_MSGLEN)
+		fread(&net_message[CLIENT].cursize, 4, 1, cls.demofile);
+		net_message[CLIENT].cursize = LittleLong(net_message[CLIENT].cursize);
+		// Con_Printf("read: %ld bytes\n", net_message[CLIENT].cursize);
+		if (net_message[CLIENT].cursize > MAX_MSGLEN)
 			Sys_Error("Demo message > MAX_MSGLEN");
-		r = fread(net_message.data, net_message.cursize, 1, cls.demofile);
+		r = fread(net_message[CLIENT].data, net_message[CLIENT].cursize, 1, cls.demofile);
 		if (r != 1)
 		{
 			CL_StopPlayback();
@@ -279,7 +279,7 @@ bool CL_GetMessage ()
 		return false;
 	}
 
-	CL_WriteDemoMessage(&net_message);
+	CL_WriteDemoMessage(&net_message[CLIENT]);
 
 	return true;
 }
@@ -301,11 +301,11 @@ void CL_Stop_f ()
 	}
 
 // write a disconnect message to the demo file
-	SZ_Clear (&net_message);
-	MSG_WriteLong (&net_message, -1);	// -1 sequence means out of band
-	MSG_WriteByte (&net_message, svc_disconnect);
-	MSG_WriteString (&net_message, "EndOfDemo");
-	CL_WriteDemoMessage (&net_message);
+	SZ_Clear (&net_message[CLIENT]);
+	MSG_WriteLong (&net_message[CLIENT], -1);	// -1 sequence means out of band
+	MSG_WriteByte (&net_message[CLIENT], svc_disconnect);
+	MSG_WriteString (&net_message[CLIENT], "EndOfDemo");
+	CL_WriteDemoMessage (&net_message[CLIENT]);
 
 // finish up
 	fclose (cls.demofile);

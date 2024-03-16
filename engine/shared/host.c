@@ -264,14 +264,14 @@ void Host_ShutdownServer(bool crash)
 	if (cls.state != ca_disconnected)
 		CL_Disconnect ();
 
-	SZ_Clear (&net_message);
-	MSG_WriteByte (&net_message, svc_disconnect);
+	SZ_Clear (&net_message[SERVER]);
+	MSG_WriteByte (&net_message[SERVER], svc_disconnect);
 
 	for (i=0, host_client = svs.clients ; i<MAX_CLIENTS ; i++, host_client++)
 	{
 		if (host_client->state >= cs_spawned)
 		{
-			Netchan_Transmit (&host_client->netchan, net_message.cursize, net_message.data);
+			Netchan_Transmit (&host_client->netchan, net_message[SERVER].cursize, net_message[SERVER].data);
 		}
 	}
 

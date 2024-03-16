@@ -379,11 +379,13 @@ void MSG_WriteDeltaUsercmd (sizebuf_t *buf, usercmd_t *from, usercmd_t *cmd)
 //
 int                     msg_readcount;
 bool        msg_badread;
+int			msg_socket;
 
-void MSG_BeginReading ()
+void MSG_BeginReading (int socket)
 {
 	msg_readcount = 0;
 	msg_badread = false;
+	msg_socket = socket;
 }
 
 int MSG_GetReadCount ()
@@ -396,13 +398,13 @@ int MSG_ReadChar ()
 {
 	int     c;
 	
-	if (msg_readcount+1 > net_message.cursize)
+	if (msg_readcount+1 > net_message[msg_socket].cursize)
 	{
 		msg_badread = true;
 		return -1;
 	}
 		
-	c = (signed char)net_message.data[msg_readcount];
+	c = (signed char)net_message[msg_socket].data[msg_readcount];
 	msg_readcount++;
 	
 	return c;
@@ -412,13 +414,13 @@ int MSG_ReadByte ()
 {
 	int     c;
 	
-	if (msg_readcount+1 > net_message.cursize)
+	if (msg_readcount+1 > net_message[msg_socket].cursize)
 	{
 		msg_badread = true;
 		return -1;
 	}
 		
-	c = (unsigned char)net_message.data[msg_readcount];
+	c = (unsigned char)net_message[msg_socket].data[msg_readcount];
 	msg_readcount++;
 	
 	return c;
@@ -428,14 +430,14 @@ int MSG_ReadShort ()
 {
 	int     c;
 	
-	if (msg_readcount+2 > net_message.cursize)
+	if (msg_readcount+2 > net_message[msg_socket].cursize)
 	{
 		msg_badread = true;
 		return -1;
 	}
 		
-	c = (short)(net_message.data[msg_readcount]
-	+ (net_message.data[msg_readcount+1]<<8));
+	c = (short)(net_message[msg_socket].data[msg_readcount]
+	+ (net_message[msg_socket].data[msg_readcount+1]<<8));
 	
 	msg_readcount += 2;
 	
@@ -446,16 +448,16 @@ int MSG_ReadLong ()
 {
 	int     c;
 	
-	if (msg_readcount+4 > net_message.cursize)
+	if (msg_readcount+4 > net_message[msg_socket].cursize)
 	{
 		msg_badread = true;
 		return -1;
 	}
 		
-	c = net_message.data[msg_readcount]
-	+ (net_message.data[msg_readcount+1]<<8)
-	+ (net_message.data[msg_readcount+2]<<16)
-	+ (net_message.data[msg_readcount+3]<<24);
+	c = net_message[msg_socket].data[msg_readcount]
+	+ (net_message[msg_socket].data[msg_readcount+1]<<8)
+	+ (net_message[msg_socket].data[msg_readcount+2]<<16)
+	+ (net_message[msg_socket].data[msg_readcount+3]<<24);
 	
 	msg_readcount += 4;
 	
@@ -471,10 +473,10 @@ float MSG_ReadFloat ()
 		int     l;
 	} dat;
 	
-	dat.b[0] =      net_message.data[msg_readcount];
-	dat.b[1] =      net_message.data[msg_readcount+1];
-	dat.b[2] =      net_message.data[msg_readcount+2];
-	dat.b[3] =      net_message.data[msg_readcount+3];
+	dat.b[0] =      net_message[msg_socket].data[msg_readcount];
+	dat.b[1] =      net_message[msg_socket].data[msg_readcount+1];
+	dat.b[2] =      net_message[msg_socket].data[msg_readcount+2];
+	dat.b[3] =      net_message[msg_socket].data[msg_readcount+3];
 	msg_readcount += 4;
 	
 	dat.l = LittleLong (dat.l);

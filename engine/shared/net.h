@@ -19,7 +19,7 @@ typedef struct
 } netadr_t;
 
 extern netadr_t net_from; // address of who sent the packet
-extern sizebuf_t net_message;
+extern sizebuf_t net_message[NUM_SOCKETS];
 
 extern cvar_t hostname;
 
