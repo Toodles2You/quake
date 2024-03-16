@@ -1544,7 +1544,7 @@ void M_LanConfig_Draw ()
 	M_Print (basex, lanConfig_cursor_table[0], "Address:");
 	if (lanConfig_showAddress == 2)
 	{
-		M_Print (basex+9*8, lanConfig_cursor_table[0], NET_BaseAdrToString(NET_GetLocalAddress ()));
+		M_Print (basex+9*8, lanConfig_cursor_table[0], NET_GetPublicAddress ());
 	}
 	else if (lanConfig_showAddress == 1)
 	{

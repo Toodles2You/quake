@@ -29,8 +29,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <sys/uio.h>
 #include <arpa/inet.h>
 #include <errno.h>
+#include <fcntl.h>
 
-netadr_t net_local_adr;
+static netadr_t net_local_adr;
+static char net_public_adr[24];
 
 netadr_t net_from;
 sizebuf_t net_message[NUM_SOCKETS];
@@ -319,6 +321,102 @@ netadr_t NET_GetLocalAddress()
 	}
 
 	return net_local_adr;
+}
+
+/*
+====================
+NET_GetPublicAddress
+
+Toodles: Ping an API to get the host's public IP address.
+====================
+*/
+char* NET_GetPublicAddress()
+{
+	#define PINGHOST "api.ipify.org"
+
+	if (net_public_adr[0] != '\0')
+	{
+		return net_public_adr;
+	}
+
+	/* Use our local IP address in case something goes wrong. */
+	strcpy(net_public_adr, NET_BaseAdrToString(net_local_adr));
+
+#ifdef PINGHOST
+	struct addrinfo hint;
+	struct addrinfo* info;
+
+	memset(&hint, 0, sizeof(hint));
+	hint.ai_family = AF_UNSPEC;
+	hint.ai_socktype = SOCK_STREAM;
+
+	/* Get the address info. */
+	if (getaddrinfo(PINGHOST, "http", &hint, &info) == 0 && info)
+	{
+		struct addrinfo* i;
+		int remote = -1;
+
+		/* Find a socket we like. */
+		for (i = info; i; i = i->ai_next)
+		{
+			remote = socket(i->ai_family, i->ai_socktype, 0);
+
+			if (remote != -1)
+			{
+				/* Make sure it's blocking. */
+				int flags = fcntl(remote, F_GETFL, 0);
+				flags &= ~O_NONBLOCK;
+				fcntl(remote, F_SETFL, flags);
+
+				/* Establish the connection! */
+				if (connect(remote, i->ai_addr, i->ai_addrlen) == 0)
+				{
+					break;
+				}
+
+				close(remote);
+				remote = -1;
+			}
+		}
+
+		freeaddrinfo(info);
+
+		if (remote != -1)
+		{
+			char* request = "GET / HTTP/1.0\r\nHost: "PINGHOST"\r\nUser-Agent: Quake\r\n\r\n";
+			int len = strlen(request);
+
+			/* Send the HTTP request! */
+			if (send(remote, request, len, 0) != len + 1)
+			{
+				char response[1024];
+
+				/* Recieve the HTTP response! */
+				len = recv(remote, response, sizeof(response) - 1, 0);
+
+				if (len != -1)
+				{
+					response[len] = '\0';
+					char* str = response;
+
+					/* Ensure the response is OK & then jump to the end of the header. */
+					if ((str = strstr(str, "200 OK"))
+					 && (str = strstr(str, "\r\n\r\n")))
+					{
+						/* We got our public IP address! */
+						strcpy(net_public_adr, str + 4);
+					}
+				}
+			}
+
+			close(remote);
+		}
+	}
+
+	#undef PINGHOST
+#endif
+
+	return net_public_adr;
 }
 
 /*
