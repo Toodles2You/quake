@@ -141,6 +141,9 @@ static bool SV_SetPlayer ()
 	int			i;
 	int			idnum;
 
+	if (Cmd_Argc() < 2 && Host_IsLocalClient (host_client->userid))
+		return true;
+
 	idnum = atoi(Cmd_Argv(1));
 
 	for (i=0,cl=svs.clients ; i<MAX_CLIENTS ; i++,cl++)
