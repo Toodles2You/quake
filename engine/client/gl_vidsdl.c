@@ -212,7 +212,7 @@ void GL_Init()
     glEnable(GL_TEXTURE_2D);
 
     glEnable(GL_ALPHA_TEST);
-    glAlphaFunc(GL_GREATER, 0.666);
+    glAlphaFunc(GL_GREATER, 0.333);
 
     glPolygonMode(GL_FRONT_AND_BACK, GL_FILL);
     glShadeModel(GL_FLAT);

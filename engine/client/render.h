@@ -27,6 +27,7 @@ typedef struct entity_s
 	int frame;
 	byte *colormap;
 	int skinnum; // for Alias models
+	float alpha;
 
 	struct player_info_s *scoreboard; // identify player
 

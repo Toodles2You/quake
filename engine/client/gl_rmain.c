@@ -281,9 +281,10 @@ float	*shadedots = r_avertexnormal_dots[0];
 GL_DrawAliasFrame
 =============
 */
-void GL_DrawAliasFrame (aliashdr_t *paliashdr, int posenum, bool shade)
+void GL_DrawAliasFrame (aliashdr_t *paliashdr, int posenum, bool shade,
+						float alpha)
 {
-	vec3_t 	l;
+	float 	l[4];
 	trivertx_t	*verts;
 	int32_t	*order;
 	int		count;
@@ -318,11 +319,12 @@ void GL_DrawAliasFrame (aliashdr_t *paliashdr, int posenum, bool shade)
 				l[0] = shadedots[verts->lightnormalindex] * shadelight[0];
 				l[1] = shadedots[verts->lightnormalindex] * shadelight[1];
 				l[2] = shadedots[verts->lightnormalindex] * shadelight[2];
-				glColor3fv (l);
+				l[3] = alpha;
+				glColor4fv (l);
 			}
 			else
 			{
-				glColor3f (1, 1, 1);
+				glColor4f (1, 1, 1, alpha);
 			}
 			glVertex3f (verts->v[0], verts->v[1], verts->v[2]);
 			verts++;
@@ -339,7 +341,8 @@ R_SetupAliasFrame
 
 =================
 */
-void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr, bool shade)
+void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr, bool shade,
+						float alpha)
 {
 	int				pose, numposes;
 	float			interval;
@@ -359,7 +362,7 @@ void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr, bool shade)
 		pose += (int)(cl.time / interval) % numposes;
 	}
 
-	GL_DrawAliasFrame (paliashdr, pose, shade);
+	GL_DrawAliasFrame (paliashdr, pose, shade, alpha);
 }
 
 
@@ -473,6 +476,7 @@ void R_DrawAliasModel (entity_t *e)
 	
 	bool affine = (gl_affinemodels.value != 0);
 	bool fence = (r_fence.value != 0);
+	float alpha = (e->alpha != 0) ? e->alpha : 1;
 
 	if (affine)
 		glHint (GL_PERSPECTIVE_CORRECTION_HINT, GL_FASTEST);
@@ -480,7 +484,13 @@ void R_DrawAliasModel (entity_t *e)
 	if (fence)
 		glEnable(GL_ALPHA_TEST);
 
-	R_SetupAliasFrame (currententity->frame, paliashdr, true);
+	if (alpha < 1)
+	{
+		glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
+		glEnable (GL_BLEND);
+	}
+
+	R_SetupAliasFrame (currententity->frame, paliashdr, true, alpha);
 
 	glShadeModel (GL_FLAT);
 	
@@ -501,12 +511,15 @@ void R_DrawAliasModel (entity_t *e)
 		}
 		glDepthMask (0);
 
-		R_SetupAliasFrame (currententity->frame, paliashdr, false);
+		R_SetupAliasFrame (currententity->frame, paliashdr, false, 1);
 
 		glDepthMask (1);
 	}
 
 	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
+
+	if (alpha < 1)
+		glDisable (GL_BLEND);
 
 	if (fence)
 		glDisable(GL_ALPHA_TEST);
@@ -578,9 +591,6 @@ void R_DrawViewModel ()
 		return;
 
 	if (!r_drawentities.value)
-		return;
-
-	if (cl.stats[STAT_ITEMS] & IT_INVISIBILITY)
 		return;
 
 	if (cl.stats[STAT_HEALTH] <= 0)
@@ -927,9 +937,20 @@ void R_RenderView ()
 	glEnable(GL_FOG);
 ********************************************/
 
-	R_DrawViewModel ();
+	if (!(cl.stats[STAT_ITEMS] & IT_INVISIBILITY))
+	{
+		cl.viewent.alpha = 0;
+		R_DrawViewModel ();
+	}
+
 	R_RenderScene ();
 	R_DrawWaterSurfaces ();
+
+	if (cl.stats[STAT_ITEMS] & IT_INVISIBILITY)
+	{
+		cl.viewent.alpha = 0.5;
+		R_DrawViewModel ();
+	}
 
 //  More fog right here :)
 //	glDisable(GL_FOG);
