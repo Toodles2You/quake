@@ -20,8 +20,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "clientdef.h"
 
-extern	model_t	*loadmodel;
-
 extern int		skytexturenum;
 
 int		solidskytexture;
@@ -144,7 +142,7 @@ boundaries so that turbulent and sky warps
 can be done reasonably.
 ================
 */
-void GL_SubdivideSurface (msurface_t *fa)
+void GL_SubdivideSurface (mbrush_t *model, msurface_t *fa)
 {
 	vec3_t		verts[64];
 	int			numverts;
@@ -160,12 +158,12 @@ void GL_SubdivideSurface (msurface_t *fa)
 	numverts = 0;
 	for (i=0 ; i<fa->numedges ; i++)
 	{
-		lindex = loadmodel->surfedges[fa->firstedge + i];
+		lindex = model->surfedges[fa->firstedge + i];
 
 		if (lindex > 0)
-			vec = loadmodel->vertexes[loadmodel->edges[lindex].v[0]].position;
+			vec = model->vertexes[model->edges[lindex].v[0]].position;
 		else
-			vec = loadmodel->vertexes[loadmodel->edges[-lindex].v[1]].position;
+			vec = model->vertexes[model->edges[-lindex].v[1]].position;
 		VectorCopy (vec, verts[numverts]);
 		numverts++;
 	}

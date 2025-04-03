@@ -20,7 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "bothdef.h"
 
-const vec3_t hull_sizes[MAX_MAP_HULLS][2] =
+static const vec3_t hull_sizes[MAX_MAP_HULLS][2] =
 {
     {{0, 0, 0}, {0, 0, 0}},
     {{-16, -16, -36}, {16, 16, 36}},
@@ -28,7 +28,7 @@ const vec3_t hull_sizes[MAX_MAP_HULLS][2] =
     {{-16, -16, -18}, {16, 16, 18}},
 };
 
-const vec3_t quake_hull_sizes[MAX_MAP_HULLS][2] =
+static const vec3_t quake_hull_sizes[MAX_MAP_HULLS][2] =
 {
     {{0, 0, 0}, {0, 0, 0}},
     {{-16, -16, -24}, {16, 16, 32}},
@@ -36,7 +36,7 @@ const vec3_t quake_hull_sizes[MAX_MAP_HULLS][2] =
     {{-16, -16, -12}, {16, 16, 16}},
 };
 
-void CMod_LoadBrushModel(cmodel_t *mod, void *buffer);
+static void CMod_LoadBrushModel(cmodel_t *mod, void *buffer, bool world);
 
 static cmodel_t *loadcmod;
 static char     loadname[32]; // for hunk tags
@@ -92,7 +92,7 @@ mleaf_t *CMod_PointInLeaf(vec3_t p, cmodel_t *model)
 CMod_DecompressVis
 ===================
 */
-byte *CMod_DecompressVis(byte *in, cmodel_t *model)
+static byte *CMod_DecompressVis(byte *in, cmodel_t *model)
 {
     static byte decompressed[MAX_MAP_LEAFS / 8];
     int c;
@@ -153,8 +153,10 @@ void CMod_ClearAll()
 
     for (i = 0, mod = cmod_known; i < cmod_numknown; i++, mod++)
     {
-        mod->needload = true;
+		memset (mod, 0, sizeof(*mod));
     }
+
+    cmod_numknown = 0;
 }
 
 /*
@@ -162,7 +164,7 @@ void CMod_ClearAll()
 CMod_FindName
 ==================
 */
-cmodel_t *CMod_FindName(char *name)
+static cmodel_t *CMod_FindName(char *name, bool *load)
 {
     int i;
     cmodel_t *mod;
@@ -190,7 +192,10 @@ cmodel_t *CMod_FindName(char *name)
             Sys_Error("cmod_numknown == MAX_MODELS");
         }
         strcpy(mod->name, name);
-        mod->needload = true;
+        if (load)
+        {
+            *load = true;
+        }
         cmod_numknown++;
     }
 
@@ -204,15 +209,10 @@ CMod_LoadModel
 Loads a model into the cache
 ==================
 */
-cmodel_t *CMod_LoadModel(cmodel_t *mod, bool crash, bool world)
+static void CMod_LoadModel(cmodel_t *mod, bool crash, bool world)
 {
     uint32_t *buf;
     byte stackbuf[1024]; // avoid dirtying the cache heap
-
-    if (!mod->needload)
-    {
-        return mod; // not cached at all
-    }
 
     //
     // load the file
@@ -238,10 +238,6 @@ cmodel_t *CMod_LoadModel(cmodel_t *mod, bool crash, bool world)
     // fill it in
     //
 
-    // call the apropriate loader
-    mod->needload = false;
-    mod->world = world;
-
     switch (LittleLong(*(uint32_t *)buf))
     {
     case IDPOLYHEADER:
@@ -254,7 +250,7 @@ cmodel_t *CMod_LoadModel(cmodel_t *mod, bool crash, bool world)
 
     default:
         mod->type = mod_brush;
-        CMod_LoadBrushModel(mod, buf);
+        CMod_LoadBrushModel(mod, buf, world);
         break;
     }
 
@@ -270,9 +266,15 @@ Loads in a model for the given name
 */
 cmodel_t *CMod_ForName(char *name, bool crash, bool world)
 {
-    cmodel_t *mod = CMod_FindName(name);
+    bool load = false;
+    cmodel_t *mod = CMod_FindName(name, &load);
 
-    return CMod_LoadModel(mod, crash, world);
+    if (load)
+    {
+        CMod_LoadModel(mod, crash, world);
+    }
+
+    return mod;
 }
 
 /*
@@ -291,7 +293,7 @@ static int mod_version;
 CMod_LoadVisibility
 =================
 */
-void CMod_LoadVisibility(lump_t *l)
+static void CMod_LoadVisibility(lump_t *l)
 {
     if (!l->filelen)
     {
@@ -346,14 +348,13 @@ static size_t CMod_CountEntities(char *data)
 CMod_LoadEntities
 =================
 */
-void CMod_LoadEntities(lump_t *l)
+static void CMod_LoadEntities(lump_t *l)
 {
-    if (!loadcmod->world || !l->filelen)
+    if (!l->filelen)
     {
-        loadcmod->entities = NULL;
-        loadcmod->numentities = 0;
         return;
     }
+
     loadcmod->entities = Hunk_AllocName(l->filelen, loadname);
     memcpy(loadcmod->entities, mod_base + l->fileofs, l->filelen);
     loadcmod->numentities = CMod_CountEntities(loadcmod->entities);
@@ -364,7 +365,7 @@ void CMod_LoadEntities(lump_t *l)
 CMod_LoadSubmodels
 =================
 */
-void CMod_LoadSubmodels(lump_t *l)
+static void CMod_LoadSubmodels(lump_t *l)
 {
     dmodel_t *in;
     cmodel_t *out, *next;
@@ -389,7 +390,7 @@ void CMod_LoadSubmodels(lump_t *l)
         {
             /* Get the next cmodel_t to be filled. */
             sprintf(name, "*%i", i);
-            next = CMod_FindName(name);
+            next = CMod_FindName(name, NULL);
 
             /* Duplicate the basic information. */
 			*next = *out;
@@ -422,7 +423,7 @@ void CMod_LoadSubmodels(lump_t *l)
 CMod_SetParent
 =================
 */
-void CMod_SetParent(mnode_t *node, mnode_t *parent)
+static void CMod_SetParent(mnode_t *node, mnode_t *parent)
 {
     node->parent = parent;
     if (node->contents < 0)
@@ -438,7 +439,7 @@ void CMod_SetParent(mnode_t *node, mnode_t *parent)
 CMod_LoadNodes
 =================
 */
-void CMod_LoadNodes(lump_t *l)
+static void CMod_LoadNodes(lump_t *l)
 {
     int i, j, count, p;
     dnode_t *in;
@@ -493,7 +494,7 @@ void CMod_LoadNodes(lump_t *l)
 CMod_LoadLeafs
 =================
 */
-void CMod_LoadLeafs(lump_t *l)
+static void CMod_LoadLeafs(lump_t *l)
 {
     dleaf_t *in;
     mleaf_t *out;
@@ -551,7 +552,7 @@ void CMod_LoadLeafs(lump_t *l)
 CMod_LoadClipnodes
 =================
 */
-void CMod_LoadClipnodes(lump_t *l)
+static void CMod_LoadClipnodes(lump_t *l)
 {
     dclipnode_t *in, *out;
     int i, count;
@@ -605,7 +606,7 @@ CMod_MakeHull0
 Deplicate the drawing hull structure as a clipping hull
 =================
 */
-void CMod_MakeHull0()
+static void CMod_MakeHull0()
 {
     mnode_t *in, *child;
     dclipnode_t *out;
@@ -646,7 +647,7 @@ void CMod_MakeHull0()
 CMod_LoadPlanes
 =================
 */
-void CMod_LoadPlanes(lump_t *l)
+static void CMod_LoadPlanes(lump_t *l)
 {
     int i, j;
     mplane_t *out;
@@ -690,7 +691,7 @@ void CMod_LoadPlanes(lump_t *l)
 CMod_LoadBrushModel
 =================
 */
-void CMod_LoadBrushModel(cmodel_t *mod, void *buffer)
+static void CMod_LoadBrushModel(cmodel_t *mod, void *buffer, bool world)
 {
     int i;
     dheader_t *header;
@@ -746,7 +747,16 @@ void CMod_LoadBrushModel(cmodel_t *mod, void *buffer)
 	}
 
     // load into heap
-    CMod_LoadEntities   (&header->lumps[LUMP_ENTITIES]);
+    if (world)
+    {
+        CMod_LoadEntities(&header->lumps[LUMP_ENTITIES]);
+    }
+    else
+    {
+        mod->entities = NULL;
+        mod->numentities = 0;
+    }
+
     CMod_LoadPlanes     (&header->lumps[LUMP_PLANES]);
     CMod_LoadVisibility (&header->lumps[LUMP_VISIBILITY]);
     CMod_LoadLeafs      (&header->lumps[LUMP_LEAFS]);

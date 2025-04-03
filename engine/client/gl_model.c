@@ -26,12 +26,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 extern unsigned d_8to24table[];
 extern int d_lightmap_bytes;
 
-model_t *loadmodel;
+static mbrush_t *loadmodel;
 static char loadname[32]; // for hunk tags
 
-void Mod_LoadSpriteModel(model_t *mod, void *buffer);
-void Mod_LoadBrushModel(model_t *mod, void *buffer);
-void Mod_LoadAliasModel(model_t *mod, void *buffer);
+static void Mod_LoadSpriteModel(model_t *mod, void *buffer);
+static void Mod_LoadBrushModel(model_t *mod, void *buffer, bool world);
+static void Mod_LoadAliasModel(model_t *mod, void *buffer);
 
 static model_t mod_known[MAX_MODELS];
 static int mod_numknown;
@@ -60,11 +60,10 @@ void Mod_ClearAll()
 
 	for (i = 0, mod = mod_known; i < mod_numknown; i++, mod++)
 	{
-		if (mod->type != mod_alias)
-		{
-			mod->needload = true;
-		}
+		memset (mod, 0, sizeof(*mod));
 	}
+
+	mod_numknown = 0;
 }
 
 /*
@@ -73,7 +72,7 @@ Mod_FindName
 
 ==================
 */
-model_t *Mod_FindName(char *name)
+static model_t *Mod_FindName(char *name, bool *load)
 {
 	int i;
 	model_t *mod;
@@ -101,32 +100,14 @@ model_t *Mod_FindName(char *name)
 			Sys_Error("mod_numknown == MAX_MODELS");
 		}
 		strcpy(mod->name, name);
-		mod->needload = true;
+		if (load)
+		{
+			*load = true;
+		}
 		mod_numknown++;
 	}
 
 	return mod;
-}
-
-/*
-==================
-Mod_TouchModel
-
-==================
-*/
-void Mod_TouchModel(char *name)
-{
-	model_t *mod;
-
-	mod = Mod_FindName(name);
-
-	if (!mod->needload)
-	{
-		if (mod->type == mod_alias)
-		{
-			Cache_Check(&mod->cache);
-		}
-	}
 }
 
 /*
@@ -136,27 +117,11 @@ Mod_LoadModel
 Loads a model into the cache
 ==================
 */
-model_t *Mod_LoadModel(model_t *mod, bool crash, bool world)
+static model_t *Mod_LoadModel(model_t *mod, bool crash, bool world)
 {
 	void *d;
 	uint32_t *buf;
 	byte stackbuf[1024]; // avoid dirtying the cache heap
-
-	if (!mod->needload)
-	{
-		if (mod->type == mod_alias)
-		{
-			d = Cache_Check(&mod->cache);
-			if (d)
-			{
-				return mod;
-			}
-		}
-		else
-		{
-			return mod; // not cached at all
-		}
-	}
 
 	//
 	// load the file
@@ -176,15 +141,9 @@ model_t *Mod_LoadModel(model_t *mod, bool crash, bool world)
 	//
 	COM_FileBase(mod->name, loadname);
 
-	loadmodel = mod;
-
 	//
 	// fill it in
 	//
-
-	// call the apropriate loader
-	mod->needload = false;
-	mod->world = world;
 
 	switch (LittleLong(*(uint32_t *)buf))
 	{
@@ -200,7 +159,7 @@ model_t *Mod_LoadModel(model_t *mod, bool crash, bool world)
 
 	default:
 		mod->type = mod_brush;
-		Mod_LoadBrushModel(mod, buf);
+		Mod_LoadBrushModel(mod, buf, world);
 		break;
 	}
 
@@ -216,35 +175,15 @@ Loads in a model for the given name
 */
 model_t *Mod_ForName(char *name, bool crash, bool world)
 {
-	model_t *mod = Mod_FindName(name);
+	bool load = false;
+	model_t *mod = Mod_FindName(name, &load);
 
-	return Mod_LoadModel(mod, crash, world);
-}
-
-/*
-===============
-Mod_Extradata
-
-Caches the data if needed
-===============
-*/
-void *Mod_Extradata(model_t *mod)
-{
-	void *r;
-
-	r = Cache_Check(&mod->cache);
-	if (r)
+	if (load)
 	{
-		return r;
+		mod = Mod_LoadModel(mod, crash, world);
 	}
 
-	Mod_LoadModel(mod, true, false);
-
-	if (!mod->cache.data)
-	{
-		Sys_Error("Mod_Extradata: caching failed");
-	}
-	return mod->cache.data;
+	return mod;
 }
 
 /*
@@ -371,7 +310,7 @@ static texture_t *Mod_LoadMiptex(miptex_t *mt)
 Mod_LoadTextures
 =================
 */
-void Mod_LoadTextures(lump_t *l)
+static void Mod_LoadTextures(lump_t *l)
 {
 	int i, j, num, max, altmax;
 	texture_t *tx, *tx2;
@@ -531,7 +470,7 @@ void Mod_LoadTextures(lump_t *l)
 Mod_LoadLighting
 =================
 */
-void Mod_LoadLighting(lump_t *l)
+static void Mod_LoadLighting(lump_t *l)
 {
 	if (!l->filelen)
 	{
@@ -605,9 +544,9 @@ static void Mod_ReadWorldPairs(byte *data)
 Mod_LoadEntities
 =================
 */
-void Mod_LoadEntities(lump_t *l)
+static void Mod_LoadEntities(lump_t *l)
 {
-	if (!loadmodel->world || !l->filelen)
+	if (!l->filelen)
 	{
 		return;
 	}
@@ -620,7 +559,7 @@ void Mod_LoadEntities(lump_t *l)
 RadiusFromBounds
 =================
 */
-float RadiusFromBounds(vec3_t mins, vec3_t maxs)
+static float RadiusFromBounds(vec3_t mins, vec3_t maxs)
 {
     int i;
     vec3_t corner;
@@ -640,10 +579,11 @@ Mod_LoadSubmodels
 Toodles FIXME: This isn't really necessary.
 =================
 */
-void Mod_LoadSubmodels(lump_t *l)
+static void Mod_LoadSubmodels(model_t* mod, lump_t *l)
 {
     dmodel_t *in;
     model_t *out, *next;
+	mbrush_t *bout;
     int i, j, count;
     char name[10];
 
@@ -651,11 +591,12 @@ void Mod_LoadSubmodels(lump_t *l)
 
     if (l->filelen % sizeof(*in))
     {
-        Sys_Error("MOD_LoadBmodel: funny lump size in %s", loadmodel->name);
+        Sys_Error("MOD_LoadBmodel: funny lump size in %s", loadname);
     }
 
     count = l->filelen / sizeof(*in);
-    out = loadmodel;
+    out = mod;
+	bout = out->data;
 
     for (i = 0; i < count; i++, in++)
     {
@@ -663,18 +604,22 @@ void Mod_LoadSubmodels(lump_t *l)
 		{
 			/* Get the next cmodel_t to be filled. */
 			sprintf(name, "*%i", i);
-			next = Mod_FindName(name);
+			next = Mod_FindName(name, NULL);
 
 			/* Duplicate the basic information. */
 			*next = *out;
 			strcpy(next->name, name);
 
+			next->data = Hunk_AllocName(sizeof(mbrush_t), loadname);
+			*(mbrush_t*)next->data = *(mbrush_t*)out->data;
+
 			/* Switch it out. */
 			out = next;
+			bout = out->data;
 		}
 
-		out->firstmodelsurface = LittleLong(in->firstface);
-		out->nummodelsurfaces = LittleLong(in->numfaces);
+		bout->firstmodelsurface = LittleLong(in->firstface);
+		bout->nummodelsurfaces = LittleLong(in->numfaces);
 
         for (j = 0; j < 3; j++)
         {
@@ -691,7 +636,7 @@ void Mod_LoadSubmodels(lump_t *l)
 Mod_LoadVertexes
 =================
 */
-void Mod_LoadVertexes(lump_t *l)
+static void Mod_LoadVertexes(lump_t *l)
 {
 	dvertex_t *in;
 	mvertex_t *out;
@@ -701,7 +646,7 @@ void Mod_LoadVertexes(lump_t *l)
 
 	if (l->filelen % sizeof(*in))
 	{
-		Sys_Error("MOD_LoadBmodel: funny lump size in %s", loadmodel->name);
+		Sys_Error("MOD_LoadBmodel: funny lump size in %s", loadname);
 	}
 
 	count = l->filelen / sizeof(*in);
@@ -723,7 +668,7 @@ void Mod_LoadVertexes(lump_t *l)
 Mod_LoadEdges
 =================
 */
-void Mod_LoadEdges(lump_t *l)
+static void Mod_LoadEdges(lump_t *l)
 {
 	dedge_t *in;
 	medge_t *out;
@@ -733,7 +678,7 @@ void Mod_LoadEdges(lump_t *l)
 
 	if (l->filelen % sizeof(*in))
 	{
-		Sys_Error("MOD_LoadBmodel: funny lump size in %s", loadmodel->name);
+		Sys_Error("MOD_LoadBmodel: funny lump size in %s", loadname);
 	}
 
 	count = l->filelen / sizeof(*in);
@@ -754,7 +699,7 @@ void Mod_LoadEdges(lump_t *l)
 Mod_LoadTexinfo
 =================
 */
-void Mod_LoadTexinfo(lump_t *l)
+static void Mod_LoadTexinfo(lump_t *l)
 {
 	texinfo_t *in;
 	mtexinfo_t *out;
@@ -765,7 +710,7 @@ void Mod_LoadTexinfo(lump_t *l)
 
 	if (l->filelen % sizeof(*in))
 	{
-		Sys_Error("MOD_LoadBmodel: funny lump size in %s", loadmodel->name);
+		Sys_Error("MOD_LoadBmodel: funny lump size in %s", loadname);
 	}
 
 	count = l->filelen / sizeof(*in);
@@ -812,7 +757,7 @@ CalcSurfaceExtents
 Fills in s->texturemins[] and s->extents[]
 ================
 */
-void CalcSurfaceExtents(msurface_t *s)
+static void CalcSurfaceExtents(msurface_t *s)
 {
 	float mins[2], maxs[2], val;
 	int i, j, e;
@@ -873,7 +818,7 @@ void CalcSurfaceExtents(msurface_t *s)
 Mod_LoadFaces
 =================
 */
-void Mod_LoadFaces(lump_t *l)
+static void Mod_LoadFaces(lump_t *l)
 {
 	dface_t *in;
 	msurface_t *out;
@@ -884,7 +829,7 @@ void Mod_LoadFaces(lump_t *l)
 
 	if (l->filelen % sizeof(*in))
 	{
-		Sys_Error("MOD_LoadBmodel: funny lump size in %s", loadmodel->name);
+		Sys_Error("MOD_LoadBmodel: funny lump size in %s", loadname);
 	}
 
 	count = l->filelen / sizeof(*in);
@@ -931,7 +876,7 @@ void Mod_LoadFaces(lump_t *l)
 		if (!strncmp(out->texinfo->texture->name, "sky", 3)) // sky
 		{
 			out->flags |= (SURF_DRAWSKY | SURF_DRAWTILED);
-			GL_SubdivideSurface(out); // cut up polygon for warps
+			GL_SubdivideSurface(loadmodel, out); // cut up polygon for warps
 			continue;
 		}
 
@@ -943,7 +888,7 @@ void Mod_LoadFaces(lump_t *l)
 				out->extents[i] = 16384;
 				out->texturemins[i] = -8192;
 			}
-			GL_SubdivideSurface(out); // cut up polygon for warps
+			GL_SubdivideSurface(loadmodel, out); // cut up polygon for warps
 			continue;
 		}
 
@@ -967,7 +912,7 @@ void Mod_LoadFaces(lump_t *l)
 Mod_LoadMarksurfaces
 =================
 */
-void Mod_LoadMarksurfaces(lump_t *l)
+static void Mod_LoadMarksurfaces(lump_t *l)
 {
 	int i, j, count;
 	int16_t *in;
@@ -977,7 +922,7 @@ void Mod_LoadMarksurfaces(lump_t *l)
 
 	if (l->filelen % sizeof(*in))
 	{
-		Sys_Error("MOD_LoadBmodel: funny lump size in %s", loadmodel->name);
+		Sys_Error("MOD_LoadBmodel: funny lump size in %s", loadname);
 	}
 
 	count = l->filelen / sizeof(*in);
@@ -1002,7 +947,7 @@ void Mod_LoadMarksurfaces(lump_t *l)
 Mod_LoadSurfedges
 =================
 */
-void Mod_LoadSurfedges(lump_t *l)
+static void Mod_LoadSurfedges(lump_t *l)
 {
 	int i, count;
 	int *in, *out;
@@ -1011,7 +956,7 @@ void Mod_LoadSurfedges(lump_t *l)
 
 	if (l->filelen % sizeof(*in))
 	{
-		Sys_Error("MOD_LoadBmodel: funny lump size in %s", loadmodel->name);
+		Sys_Error("MOD_LoadBmodel: funny lump size in %s", loadname);
 	}
 
 	count = l->filelen / sizeof(*in);
@@ -1031,7 +976,7 @@ void Mod_LoadSurfedges(lump_t *l)
 Mod_LoadPlanes
 =================
 */
-void Mod_LoadPlanes(lump_t *l)
+static void Mod_LoadPlanes(lump_t *l)
 {
 	int i, j;
 	mplane_t *out;
@@ -1043,7 +988,7 @@ void Mod_LoadPlanes(lump_t *l)
 
 	if (l->filelen % sizeof(*in))
 	{
-		Sys_Error("MOD_LoadBmodel: funny lump size in %s", loadmodel->name);
+		Sys_Error("MOD_LoadBmodel: funny lump size in %s", loadname);
 	}
 
 	count = l->filelen / sizeof(*in);
@@ -1075,14 +1020,16 @@ void Mod_LoadPlanes(lump_t *l)
 Mod_LoadBrushModel
 =================
 */
-void Mod_LoadBrushModel(model_t *mod, void *buffer)
+static void Mod_LoadBrushModel(model_t *mod, void *buffer, bool world)
 {
 	int i;
 	dheader_t *header;
 
-	loadmodel->type = mod_brush;
-
 	header = (dheader_t *)buffer;
+
+	loadmodel = Hunk_AllocName(sizeof(mbrush_t), loadname);
+
+	mod->data = loadmodel;
 
 	mod_version = LittleLong(header->version);
 
@@ -1117,7 +1064,11 @@ void Mod_LoadBrushModel(model_t *mod, void *buffer)
 
 	// load into heap
 
-	Mod_LoadEntities	(&header->lumps[LUMP_ENTITIES]);
+	if (world)
+	{
+		Mod_LoadEntities(&header->lumps[LUMP_ENTITIES]);
+	}
+
 	Mod_LoadVertexes	(&header->lumps[LUMP_VERTEXES]);
 	Mod_LoadEdges		(&header->lumps[LUMP_EDGES]);
 	Mod_LoadSurfedges	(&header->lumps[LUMP_SURFEDGES]);
@@ -1127,7 +1078,7 @@ void Mod_LoadBrushModel(model_t *mod, void *buffer)
 	Mod_LoadTexinfo		(&header->lumps[LUMP_TEXINFO]);
 	Mod_LoadFaces		(&header->lumps[LUMP_FACES]);
 	Mod_LoadMarksurfaces(&header->lumps[LUMP_MARKSURFACES]);
-    Mod_LoadSubmodels   (&header->lumps[LUMP_MODELS]);
+    Mod_LoadSubmodels   (mod, &header->lumps[LUMP_MODELS]);
 
 	if (mod_version == BSPQUAKE)
 	{
@@ -1164,7 +1115,7 @@ byte player_8bit_texels[320*200];
 Mod_LoadAliasFrame
 =================
 */
-void *Mod_LoadAliasFrame(void *pin, maliasframedesc_t *frame)
+static void *Mod_LoadAliasFrame(void *pin, maliasframedesc_t *frame)
 {
 	trivertx_t *pinframe;
 	int i;
@@ -1199,7 +1150,7 @@ void *Mod_LoadAliasFrame(void *pin, maliasframedesc_t *frame)
 Mod_LoadAliasGroup
 =================
 */
-void *Mod_LoadAliasGroup(void *pin, maliasframedesc_t *frame)
+static void *Mod_LoadAliasGroup(void *pin, maliasframedesc_t *frame)
 {
 	daliasgroup_t *pingroup;
 	int i, numframes;
@@ -1270,7 +1221,7 @@ typedef struct
 			fdc = pos[off];                                   \
 	}
 
-void Mod_FloodFillSkin(byte *skin, int skinwidth, int skinheight)
+static void Mod_FloodFillSkin(byte *skin, int skinwidth, int skinheight)
 {
 	byte fillcolor = *skin; // assume this is the pixel to fill
 	floodfill_t fifo[FLOODFILL_FIFO_SIZE];
@@ -1325,7 +1276,7 @@ void Mod_FloodFillSkin(byte *skin, int skinwidth, int skinheight)
 Mod_LoadAllSkins
 ===============
 */
-void *Mod_LoadAllSkins(int numskins, daliasskintype_t *pskintype)
+static void *Mod_LoadAllSkins(model_t* mod, int numskins, daliasskintype_t *pskintype)
 {
 	int i, j, k;
 	char name[32];
@@ -1351,7 +1302,7 @@ void *Mod_LoadAllSkins(int numskins, daliasskintype_t *pskintype)
 			Mod_FloodFillSkin(skin, pheader->skinwidth, pheader->skinheight);
 
 			// save 8 bit texels for the player model to remap
-			if (!strcmp(loadmodel->name,"progs/player.mdl"))
+			if (!strcmp(mod->name,"progs/player.mdl"))
 			{
 				if (s > sizeof(player_8bit_texels))
 				{
@@ -1360,7 +1311,7 @@ void *Mod_LoadAllSkins(int numskins, daliasskintype_t *pskintype)
 				memcpy (player_8bit_texels, (byte *)(pskintype + 1), s);
 			}
 
-			sprintf(name, "%s_%i", loadmodel->name, i);
+			sprintf(name, "%s_%i", mod->name, i);
 
 			GL_LoadTexture(
 				&gl_texturenum,
@@ -1408,7 +1359,7 @@ void *Mod_LoadAllSkins(int numskins, daliasskintype_t *pskintype)
 					pheader->texels[i] = texels - (byte *)pheader;
 					memcpy(texels, (byte *)(pskintype), s);
 				}
-				sprintf(name, "%s_%i_%i", loadmodel->name, i, j);
+				sprintf(name, "%s_%i_%i", mod->name, i, j);
 
 				GL_LoadTexture(
 					&pheader->gl_texturenum[i][j & 3],
@@ -1446,7 +1397,7 @@ void *Mod_LoadAllSkins(int numskins, daliasskintype_t *pskintype)
 Mod_LoadAliasModel
 =================
 */
-void Mod_LoadAliasModel(model_t *mod, void *buffer)
+static void Mod_LoadAliasModel(model_t *mod, void *buffer)
 {
 	int i, j;
 	mdl_t *pinmodel;
@@ -1456,9 +1407,6 @@ void Mod_LoadAliasModel(model_t *mod, void *buffer)
 	int size;
 	daliasframetype_t *pframetype;
 	daliasskintype_t *pskintype;
-	int start, end, total;
-
-	start = Hunk_LowMark();
 
 	pinmodel = (mdl_t *)buffer;
 
@@ -1474,6 +1422,8 @@ void Mod_LoadAliasModel(model_t *mod, void *buffer)
 	size = sizeof(aliashdr_t) + (LittleLong(pinmodel->numframes) - 1) *
 									sizeof(pheader->frames[0]);
 	pheader = Hunk_AllocName(size, loadname);
+
+	mod->data = pheader;
 
 	mod->flags = LittleLong(pinmodel->flags);
 
@@ -1522,7 +1472,7 @@ void Mod_LoadAliasModel(model_t *mod, void *buffer)
 	// load the skins
 	//
 	pskintype = (daliasskintype_t *)&pinmodel[1];
-	pskintype = Mod_LoadAllSkins(pheader->numskins, pskintype);
+	pskintype = Mod_LoadAllSkins(mod, pheader->numskins, pskintype);
 
 	//
 	// load base s and t vertices
@@ -1586,19 +1536,6 @@ void Mod_LoadAliasModel(model_t *mod, void *buffer)
 	// build the draw lists
 	//
 	GL_MakeAliasModelDisplayLists(mod, pheader);
-
-	//
-	// move the complete, relocatable alias model to the cache
-	//
-	end = Hunk_LowMark();
-	total = end - start;
-
-	Cache_Alloc(&mod->cache, total, loadname);
-	if (!mod->cache.data)
-		return;
-	memcpy(mod->cache.data, pheader, total);
-
-	Hunk_FreeToLowMark(start);
 }
 
 //=============================================================================
@@ -1608,7 +1545,7 @@ void Mod_LoadAliasModel(model_t *mod, void *buffer)
 Mod_LoadSpriteFrame
 =================
 */
-void *Mod_LoadSpriteFrame(void *pin, mspriteframe_t **ppframe, int framenum)
+static void *Mod_LoadSpriteFrame(model_t* mod, void *pin, mspriteframe_t **ppframe, int framenum)
 {
 	dspriteframe_t *pinframe;
 	mspriteframe_t *pspriteframe;
@@ -1637,7 +1574,7 @@ void *Mod_LoadSpriteFrame(void *pin, mspriteframe_t **ppframe, int framenum)
 	pspriteframe->left = origin[0];
 	pspriteframe->right = width + origin[0];
 
-	sprintf(name, "%s_%i", loadmodel->name, framenum);
+	sprintf(name, "%s_%i", mod->name, framenum);
 
 	GL_LoadTexture(
 		&pspriteframe->gl_texturenum,
@@ -1660,7 +1597,7 @@ void *Mod_LoadSpriteFrame(void *pin, mspriteframe_t **ppframe, int framenum)
 Mod_LoadSpriteGroup
 =================
 */
-void *Mod_LoadSpriteGroup(void *pin, mspriteframe_t **ppframe, int framenum)
+static void *Mod_LoadSpriteGroup(model_t* mod, void *pin, mspriteframe_t **ppframe, int framenum)
 {
 	dspritegroup_t *pingroup;
 	mspritegroup_t *pspritegroup;
@@ -1701,7 +1638,7 @@ void *Mod_LoadSpriteGroup(void *pin, mspriteframe_t **ppframe, int framenum)
 
 	for (i = 0; i < numframes; i++)
 	{
-		ptemp = Mod_LoadSpriteFrame(ptemp, &pspritegroup->frames[i], framenum * 100 + i);
+		ptemp = Mod_LoadSpriteFrame(mod, ptemp, &pspritegroup->frames[i], framenum * 100 + i);
 	}
 
 	return ptemp;
@@ -1712,7 +1649,7 @@ void *Mod_LoadSpriteGroup(void *pin, mspriteframe_t **ppframe, int framenum)
 Mod_LoadSpriteModel
 =================
 */
-void Mod_LoadSpriteModel(model_t *mod, void *buffer)
+static void Mod_LoadSpriteModel(model_t *mod, void *buffer)
 {
 	int i;
 	int version;
@@ -1736,7 +1673,7 @@ void Mod_LoadSpriteModel(model_t *mod, void *buffer)
 
 	psprite = Hunk_AllocName(size, loadname);
 
-	mod->cache.data = psprite;
+	mod->data = psprite;
 
 	psprite->type = LittleLong(pin->type);
 	psprite->maxwidth = LittleLong(pin->width);
@@ -1770,13 +1707,13 @@ void Mod_LoadSpriteModel(model_t *mod, void *buffer)
 		if (frametype == SPR_SINGLE)
 		{
 			pframetype = (dspriteframetype_t *)
-				Mod_LoadSpriteFrame(pframetype + 1,
+				Mod_LoadSpriteFrame(mod, pframetype + 1,
 									&psprite->frames[i].frameptr, i);
 		}
 		else
 		{
 			pframetype = (dspriteframetype_t *)
-				Mod_LoadSpriteGroup(pframetype + 1,
+				Mod_LoadSpriteGroup(mod, pframetype + 1,
 									&psprite->frames[i].frameptr, i);
 		}
 	}
@@ -1797,6 +1734,6 @@ void Mod_Print()
 	Con_Printf("Cached models:\n");
 	for (i = 0, mod = mod_known; i < mod_numknown; i++, mod++)
 	{
-		Con_Printf("%8p : %s\n", mod->cache.data, mod->name);
+		Con_Printf("%i : %s\n", i, mod->name);
 	}
 }

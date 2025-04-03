@@ -143,7 +143,7 @@ mspriteframe_t *R_GetSpriteFrame (entity_t *currententity)
 	int				i, numframes, frame;
 	float			*pintervals, fullinterval, targettime, time;
 
-	psprite = currententity->model->cache.data;
+	psprite = currententity->model->data;
 	frame = currententity->frame;
 
 	if ((frame >= psprite->numframes) || (frame < 0))
@@ -199,7 +199,7 @@ void R_DrawSpriteModel (entity_t *e)
 	// don't even bother culling, because it's just a single
 	// polygon without a surface cache
 	frame = R_GetSpriteFrame (e);
-	psprite = currententity->model->cache.data;
+	psprite = currententity->model->data;
 
 	if (psprite->type == SPR_ORIENTED)
 	{	// bullet marks on walls
@@ -431,7 +431,7 @@ void R_DrawAliasModel (entity_t *e)
 	//
 	// locate the proper data
 	//
-	paliashdr = (aliashdr_t *)Mod_Extradata (currententity->model);
+	paliashdr = currententity->model->data;
 
 	c_alias_polys += paliashdr->numtris;
 

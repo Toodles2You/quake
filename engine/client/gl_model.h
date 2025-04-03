@@ -110,6 +110,39 @@ typedef struct msurface_s
 	byte *samples;					// [numstyles*surfsize]
 } msurface_t;
 
+typedef struct
+{
+	bool world;
+
+	int firstmodelsurface, nummodelsurfaces;
+
+	int numplanes;
+	mplane_t *planes;
+
+	int numvertexes;
+	mvertex_t *vertexes;
+
+	int numedges;
+	medge_t *edges;
+
+	int numtexinfo;
+	mtexinfo_t *texinfo;
+
+	int numsurfaces;
+	msurface_t *surfaces;
+
+	int numsurfedges;
+	int *surfedges;
+
+	int nummarksurfaces;
+	msurface_t **marksurfaces;
+
+	int numtextures;
+	texture_t **textures;
+
+	byte *lightdata;
+} mbrush_t;
+
 /*
 ==============================================================================
 
@@ -256,7 +289,6 @@ enum
 typedef struct model_s
 {
 	char name[MAX_QPATH];
-	bool needload; // bmodels and sprites don't cache normally
 
 	modtype_t type;
 	int numframes;
@@ -267,53 +299,18 @@ typedef struct model_s
 
 	int flags;
 
-	//
-	// brush model
-	//
-	bool world;
-
-	int firstmodelsurface, nummodelsurfaces;
-
-	int numplanes;
-	mplane_t *planes;
-
-	int numvertexes;
-	mvertex_t *vertexes;
-
-	int numedges;
-	medge_t *edges;
-
-	int numtexinfo;
-	mtexinfo_t *texinfo;
-
-	int numsurfaces;
-	msurface_t *surfaces;
-
-	int numsurfedges;
-	int *surfedges;
-
-	int nummarksurfaces;
-	msurface_t **marksurfaces;
-
-	int numtextures;
-	texture_t **textures;
-
-	byte *lightdata;
-
-	//
-	// additional model data
-	//
-	cache_user_t cache; // only access through Mod_Extradata
+	void *data;
 } model_t;
+
+#define BMODEL(model) ((mbrush_t *)model->data)
+#define SMODEL(model) ((msprite_t *)model->data)
+#define AMODEL(model) ((aliashdr_t *)model->data)
 
 //============================================================================
 
 extern texture_t *r_notexture_mip;
 
 void Mod_Init();
-void Mod_ClearAll();
 model_t *Mod_ForName(char *name, bool crash, bool world);
-void *Mod_Extradata(model_t *mod); // handles caching
-void Mod_TouchModel(char *name);
 
 #endif /* !_MODEL_H */

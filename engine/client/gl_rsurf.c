@@ -158,7 +158,7 @@ void R_BuildLightMap (msurface_t *surf, byte *dest, int stride)
 	lightmap = surf->samples;
 
 // set to full bright if no light data
-	if (r_fullbright.value || !cl.worldmodel->lightdata)
+	if (r_fullbright.value || !BMODEL(cl.worldmodel)->lightdata)
 	{
 		for (i=0 ; i<size * d_lightmap_bytes ; i++)
 			blocklights[i] = 255*256;
@@ -1066,9 +1066,9 @@ void R_DrawWaterSurfaces ()
 		waterchain = NULL;
 	} else {
 
-		for (i=0 ; i<cl.worldmodel->numtextures ; i++)
+		for (i=0 ; i<BMODEL(cl.worldmodel)->numtextures ; i++)
 		{
-			t = cl.worldmodel->textures[i];
+			t = BMODEL(cl.worldmodel)->textures[i];
 			if (!t)
 				continue;
 			s = t->texturechain;
@@ -1122,9 +1122,9 @@ void DrawTextureChains ()
 		return;
 	} 
 
-	for (i=0 ; i<cl.worldmodel->numtextures ; i++)
+	for (i=0 ; i<BMODEL(cl.worldmodel)->numtextures ; i++)
 	{
-		t = cl.worldmodel->textures[i];
+		t = BMODEL(cl.worldmodel)->textures[i];
 		if (!t)
 			continue;
 		s = t->texturechain;
@@ -1201,11 +1201,11 @@ void R_DrawBrushModel (entity_t *e)
 		modelorg[2] = DotProduct (temp, up);
 	}
 
-	psurf = &clmodel->surfaces[clmodel->firstmodelsurface];
+	psurf = &BMODEL(clmodel)->surfaces[BMODEL(clmodel)->firstmodelsurface];
 
 // calculate dynamic lighting for bmodel if it's not an
 // instanced model
-	if (clmodel->firstmodelsurface != 0 && gl_flashblend.value == 0)
+	if (BMODEL(clmodel)->firstmodelsurface != 0 && gl_flashblend.value == 0)
 	{
 		for (k=0 ; k<MAX_DLIGHTS ; k++)
 		{
@@ -1228,7 +1228,7 @@ e->angles[0] = -e->angles[0];	// stupid quake bug
 	//
 	// draw texture
 	//
-	for (i=0 ; i<clmodel->nummodelsurfaces ; i++, psurf++)
+	for (i=0 ; i<BMODEL(clmodel)->nummodelsurfaces ; i++, psurf++)
 	{
 		if (psurf->flags & SURF_NODRAW)
 			continue;
@@ -1343,7 +1343,7 @@ void R_RecursiveWorldNode (msurface_t **surfs, mnode_t *node)
 
 	if (c)
 	{
-		surf = cl.worldmodel->surfaces + node->firstsurface;
+		surf = BMODEL(cl.worldmodel)->surfaces + node->firstsurface;
 
 		if (dot < 0 -BACKFACE_EPSILON)
 			side = SURF_PLANEBACK;
@@ -1410,7 +1410,7 @@ void R_DrawWorld ()
 
     glEnable(GL_STENCIL_TEST);
 
-	R_RecursiveWorldNode (cl.worldmodel->marksurfaces, cl.cmodel_precache[1]->nodes);
+	R_RecursiveWorldNode (BMODEL(cl.worldmodel)->marksurfaces, cl.cmodel_precache[1]->nodes);
 
 	DrawTextureChains ();
 
@@ -1535,7 +1535,7 @@ void BuildSurfaceDisplayList (msurface_t *fa)
 	glpoly_t	*poly;
 
 // reconstruct the polygon
-	pedges = currentmodel->edges;
+	pedges = BMODEL(currentmodel)->edges;
 	lnumverts = fa->numedges;
 
 	//
@@ -1549,7 +1549,7 @@ void BuildSurfaceDisplayList (msurface_t *fa)
 
 	for (i=0 ; i<lnumverts ; i++)
 	{
-		lindex = currentmodel->surfedges[fa->firstedge + i];
+		lindex = BMODEL(currentmodel)->surfedges[fa->firstedge + i];
 
 		if (lindex > 0)
 		{
@@ -1712,16 +1712,18 @@ void GL_BuildLightmaps ()
 		m = cl.model_precache[j];
 		if (!m)
 			break;
+		if (m->type != mod_brush)
+			continue;
 		if (m->name[0] == '*')
 			continue;
-		r_pcurrentvertbase = m->vertexes;
+		r_pcurrentvertbase = BMODEL(m)->vertexes;
 		currentmodel = m;
-		for (i=0 ; i<m->numsurfaces ; i++)
+		for (i=0 ; i<BMODEL(m)->numsurfaces ; i++)
 		{
-			GL_CreateSurfaceLightmap (m->surfaces + i);
-			if ( m->surfaces[i].flags & (SURF_DRAWTURB | SURF_DRAWSKY) )
+			GL_CreateSurfaceLightmap (BMODEL(m)->surfaces + i);
+			if ( BMODEL(m)->surfaces[i].flags & (SURF_DRAWTURB | SURF_DRAWSKY) )
 				continue;
-			BuildSurfaceDisplayList (m->surfaces + i);
+			BuildSurfaceDisplayList (BMODEL(m)->surfaces + i);
 		}
 	}
 

@@ -32,8 +32,6 @@ enum
 #define MAX_MAP_LIGHTING 2097152
 #define MAX_MAP_VISIBILITY 2097152
 
-#define MAX_MAP_PORTALS 65536
-
 // key / value pair sizes
 
 #define MAX_KEY 32

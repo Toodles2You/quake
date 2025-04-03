@@ -305,13 +305,13 @@ void R_NewMap ()
 
 	// identify sky texture
 	skytexturenum = -1;
-	for (i=0 ; i<cl.worldmodel->numtextures ; i++)
+	for (i=0 ; i<BMODEL(cl.worldmodel)->numtextures ; i++)
 	{
-		if (!cl.worldmodel->textures[i])
+		if (!BMODEL(cl.worldmodel)->textures[i])
 			continue;
-		if (!strncmp(cl.worldmodel->textures[i]->name,"sky",3) )
+		if (!strncmp(BMODEL(cl.worldmodel)->textures[i]->name,"sky",3) )
 			skytexturenum = i;
- 		cl.worldmodel->textures[i]->texturechain = NULL;
+ 		BMODEL(cl.worldmodel)->textures[i]->texturechain = NULL;
 	}
 }
 

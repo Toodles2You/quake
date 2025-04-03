@@ -70,7 +70,6 @@ typedef struct
 typedef struct cmodel_s
 {
 	char name[MAX_QPATH];
-	bool needload;
 
 	modtype_t type;
 
@@ -103,13 +102,9 @@ typedef struct cmodel_s
 	unsigned int checksum2;
 } cmodel_t;
 
-extern const vec3_t hull_sizes[MAX_MAP_HULLS][2];
-extern const vec3_t quake_hull_sizes[MAX_MAP_HULLS][2];
-
 //============================================================================
 
 void CMod_Init();
-void CMod_ClearAll();
 cmodel_t *CMod_ForName(char *name, bool crash, bool world);
 
 mleaf_t *CMod_PointInLeaf(vec3_t p, cmodel_t *model);
