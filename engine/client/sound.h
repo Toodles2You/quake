@@ -75,10 +75,6 @@ void S_Update(vec3_t origin, vec3_t v_forward, vec3_t v_right, vec3_t v_up);
 void S_ExtraUpdate();
 
 sfx_t *S_PrecacheSound(char *sample);
-void S_TouchSound(char *sample);
-void S_ClearPrecache();
-void S_BeginPrecaching();
-void S_EndPrecaching();
 void S_PaintChannels(int endtime);
 
 void S_BlockSound();

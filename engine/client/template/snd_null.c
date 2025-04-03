@@ -20,10 +20,6 @@ void S_Shutdown ()
 {
 }
 
-void S_TouchSound (char *sample)
-{
-}
-
 void S_ClearBuffer ()
 {
 }
@@ -45,27 +41,11 @@ sfx_t *S_PrecacheSound (char *sample)
 	return NULL;
 }
 
-void S_ClearPrecache ()
-{
-}
-
 void S_Update (vec3_t origin, vec3_t v_forward, vec3_t v_right, vec3_t v_up)
 {	
 }
 
 void S_StopAllSounds (bool clear)
-{
-}
-
-void S_BeginPrecaching ()
-{
-}
-
-void S_EndPrecaching ()
-{
-}
-
-void S_ExtraUpdate ()
 {
 }
 

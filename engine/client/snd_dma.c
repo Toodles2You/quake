@@ -299,24 +299,6 @@ sfx_t *S_FindName (char *name)
 	return sfx;
 }
 
-
-/*
-==================
-S_TouchSound
-
-==================
-*/
-void S_TouchSound (char *name)
-{
-	sfx_t	*sfx;
-	
-	if (!sound_started)
-		return;
-
-	sfx = S_FindName (name);
-	Cache_Check (&sfx->cache);
-}
-
 /*
 ==================
 S_PrecacheSound
@@ -922,20 +904,5 @@ void S_LocalSound (char *sound)
 		return;
 	}
 	S_StartSound (cl.viewentity, -1, sfx, vec3_origin, 1, 1);
-}
-
-
-void S_ClearPrecache ()
-{
-}
-
-
-void S_BeginPrecaching ()
-{
-}
-
-
-void S_EndPrecaching ()
-{
 }
 
