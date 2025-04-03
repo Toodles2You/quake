@@ -523,7 +523,7 @@ static void SV_Begin_f ()
 		SV_BroadcastPrintf (PRINT_HIGH, "%s WARNING: non standard player/eyes model detected\n", host_client->name);
 
 	// if we are paused, tell the client
-	if (Host_IsPaused()) {
+	if (sv.paused) {
 		ClientReliableWrite_Begin (host_client, svc_setpause, 2);
 		ClientReliableWrite_Byte (host_client, sv.paused);
 		SV_ClientPrintf(host_client, PRINT_HIGH, "Server is paused.\n");
