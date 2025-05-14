@@ -169,8 +169,10 @@ typedef struct
 	server_state_t state; // precache commands are only valid during load
 
 	double time;
+	double newtime;
 	double oldtime;
 	double frametime;
+	double deltatime;
 
 	int lastcheck;		  // used by PF_checkclient
 	double lastchecktime; // for monster ai

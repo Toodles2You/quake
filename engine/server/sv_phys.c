@@ -50,8 +50,7 @@ cvar_t sv_wateraccelerate = {"sv_wateraccelerate", "10"};
 cvar_t sv_friction = {"sv_friction", "4"};
 cvar_t sv_waterfriction = {"sv_waterfriction", "4"};
 
-cvar_t	sv_mintic = {"sv_mintic","0.03"};
-cvar_t	sv_maxtic = {"sv_maxtic","0.1"};
+cvar_t	sv_ticrate = {"sv_ticrate","0.025"};
 
 #define	MOVE_EPSILON	0.01
 
@@ -1083,53 +1082,46 @@ SV_Physics
 */
 void SV_Physics ()
 {
-	int		i;
-	edict_t	*ent;
+	int i;
+	edict_t *ent;
 
-// don't bother running a frame if sys_ticrate seconds haven't passed
-	sv.frametime = sv.time - sv.oldtime;
+	// don't bother running a frame if sv_ticrate seconds haven't passed
+	sv.deltatime += sv.newtime - sv.oldtime;
+	sv.oldtime = sv.newtime;
 
-	if (sv.frametime < sv_mintic.value)
+	while (sv.deltatime >= sv_ticrate.value)
 	{
-		return;
-	}
+		sv.deltatime -= sv_ticrate.value;
+		sv.time += sv_ticrate.value;
+		sv.frametime = sv_ticrate.value;
 
-	if (sv.frametime > sv_maxtic.value)
-	{
-		sv.frametime = sv_maxtic.value;
-	}
+		SV_ProgStartFrame ();
 
-	sv.oldtime = sv.time;
-
-	SV_ProgStartFrame ();
-
-//
-// treat each object in turn
-// even the world gets a chance to think
-//
-	ent = sv.edicts;
-	for (i=0 ; i<sv.num_edicts ; i++, ent = NEXT_EDICT(ent))
-	{
-		if (ent->free)
-			continue;
-
-		if (sv_pr_float(force_retouch))
+		//
+		// treat each object in turn
+		// even the world gets a chance to think
+		//
+		for (i = 0, ent = sv.edicts; i < sv.num_edicts; i++, ent = NEXT_EDICT (ent))
 		{
-			SV_LinkEdict (ent, true);	// force retouch even for stationary
+			if (ent->free)
+				continue;
+
+			if (sv_pr_float (force_retouch))
+				SV_LinkEdict (ent, true); // force retouch even for stationary
+
+			if (i > 0 && i <= MAX_CLIENTS)
+				continue; // clients are run directly from packets
+
+			SV_RunEntity (ent);
+			SV_RunNewmis ();
 		}
 
-		if (i > 0 && i <= MAX_CLIENTS)
+		if (sv_pr_float (force_retouch))
 		{
-			continue;		// clients are run directly from packets
+			sv_pr_float (force_retouch)--;
+			if (sv_pr_float (force_retouch) < 0.0f)
+				sv_pr_float (force_retouch) = 0.0f;
 		}
-
-		SV_RunEntity (ent);
-		SV_RunNewmis ();
-	}
-
-	if (sv_pr_float(force_retouch))
-	{
-		sv_pr_float(force_retouch)--;
 	}
 }
 

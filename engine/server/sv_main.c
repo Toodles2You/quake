@@ -1343,14 +1343,12 @@ void SV_Init ()
 	extern cvar_t sv_friction;
 	extern cvar_t sv_waterfriction;
 
-	extern cvar_t sv_mintic;
-	extern cvar_t sv_maxtic;
+	extern cvar_t sv_ticrate;
 
 	SV_InitOperatorCommands	();
 	SV_UserInit ();
 
-	Cvar_RegisterVariable (src_server, &sv_mintic);
-	Cvar_RegisterVariable (src_server, &sv_maxtic);
+	Cvar_RegisterVariable (src_server, &sv_ticrate);
 
 	Cvar_RegisterVariable (src_server, &maxclients);
 	Cvar_RegisterVariable (src_server, &maxspectators);

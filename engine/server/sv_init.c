@@ -20,6 +20,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "serverdef.h"
 
+extern cvar_t sv_ticrate;
+
 server_t sv;
 server_static_t svs;
 
@@ -384,8 +386,9 @@ void SV_SpawnServer (char *server, char *startspot)
 		return;
 	}
 
-	sv.time = 1.0;
-	sv.oldtime = 0.9;
+	sv.newtime = sv.oldtime = 1.0;
+	// run two frames to allow everything to settle
+	sv.deltatime = sv_ticrate.value * 2.0;
 
 	strcpy (sv.name, server);
 	sprintf (sv.modelname,"maps/%s.bsp", server);
@@ -495,8 +498,6 @@ void SV_SpawnServer (char *server, char *startspot)
 	sv.active = true;
 	
 	// run two frames to allow everything to settle
-	sv.frametime = 0.1;
-	SV_Physics ();
 	SV_Physics ();
 
 	// save movement vars

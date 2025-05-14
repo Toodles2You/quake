@@ -394,9 +394,7 @@ void Host_ServerFrame (double time)
 
 // decide the simulation time
 	if (!Host_IsPaused())
-	{
-		sv.time += time;
-	}
+		sv.newtime += time;
 
 // check timeouts
 	SV_CheckTimeouts ();
