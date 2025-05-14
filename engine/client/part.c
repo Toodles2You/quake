@@ -585,9 +585,8 @@ void R_RocketTrail (vec3_t start, vec3_t end, int type)
 					p->org[j] = start[j] + ((rand()&15)-8);
 				break;
 		}
-		
 
-		VectorAdd (start, vec, start);
+		VectorMA (start, dec, vec, start);
 	}
 }
 
