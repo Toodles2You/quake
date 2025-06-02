@@ -40,7 +40,7 @@ void RemoveLink(link_t *l);
 void InsertLinkBefore(link_t *l, link_t *before);
 void InsertLinkAfter(link_t *l, link_t *after);
 
-#ifndef QUAKE_LINUX
+#ifndef __linux__
 #define offsetof(type, member) ((uintptr_t)&(((type *)0)->member))
 #endif
 
