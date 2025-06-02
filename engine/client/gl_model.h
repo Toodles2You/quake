@@ -2,7 +2,7 @@
 #ifndef _MODEL_H
 #define _MODEL_H
 
-#include "../shared/cmodel.h"
+#include "../common/cmodel.h"
 
 /*
 

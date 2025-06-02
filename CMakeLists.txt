@@ -66,22 +66,22 @@ set(COMMON_SRC
     common/mathlib.c
 )
 
-set(SHARED_SRC
-    engine/shared/cmd.c
-    engine/shared/cmodel.c
-    engine/shared/common.c
-    engine/shared/cvar.c
-    engine/shared/host_cmd.c
-    engine/shared/host.c
-    engine/shared/net_chan.c
-    engine/shared/net_udp.c
-    engine/shared/pmove.c
-    engine/shared/pmovetst.c
-    engine/shared/sys_linux.c
-    engine/shared/zone.c
+set(ENGINE_COMMON_SRC
+    engine/common/cmd.c
+    engine/common/cmodel.c
+    engine/common/common.c
+    engine/common/cvar.c
+    engine/common/host_cmd.c
+    engine/common/host.c
+    engine/common/net_chan.c
+    engine/common/net_udp.c
+    engine/common/pmove.c
+    engine/common/pmovetst.c
+    engine/common/sys_linux.c
+    engine/common/zone.c
 )
 
-set(CLIENT_SRC
+set(ENGINE_CLIENT_SRC
     engine/client/cd_vorbis.c
     engine/client/chase.c
     engine/client/cl_cam.c
@@ -120,7 +120,7 @@ set(CLIENT_SRC
     engine/client/wad.c
 )
 
-set(SERVER_SRC
+set(ENGINE_SERVER_SRC
     engine/server/progs.c
     engine/server/pr_cmds.c 
     engine/server/pr_edict.c
@@ -143,9 +143,9 @@ set(SERVER_SRC
 
 add_executable(quake
     ${COMMON_SRC}
-    ${SHARED_SRC}
-    ${CLIENT_SRC}
-    ${SERVER_SRC}
+    ${ENGINE_COMMON_SRC}
+    ${ENGINE_CLIENT_SRC}
+    ${ENGINE_SERVER_SRC}
 )
 
 target_compile_definitions(quake PRIVATE ${QUAKE_DEFS})
