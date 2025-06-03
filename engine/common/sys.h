@@ -34,6 +34,8 @@ void Sys_Quit();
 
 double Sys_FloatTime();
 
+void Sys_Sleep (int msec);
+
 char *Sys_ConsoleInput();
 
 void Sys_SendKeyEvents();

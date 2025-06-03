@@ -326,16 +326,7 @@ bool Host_FilterTime (double time)
 {
 	realtime += time;
 
-	float fps = cl_maxfps.value;
-	if (fps < 30.0)
-		fps = 30.0;
-	
-	double frametime = realtime - oldrealtime;
-
-	if (!cls.timedemo && frametime < 1.0/fps)
-		return false;		// framerate is too high
-
-	host_frametime = frametime;
+	host_frametime = realtime - oldrealtime;
 	oldrealtime = realtime;
 
 	if (host_framerate.value > 0)

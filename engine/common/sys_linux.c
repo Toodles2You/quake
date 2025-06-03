@@ -36,6 +36,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <sys/wait.h>
 #include <sys/mman.h>
 #include <errno.h>
+#include <time.h>
 
 #include "clientdef.h"
 #include "serverdef.h"
@@ -302,6 +303,14 @@ double Sys_FloatTime ()
 // Sleeps for microseconds
 // =======================================================================
 
+void Sys_Sleep (int msec)
+{
+	struct timespec ts;
+	ts.tv_sec = msec / 1000;
+	ts.tv_nsec = (msec % 1000) * 1000000;
+	nanosleep (&ts, NULL);
+}
+
 static volatile int oktogo;
 
 void alarm_handler(int x)
@@ -402,8 +411,21 @@ int main (int c, char **v)
             }
             time = sys_ticrate.value;
         }
+		else if (!cls.timedemo)
+		{
+			double fps = cl_maxfps.value;
+			if (fps < 30.0)
+				fps = 30.0;
+			fps = 1.0 / fps;
 
-        if (time > sys_ticrate.value*2)
+			if (!cls.timedemo && time < fps)
+			{
+				Sys_Sleep ((fps - time) * 1000); // framerate is too high
+				continue;
+			}
+		}
+
+        if (cls.state == ca_dedicated && time > sys_ticrate.value*2)
             oldtime = newtime;
         else
             oldtime += time;
