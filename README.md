@@ -1,10 +1,8 @@
 # About
 
-An experimental fork of Id Software's Quake engine. This project spawned from the desire to learn more about the inner workings of *Quake*, *Half-Life*, & other similar titles.  
+An experimental fork of Id Software's Quake engine.  
 
 All of the multiplayer enhancements of QuakeWorld have been merged into the original engine. It can run both `progs.dat` & `qwprogs.dat` game code!  
-
-**This is work-in-progress! Use at your own discretion.**  
 
 # License
 
