@@ -387,10 +387,7 @@ void VID_Init (unsigned char *palette)
 	VID_CheckParms (&width, &height, &fullscreen);
 
 	if (SDL_Init (SDL_INIT_VIDEO) < 0)
-	{
-		fprintf (stderr, "Error couldn't open SDL: %s\n", SDL_GetError ());
-		exit (1);
-	}
+		Sys_Error ("Error couldn't open SDL: %s\n", SDL_GetError ());
 
 	SDL_version version;
 	SDL_GetVersion (&version);
@@ -405,27 +402,20 @@ void VID_Init (unsigned char *palette)
 		SDL_GL_SetAttribute (SDL_GL_DOUBLEBUFFER, SDL_TRUE) < 0 || SDL_GL_SetAttribute (SDL_GL_DEPTH_SIZE, 1) < 0 ||
 		SDL_GL_SetAttribute (SDL_GL_STENCIL_SIZE, 1) < 0)
 	{
-		fprintf (stderr, "Error couldn't set window attributes: %s\n", SDL_GetError ());
-		exit (1);
+		Sys_Error ("Error couldn't set window attributes: %s\n", SDL_GetError ());
 	}
 
 	window = SDL_CreateWindow ("Quake", SDL_WINDOWPOS_CENTERED, SDL_WINDOWPOS_CENTERED, width, height, SDL_WINDOW_OPENGL | SDL_WINDOW_HIDDEN);
 
 	if (!window)
-	{
-		fprintf (stderr, "Error couldn't create window: %s\n", SDL_GetError ());
-		exit (1);
-	}
+		Sys_Error ("Error couldn't create window: %s\n", SDL_GetError ());
 
 	VID_SetMode (width, height, fullscreen);
 
 	context = SDL_GL_CreateContext (window);
 
 	if (!context)
-	{
-		fprintf (stderr, "Error couldn't create OpenGL context: %s\n", SDL_GetError ());
-		exit (1);
-	}
+		Sys_Error ("Error couldn't create OpenGL context: %s\n", SDL_GetError ());
 
 	scr_width = width;
 	scr_height = height;
