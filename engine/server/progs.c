@@ -396,7 +396,7 @@ void PR_BuildStructs (progs_state_t *pr, uint32_t *global_struct, pr_field_t *gl
 	}
 }
 
-void PR_Init ()
+void PR_Init (void)
 {
 	Cmd_AddCommand (src_server, "profile", PR_Profile_f);
 }

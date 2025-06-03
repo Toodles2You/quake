@@ -56,7 +56,7 @@ static bool queuelooping;
 
 static byte remap[100];
 
-static void CDAudio_ForceStop ()
+static void CDAudio_ForceStop (void)
 {
 	if (!(cd_state & CD_ENABLED))
 		return;
@@ -173,7 +173,7 @@ void CDAudio_Play (byte track, bool looping)
 	SNDDMA_Submit ();
 }
 
-void CDAudio_Stop ()
+void CDAudio_Stop (void)
 {
 	if (bgmfade.value > 0.0 && !(cd_state & CD_FADING_OUT))
 	{
@@ -184,7 +184,7 @@ void CDAudio_Stop ()
 	CDAudio_ForceStop ();
 }
 
-void CDAudio_Pause ()
+void CDAudio_Pause (void)
 {
 	if (!(cd_state & CD_ENABLED) || !(cd_state & CD_PLAYING))
 		return;
@@ -192,7 +192,7 @@ void CDAudio_Pause ()
 	cd_state |= CD_PAUSED;
 }
 
-void CDAudio_Resume ()
+void CDAudio_Resume (void)
 {
 	if (!(cd_state & CD_ENABLED) || !(cd_state & CD_PAUSED))
 		return;
@@ -200,7 +200,7 @@ void CDAudio_Resume ()
 	cd_state &= ~CD_PAUSED;
 }
 
-static void CD_f ()
+static void CD_f (void)
 {
 	if (Cmd_Argc () < 2)
 		return;
@@ -283,7 +283,7 @@ static void CD_f ()
 	}
 }
 
-void CDAudio_Update ()
+void CDAudio_Update (void)
 {
 	if (!(cd_state & CD_ENABLED))
 		return;
@@ -301,7 +301,7 @@ void CDAudio_Update ()
 	}
 }
 
-int CDAudio_Init ()
+int CDAudio_Init (void)
 {
 	int n;
 
@@ -343,7 +343,7 @@ int CDAudio_Init ()
 	return 0;
 }
 
-void CDAudio_Shutdown ()
+void CDAudio_Shutdown (void)
 {
 	SNDDMA_BeginPainting ();
 

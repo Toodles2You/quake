@@ -61,7 +61,7 @@ Set up the planes and clipnodes so that the six floats of a bounding box
 can just be stored out and get a proper hull_t structure.
 ===================
 */
-void SV_InitBoxHull ()
+void SV_InitBoxHull (void)
 {
 	int i;
 	int side;
@@ -223,7 +223,7 @@ SV_ClearWorld
 
 ===============
 */
-void SV_ClearWorld ()
+void SV_ClearWorld (void)
 {
 	SV_InitBoxHull ();
 

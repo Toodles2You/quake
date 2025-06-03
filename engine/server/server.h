@@ -333,11 +333,11 @@ extern FILE *sv_fraglogfile;
 //
 void SV_FinalMessage (char *message);
 void SV_DropClient (client_t *drop);
-void SV_CheckLog ();
-void SV_ReadPackets ();
-void SV_CheckTimeouts ();
-void SV_CheckVars ();
-void SV_Init ();
+void SV_CheckLog (void);
+void SV_ReadPackets (void);
+void SV_CheckTimeouts (void);
+void SV_CheckVars (void);
+void SV_Init (void);
 
 int SV_CalcPing (client_t *cl);
 void SV_FullClientUpdate (client_t *client, sizebuf_t *buf);
@@ -348,46 +348,46 @@ int SV_ModelIndex (char *name);
 bool SV_CheckBottom (edict_t *ent);
 bool SV_movestep (edict_t *ent, vec3_t move, bool relink);
 
-void SV_MoveToGoal ();
+void SV_MoveToGoal (void);
 
-void SV_SaveSpawnparms ();
+void SV_SaveSpawnparms (void);
 
 void SV_Physics_Client (edict_t *ent);
 
 void SV_ExecuteUserCommand (char *s);
-void SV_InitOperatorCommands ();
+void SV_InitOperatorCommands (void);
 
 void SV_SendServerinfo (client_t *client);
 void SV_ExtractFromUserinfo (client_t *cl);
 
-void Master_Heartbeat ();
-void Master_Packet ();
-void Master_Shutdown ();
+void Master_Heartbeat (void);
+void Master_Packet (void);
+void Master_Shutdown (void);
 
 //
 // sv_init.c
 //
 void SV_SpawnServer (char *server, char *startspot);
-void SV_FlushSignon ();
+void SV_FlushSignon (void);
 
 //
 // sv_phys.c
 //
-void SV_ProgStartFrame ();
-void SV_Physics ();
+void SV_ProgStartFrame (void);
+void SV_Physics (void);
 void SV_CheckVelocity (edict_t *ent);
 void SV_AddGravity (edict_t *ent, float scale);
 bool SV_RunThink (edict_t *ent);
 void SV_Physics_Toss (edict_t *ent);
-void SV_RunNewmis ();
+void SV_RunNewmis (void);
 void SV_Impact (edict_t *e1, edict_t *e2);
-void SV_SetMoveVars ();
+void SV_SetMoveVars (void);
 
 //
 // sv_send.c
 //
-void SV_FlushRedirect ();
-void SV_SendClientMessages ();
+void SV_FlushRedirect (void);
+void SV_SendClientMessages (void);
 
 void SV_Multicast (vec3_t origin, int to);
 void SV_StartParticle (vec3_t org, vec3_t dir, int color, int count);
@@ -395,29 +395,29 @@ void SV_StartSound (edict_t *entity, int channel, char *sample, int volume, floa
 void SV_ClientPrintf (client_t *cl, int level, char *fmt, ...);
 void SV_BroadcastPrintf (int level, char *fmt, ...);
 void SV_BroadcastCommand (char *fmt, ...);
-void SV_SendMessagesToAll ();
-void SV_FindModelNumbers ();
+void SV_SendMessagesToAll (void);
+void SV_FindModelNumbers (void);
 
 void SV_BeginRedirect (redirect_t rd);
-void SV_EndRedirect ();
+void SV_EndRedirect (void);
 
 //
 // sv_user.c
 //
 void SV_ExecuteClientMessage (client_t *cl);
-void SV_UserInit ();
+void SV_UserInit (void);
 void SV_TogglePause (const char *msg);
 
 //
 // sv_ccmds.c
 //
-void SV_Status_f ();
+void SV_Status_f (void);
 
 //
 // sv_ents.c
 //
-void SV_SendCompatibilityMessages ();
-void SV_CleanupEnts ();
+void SV_SendCompatibilityMessages (void);
+void SV_CleanupEnts (void);
 void SV_WriteEntitiesToClient (client_t *client, sizebuf_t *msg);
 
 //

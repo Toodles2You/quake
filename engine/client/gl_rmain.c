@@ -61,7 +61,7 @@ texture_t *r_notexture_mip;
 
 int d_lightstylevalue[256]; // 8.8 fraction of base light value
 
-void R_MarkLeaves ();
+void R_MarkLeaves (void);
 void R_SetupGL (float fov_x, float fov_y, vrect_t *vrect);
 
 cvar_t r_norefresh = {"r_norefresh", "0"};
@@ -520,7 +520,7 @@ void R_DrawAliasModel (entity_t *e)
 R_DrawEntitiesOnList
 =============
 */
-void R_DrawEntitiesOnList ()
+void R_DrawEntitiesOnList (void)
 {
 	int i;
 
@@ -565,7 +565,7 @@ void R_DrawEntitiesOnList ()
 R_DrawViewModel
 =============
 */
-void R_DrawViewModel ()
+void R_DrawViewModel (void)
 {
 	if (!r_drawviewmodel.value)
 		return;
@@ -596,7 +596,7 @@ void R_DrawViewModel ()
 R_PolyBlend
 ============
 */
-void R_PolyBlend ()
+void R_PolyBlend (void)
 {
 	if (!gl_polyblend.value)
 		return;
@@ -670,7 +670,7 @@ void TurnVector (vec3_t out, const vec3_t forward, const vec3_t side, float angl
 R_SetFrustum -- johnfitz -- rewritten
 ===============
 */
-void R_SetFrustum ()
+void R_SetFrustum (void)
 {
 	int i;
 
@@ -692,7 +692,7 @@ void R_SetFrustum ()
 R_SetupFrame
 ===============
 */
-void R_SetupFrame ()
+void R_SetupFrame (void)
 {
 	R_AnimateLight ();
 
@@ -795,7 +795,7 @@ R_RenderScene
 r_refdef must be set before the first call
 ================
 */
-void R_RenderScene ()
+void R_RenderScene (void)
 {
 	R_SetupFrame ();
 
@@ -823,7 +823,7 @@ void R_RenderScene ()
 R_Clear
 =============
 */
-void R_Clear ()
+void R_Clear (void)
 {
 	if (r_wireframe.value)
 	{
@@ -877,7 +877,7 @@ R_RenderView
 r_refdef must be set before the first call
 ================
 */
-void R_RenderView ()
+void R_RenderView (void)
 {
 	double time1, time2;
 

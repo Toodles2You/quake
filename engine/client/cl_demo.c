@@ -20,7 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "clientdef.h"
 
-static void CL_FinishTimeDemo ();
+static void CL_FinishTimeDemo (void);
 
 /*
 ==============================================================================
@@ -42,7 +42,7 @@ CL_StopPlayback
 Called when a demo file runs out, or the user starts a game
 ==============
 */
-void CL_StopPlayback ()
+void CL_StopPlayback (void)
 {
 	if (!cls.demoplayback)
 		return;
@@ -144,7 +144,7 @@ CL_GetDemoMessage
 Handles recording and playback of demos, on top of NET_ code
 ====================
 */
-static bool CL_GetDemoMessage ()
+static bool CL_GetDemoMessage (void)
 {
 	int r, i, j;
 	float f;
@@ -267,7 +267,7 @@ CL_GetMessage
 Handles recording and playback of demos, on top of NET_ code
 ====================
 */
-bool CL_GetMessage ()
+bool CL_GetMessage (void)
 {
 	if (cls.demoplayback)
 		return CL_GetDemoMessage ();
@@ -287,7 +287,7 @@ CL_Stop_f
 stop recording a demo
 ====================
 */
-void CL_Stop_f ()
+void CL_Stop_f (void)
 {
 	if (!cls.demorecording)
 	{
@@ -346,7 +346,7 @@ static void CL_WriteRecordDemoMessage (sizebuf_t *msg, int seq)
 	fflush (cls.demofile);
 }
 
-static void CL_WriteSetDemoMessage ()
+static void CL_WriteSetDemoMessage (void)
 {
 	int len;
 	float fl;
@@ -378,7 +378,7 @@ CL_Record_f
 record <demoname> <server>
 ====================
 */
-void CL_Record_f ()
+void CL_Record_f (void)
 {
 	int c;
 	char name[MAX_OSPATH];
@@ -690,7 +690,7 @@ CL_ReRecord_f
 record <demoname>
 ====================
 */
-void CL_ReRecord_f ()
+void CL_ReRecord_f (void)
 {
 	int c;
 	char name[MAX_OSPATH];
@@ -739,7 +739,7 @@ CL_PlayDemo_f
 play [demoname]
 ====================
 */
-void CL_PlayDemo_f ()
+void CL_PlayDemo_f (void)
 {
 	char name[256];
 	int c;
@@ -783,7 +783,7 @@ CL_FinishTimeDemo
 
 ====================
 */
-static void CL_FinishTimeDemo ()
+static void CL_FinishTimeDemo (void)
 {
 	int frames;
 	float time;
@@ -805,7 +805,7 @@ CL_TimeDemo_f
 timedemo [demoname]
 ====================
 */
-void CL_TimeDemo_f ()
+void CL_TimeDemo_f (void)
 {
 	if (Cmd_Argc () != 2)
 	{

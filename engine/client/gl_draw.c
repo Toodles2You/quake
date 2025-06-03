@@ -137,7 +137,7 @@ int Scrap_AllocBlock (int w, int h, int *x, int *y)
 
 int scrap_uploads;
 
-void Scrap_Upload ()
+void Scrap_Upload (void)
 {
 	int texnum;
 	int scrapnum;
@@ -302,7 +302,7 @@ glmode_t modes[] = {{"GL_NEAREST", GL_NEAREST, GL_NEAREST},
 Draw_TextureMode_f
 ===============
 */
-void Draw_TextureMode_f ()
+void Draw_TextureMode_f (void)
 {
 	int i;
 	gltexture_t *glt;
@@ -348,7 +348,7 @@ void Draw_TextureMode_f ()
 Draw_Init
 ===============
 */
-void Draw_Init ()
+void Draw_Init (void)
 {
 	int i;
 	qpic_t *cb;
@@ -750,7 +750,7 @@ Draw_FadeScreen
 
 ================
 */
-void Draw_FadeScreen ()
+void Draw_FadeScreen (void)
 {
 	glEnable (GL_BLEND);
 	glDisable (GL_TEXTURE_2D);
@@ -780,7 +780,7 @@ Draws the little blue disc in the corner of the screen.
 Call before beginning any disc IO.
 ================
 */
-void Draw_BeginDisc ()
+void Draw_BeginDisc (void)
 {
 	if (!draw_disc)
 		return;
@@ -797,7 +797,7 @@ Erases the disc icon.
 Call after completing any disc IO
 ================
 */
-void Draw_EndDisc () {}
+void Draw_EndDisc (void) {}
 
 /*
 ================
@@ -806,7 +806,7 @@ GL_Set2D
 Setup as if the screen was 320*200
 ================
 */
-void GL_Set2D ()
+void GL_Set2D (void)
 {
 	glViewport (glx, gly, glwidth, glheight);
 

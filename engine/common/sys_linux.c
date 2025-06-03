@@ -127,7 +127,7 @@ void Sys_Printf (char *fmt, ...)
 	}
 }
 
-void Sys_Quit ()
+void Sys_Quit (void)
 {
 	Host_Shutdown ();
 	fcntl (0, F_SETFL, fcntl (0, F_GETFL, 0) & ~FNDELAY);
@@ -135,7 +135,7 @@ void Sys_Quit ()
 	exit (0);
 }
 
-void Sys_Init () {}
+void Sys_Init (void) {}
 
 void Sys_Error (char *error, ...)
 {
@@ -274,7 +274,7 @@ void Sys_EditFile (char *filename)
 	}
 }
 
-double Sys_FloatTime ()
+double Sys_FloatTime (void)
 {
 	struct timeval tp;
 	struct timezone tzp;
@@ -310,7 +310,7 @@ void alarm_handler (int x)
 	oktogo = 1;
 }
 
-void Sys_LineRefresh () {}
+void Sys_LineRefresh (void) {}
 
 void floating_point_exception_handler (int whatever)
 {
@@ -318,7 +318,7 @@ void floating_point_exception_handler (int whatever)
 	signal (SIGFPE, floating_point_exception_handler);
 }
 
-char *Sys_ConsoleInput ()
+char *Sys_ConsoleInput (void)
 {
 	static char text[256];
 	int len;

@@ -23,7 +23,7 @@ typedef enum
 
 extern cmd_source_e cmd_source;
 
-void Cbuf_Init ();
+void Cbuf_Init (void);
 // allocates an initial text buffer that will grow as needed
 
 void Cbuf_AddText (cmd_source_e src, char *text);
@@ -56,7 +56,7 @@ not apropriate.
 
 typedef void (*xcommand_t) ();
 
-void Cmd_Init ();
+void Cmd_Init (void);
 
 void Cmd_AddCommand (cmd_source_e src, char *cmd_name, xcommand_t function);
 // called by the init functions of other parts of the program to
@@ -70,9 +70,9 @@ char *Cmd_CompleteCommand (cmd_source_e src, char *partial);
 // attempts to match a partial command for automatic command line completion
 // returns NULL if nothing fits
 
-int Cmd_Argc ();
+int Cmd_Argc (void);
 char *Cmd_Argv (int arg);
-char *Cmd_Args ();
+char *Cmd_Args (void);
 // The functions that execute commands get their parameters with these
 // functions. Cmd_Argv () will return an empty string, not a NULL
 // if arg > argc, so string operations are allways safe.
@@ -89,11 +89,11 @@ void Cmd_ExecuteString (cmd_source_e src, char *text);
 // Parses a single line of text into arguments and tries to execute it.
 // The text can come from the command buffer, a remote client, or stdin.
 
-void Cmd_ForwardToServer ();
+void Cmd_ForwardToServer (void);
 // adds the current command line as a clc_stringcmd to the client message.
 // things like godmode, noclip, etc, are commands directed to the server,
 // so when they are typed in at the console, they will need to be forwarded.
 
-void Cmd_StuffCmds_f ();
+void Cmd_StuffCmds_f (void);
 
 #endif /* !_CMD_H */

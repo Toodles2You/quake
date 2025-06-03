@@ -25,14 +25,14 @@ extern cvar_t hostname;
 
 extern int net_socket[NUM_SOCKETS];
 
-void NET_Init ();
-void NET_Shutdown ();
+void NET_Init (void);
+void NET_Shutdown (void);
 bool NET_GetPacket (netsocket_e sock);
 void NET_SendPacket (netsocket_e sock, int length, void *data, netadr_t to);
 void NET_Open (netsocket_e sock, int port);
 void NET_Close (netsocket_e sock);
-netadr_t NET_GetLocalAddress ();
-char *NET_GetPublicAddress ();
+netadr_t NET_GetLocalAddress (void);
+char *NET_GetPublicAddress (void);
 
 bool NET_CompareAdr (netadr_t a, netadr_t b);
 bool NET_CompareBaseAdr (netadr_t a, netadr_t b);
@@ -94,7 +94,7 @@ typedef struct
 
 extern int net_drop; // packets dropped before this one
 
-void Netchan_Init ();
+void Netchan_Init (void);
 void Netchan_Transmit (netchan_t *chan, int length, byte *data);
 void Netchan_OutOfBand (netsocket_e sock, netadr_t adr, int length, byte *data);
 void Netchan_OutOfBandPrint (netsocket_e sock, netadr_t adr, char *format, ...);

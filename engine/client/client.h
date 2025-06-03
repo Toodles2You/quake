@@ -325,18 +325,18 @@ extern dlight_t cl_dlights[MAX_DLIGHTS];
 // cl_main.c
 //
 dlight_t *CL_AllocDlight (int key);
-void CL_DecayLights ();
+void CL_DecayLights (void);
 
-void CL_Init ();
-void Host_WriteConfiguration ();
+void CL_Init (void);
+void Host_WriteConfiguration (void);
 
-void CL_Disconnect ();
-void CL_Disconnect_f ();
-void CL_NextDemo ();
-void CL_Reconnect_f ();
+void CL_Disconnect (void);
+void CL_Disconnect_f (void);
+void CL_NextDemo (void);
+void CL_Reconnect_f (void);
 
-void CL_CheckForResend ();
-void CL_BeginServerConnect ();
+void CL_CheckForResend (void);
+void CL_BeginServerConnect (void);
 
 #define MAX_VISEDICTS 256
 extern int cl_numvisedicts, cl_oldnumvisedicts;
@@ -358,30 +358,30 @@ extern kbutton_t in_mlook, in_klook;
 extern kbutton_t in_strafe;
 extern kbutton_t in_speed;
 
-void CL_InitInput ();
-void CL_SendCmd ();
+void CL_InitInput (void);
+void CL_SendCmd (void);
 
-void CL_ParseTEnt ();
-void CL_UpdateTEnts ();
+void CL_ParseTEnt (void);
+void CL_UpdateTEnts (void);
 
-void CL_ClearState ();
+void CL_ClearState (void);
 
-void CL_ReadPackets ();
+void CL_ReadPackets (void);
 
 char *Key_KeynumToString (int keynum);
 
 //
 // cl_demo.c
 //
-void CL_StopPlayback ();
-bool CL_GetMessage ();
+void CL_StopPlayback (void);
+bool CL_GetMessage (void);
 void CL_WriteDemoCmd (usercmd_t *pcmd);
 
-void CL_Stop_f ();
-void CL_Record_f ();
-void CL_ReRecord_f ();
-void CL_PlayDemo_f ();
-void CL_TimeDemo_f ();
+void CL_Stop_f (void);
+void CL_Record_f (void);
+void CL_ReRecord_f (void);
+void CL_PlayDemo_f (void);
+void CL_TimeDemo_f (void);
 
 //
 // cl_parse.c
@@ -389,50 +389,50 @@ void CL_TimeDemo_f ();
 #define NET_TIMINGS 256
 #define NET_TIMINGSMASK 255
 extern int packet_latency[NET_TIMINGS];
-int CL_CalcNet ();
-void CL_ParseServerMessage ();
+int CL_CalcNet (void);
+void CL_ParseServerMessage (void);
 void CL_NewTranslation (int slot);
 bool CL_CheckOrDownloadFile (char *filename);
-bool CL_IsUploading ();
-void CL_NextUpload ();
+bool CL_IsUploading (void);
+void CL_NextUpload (void);
 void CL_StartUpload (byte *data, int size);
-void CL_StopUpload ();
+void CL_StopUpload (void);
 
 //
 // view.c
 //
-void V_StartPitchDrift ();
-void V_StopPitchDrift ();
+void V_StartPitchDrift (void);
+void V_StopPitchDrift (void);
 
-void V_RenderView ();
-void V_UpdatePalette ();
-void V_ParseDamage ();
+void V_RenderView (void);
+void V_UpdatePalette (void);
+void V_ParseDamage (void);
 void V_SetContentsColor (int contents);
-void V_CalcBlend ();
+void V_CalcBlend (void);
 
 //
 // cl_tent.c
 //
-void CL_InitTEnts ();
-void CL_ClearTEnts ();
+void CL_InitTEnts (void);
+void CL_ClearTEnts (void);
 
 //
 // cl_ents.c
 //
 void CL_SetSolidPlayers (int playernum);
 void CL_SetUpPlayerPrediction (bool dopred);
-void CL_EmitEntities ();
-void CL_ClearProjectiles ();
-void CL_ParseProjectiles ();
+void CL_EmitEntities (void);
+void CL_ClearProjectiles (void);
+void CL_ParseProjectiles (void);
 void CL_ParsePacketEntities (bool delta);
-void CL_SetSolidEntities ();
-void CL_ParsePlayerinfo ();
+void CL_SetSolidEntities (void);
+void CL_ParsePlayerinfo (void);
 
 //
 // cl_pred.c
 //
-void CL_InitPrediction ();
-void CL_PredictMove ();
+void CL_InitPrediction (void);
+void CL_PredictMove (void);
 void CL_PredictUsercmd (player_state_t *from, player_state_t *to, usercmd_t *u, bool spectator);
 
 //
@@ -447,12 +447,12 @@ enum
 extern int autocam;
 extern int spec_track; // player# of who we are tracking
 
-bool Cam_DrawViewModel ();
+bool Cam_DrawViewModel (void);
 bool Cam_DrawPlayer (int playernum);
 void Cam_Track (usercmd_t *cmd);
 void Cam_FinishMove (usercmd_t *cmd);
-void Cam_Reset ();
-void CL_InitCam ();
+void Cam_Reset (void);
+void CL_InitCam (void);
 
 //
 // skin.c
@@ -476,8 +476,8 @@ typedef struct
 
 void Skin_Find (player_info_t *sc);
 byte *Skin_Cache (skin_t *skin);
-void Skin_Skins_f ();
-void Skin_AllSkins_f ();
-void Skin_NextDownload ();
+void Skin_Skins_f (void);
+void Skin_AllSkins_f (void);
+void Skin_NextDownload (void);
 
 #endif /* !_CLIENT_H */

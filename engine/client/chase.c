@@ -31,7 +31,7 @@ vec3_t chase_angles;
 vec3_t chase_dest;
 vec3_t chase_dest_angles;
 
-void Chase_Init ()
+void Chase_Init (void)
 {
 	Cvar_RegisterVariable (src_client, &chase_back);
 	Cvar_RegisterVariable (src_client, &chase_up);
@@ -39,7 +39,7 @@ void Chase_Init ()
 	Cvar_RegisterVariable (src_client, &chase_active);
 }
 
-void Chase_Reset ()
+void Chase_Reset (void)
 {
 	// for respawning and teleporting
 	//	start position 12 units behind head
@@ -57,7 +57,7 @@ void TraceLine (vec3_t start, vec3_t end, vec3_t impact)
 #endif
 }
 
-void Chase_Update ()
+void Chase_Update (void)
 {
 #if 0
 	int		i;

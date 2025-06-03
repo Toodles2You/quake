@@ -103,7 +103,7 @@ typedef struct progs_state_s
 
 //============================================================================
 
-void PR_Init ();
+void PR_Init (void);
 
 void PR_ExecuteProgram (progs_state_t *pr, func_t fnum);
 int PR_LoadProgs (progs_state_t *pr, char *filename, int version, int crc);
@@ -119,10 +119,10 @@ dfunction_t *PR_FindFunction (progs_state_t *pr, char *name);
 char *PR_ValueString (progs_state_t *pr, etype_t type, eval_t *val);
 char *PR_UglyValueString (progs_state_t *pr, etype_t type, eval_t *val);
 
-void PR_Profile_f ();
+void PR_Profile_f (void);
 
 void ED_ClearEdict (edict_t *e);
-edict_t *ED_Alloc ();
+edict_t *ED_Alloc (void);
 void ED_Free (edict_t *ed);
 
 char *ED_NewString (char *string);
@@ -137,7 +137,7 @@ void ED_ParseGlobals (char *data);
 
 void ED_LoadFromFile (char *data);
 
-void ED_Init ();
+void ED_Init (void);
 
 edict_t *EDICT_NUM (int n);
 int NUM_FOR_EDICT (edict_t *e);
@@ -187,7 +187,7 @@ extern bool pr_trace;
 
 void PR_RunError (progs_state_t *pr, char *error, ...);
 
-void ED_PrintEdicts ();
+void ED_PrintEdicts (void);
 void ED_PrintNum (int ent);
 
 eval_t *GetEdictFieldValue (edict_t *ed, char *field);

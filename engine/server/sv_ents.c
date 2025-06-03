@@ -441,7 +441,7 @@ static void SV_WritePlayersToClient (client_t *client, edict_t *clent, byte *pvs
 SV_SendCompatibilityMessages
 =============
 */
-void SV_SendCompatibilityMessages ()
+void SV_SendCompatibilityMessages (void)
 {
 	int e;
 	edict_t *ent;
@@ -485,7 +485,7 @@ void SV_SendCompatibilityMessages ()
 SV_CleanupEnts
 =============
 */
-void SV_CleanupEnts ()
+void SV_CleanupEnts (void)
 {
 	int e;
 	edict_t *ent;

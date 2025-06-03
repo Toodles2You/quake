@@ -20,12 +20,12 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "clientdef.h"
 
-void S_Play ();
-void S_PlayVol ();
-void S_SoundList ();
-void S_Update_ ();
+void S_Play (void);
+void S_PlayVol (void);
+void S_SoundList (void);
+void S_Update_ (void);
 void S_StopAllSounds (bool clear);
-void S_StopAllSoundsC ();
+void S_StopAllSoundsC (void);
 
 // QuakeWorld hack...
 #define viewentity playernum + 1
@@ -91,17 +91,17 @@ cvar_t _snd_mixahead = {"_snd_mixahead", "0.1", CVAR_ARCHIVE};
 bool fakedma = false;
 int fakedma_updates = 15;
 
-void S_AmbientOff ()
+void S_AmbientOff (void)
 {
 	snd_ambient = false;
 }
 
-void S_AmbientOn ()
+void S_AmbientOn (void)
 {
 	snd_ambient = true;
 }
 
-void S_SoundInfo_f ()
+void S_SoundInfo_f (void)
 {
 	if (!sound_started || !shm)
 	{
@@ -125,7 +125,7 @@ S_Startup
 ================
 */
 
-void S_Startup ()
+void S_Startup (void)
 {
 	int rc;
 
@@ -152,7 +152,7 @@ void S_Startup ()
 S_Init
 ================
 */
-void S_Init ()
+void S_Init (void)
 {
 
 	Con_Printf ("\nSound Initialization\n");
@@ -230,7 +230,7 @@ void S_Init ()
 // Shutdown sound engine
 // =======================================================================
 
-void S_Shutdown ()
+void S_Shutdown (void)
 {
 
 	if (!sound_started)
@@ -505,12 +505,12 @@ void S_StopAllSounds (bool clear)
 		S_ClearBuffer ();
 }
 
-void S_StopAllSoundsC ()
+void S_StopAllSoundsC (void)
 {
 	S_StopAllSounds (true);
 }
 
-void S_ClearBuffer ()
+void S_ClearBuffer (void)
 {
 	int clear;
 
@@ -573,7 +573,7 @@ void S_StaticSound (sfx_t *sfx, vec3_t origin, float vol, float attenuation)
 S_UpdateAmbientSounds
 ===================
 */
-void S_UpdateAmbientSounds ()
+void S_UpdateAmbientSounds (void)
 {
 	mleaf_t *l;
 	float vol;
@@ -716,7 +716,7 @@ void S_Update (vec3_t origin, vec3_t forward, vec3_t right, vec3_t up)
 	S_Update_ ();
 }
 
-void GetSoundtime ()
+void GetSoundtime (void)
 {
 	int samplepos;
 	static int buffers;
@@ -745,14 +745,14 @@ void GetSoundtime ()
 	soundtime = buffers * fullsamples + samplepos / shm->channels;
 }
 
-void S_ExtraUpdate ()
+void S_ExtraUpdate (void)
 {
 	if (snd_noextraupdate.value)
 		return; // don't pollute timings
 	S_Update_ ();
 }
 
-void S_Update_ ()
+void S_Update_ (void)
 {
 	unsigned endtime;
 	int samps;
@@ -789,7 +789,7 @@ console functions
 ===============================================================================
 */
 
-void S_Play ()
+void S_Play (void)
 {
 	static int hash = 345;
 	int i;
@@ -812,7 +812,7 @@ void S_Play ()
 	}
 }
 
-void S_PlayVol ()
+void S_PlayVol (void)
 {
 	static int hash = 543;
 	int i;
@@ -837,7 +837,7 @@ void S_PlayVol ()
 	}
 }
 
-void S_SoundList ()
+void S_SoundList (void)
 {
 	int i;
 	sfx_t *sfx;

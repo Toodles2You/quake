@@ -310,8 +310,8 @@ typedef struct model_s
 
 extern texture_t *r_notexture_mip;
 
-void Mod_Init ();
+void Mod_Init (void);
 model_t *Mod_ForName (char *name, bool crash, bool world);
-void Mod_ClearAll ();
+void Mod_ClearAll (void);
 
 #endif /* !_MODEL_H */

@@ -43,7 +43,7 @@ vec3_t r_pright, r_pup, r_ppn;
 R_InitParticles
 ===============
 */
-void R_InitParticles ()
+void R_InitParticles (void)
 {
 	int i;
 
@@ -127,7 +127,7 @@ void R_EntityParticles (entity_t *ent)
 R_ClearParticles
 ===============
 */
-void R_ClearParticles ()
+void R_ClearParticles (void)
 {
 	int i;
 
@@ -139,7 +139,7 @@ void R_ClearParticles ()
 	particles[r_numparticles - 1].next = NULL;
 }
 
-void R_ReadPointFile_f ()
+void R_ReadPointFile_f (void)
 {
 #if 0
 	FILE	*f;
@@ -196,7 +196,7 @@ R_ParseParticleEffect
 Parse an effect out of the server message
 ===============
 */
-void R_ParseParticleEffect ()
+void R_ParseParticleEffect (void)
 {
 	vec3_t org, dir;
 	int i, count, msgcount, color;
@@ -591,7 +591,7 @@ R_DrawParticles
 */
 extern cvar_t sv_gravity;
 
-void R_DrawParticles ()
+void R_DrawParticles (void)
 {
 	particle_t *p, *kill;
 	float grav;

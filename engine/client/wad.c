@@ -270,7 +270,7 @@ bool W_LoadMapMiptexData (void *dst)
 W_FreeMapWadFiles
 ====================
 */
-void W_FreeMapWadFiles ()
+void W_FreeMapWadFiles (void)
 {
 	wad_t *wad = wad_head;
 	wad_t *next;

@@ -263,7 +263,7 @@ int UDP_OpenSocket (int port)
 NET_GetLocalAddress
 ====================
 */
-netadr_t NET_GetLocalAddress ()
+netadr_t NET_GetLocalAddress (void)
 {
 	char buff[MAXHOSTNAMELEN];
 	struct sockaddr_in address;
@@ -303,7 +303,7 @@ NET_GetPublicAddress
 ping an api to get the host's public ip address
 ====================
 */
-char *NET_GetPublicAddress ()
+char *NET_GetPublicAddress (void)
 {
 #define PINGHOST "api.ipify.org"
 
@@ -421,7 +421,7 @@ void NET_Open (netsocket_e sock, int port)
 NET_Init
 ====================
 */
-void NET_Init ()
+void NET_Init (void)
 {
 	//
 	// init the message buffers
@@ -445,7 +445,7 @@ void NET_Init ()
 NET_Shutdown
 ====================
 */
-void NET_Shutdown ()
+void NET_Shutdown (void)
 {
 	NET_Close (SERVER);
 	NET_Close (CLIENT);

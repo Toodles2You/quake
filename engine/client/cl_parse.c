@@ -107,7 +107,7 @@ int cl_spikeindex, cl_playerindex, cl_flagindex;
 
 int packet_latency[NET_TIMINGS];
 
-int CL_CalcNet ()
+int CL_CalcNet (void)
 {
 	int a, i;
 	frame_t *frame;
@@ -196,7 +196,7 @@ bool CL_CheckOrDownloadFile (char *filename)
 Model_NextDownload
 =================
 */
-static void Model_NextDownload ()
+static void Model_NextDownload (void)
 {
 	char *s;
 	int i;
@@ -252,7 +252,7 @@ static void Model_NextDownload ()
 Sound_NextDownload
 =================
 */
-static void Sound_NextDownload ()
+static void Sound_NextDownload (void)
 {
 	char *s;
 	int i;
@@ -294,7 +294,7 @@ static void Sound_NextDownload ()
 CL_RequestNextDownload
 ======================
 */
-static void CL_RequestNextDownload ()
+static void CL_RequestNextDownload (void)
 {
 	switch (cls.downloadtype)
 	{
@@ -322,7 +322,7 @@ CL_ParseDownload
 A download message has been received from the server
 =====================
 */
-static void CL_ParseDownload ()
+static void CL_ParseDownload (void)
 {
 	int size, percent;
 	byte name[1024];
@@ -434,7 +434,7 @@ static byte *upload_data;
 static int upload_pos;
 static int upload_size;
 
-void CL_NextUpload ()
+void CL_NextUpload (void)
 {
 	byte buffer[1024];
 	int r;
@@ -490,14 +490,14 @@ void CL_StartUpload (byte *data, int size)
 	CL_NextUpload ();
 }
 
-bool CL_IsUploading ()
+bool CL_IsUploading (void)
 {
 	if (upload_data)
 		return true;
 	return false;
 }
 
-void CL_StopUpload ()
+void CL_StopUpload (void)
 {
 	if (upload_data)
 		free (upload_data);
@@ -509,7 +509,7 @@ void CL_StopUpload ()
 CL_ParseServerData
 ==================
 */
-static void CL_ParseServerData ()
+static void CL_ParseServerData (void)
 {
 	char *str;
 	FILE *f;
@@ -603,7 +603,7 @@ static void CL_ParseServerData ()
 CL_ParseSoundList
 ==================
 */
-static void CL_ParseSoundList ()
+static void CL_ParseSoundList (void)
 {
 	int numsounds;
 	char *str;
@@ -645,7 +645,7 @@ static void CL_ParseSoundList ()
 CL_ParseModelList
 ==================
 */
-static void CL_ParseModelList ()
+static void CL_ParseModelList (void)
 {
 	int nummodels;
 	char *str;
@@ -715,7 +715,7 @@ Static entities are non-interactive world objects
 like torches
 =====================
 */
-static void CL_ParseStatic ()
+static void CL_ParseStatic (void)
 {
 	entity_t *ent;
 	int i;
@@ -747,7 +747,7 @@ static void CL_ParseStatic ()
 CL_ParseStaticSound
 ===================
 */
-static void CL_ParseStaticSound ()
+static void CL_ParseStaticSound (void)
 {
 	vec3_t org;
 	int sound_num, vol, atten;
@@ -767,7 +767,7 @@ static void CL_ParseStaticSound ()
 CL_ParseStartSoundPacket
 ==================
 */
-static void CL_ParseStartSoundPacket ()
+static void CL_ParseStartSoundPacket (void)
 {
 	vec3_t pos;
 	int channel, ent;
@@ -809,7 +809,7 @@ CL_ParseClientdata
 Server information pertaining to this client only
 ==================
 */
-static void CL_ParseClientdata ()
+static void CL_ParseClientdata (void)
 {
 	int i;
 	float latency;
@@ -887,7 +887,7 @@ static void CL_ProcessUserInfo (int slot, player_info_t *player)
 CL_UpdateUserinfo
 ==============
 */
-static void CL_UpdateUserinfo ()
+static void CL_UpdateUserinfo (void)
 {
 	int slot;
 	player_info_t *player;
@@ -908,7 +908,7 @@ static void CL_UpdateUserinfo ()
 CL_SetInfo
 ==============
 */
-static void CL_SetInfo ()
+static void CL_SetInfo (void)
 {
 	int slot;
 	player_info_t *player;
@@ -938,7 +938,7 @@ static void CL_SetInfo ()
 CL_ServerInfo
 ==============
 */
-static void CL_ServerInfo ()
+static void CL_ServerInfo (void)
 {
 	int slot;
 	player_info_t *player;
@@ -984,7 +984,7 @@ static void CL_SetStat (int stat, int value)
 CL_MuzzleFlash
 ==============
 */
-static void CL_MuzzleFlash ()
+static void CL_MuzzleFlash (void)
 {
 	vec3_t fv, rv, uv;
 	dlight_t *dl;
@@ -1025,7 +1025,7 @@ static void CL_MuzzleFlash ()
 CL_ParseServerMessage
 =====================
 */
-void CL_ParseServerMessage ()
+void CL_ParseServerMessage (void)
 {
 	int cmd;
 	char *s;

@@ -104,9 +104,9 @@ typedef struct cmodel_s
 
 //============================================================================
 
-void CMod_Init ();
+void CMod_Init (void);
 cmodel_t *CMod_ForName (char *name, bool crash, bool world);
-void CMod_ClearAll ();
+void CMod_ClearAll (void);
 
 mleaf_t *CMod_PointInLeaf (vec3_t p, cmodel_t *model);
 byte *CMod_LeafPVS (mleaf_t *leaf, cmodel_t *model);

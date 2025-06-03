@@ -152,7 +152,7 @@ PR_Profile_f
 
 ============
 */
-void PR_Profile_f ()
+void PR_Profile_f (void)
 {
 	dfunction_t *f, *best;
 	int max;

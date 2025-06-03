@@ -209,7 +209,7 @@ byte *Skin_Cache (skin_t *skin)
 Skin_NextDownload
 =================
 */
-void Skin_NextDownload ()
+void Skin_NextDownload (void)
 {
 	player_info_t *sc;
 	int i;
@@ -257,7 +257,7 @@ Skin_Skins_f
 Refind all skins, downloading if needed.
 ==========
 */
-void Skin_Skins_f ()
+void Skin_Skins_f (void)
 {
 	int i;
 
@@ -278,7 +278,7 @@ Skin_AllSkins_f
 Sets all skins to one specific one
 ==========
 */
-void Skin_AllSkins_f ()
+void Skin_AllSkins_f (void)
 {
 	strcpy (allskins, Cmd_Argv (1));
 	Skin_Skins_f ();

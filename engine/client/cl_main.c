@@ -91,7 +91,7 @@ CL_SendConnectPacket
 called by CL_Connect_f and CL_CheckResend
 ======================
 */
-static void CL_SendConnectPacket ()
+static void CL_SendConnectPacket (void)
 {
 	netadr_t adr;
 	char data[2048];
@@ -143,7 +143,7 @@ CL_CheckForResend
 Resend a connect message if the last one has timed out
 =================
 */
-void CL_CheckForResend ()
+void CL_CheckForResend (void)
 {
 	netadr_t adr;
 	char data[2048];
@@ -185,7 +185,7 @@ void CL_CheckForResend ()
 	NET_SendPacket (CLIENT, strlen (data), data, adr);
 }
 
-void CL_BeginServerConnect ()
+void CL_BeginServerConnect (void)
 {
 	connect_time = 0;
 	CL_CheckForResend ();
@@ -197,7 +197,7 @@ CL_Connect_f
 
 ================
 */
-static void CL_Connect_f ()
+static void CL_Connect_f (void)
 {
 	char *server;
 
@@ -223,7 +223,7 @@ CL_Rcon_f
   an unconnected command.
 =====================
 */
-static void CL_Rcon_f ()
+static void CL_Rcon_f (void)
 {
 	char message[1024];
 	int i;
@@ -277,7 +277,7 @@ CL_ClearState
 
 =====================
 */
-void CL_ClearState ()
+void CL_ClearState (void)
 {
 	int i;
 
@@ -315,7 +315,7 @@ Sends a disconnect message to the server
 This is also called on Host_Error, so it shouldn't cause any errors
 =====================
 */
-void CL_Disconnect ()
+void CL_Disconnect (void)
 {
 	byte final[10];
 
@@ -360,7 +360,7 @@ void CL_Disconnect ()
 	CL_StopUpload ();
 }
 
-void CL_Disconnect_f ()
+void CL_Disconnect_f (void)
 {
 	CL_Disconnect ();
 	if (Host_IsLocalGame ())
@@ -592,7 +592,7 @@ CL_NextDemo
 Called to play the next demo in the demo loop
 =====================
 */
-void CL_NextDemo ()
+void CL_NextDemo (void)
 {
 	char str[1024];
 
@@ -625,7 +625,7 @@ Just sent as a hint to the client that they should
 drop to full console
 =================
 */
-static void CL_Changing_f ()
+static void CL_Changing_f (void)
 {
 	if (cls.download) // don't change when downloading
 		return;
@@ -643,7 +643,7 @@ CL_Reconnect_f
 The server is changing levels
 =================
 */
-void CL_Reconnect_f ()
+void CL_Reconnect_f (void)
 {
 	if (cls.download) // don't change when downloading
 		return;
@@ -675,7 +675,7 @@ CL_ConnectionlessPacket
 Responses to broadcasts, etc
 =================
 */
-static void CL_ConnectionlessPacket ()
+static void CL_ConnectionlessPacket (void)
 {
 	char *s;
 	int c;
@@ -761,7 +761,7 @@ CL_ReadPackets
 Read all incoming data from the server
 ===============
 */
-void CL_ReadPackets ()
+void CL_ReadPackets (void)
 {
 	while (CL_GetMessage ())
 	{
@@ -861,7 +861,7 @@ static void simple_crypt (char *buf, int len)
 		*buf++ ^= 0xff;
 }
 
-static void CL_FixupModelNames ()
+static void CL_FixupModelNames (void)
 {
 	simple_crypt (emodel_name, sizeof (emodel_name) - 1);
 	simple_crypt (pmodel_name, sizeof (pmodel_name) - 1);
@@ -875,7 +875,7 @@ static void CL_FixupModelNames ()
 CL_Init
 =================
 */
-void CL_Init ()
+void CL_Init (void)
 {
 	extern cvar_t baseskin;
 	extern cvar_t noskins;

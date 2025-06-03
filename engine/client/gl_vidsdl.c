@@ -59,7 +59,7 @@ static float vid_gamma = 1.0;
 
 static cvar_t vid_mode = {"vid_mode", "0"};
 
-void VID_Shutdown ()
+void VID_Shutdown (void)
 {
 	if (context)
 		SDL_GL_DeleteContext (context);
@@ -81,7 +81,7 @@ static void signal_handler (int sig)
 	exit (0);
 }
 
-static void VID_InitSignals ()
+static void VID_InitSignals (void)
 {
 	signal (SIGHUP, signal_handler);
 	signal (SIGINT, signal_handler);
@@ -153,7 +153,7 @@ void VID_SetPalette (unsigned char *palette)
 	}
 }
 
-static void GL_CheckMultiTextureExtensions ()
+static void GL_CheckMultiTextureExtensions (void)
 {
 	void *prjobj;
 
@@ -187,7 +187,7 @@ static void GL_CheckMultiTextureExtensions ()
 GL_Init
 ===============
 */
-void GL_Init ()
+void GL_Init (void)
 {
 	gl_vendor = glGetString (GL_VENDOR);
 	Con_Printf ("GL_VENDOR: %s\n", gl_vendor);
@@ -249,7 +249,7 @@ void GL_BeginRendering (int *x, int *y, int *width, int *height)
 	//	glViewport (*x, *y, *width, *height);
 }
 
-void GL_EndRendering ()
+void GL_EndRendering (void)
 {
 	glFlush ();
 	SDL_GL_SwapWindow (window);

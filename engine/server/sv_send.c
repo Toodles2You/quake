@@ -50,7 +50,7 @@ extern cvar_t sv_phs;
 SV_FlushRedirect
 ==================
 */
-void SV_FlushRedirect ()
+void SV_FlushRedirect (void)
 {
 	char send[8000 + 6];
 
@@ -90,7 +90,7 @@ void SV_BeginRedirect (redirect_t rd)
 	outputbuf[0] = 0;
 }
 
-void SV_EndRedirect ()
+void SV_EndRedirect (void)
 {
 	SV_FlushRedirect ();
 	sv_redirected = RD_NONE;
@@ -418,7 +418,7 @@ FRAME UPDATES
 
 int sv_nailmodel, sv_supernailmodel, sv_playermodel;
 
-void SV_FindModelNumbers ()
+void SV_FindModelNumbers (void)
 {
 	int i;
 
@@ -600,7 +600,7 @@ static bool SV_SendClientDatagram (client_t *client)
 SV_UpdateToReliableMessages
 =======================
 */
-static void SV_UpdateToReliableMessages ()
+static void SV_UpdateToReliableMessages (void)
 {
 	int i, j;
 	client_t *client;
@@ -675,7 +675,7 @@ static void SV_UpdateToReliableMessages ()
 SV_SendClientMessages
 =======================
 */
-void SV_SendClientMessages ()
+void SV_SendClientMessages (void)
 {
 	int i, j;
 	client_t *c;
@@ -768,7 +768,7 @@ SV_SendMessagesToAll
 FIXME: does this sequence right?
 =======================
 */
-void SV_SendMessagesToAll ()
+void SV_SendMessagesToAll (void)
 {
 	int i;
 	client_t *c;

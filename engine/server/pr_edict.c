@@ -70,7 +70,7 @@ instead of being removed and recreated, which can cause interpolated
 angles and bad trails.
 =================
 */
-edict_t *ED_Alloc ()
+edict_t *ED_Alloc (void)
 {
 	int i;
 	edict_t *e;
@@ -264,7 +264,7 @@ ED_PrintEdicts
 For debugging, prints all the entities in the current server
 =============
 */
-void ED_PrintEdicts ()
+void ED_PrintEdicts (void)
 {
 	int i;
 
@@ -280,7 +280,7 @@ ED_PrintEdict_f
 For debugging, prints a single edicy
 =============
 */
-void ED_PrintEdict_f ()
+void ED_PrintEdict_f (void)
 {
 	int i;
 
@@ -300,7 +300,7 @@ ED_Count
 For debugging
 =============
 */
-void ED_Count ()
+void ED_Count (void)
 {
 	int i;
 	edict_t *ent;
@@ -696,7 +696,7 @@ void ED_LoadFromFile (char *data)
 	Con_DPrintf ("%lu entities inhibited\n", inhibit);
 }
 
-void ED_Init ()
+void ED_Init (void)
 {
 	Cmd_AddCommand (src_server, "edict", ED_PrintEdict_f);
 	Cmd_AddCommand (src_server, "edicts", ED_PrintEdicts);

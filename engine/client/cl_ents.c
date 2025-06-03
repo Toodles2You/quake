@@ -130,7 +130,7 @@ CL_DecayLights
 
 ===============
 */
-void CL_DecayLights ()
+void CL_DecayLights (void)
 {
 	int i;
 	dlight_t *dl;
@@ -230,7 +230,7 @@ static void CL_ParseDelta (entity_state_t *from, entity_state_t *to, int bits)
 FlushEntityPacket
 =================
 */
-static void FlushEntityPacket ()
+static void FlushEntityPacket (void)
 {
 	int word;
 	entity_state_t olde, newe;
@@ -408,7 +408,7 @@ CL_LinkPacketEntities
 
 ===============
 */
-static void CL_LinkPacketEntities ()
+static void CL_LinkPacketEntities (void)
 {
 	entity_t *ent;
 	packet_entities_t *pack;
@@ -572,7 +572,7 @@ int cl_num_projectiles;
 
 extern int cl_spikeindex;
 
-void CL_ClearProjectiles ()
+void CL_ClearProjectiles (void)
 {
 	cl_num_projectiles = 0;
 }
@@ -584,7 +584,7 @@ CL_ParseProjectiles
 Nails are passed as efficient temporary entities
 =====================
 */
-void CL_ParseProjectiles ()
+void CL_ParseProjectiles (void)
 {
 	int i, c, j;
 	byte bits[6];
@@ -617,7 +617,7 @@ CL_LinkProjectiles
 
 =============
 */
-static void CL_LinkProjectiles ()
+static void CL_LinkProjectiles (void)
 {
 	int i;
 	projectile_t *pr;
@@ -649,7 +649,7 @@ static void CL_LinkProjectiles ()
 
 extern int cl_spikeindex, cl_playerindex, cl_flagindex;
 
-entity_t *CL_NewTempEntity ();
+entity_t *CL_NewTempEntity (void);
 
 /*
 ===================
@@ -658,7 +658,7 @@ CL_ParsePlayerinfo
 */
 extern int parsecountmod;
 extern double parsecounttime;
-void CL_ParsePlayerinfo ()
+void CL_ParsePlayerinfo (void)
 {
 	int msec;
 	int flags;
@@ -813,7 +813,7 @@ Create visible entities in the correct position
 for all current players
 =============
 */
-static void CL_LinkPlayers ()
+static void CL_LinkPlayers (void)
 {
 	int j;
 	player_info_t *info;
@@ -924,7 +924,7 @@ CL_SetSolid
 Builds all the pmove physents for the current frame
 ===============
 */
-void CL_SetSolidEntities ()
+void CL_SetSolidEntities (void)
 {
 	int i;
 	frame_t *frame;
@@ -1081,7 +1081,7 @@ Builds the visedicts array for cl.time
 Made up of: clients, packet_entities, nails, and tents
 ===============
 */
-void CL_EmitEntities ()
+void CL_EmitEntities (void)
 {
 	if (cls.state != ca_active)
 		return;

@@ -43,7 +43,7 @@ cvar_t gl_subdivide_size = {"gl_subdivide_size", "128", CVAR_ARCHIVE};
 Mod_Init
 ===============
 */
-void Mod_Init ()
+void Mod_Init (void)
 {
 	Cvar_RegisterVariable (src_client, &gl_subdivide_size);
 }
@@ -53,7 +53,7 @@ void Mod_Init ()
 Mod_ClearAll
 ===================
 */
-void Mod_ClearAll ()
+void Mod_ClearAll (void)
 {
 	int i;
 	model_t *mod;
@@ -1523,7 +1523,7 @@ static void Mod_LoadSpriteModel (model_t *mod, void *buffer)
 Mod_Print
 ================
 */
-void Mod_Print ()
+void Mod_Print (void)
 {
 	int i;
 	model_t *mod;

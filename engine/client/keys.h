@@ -114,9 +114,9 @@ extern int key_count; // incremented every key event
 extern int key_lastpress;
 
 void Key_Event (int key, bool down);
-void Key_Init ();
+void Key_Init (void);
 void Key_WriteBindings (FILE *f);
 void Key_SetBinding (int keynum, char *binding);
-void Key_ClearStates ();
+void Key_ClearStates (void);
 
 #endif /* !_KEYS_H */

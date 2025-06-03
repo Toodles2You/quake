@@ -20,8 +20,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "bothdef.h"
 
-void Draw_BeginDisc ();
-void Draw_EndDisc ();
+void Draw_BeginDisc (void);
+void Draw_EndDisc (void);
 
 usercmd_t nullcmd; // guarenteed to be zero
 
@@ -35,7 +35,7 @@ static char *safeargvs[NUM_SAFE_ARGVS] = {
 	"-nolan", "-nosound", "-nocdaudio", "-nojoy", "-nomouse",
 };
 
-static void COM_InitFilesystem ();
+static void COM_InitFilesystem (void);
 
 char com_token[1024];
 int com_argc;
@@ -374,13 +374,13 @@ void MSG_BeginReading (int socket)
 	msg_socket = socket;
 }
 
-int MSG_GetReadCount ()
+int MSG_GetReadCount (void)
 {
 	return msg_readcount;
 }
 
 // returns -1 and sets msg_badread if no more characters are available
-int MSG_ReadChar ()
+int MSG_ReadChar (void)
 {
 	int c;
 
@@ -396,7 +396,7 @@ int MSG_ReadChar ()
 	return c;
 }
 
-int MSG_ReadByte ()
+int MSG_ReadByte (void)
 {
 	int c;
 
@@ -412,7 +412,7 @@ int MSG_ReadByte ()
 	return c;
 }
 
-int MSG_ReadShort ()
+int MSG_ReadShort (void)
 {
 	int c;
 
@@ -429,7 +429,7 @@ int MSG_ReadShort ()
 	return c;
 }
 
-int MSG_ReadLong ()
+int MSG_ReadLong (void)
 {
 	int c;
 
@@ -447,7 +447,7 @@ int MSG_ReadLong ()
 	return c;
 }
 
-float MSG_ReadFloat ()
+float MSG_ReadFloat (void)
 {
 	union
 	{
@@ -467,7 +467,7 @@ float MSG_ReadFloat ()
 	return dat.f;
 }
 
-char *MSG_ReadString ()
+char *MSG_ReadString (void)
 {
 	static char string[2048];
 	int l, c;
@@ -487,7 +487,7 @@ char *MSG_ReadString ()
 	return string;
 }
 
-char *MSG_ReadStringLine ()
+char *MSG_ReadStringLine (void)
 {
 	static char string[2048];
 	int l, c;
@@ -507,17 +507,17 @@ char *MSG_ReadStringLine ()
 	return string;
 }
 
-float MSG_ReadCoord ()
+float MSG_ReadCoord (void)
 {
 	return MSG_ReadShort () * (1.0 / 8);
 }
 
-float MSG_ReadAngle ()
+float MSG_ReadAngle (void)
 {
 	return MSG_ReadChar () * (360.0 / 256);
 }
 
-float MSG_ReadAngle16 ()
+float MSG_ReadAngle16 (void)
 {
 	return MSG_ReadShort () * (360.0 / 65536);
 }
@@ -923,7 +923,7 @@ static void COM_CheckRegistered (bool modified)
 }
 #endif
 
-void COM_Path_f ();
+void COM_Path_f (void);
 
 /*
 ================
@@ -1146,7 +1146,7 @@ COM_Path_f
 
 ============
 */
-void COM_Path_f ()
+void COM_Path_f (void)
 {
 	searchpath_t *s;
 
@@ -1701,7 +1701,7 @@ void COM_Gamedir (char *dir)
 COM_InitFilesystem
 ================
 */
-static void COM_InitFilesystem ()
+static void COM_InitFilesystem (void)
 {
 	int i, j;
 	searchpath_t *search;

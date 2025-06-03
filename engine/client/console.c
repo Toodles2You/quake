@@ -24,7 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <fcntl.h>
 #include "clientdef.h"
 
-void SV_FlushRedirect ();
+void SV_FlushRedirect (void);
 
 int con_linewidth;
 
@@ -59,14 +59,14 @@ bool con_initialized;
 
 int con_notifylines; // scan lines to clear for notify lines
 
-extern void M_Menu_Main_f ();
+void M_Menu_Main_f (void);
 
 /*
 ================
 Con_ToggleConsole_f
 ================
 */
-void Con_ToggleConsole_f ()
+void Con_ToggleConsole_f (void)
 {
 	if (key_dest == key_console)
 	{
@@ -93,7 +93,7 @@ void Con_ToggleConsole_f ()
 Con_Clear_f
 ================
 */
-void Con_Clear_f ()
+void Con_Clear_f (void)
 {
 	if (con_text)
 		memset (con_text, ' ', CON_TEXTSIZE);
@@ -104,7 +104,7 @@ void Con_Clear_f ()
 Con_ClearNotify
 ================
 */
-void Con_ClearNotify ()
+void Con_ClearNotify (void)
 {
 	int i;
 
@@ -119,7 +119,7 @@ Con_MessageMode_f
 */
 extern bool team_message;
 
-void Con_MessageMode_f ()
+void Con_MessageMode_f (void)
 {
 	key_dest = key_message;
 	team_message = false;
@@ -130,7 +130,7 @@ void Con_MessageMode_f ()
 Con_MessageMode2_f
 ================
 */
-void Con_MessageMode2_f ()
+void Con_MessageMode2_f (void)
 {
 	key_dest = key_message;
 	team_message = true;
@@ -143,7 +143,7 @@ Con_CheckResize
 If the line width has changed, reformat the buffer.
 ================
 */
-void Con_CheckResize ()
+void Con_CheckResize (void)
 {
 	int i, j, width, oldwidth, oldtotallines, numlines, numchars;
 	char tbuf[CON_TEXTSIZE];
@@ -195,7 +195,7 @@ void Con_CheckResize ()
 Con_Init
 ================
 */
-void Con_Init ()
+void Con_Init (void)
 {
 #define MAXGAMEDIRLEN 1000
 	char temp[MAXGAMEDIRLEN + 1];
@@ -236,7 +236,7 @@ void Con_Init ()
 Con_Linefeed
 ===============
 */
-void Con_Linefeed ()
+void Con_Linefeed (void)
 {
 	con_x = 0;
 	con_current++;
@@ -490,7 +490,7 @@ Con_DrawInput
 The input line scrolls horizontally if typing goes beyond the right edge
 ================
 */
-void Con_DrawInput ()
+void Con_DrawInput (void)
 {
 	int i;
 	char *text;
@@ -526,7 +526,7 @@ Con_DrawNotify
 Draws the last few lines of output transparently over the game top
 ================
 */
-void Con_DrawNotify ()
+void Con_DrawNotify (void)
 {
 	int x, v;
 	char *text;

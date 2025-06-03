@@ -163,7 +163,7 @@ byte *last_chunk;
 byte *iff_data;
 int iff_chunk_len;
 
-short GetLittleShort ()
+short GetLittleShort (void)
 {
 	short val = 0;
 	val = *data_p;
@@ -172,7 +172,7 @@ short GetLittleShort ()
 	return val;
 }
 
-int GetLittleLong ()
+int GetLittleLong (void)
 {
 	int val = 0;
 	val = *data_p;
@@ -217,7 +217,7 @@ void FindChunk (char *name)
 	FindNextChunk (name);
 }
 
-void DumpChunks ()
+void DumpChunks (void)
 {
 	char str[5];
 

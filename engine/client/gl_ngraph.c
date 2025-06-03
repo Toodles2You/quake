@@ -65,7 +65,7 @@ static void R_LineGraph (int x, int h)
 R_NetGraph
 ==============
 */
-void R_NetGraph ()
+void R_NetGraph (void)
 {
 	int a, x, i, y;
 	int lost;

@@ -38,7 +38,7 @@ typedef struct areanode_s
 #define AREA_DEPTH 4
 #define AREA_NODES 32
 
-void SV_ClearWorld ();
+void SV_ClearWorld (void);
 // called after the world model has been loaded, before linking any entities
 
 void SV_UnlinkEdict (edict_t *ent);

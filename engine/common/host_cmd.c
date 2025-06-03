@@ -27,14 +27,14 @@ extern cvar_t sv_ticrate;
 
 int current_skill;
 
-void Mod_Print ();
+void Mod_Print (void);
 
 /*
 ==================
 Host_Quit_f
 ==================
 */
-void Host_Quit_f ()
+void Host_Quit_f (void)
 {
 	CL_Disconnect ();
 	Host_ShutdownServer (false);
@@ -70,7 +70,7 @@ static bool Host_CheckLevel (char *server)
 	return true;
 }
 
-static void Host_ChangingLevel ()
+static void Host_ChangingLevel (void)
 {
 	if (!Host_IsLocalGame ())
 		return;
@@ -99,7 +99,7 @@ map <servername>
 command from the console.  Active clients are kicked off.
 ======================
 */
-void Host_Map_f ()
+void Host_Map_f (void)
 {
 	char level[MAX_QPATH];
 
@@ -134,7 +134,7 @@ Host_Changelevel_f
 Goes to a new map, taking all clients along
 ==================
 */
-void Host_Changelevel_f ()
+void Host_Changelevel_f (void)
 {
 	char level[MAX_QPATH];
 	char _startspot[MAX_QPATH];
@@ -172,7 +172,7 @@ Host_Restart_f
 Restarts the current server for a dead player
 ==================
 */
-void Host_Restart_f ()
+void Host_Restart_f (void)
 {
 	char mapname[MAX_QPATH];
 	char startspot[MAX_QPATH];
@@ -243,7 +243,7 @@ void Host_SavegameComment (char *text)
 Host_Savegame_f
 ===============
 */
-void Host_Savegame_f ()
+void Host_Savegame_f (void)
 {
 	char name[256];
 	FILE *f;
@@ -334,7 +334,7 @@ void Host_Savegame_f ()
 Host_Loadgame_f
 ===============
 */
-void Host_Loadgame_f ()
+void Host_Loadgame_f (void)
 {
 	char name[MAX_OSPATH];
 	FILE *f;
@@ -474,7 +474,7 @@ void Host_Loadgame_f ()
 		Cmd_ExecuteString (src_client, "connect localhost");
 }
 
-void SaveGamestate ()
+void SaveGamestate (void)
 {
 	char name[256];
 	FILE *f;
@@ -628,7 +628,7 @@ int LoadGamestate (char *level, char *startspot)
 }
 
 // changing levels within a unit
-void Host_Changelevel2_f ()
+void Host_Changelevel2_f (void)
 {
 	char level[MAX_QPATH];
 	char _startspot[MAX_QPATH];
@@ -666,7 +666,7 @@ void Host_Changelevel2_f ()
 
 //============================================================================
 
-void Host_Version_f ()
+void Host_Version_f (void)
 {
 	Con_Printf ("Version " QUAKE_VERSION "\n");
 	Con_Printf ("Build: "__TIME__
@@ -689,7 +689,7 @@ DEMO LOOP CONTROL
 Host_Startdemos_f
 ==================
 */
-void Host_Startdemos_f ()
+void Host_Startdemos_f (void)
 {
 	int i, c;
 
@@ -727,7 +727,7 @@ Host_Demos_f
 Return to looping demos
 ==================
 */
-void Host_Demos_f ()
+void Host_Demos_f (void)
 {
 	if (cls.state == ca_dedicated)
 		return;
@@ -744,7 +744,7 @@ Host_Stopdemo_f
 Return to looping demos
 ==================
 */
-void Host_Stopdemo_f ()
+void Host_Stopdemo_f (void)
 {
 	if (cls.state == ca_dedicated)
 		return;
@@ -761,7 +761,7 @@ void Host_Stopdemo_f ()
 Host_InitCommands
 ==================
 */
-void Host_InitCommands ()
+void Host_InitCommands (void)
 {
 	Cmd_AddCommand (src_host, "quit", Host_Quit_f);
 	Cmd_AddCommand (src_host, "map", Host_Map_f);

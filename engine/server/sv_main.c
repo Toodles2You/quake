@@ -611,7 +611,7 @@ void SVC_DirectConnect (void)
 	newcl->sendinfo = true;
 }
 
-static bool Rcon_Validate ()
+static bool Rcon_Validate (void)
 {
 	if (!strlen (rcon_password.string))
 		return false;
@@ -735,7 +735,7 @@ Send a message to the master every few minutes to
 let it know we are alive, and log information
 ================
 */
-void Master_Heartbeat ()
+void Master_Heartbeat (void)
 {
 	char string[2048];
 	int active;
@@ -775,7 +775,7 @@ Master_Shutdown
 Informs all masters that this server is going down
 =================
 */
-void Master_Shutdown ()
+void Master_Shutdown (void)
 {
 	char string[2048];
 	int i;
@@ -1014,7 +1014,7 @@ static bool StringToFilter (char *s, ipfilter_t *f)
 SV_AddIP_f
 =================
 */
-static void SV_AddIP_f ()
+static void SV_AddIP_f (void)
 {
 	int i;
 
@@ -1041,7 +1041,7 @@ static void SV_AddIP_f ()
 SV_RemoveIP_f
 =================
 */
-static void SV_RemoveIP_f ()
+static void SV_RemoveIP_f (void)
 {
 	ipfilter_t f;
 	int i, j;
@@ -1069,7 +1069,7 @@ static void SV_RemoveIP_f ()
 SV_ListIP_f
 =================
 */
-static void SV_ListIP_f ()
+static void SV_ListIP_f (void)
 {
 	int i;
 	byte b[4];
@@ -1087,7 +1087,7 @@ static void SV_ListIP_f ()
 SV_WriteIP_f
 =================
 */
-static void SV_WriteIP_f ()
+static void SV_WriteIP_f (void)
 {
 	FILE *f;
 	char name[MAX_OSPATH];
@@ -1119,7 +1119,7 @@ static void SV_WriteIP_f ()
 SV_SendBan
 =================
 */
-static void SV_SendBan ()
+static void SV_SendBan (void)
 {
 	char data[128];
 
@@ -1136,7 +1136,7 @@ static void SV_SendBan ()
 SV_FilterPacket
 =================
 */
-static bool SV_FilterPacket ()
+static bool SV_FilterPacket (void)
 {
 	int i;
 	uint32_t in;
@@ -1270,7 +1270,7 @@ SV_CheckVars
 
 ===================
 */
-void SV_CheckVars ()
+void SV_CheckVars (void)
 {
 	static char *pw, *spw;
 	int v;
@@ -1298,7 +1298,7 @@ void SV_CheckVars ()
 SV_Init
 ===============
 */
-void SV_Init ()
+void SV_Init (void)
 {
 	int i;
 	extern cvar_t sv_maxvelocity;

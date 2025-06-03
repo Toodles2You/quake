@@ -6,7 +6,7 @@
 #include <GL/glu.h>
 
 void GL_BeginRendering (int *x, int *y, int *width, int *height);
-void GL_EndRendering ();
+void GL_EndRendering (void);
 
 extern int texture_extension_number;
 extern int gl_filter_min;
@@ -39,8 +39,8 @@ extern int glx, gly, glwidth, glheight;
 
 #define BACKFACE_EPSILON 0.01
 
-void R_TimeRefresh_f ();
-void R_ReadPointFile_f ();
+void R_TimeRefresh_f (void);
+void R_ReadPointFile_f (void);
 texture_t *R_TextureAnimation (texture_t *base);
 
 typedef struct surfcache_s
@@ -176,8 +176,8 @@ extern lpSelTexFUNC qglSelectTextureSGIS;
 
 extern bool gl_mtexable;
 
-void GL_DisableMultitexture ();
-void GL_EnableMultitexture ();
+void GL_DisableMultitexture (void);
+void GL_EnableMultitexture (void);
 
 // gl_warp.c
 void GL_SubdivideSurface (mbrush_t *model, msurface_t *fa);
@@ -185,12 +185,12 @@ void EmitBothSkyLayers (msurface_t *fa);
 void EmitWaterPolys (msurface_t *fa);
 void EmitSkyPolys (msurface_t *fa);
 void R_DrawSkyChain (msurface_t *s);
-void R_DrawSkyBox ();
-void R_ClearSkyBox ();
+void R_DrawSkyBox (void);
+void R_ClearSkyBox (void);
 
 // gl_draw.c
 int GL_LoadPicTexture (qpic_t *pic);
-void GL_Set2D ();
+void GL_Set2D (void);
 
 // gl_rmain.c
 bool R_CullBox (vec3_t mins, vec3_t maxs);
@@ -198,9 +198,9 @@ void R_RotateForEntity (entity_t *e);
 
 // gl_rlight.c
 void R_MarkLights (dlight_t *light, int bit, mnode_t *node);
-void R_AnimateLight ();
-void R_InitBubble ();
-void R_RenderDlights ();
+void R_AnimateLight (void);
+void R_InitBubble (void);
+void R_RenderDlights (void);
 void R_LightPoint (vec3_t p, vec3_t dest);
 
 // gl_refrag.c
@@ -210,12 +210,12 @@ void R_StoreEfrags (efrag_t **ppefrag);
 void GL_MakeAliasModelDisplayLists (model_t *m, aliashdr_t *hdr);
 
 // gl_rsurf.c
-void R_DrawWaterSurfaces ();
+void R_DrawWaterSurfaces (void);
 void R_DrawBrushModel (entity_t *e);
-void R_DrawWorld ();
-void GL_BuildLightmaps ();
+void R_DrawWorld (void);
+void GL_BuildLightmaps (void);
 
 // gl_ngraph.c
-void R_NetGraph ();
+void R_NetGraph (void);
 
 #endif /* !_GLQUAKE_H */

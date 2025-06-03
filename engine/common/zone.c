@@ -234,7 +234,7 @@ void Z_Print (memzone_t *zone)
 Z_CheckHeap
 ========================
 */
-void Z_CheckHeap ()
+void Z_CheckHeap (void)
 {
 	memblock_t *block;
 
@@ -278,7 +278,7 @@ Hunk_Check
 Run consistancy and sentinal trahing checks
 ==============
 */
-void Hunk_Check ()
+void Hunk_Check (void)
 {
 	hunk_t *h;
 
@@ -418,7 +418,7 @@ void *Hunk_Alloc (size_t size)
 	return Hunk_AllocName (size, "unknown");
 }
 
-size_t Hunk_LowMark ()
+size_t Hunk_LowMark (void)
 {
 	return hunk_low_used;
 }
@@ -431,7 +431,7 @@ void Hunk_FreeToLowMark (size_t mark)
 	hunk_low_used = mark;
 }
 
-size_t Hunk_HighMark ()
+size_t Hunk_HighMark (void)
 {
 	if (hunk_tempactive)
 	{
@@ -732,7 +732,7 @@ Cache_Flush
 Throw everything out, so new data will be demand cached
 ============
 */
-void Cache_Flush ()
+void Cache_Flush (void)
 {
 	while (cache_head.next != &cache_head)
 		Cache_Free (cache_head.next->user); // reclaim the space
@@ -744,7 +744,7 @@ Cache_Print
 
 ============
 */
-void Cache_Print ()
+void Cache_Print (void)
 {
 	cache_system_t *cd;
 
@@ -758,7 +758,7 @@ Cache_Report
 
 ============
 */
-void Cache_Report ()
+void Cache_Report (void)
 {
 	Con_DPrintf ("%4.1f megabyte data cache\n", (hunk_size - hunk_high_used - hunk_low_used) / (float)(1024 * 1024));
 }
@@ -769,7 +769,7 @@ Cache_Compact
 
 ============
 */
-void Cache_Compact () {}
+void Cache_Compact (void) {}
 
 /*
 ============
@@ -777,7 +777,7 @@ Cache_Init
 
 ============
 */
-void Cache_Init ()
+void Cache_Init (void)
 {
 	cache_head.next = cache_head.prev = &cache_head;
 	cache_head.lru_next = cache_head.lru_prev = &cache_head;

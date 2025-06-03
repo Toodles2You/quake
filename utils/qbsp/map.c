@@ -161,7 +161,7 @@ skipspace:
 	return true;
 }
 
-void UngetToken ()
+void UngetToken (void)
 {
 	unget = true;
 }

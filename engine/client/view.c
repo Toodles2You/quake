@@ -106,7 +106,7 @@ V_CalcBob
 
 ===============
 */
-float V_CalcBob ()
+float V_CalcBob (void)
 {
 	static double bobtime;
 	static float bob;
@@ -143,7 +143,7 @@ float V_CalcBob ()
 cvar_t v_centermove = {"v_centermove", "0.15", false};
 cvar_t v_centerspeed = {"v_centerspeed", "500"};
 
-void V_StartPitchDrift ()
+void V_StartPitchDrift (void)
 {
 #if 1
 	if (cl.laststop == cl.time)
@@ -157,7 +157,7 @@ void V_StartPitchDrift ()
 	}
 }
 
-void V_StopPitchDrift ()
+void V_StopPitchDrift (void)
 {
 	cl.laststop = cl.time;
 	cl.nodrift = true;
@@ -177,7 +177,7 @@ Drifting is enabled when the center view key is hit, mlook is released and
 lookspring is non 0, or when 
 ===============
 */
-void V_DriftPitch ()
+void V_DriftPitch (void)
 {
 	float delta, move;
 
@@ -281,7 +281,7 @@ void BuildGammaTable (float g)
 V_CheckGamma
 =================
 */
-bool V_CheckGamma ()
+bool V_CheckGamma (void)
 {
 	static float oldgammavalue;
 
@@ -300,7 +300,7 @@ bool V_CheckGamma ()
 V_ParseDamage
 ===============
 */
-void V_ParseDamage ()
+void V_ParseDamage (void)
 {
 	int armor, blood;
 	vec3_t from;
@@ -367,7 +367,7 @@ void V_ParseDamage ()
 V_cshift_f
 ==================
 */
-void V_cshift_f ()
+void V_cshift_f (void)
 {
 	cshift_empty.destcolor[0] = atoi (Cmd_Argv (1));
 	cshift_empty.destcolor[1] = atoi (Cmd_Argv (2));
@@ -382,7 +382,7 @@ V_BonusFlash_f
 When you run over an item, the server sends this command
 ==================
 */
-void V_BonusFlash_f ()
+void V_BonusFlash_f (void)
 {
 	cl.cshifts[CSHIFT_BONUS].destcolor[0] = 215;
 	cl.cshifts[CSHIFT_BONUS].destcolor[1] = 186;
@@ -427,7 +427,7 @@ void V_SetContentsColor (int contents)
 V_CalcPowerupCshift
 =============
 */
-void V_CalcPowerupCshift ()
+void V_CalcPowerupCshift (void)
 {
 	if (cl.stats[STAT_ITEMS] & IT_QUAD)
 	{
@@ -466,7 +466,7 @@ void V_CalcPowerupCshift ()
 V_CalcBlend
 =============
 */
-void V_CalcBlend ()
+void V_CalcBlend (void)
 {
 	float r, g, b, a, a2;
 	int j;
@@ -509,7 +509,7 @@ void V_CalcBlend ()
 V_UpdatePalette
 =============
 */
-void V_UpdatePalette ()
+void V_UpdatePalette (void)
 {
 	int i, j;
 	bool new;
@@ -617,7 +617,7 @@ float angledelta (float a)
 CalcGunAngle
 ==================
 */
-void CalcGunAngle ()
+void CalcGunAngle (void)
 {
 	float yaw, pitch, move;
 	static float oldyaw = 0;
@@ -671,7 +671,7 @@ void CalcGunAngle ()
 V_BoundOffsets
 ==============
 */
-void V_BoundOffsets ()
+void V_BoundOffsets (void)
 {
 	// absolutely bound refresh reletive to entity clipping hull
 	// so the view can never be inside a solid wall
@@ -697,7 +697,7 @@ V_AddIdle
 Idle swaying
 ==============
 */
-void V_AddIdle ()
+void V_AddIdle (void)
 {
 	r_refdef.viewangles[ROLL] += v_idlescale.value * sin (cl.time * v_iroll_cycle.value) * v_iroll_level.value;
 	r_refdef.viewangles[PITCH] += v_idlescale.value * sin (cl.time * v_ipitch_cycle.value) * v_ipitch_level.value;
@@ -715,7 +715,7 @@ V_CalcViewRoll
 Roll is induced by movement and damage
 ==============
 */
-void V_CalcViewRoll ()
+void V_CalcViewRoll (void)
 {
 	float side;
 
@@ -736,7 +736,7 @@ V_CalcIntermissionRefdef
 
 ==================
 */
-void V_CalcIntermissionRefdef ()
+void V_CalcIntermissionRefdef (void)
 {
 	entity_t *view;
 	float old;
@@ -761,7 +761,7 @@ V_CalcRefdef
 
 ==================
 */
-void V_CalcRefdef ()
+void V_CalcRefdef (void)
 {
 	entity_t *view;
 	int i;
@@ -866,7 +866,7 @@ void V_CalcRefdef ()
 V_DropPunchAngle
 =============
 */
-static void V_DropPunchAngle ()
+static void V_DropPunchAngle (void)
 {
 	if (cl.punchangle != 0.0f)
 	{
@@ -890,7 +890,7 @@ the entity origin, so any view position inside that will be valid
 */
 extern vrect_t scr_vrect;
 
-void V_RenderView ()
+void V_RenderView (void)
 {
 	//	if (cl.simangles[ROLL])
 	//		Sys_Error ("cl.simangles[ROLL]");	// DEBUG
@@ -913,7 +913,7 @@ void V_RenderView ()
 	R_RenderView ();
 }
 
-void V_ClampViewAngles ()
+void V_ClampViewAngles (void)
 {
 	// view pitch is inverted
 	if (cl.viewangles[PITCH] > cl_pitchmin.value)
@@ -929,7 +929,7 @@ void V_ClampViewAngles ()
 V_Init
 =============
 */
-void V_Init ()
+void V_Init (void)
 {
 	Cmd_AddCommand (src_client, "v_cshift", V_cshift_f);
 	Cmd_AddCommand (src_client, "bf", V_BonusFlash_f);

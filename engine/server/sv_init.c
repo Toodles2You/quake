@@ -57,7 +57,7 @@ SV_FlushSignon
 Moves to the next signon buffer if needed
 ================
 */
-void SV_FlushSignon ()
+void SV_FlushSignon (void)
 {
 	if (sv.signon.cursize < sv.signon.maxsize - 512)
 		return;
@@ -80,7 +80,7 @@ to the clients -- only the fields that differ from the
 baseline will be transmitted
 ================
 */
-void SV_CreateBaseline ()
+void SV_CreateBaseline (void)
 {
 	int i;
 	edict_t *svent;
@@ -147,7 +147,7 @@ and each client for saving across the
 transition to another level
 ================
 */
-void SV_SaveSpawnparms ()
+void SV_SaveSpawnparms (void)
 {
 	int i, j;
 
@@ -181,7 +181,7 @@ Expands the PVS and calculates the PHS
 (Potentially Hearable Set)
 ================
 */
-static void SV_CalcPHS ()
+static void SV_CalcPHS (void)
 {
 	int rowbytes, rowwords;
 	int i, j, k, l, index, num;
@@ -258,7 +258,7 @@ static unsigned int SV_CheckModel (char *mdl)
 	return crc;
 }
 
-static bool SV_LoadProgs ()
+static bool SV_LoadProgs (void)
 {
 	if (PR_LoadProgs (&sv.pr, "qwprogs.dat", PROG_VERSION_QUAKE, PROG_CRC_ANY) == 0)
 		svs.protocol = PROTOCOL_QUAKEWORLD;

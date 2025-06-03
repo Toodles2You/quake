@@ -47,7 +47,7 @@ static int cmod_numknown;
 CMod_Init
 ===============
 */
-void CMod_Init ()
+void CMod_Init (void)
 {
 	memset (cmod_novis, 255, sizeof (cmod_novis));
 }
@@ -136,7 +136,7 @@ byte *CMod_LeafPVS (mleaf_t *leaf, cmodel_t *model)
 CMod_ClearAll
 ===================
 */
-void CMod_ClearAll ()
+void CMod_ClearAll (void)
 {
 	int i;
 	cmodel_t *mod;
@@ -545,7 +545,7 @@ CMod_MakeHull0
 Deplicate the drawing hull structure as a clipping hull
 =================
 */
-static void CMod_MakeHull0 ()
+static void CMod_MakeHull0 (void)
 {
 	mnode_t *in, *child;
 	dclipnode_t *out;
@@ -690,7 +690,7 @@ static void CMod_LoadBrushModel (cmodel_t *mod, void *buffer, bool world)
 CMod_Print
 ================
 */
-void CMod_Print ()
+void CMod_Print (void)
 {
 	int i;
 	cmodel_t *mod;

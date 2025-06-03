@@ -44,7 +44,7 @@ SV_SetMaster_f
 Make a master server current
 ====================
 */
-static void SV_SetMaster_f ()
+static void SV_SetMaster_f (void)
 {
 	char data[2];
 	int i;
@@ -80,14 +80,14 @@ SV_Logfile_f
 FIXME:
 ============
 */
-static void SV_Logfile_f () {}
+static void SV_Logfile_f (void) {}
 
 /*
 ============
 SV_Fraglogfile_f
 ============
 */
-static void SV_Fraglogfile_f ()
+static void SV_Fraglogfile_f (void)
 {
 	char name[MAX_OSPATH];
 	int i;
@@ -131,7 +131,7 @@ SV_SetPlayer
 Sets host_client and sv_player to the player with idnum Cmd_Argv(1)
 ==================
 */
-static bool SV_SetPlayer ()
+static bool SV_SetPlayer (void)
 {
 	client_t *cl;
 	int i;
@@ -164,7 +164,7 @@ SV_God_f
 Sets client to godmode
 ==================
 */
-static void SV_God_f ()
+static void SV_God_f (void)
 {
 	if (!sv_allow_cheats)
 	{
@@ -182,7 +182,7 @@ static void SV_God_f ()
 		SV_ClientPrintf (host_client, PRINT_HIGH, "godmode ON\n");
 }
 
-static void SV_Notarget_f ()
+static void SV_Notarget_f (void)
 {
 	if (!sv_allow_cheats)
 	{
@@ -200,7 +200,7 @@ static void SV_Notarget_f ()
 		SV_ClientPrintf (host_client, PRINT_HIGH, "notarget ON\n");
 }
 
-static void SV_Noclip_f ()
+static void SV_Noclip_f (void)
 {
 	if (!sv_allow_cheats)
 	{
@@ -228,7 +228,7 @@ static void SV_Noclip_f ()
 SV_Give_f
 ==================
 */
-static void SV_Give_f ()
+static void SV_Give_f (void)
 {
 	char *t;
 	int v;
@@ -365,7 +365,7 @@ SV_Kick_f
 Kick a user off of the server
 ==================
 */
-static void SV_Kick_f ()
+static void SV_Kick_f (void)
 {
 	int i;
 	client_t *cl;
@@ -396,7 +396,7 @@ static void SV_Kick_f ()
 SV_Status_f
 ================
 */
-void SV_Status_f ()
+void SV_Status_f (void)
 {
 	int i, j, l;
 	client_t *cl;
@@ -497,7 +497,7 @@ void SV_Status_f ()
 SV_ConSay_f
 ==================
 */
-static void SV_ConSay_f ()
+static void SV_ConSay_f (void)
 {
 	client_t *client;
 	int j;
@@ -531,7 +531,7 @@ static void SV_ConSay_f ()
 SV_Heartbeat_f
 ==================
 */
-static void SV_Heartbeat_f ()
+static void SV_Heartbeat_f (void)
 {
 	svs.last_heartbeat = -9999;
 }
@@ -554,7 +554,7 @@ SV_Serverinfo_f
 ===========
 */
 char *CopyString (char *s);
-static void SV_Serverinfo_f ()
+static void SV_Serverinfo_f (void)
 {
 	cvar_t *var;
 
@@ -598,7 +598,7 @@ SV_Localinfo_f
 ===========
 */
 char *CopyString (char *s);
-static void SV_Localinfo_f ()
+static void SV_Localinfo_f (void)
 {
 	if (Cmd_Argc () == 1)
 	{
@@ -628,7 +628,7 @@ SV_User_f
 Examine a users info strings
 ===========
 */
-static void SV_User_f ()
+static void SV_User_f (void)
 {
 	if (Cmd_Argc () != 2)
 	{
@@ -649,7 +649,7 @@ SV_Gamedir
 Sets the fake *gamedir to a different directory.
 ================
 */
-static void SV_Gamedir ()
+static void SV_Gamedir (void)
 {
 	char *dir;
 
@@ -684,7 +684,7 @@ Sets the gamedir and path to a different directory.
 ================
 */
 
-static void SV_Floodprot_f ()
+static void SV_Floodprot_f (void)
 {
 	int arg1, arg2, arg3;
 
@@ -727,7 +727,7 @@ static void SV_Floodprot_f ()
 	fp_secondsdead = arg3;
 }
 
-static void SV_Floodprotmsg_f ()
+static void SV_Floodprotmsg_f (void)
 {
 	if (Cmd_Argc () == 1)
 	{
@@ -750,7 +750,7 @@ Sets the gamedir and path to a different directory.
 ================
 */
 extern char gamedirfile[];
-static void SV_Gamedir_f ()
+static void SV_Gamedir_f (void)
 {
 	char *dir;
 
@@ -783,7 +783,7 @@ static void SV_Gamedir_f ()
 SV_InitOperatorCommands
 ==================
 */
-void SV_InitOperatorCommands ()
+void SV_InitOperatorCommands (void)
 {
 	if (COM_CheckParm ("-cheats"))
 	{

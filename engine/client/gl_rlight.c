@@ -27,7 +27,7 @@ int r_dlightframecount;
 R_AnimateLight
 ==================
 */
-void R_AnimateLight ()
+void R_AnimateLight (void)
 {
 	int i, j, k;
 
@@ -72,7 +72,7 @@ void AddLightBlend (float r, float g, float b, float a2)
 
 static float bubble_sintable[17], bubble_costable[17];
 
-void R_InitBubble ()
+void R_InitBubble (void)
 {
 	float a;
 	int i;
@@ -130,7 +130,7 @@ void R_RenderDlight (dlight_t *light)
 R_RenderDlights
 =============
 */
-void R_RenderDlights ()
+void R_RenderDlights (void)
 {
 	int i;
 	dlight_t *l;
@@ -219,7 +219,7 @@ void R_MarkLights (dlight_t *light, int bit, mnode_t *node)
 R_PushDlights
 =============
 */
-void R_PushDlights ()
+void R_PushDlights (void)
 {
 	int i;
 	dlight_t *l;

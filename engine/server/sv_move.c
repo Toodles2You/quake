@@ -380,7 +380,7 @@ SV_MoveToGoal
 
 ======================
 */
-void SV_MoveToGoal ()
+void SV_MoveToGoal (void)
 {
 	edict_t *ent, *goal;
 	float dist;

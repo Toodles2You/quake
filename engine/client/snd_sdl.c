@@ -73,7 +73,7 @@ static void SNDDMA_DataCallback (void *user, byte *stream, int len)
 		shm->samplepos = 0;
 }
 
-void SNDDMA_Shutdown ()
+void SNDDMA_Shutdown (void)
 {
 	snd_inited = false;
 
@@ -123,7 +123,7 @@ static void SNDDMA_CheckParms (SDL_AudioSpec *desired)
 		desired->samples = 2048;
 }
 
-bool SNDDMA_Init ()
+bool SNDDMA_Init (void)
 {
 	if (snd_inited)
 		return true;
@@ -195,7 +195,7 @@ bool SNDDMA_Init ()
 	return true;
 }
 
-bool SNDDMA_BeginPainting ()
+bool SNDDMA_BeginPainting (void)
 {
 	if (!snd_inited)
 		return false;
@@ -209,7 +209,7 @@ bool SNDDMA_BeginPainting ()
 	return true;
 }
 
-int SNDDMA_GetDMAPos ()
+int SNDDMA_GetDMAPos (void)
 {
 	if (!SNDDMA_BeginPainting ())
 		return 0;
@@ -217,7 +217,7 @@ int SNDDMA_GetDMAPos ()
 	return shm->samplepos;
 }
 
-void SNDDMA_Submit ()
+void SNDDMA_Submit (void)
 {
 	if (!snd_inited || !snd_locked)
 		return;
@@ -226,7 +226,7 @@ void SNDDMA_Submit ()
 	snd_locked = false;
 }
 
-void S_BlockSound ()
+void S_BlockSound (void)
 {
 	if (!snd_inited)
 		return;
@@ -234,7 +234,7 @@ void S_BlockSound ()
 	SDL_PauseAudioDevice (device, SDL_TRUE);
 }
 
-void S_UnblockSound ()
+void S_UnblockSound (void)
 {
 	if (!snd_inited)
 		return;

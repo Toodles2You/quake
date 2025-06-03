@@ -145,7 +145,7 @@ static keyname_t keynames[] = {{"TAB", K_TAB},
 ==============================================================================
 */
 
-static void CompleteCommand ()
+static void CompleteCommand (void)
 {
 	char *cmd = Cmd_CompleteCommand (src_client, key_lines[edit_line] + 1);
 	if (!cmd)
@@ -412,7 +412,7 @@ void Key_SetBinding (int keynum, char *binding)
 Key_Unbind_f
 ===================
 */
-static void Key_Unbind_f ()
+static void Key_Unbind_f (void)
 {
 	int b;
 
@@ -432,7 +432,7 @@ static void Key_Unbind_f ()
 	Key_SetBinding (b, "");
 }
 
-static void Key_Unbindall_f ()
+static void Key_Unbindall_f (void)
 {
 	int i;
 
@@ -446,7 +446,7 @@ static void Key_Unbindall_f ()
 Key_Bind_f
 ===================
 */
-static void Key_Bind_f ()
+static void Key_Bind_f (void)
 {
 	int i, c, b;
 	char cmd[1024];
@@ -508,7 +508,7 @@ void Key_WriteBindings (FILE *f)
 Key_Init
 ===================
 */
-void Key_Init ()
+void Key_Init (void)
 {
 	int i;
 
@@ -737,7 +737,7 @@ void Key_Event (int key, bool down)
 Key_ClearStates
 ===================
 */
-void Key_ClearStates ()
+void Key_ClearStates (void)
 {
 	int i;
 

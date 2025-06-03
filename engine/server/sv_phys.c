@@ -61,7 +61,7 @@ void SV_Physics_Toss (edict_t *ent);
 SV_CheckAllEnts
 ================
 */
-void SV_CheckAllEnts ()
+void SV_CheckAllEnts (void)
 {
 	int e;
 	edict_t *check;
@@ -960,7 +960,7 @@ void SV_Physics_Step (edict_t *ent)
 
 //============================================================================
 
-void SV_ProgStartFrame ()
+void SV_ProgStartFrame (void)
 {
 	// let the progs know that a new frame has started
 	sv_pr_int (self) = EDICT_TO_PROG (sv.edicts);
@@ -1021,7 +1021,7 @@ SV_RunNewmis
 
 ================
 */
-void SV_RunNewmis ()
+void SV_RunNewmis (void)
 {
 	edict_t *ent;
 
@@ -1040,7 +1040,7 @@ SV_Physics
 
 ================
 */
-void SV_Physics ()
+void SV_Physics (void)
 {
 	int i;
 	edict_t *ent;
@@ -1085,7 +1085,7 @@ void SV_Physics ()
 	}
 }
 
-void SV_SetMoveVars ()
+void SV_SetMoveVars (void)
 {
 	movevars.gravity = sv_gravity.value;
 	movevars.stopspeed = sv_stopspeed.value;

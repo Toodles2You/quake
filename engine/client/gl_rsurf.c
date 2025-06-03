@@ -319,7 +319,7 @@ bool mtexenabled = false;
 
 void GL_SelectTexture (GLenum target);
 
-void GL_DisableMultitexture ()
+void GL_DisableMultitexture (void)
 {
 	if (mtexenabled)
 	{
@@ -329,7 +329,7 @@ void GL_DisableMultitexture ()
 	}
 }
 
-void GL_EnableMultitexture ()
+void GL_EnableMultitexture (void)
 {
 	if (gl_mtexable)
 	{
@@ -703,7 +703,7 @@ void DrawGLPoly (glpoly_t *p)
 R_BlendLightmaps
 ================
 */
-void R_BlendLightmaps ()
+void R_BlendLightmaps (void)
 {
 	int i, j;
 	glpoly_t *p;
@@ -968,7 +968,7 @@ void R_RenderDynamicLightmaps (msurface_t *fa)
 R_DrawWaterSurfaces
 ================
 */
-void R_DrawWaterSurfaces ()
+void R_DrawWaterSurfaces (void)
 {
 	int			i;
 	msurface_t	*s;
@@ -1017,7 +1017,7 @@ void R_DrawWaterSurfaces ()
 R_DrawWaterSurfaces
 ================
 */
-void R_DrawWaterSurfaces ()
+void R_DrawWaterSurfaces (void)
 {
 	int i;
 	msurface_t *s;
@@ -1093,7 +1093,7 @@ void R_DrawWaterSurfaces ()
 DrawTextureChains
 ================
 */
-void DrawTextureChains ()
+void DrawTextureChains (void)
 {
 	int i;
 	msurface_t *s;
@@ -1378,7 +1378,7 @@ void R_RecursiveWorldNode (msurface_t **surfs, mnode_t *node)
 R_DrawWorld
 =============
 */
-void R_DrawWorld ()
+void R_DrawWorld (void)
 {
 	entity_t ent;
 
@@ -1412,7 +1412,7 @@ void R_DrawWorld ()
 R_MarkLeaves
 ===============
 */
-void R_MarkLeaves ()
+void R_MarkLeaves (void)
 {
 	byte *vis;
 	mnode_t *node;
@@ -1642,7 +1642,7 @@ Builds the lightmap texture
 with all the surfaces from all brush models
 ==================
 */
-void GL_BuildLightmaps ()
+void GL_BuildLightmaps (void)
 {
 	int i, j;
 	model_t *m;

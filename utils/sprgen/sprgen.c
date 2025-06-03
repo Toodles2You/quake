@@ -221,7 +221,7 @@ void Cmd_Type (void)
 Cmd_Beamlength
 ===============
 */
-void Cmd_Beamlength ()
+void Cmd_Beamlength (void)
 {
 	GetToken (false);
 	sprite.beamlength = atof (token);
@@ -243,7 +243,7 @@ void Cmd_Load (void)
 Cmd_Frame
 ===============
 */
-void Cmd_Frame ()
+void Cmd_Frame (void)
 {
 	int x, y, xl, yl, xh, yh, w, h;
 	byte *screen_p, *source;

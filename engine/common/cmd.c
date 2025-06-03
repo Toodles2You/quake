@@ -49,7 +49,7 @@ next frame.  This allows commands like:
 bind g "impulse 5 ; +attack ; wait ; -attack ; impulse 2"
 ============
 */
-static void Cmd_Wait_f ()
+static void Cmd_Wait_f (void)
 {
 	cmd_wait[cmd_source] = true;
 }
@@ -70,7 +70,7 @@ static byte cmd_text_buf[2][8192];
 Cbuf_Init
 ============
 */
-void Cbuf_Init ()
+void Cbuf_Init (void)
 {
 	cmd_text[src_client].data = cmd_text_buf[src_client];
 	cmd_text[src_client].maxsize = sizeof (cmd_text_buf[src_client]);
@@ -212,7 +212,7 @@ quake +prog jctest.qp +cmd amlev1
 quake -nosound +cmd amlev1
 ===============
 */
-void Cmd_StuffCmds_f ()
+void Cmd_StuffCmds_f (void)
 {
 	int i, j;
 	int s;
@@ -281,7 +281,7 @@ void Cmd_StuffCmds_f ()
 Cmd_Exec_f
 ===============
 */
-static void Cmd_Exec_f ()
+static void Cmd_Exec_f (void)
 {
 	char *f;
 	int mark;
@@ -313,7 +313,7 @@ Cmd_Echo_f
 Just prints the rest of the line to the console
 ===============
 */
-static void Cmd_Echo_f ()
+static void Cmd_Echo_f (void)
 {
 	int i;
 
@@ -339,7 +339,7 @@ char *CopyString (char *in)
 	return out;
 }
 
-static void Cmd_Alias_f ()
+static void Cmd_Alias_f (void)
 {
 	cmdalias_t *a;
 	char cmd[1024];
@@ -422,7 +422,7 @@ static cmd_function_t *cmd_functions[2]; // possible commands to execute
 Cmd_Argc
 ============
 */
-int Cmd_Argc ()
+int Cmd_Argc (void)
 {
 	return cmd_argc[cmd_source];
 }
@@ -444,7 +444,7 @@ char *Cmd_Argv (int arg)
 Cmd_Args
 ============
 */
-char *Cmd_Args ()
+char *Cmd_Args (void)
 {
 	if (!cmd_args[cmd_source])
 		return "";
@@ -610,7 +610,7 @@ Cmd_ForwardToServer
 Sends the entire command line over to the server
 ===================
 */
-void Cmd_ForwardToServer ()
+void Cmd_ForwardToServer (void)
 {
 	if (cls.state == ca_disconnected)
 	{
@@ -631,7 +631,7 @@ void Cmd_ForwardToServer ()
 }
 
 // don't forward the first argument
-static void Cmd_ForwardToServer_f ()
+static void Cmd_ForwardToServer_f (void)
 {
 	if (cls.state == ca_disconnected)
 	{
@@ -725,7 +725,7 @@ int Cmd_CheckParm (char *parm)
 Cmd_Init
 ============
 */
-void Cmd_Init ()
+void Cmd_Init (void)
 {
 	//
 	// register our commands

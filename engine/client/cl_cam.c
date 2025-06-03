@@ -90,7 +90,7 @@ static float vlen (vec3_t v)
 }
 
 // returns true if weapon model should be drawn in camera mode
-bool Cam_DrawViewModel ()
+bool Cam_DrawViewModel (void)
 {
 	if (!cl.spectator)
 		return true;
@@ -108,7 +108,7 @@ bool Cam_DrawPlayer (int playernum)
 	return true;
 }
 
-void Cam_Unlock ()
+void Cam_Unlock (void)
 {
 	if (autocam)
 	{
@@ -302,7 +302,7 @@ static bool InitFlyby (player_state_t *self, player_state_t *player, int checkvi
 	return true;
 }
 
-static void Cam_CheckHighTarget ()
+static void Cam_CheckHighTarget (void)
 {
 	int i, j, max;
 	player_info_t *s;
@@ -456,7 +456,7 @@ static float adjustang(float current, float ideal, float speed)
 #endif
 
 #if 0
-void Cam_SetView ()
+void Cam_SetView (void)
 {
 	return;
 	player_state_t *player, *self;
@@ -595,13 +595,13 @@ void Cam_FinishMove (usercmd_t *cmd)
 	autocam = locked = false;
 }
 
-void Cam_Reset ()
+void Cam_Reset (void)
 {
 	autocam = CAM_NONE;
 	spec_track = 0;
 }
 
-void CL_InitCam ()
+void CL_InitCam (void)
 {
 	Cvar_RegisterVariable (src_client, &cl_hightrack);
 	Cvar_RegisterVariable (src_client, &cl_chasecam);

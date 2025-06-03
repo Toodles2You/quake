@@ -56,7 +56,7 @@ sfx_t *cl_sfx_r_exp3;
 CL_ParseTEnts
 =================
 */
-void CL_InitTEnts ()
+void CL_InitTEnts (void)
 {
 	cl_sfx_wizhit = S_PrecacheSound ("wizard/hit.wav");
 	cl_sfx_knighthit = S_PrecacheSound ("hknight/hit.wav");
@@ -72,7 +72,7 @@ void CL_InitTEnts ()
 CL_ClearTEnts
 =================
 */
-void CL_ClearTEnts ()
+void CL_ClearTEnts (void)
 {
 	memset (&cl_beams, 0, sizeof (cl_beams));
 	memset (&cl_explosions, 0, sizeof (cl_explosions));
@@ -83,7 +83,7 @@ void CL_ClearTEnts ()
 CL_AllocExplosion
 =================
 */
-static explosion_t *CL_AllocExplosion ()
+static explosion_t *CL_AllocExplosion (void)
 {
 	int i;
 	float time;
@@ -160,7 +160,7 @@ static void CL_ParseBeam (model_t *m)
 CL_ParseTEnt
 =================
 */
-void CL_ParseTEnt ()
+void CL_ParseTEnt (void)
 {
 	int type;
 	vec3_t pos;
@@ -356,7 +356,7 @@ void CL_ParseTEnt ()
 CL_NewTempEntity
 =================
 */
-entity_t *CL_NewTempEntity ()
+entity_t *CL_NewTempEntity (void)
 {
 	entity_t *ent;
 
@@ -377,7 +377,7 @@ entity_t *CL_NewTempEntity ()
 CL_UpdateBeams
 =================
 */
-static void CL_UpdateBeams ()
+static void CL_UpdateBeams (void)
 {
 	int i;
 	beam_t *b;
@@ -446,7 +446,7 @@ static void CL_UpdateBeams ()
 CL_UpdateExplosions
 =================
 */
-static void CL_UpdateExplosions ()
+static void CL_UpdateExplosions (void)
 {
 	int i;
 	int f;
@@ -478,7 +478,7 @@ static void CL_UpdateExplosions ()
 CL_UpdateTEnts
 =================
 */
-void CL_UpdateTEnts ()
+void CL_UpdateTEnts (void)
 {
 	CL_UpdateBeams ();
 	CL_UpdateExplosions ();

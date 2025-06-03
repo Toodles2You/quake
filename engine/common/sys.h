@@ -30,15 +30,15 @@ void Sys_Error (char *error, ...);
 void Sys_Printf (char *fmt, ...);
 // send text to the console
 
-void Sys_Quit ();
+void Sys_Quit (void);
 
-double Sys_FloatTime ();
+double Sys_FloatTime (void);
 
 void Sys_Sleep (int msec);
 
-char *Sys_ConsoleInput ();
+char *Sys_ConsoleInput (void);
 
-void Sys_SendKeyEvents ();
+void Sys_SendKeyEvents (void);
 // Perform Key_Event () callbacks until the input que is empty
 
 #endif /* !_SYS_H */

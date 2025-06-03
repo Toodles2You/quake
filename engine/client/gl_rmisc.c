@@ -25,7 +25,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 R_InitTextures
 ==================
 */
-void R_InitTextures ()
+void R_InitTextures (void)
 {
 	int x, y, m;
 	byte *dest;
@@ -57,7 +57,7 @@ byte dottexture[8][8] = {
 	{1, 1, 1, 1, 0, 0, 0, 0}, {1, 1, 1, 1, 0, 0, 0, 0}, {1, 1, 1, 1, 0, 0, 0, 0}, {1, 1, 1, 1, 0, 0, 0, 0},
 	{0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0},
 };
-void R_InitParticleTexture ()
+void R_InitParticleTexture (void)
 {
 	int x, y;
 	byte data[8][8][4];
@@ -91,7 +91,7 @@ void R_InitParticleTexture ()
 R_Init
 ===============
 */
-void R_Init ()
+void R_Init (void)
 {
 	extern cvar_t gl_finish;
 
@@ -273,7 +273,7 @@ void R_TranslatePlayerSkin (int playernum)
 R_NewMap
 ===============
 */
-void R_NewMap ()
+void R_NewMap (void)
 {
 	int i;
 
@@ -312,7 +312,7 @@ R_TimeRefresh_f
 For program optimization
 ====================
 */
-void R_TimeRefresh_f ()
+void R_TimeRefresh_f (void)
 {
 	int i;
 	float start, stop, time;

@@ -2,15 +2,15 @@
 #ifndef _SCREEN_H
 #define _SCREEN_H
 
-void SCR_Init ();
+void SCR_Init (void);
 
-void SCR_UpdateScreen ();
+void SCR_UpdateScreen (void);
 
-void SCR_BringDownConsole ();
+void SCR_BringDownConsole (void);
 void SCR_CenterPrint (char *str);
 
-void SCR_BeginLoadingPlaque ();
-void SCR_EndLoadingPlaque ();
+void SCR_BeginLoadingPlaque (void);
+void SCR_EndLoadingPlaque (void);
 
 int SCR_ModalMessage (char *text);
 

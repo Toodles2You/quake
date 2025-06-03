@@ -813,7 +813,7 @@ void R_DrawSkyChain (msurface_t *s)
 R_ClearSkyBox
 ==============
 */
-void R_ClearSkyBox ()
+void R_ClearSkyBox (void)
 {
 	int i;
 
@@ -868,7 +868,7 @@ R_DrawSkyBox
 ==============
 */
 int skytexorder[6] = {0, 2, 1, 3, 4, 5};
-void R_DrawSkyBox ()
+void R_DrawSkyBox (void)
 {
 	if (skyanimated)
 		return;

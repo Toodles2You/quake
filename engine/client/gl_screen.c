@@ -113,7 +113,7 @@ float scr_disabled_time;
 
 bool block_drawing;
 
-void SCR_ScreenShot_f ();
+void SCR_ScreenShot_f (void);
 
 /*
 ===============================================================================
@@ -154,7 +154,7 @@ void SCR_CenterPrint (char *str)
 	}
 }
 
-void SCR_DrawCenterString ()
+void SCR_DrawCenterString (void)
 {
 	char *start;
 	int l;
@@ -201,7 +201,7 @@ void SCR_DrawCenterString ()
 	} while (1);
 }
 
-void SCR_CheckDrawCenterString ()
+void SCR_CheckDrawCenterString (void)
 {
 	scr_copytop = 1;
 	if (scr_center_lines > scr_erase_lines)
@@ -292,7 +292,7 @@ Must be called whenever vid changes
 Internal use only
 =================
 */
-static void SCR_CalcRefdef ()
+static void SCR_CalcRefdef (void)
 {
 	float size;
 	bool full = false;
@@ -373,7 +373,7 @@ SCR_SizeUp_f
 Keybinding command
 =================
 */
-void SCR_SizeUp_f ()
+void SCR_SizeUp_f (void)
 {
 	Cvar_SetValue (src_client, "viewsize", scr_viewsize.value + 10);
 	vid.recalc_refdef = 1;
@@ -386,7 +386,7 @@ SCR_SizeDown_f
 Keybinding command
 =================
 */
-void SCR_SizeDown_f ()
+void SCR_SizeDown_f (void)
 {
 	Cvar_SetValue (src_client, "viewsize", scr_viewsize.value - 10);
 	vid.recalc_refdef = 1;
@@ -399,7 +399,7 @@ void SCR_SizeDown_f ()
 SCR_Init
 ==================
 */
-void SCR_Init ()
+void SCR_Init (void)
 {
 
 	Cvar_RegisterVariable (src_client, &scr_fov);
@@ -431,7 +431,7 @@ void SCR_Init ()
 SCR_DrawTurtle
 ==============
 */
-void SCR_DrawTurtle ()
+void SCR_DrawTurtle (void)
 {
 	static int count;
 
@@ -458,7 +458,7 @@ int cl_framecount;
 SCR_DrawFPS
 ==============
 */
-void SCR_DrawFPS ()
+void SCR_DrawFPS (void)
 {
 	static double lastframetime;
 	static int lastframecount;
@@ -488,7 +488,7 @@ void SCR_DrawFPS ()
 DrawPause
 ==============
 */
-void SCR_DrawPause ()
+void SCR_DrawPause (void)
 {
 	qpic_t *pic;
 
@@ -507,7 +507,7 @@ void SCR_DrawPause ()
 SCR_DrawLoading
 ==============
 */
-void SCR_DrawLoading ()
+void SCR_DrawLoading (void)
 {
 	qpic_t *pic;
 
@@ -525,7 +525,7 @@ void SCR_DrawLoading ()
 SCR_SetUpToDrawConsole
 ==================
 */
-void SCR_SetUpToDrawConsole ()
+void SCR_SetUpToDrawConsole (void)
 {
 	Con_CheckResize ();
 
@@ -576,7 +576,7 @@ void SCR_SetUpToDrawConsole ()
 SCR_DrawConsole
 ==================
 */
-void SCR_DrawConsole ()
+void SCR_DrawConsole (void)
 {
 	if (scr_con_current)
 	{
@@ -613,7 +613,7 @@ typedef struct _TargaHeader
 SCR_ScreenShot_f
 ================== 
 */
-void SCR_ScreenShot_f ()
+void SCR_ScreenShot_f (void)
 {
 	byte *buffer;
 	char pcxname[80];
@@ -671,7 +671,7 @@ SCR_BeginLoadingPlaque
 
 ================
 */
-void SCR_BeginLoadingPlaque ()
+void SCR_BeginLoadingPlaque (void)
 {
 	S_StopAllSounds (true);
 
@@ -700,7 +700,7 @@ SCR_EndLoadingPlaque
 
 ================
 */
-void SCR_EndLoadingPlaque ()
+void SCR_EndLoadingPlaque (void)
 {
 	scr_disabled_for_loading = false;
 	scr_fullupdate = 0;
@@ -712,7 +712,7 @@ void SCR_EndLoadingPlaque ()
 char *scr_notifystring;
 bool scr_drawdialog;
 
-void SCR_DrawNotifyString ()
+void SCR_DrawNotifyString (void)
 {
 	char *start;
 	int l;
@@ -788,7 +788,7 @@ SCR_BringDownConsole
 Brings the console down and fades the palettes back to normal
 ================
 */
-void SCR_BringDownConsole ()
+void SCR_BringDownConsole (void)
 {
 	int i;
 
@@ -801,7 +801,7 @@ void SCR_BringDownConsole ()
 	VID_SetPalette (host_basepal);
 }
 
-void SCR_TileClear ()
+void SCR_TileClear (void)
 {
 	if (r_refdef.vrect.x > 0)
 	{
@@ -831,7 +831,7 @@ WARNING: be very careful calling this from elsewhere, because the refresh
 needs almost the entire 256k of stack space!
 ==================
 */
-void SCR_UpdateScreen ()
+void SCR_UpdateScreen (void)
 {
 	if (block_drawing)
 		return;

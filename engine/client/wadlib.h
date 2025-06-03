@@ -12,6 +12,6 @@ void W_SwapPic (qpic_t *pic);
 void W_LoadMapWadFile (char *filename);
 bool W_LoadMapMiptexInfo (char *name, void *dst);
 bool W_LoadMapMiptexData (void *dst);
-void W_FreeMapWadFiles ();
+void W_FreeMapWadFiles (void);
 
 #endif /* !_WADLIB_H */

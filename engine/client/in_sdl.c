@@ -285,7 +285,7 @@ static void IN_HandleEvent (SDL_Event *event, bool *warp_mouse)
 	}
 }
 
-void Sys_SendKeyEvents ()
+void Sys_SendKeyEvents (void)
 {
 	SDL_Event event;
 	bool warp_mouse = false;
@@ -300,12 +300,12 @@ void Sys_SendKeyEvents ()
 	}
 }
 
-static void Force_CenterView_f ()
+static void Force_CenterView_f (void)
 {
 	cl.viewangles[PITCH] = 0;
 }
 
-void IN_Init ()
+void IN_Init (void)
 {
 	mouse_state = MOUSE_AVAILABLE;
 	mouse[0] = mouse[1] = 0;
@@ -317,7 +317,7 @@ void IN_Init ()
 	Cmd_AddCommand (src_client, "force_centerview", Force_CenterView_f);
 }
 
-static void IN_ActivateGrabs ()
+static void IN_ActivateGrabs (void)
 {
 	SDL_ShowCursor (SDL_DISABLE);
 
@@ -335,7 +335,7 @@ static void IN_ActivateGrabs ()
 	mouse[0] = mouse[1] = 0;
 }
 
-static void IN_DeactivateGrabs ()
+static void IN_DeactivateGrabs (void)
 {
 
 	if (mouse_state & MOUSE_RELATIVE)
@@ -346,14 +346,14 @@ static void IN_DeactivateGrabs ()
 	mouse_state &= ~(MOUSE_ACTIVE | MOUSE_RELATIVE);
 }
 
-void IN_Shutdown ()
+void IN_Shutdown (void)
 {
 	if (mouse_state & MOUSE_AVAILABLE)
 		IN_DeactivateGrabs ();
 	mouse_state = 0;
 }
 
-void IN_Commands ()
+void IN_Commands (void)
 {
 	if (!window)
 		return;

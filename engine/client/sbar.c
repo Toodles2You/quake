@@ -58,8 +58,8 @@ qpic_t *hsb_weapons[7][5]; // 0 is active, 1 is owned, 2-5 are flashes
 int hipweapons[4] = {HIT_LASER_CANNON_BIT, HIT_MJOLNIR_BIT, 4, HIT_PROXIMITY_GUN_BIT};
 qpic_t *hsb_items[2];
 
-static void Sbar_MiniDeathmatchOverlay ();
-static void Sbar_DeathmatchOverlay ();
+static void Sbar_MiniDeathmatchOverlay (void);
+static void Sbar_DeathmatchOverlay (void);
 void M_DrawPic (int x, int y, qpic_t *pic);
 
 /*
@@ -69,7 +69,7 @@ Sbar_ShowScores_f
 Tab key down
 ===============
 */
-static void Sbar_ShowScores_f ()
+static void Sbar_ShowScores_f (void)
 {
 	if (sb_showscores)
 		return;
@@ -84,7 +84,7 @@ Sbar_DontShowScores_f
 Tab key up
 ===============
 */
-static void Sbar_DontShowScores_f ()
+static void Sbar_DontShowScores_f (void)
 {
 	sb_showscores = false;
 	sb_updates = 0;
@@ -95,7 +95,7 @@ static void Sbar_DontShowScores_f ()
 Sbar_Changed
 ===============
 */
-void Sbar_Changed ()
+void Sbar_Changed (void)
 {
 	sb_updates = 0; // update next frame
 }
@@ -105,7 +105,7 @@ void Sbar_Changed ()
 Sbar_Init
 ===============
 */
-void Sbar_Init ()
+void Sbar_Init (void)
 {
 	int i;
 
@@ -377,14 +377,14 @@ static int Sbar_ColorForMap (int m)
 Sbar_UpdateScoreboard
 ===============
 */
-static void Sbar_UpdateScoreboard () {}
+static void Sbar_UpdateScoreboard (void) {}
 
 /*
 ===============
 Sbar_SoloScoreboard
 ===============
 */
-static void Sbar_SoloScoreboard ()
+static void Sbar_SoloScoreboard (void)
 {
 	char str[80];
 	int minutes, seconds, tens, units;
@@ -414,7 +414,7 @@ static void Sbar_SoloScoreboard ()
 Sbar_DrawScoreboard
 ===============
 */
-void Sbar_DrawScoreboard ()
+void Sbar_DrawScoreboard (void)
 {
 	Sbar_SoloScoreboard ();
 	if (sb_deathmatch)
@@ -473,7 +473,7 @@ void Sbar_DrawScoreboard ()
 Sbar_DrawInventory
 ===============
 */
-void Sbar_DrawInventory ()
+void Sbar_DrawInventory (void)
 {
 	int i;
 	char num[6];
@@ -671,7 +671,7 @@ void Sbar_DrawInventory ()
 Sbar_DrawFace
 ===============
 */
-void Sbar_DrawFace ()
+void Sbar_DrawFace (void)
 {
 	int f, anim;
 
@@ -767,7 +767,7 @@ void Sbar_DrawFace ()
 Sbar_Draw
 ===============
 */
-void Sbar_Draw ()
+void Sbar_Draw (void)
 {
 	if (scr_con_current == vid.height)
 		return; // console is full screen
@@ -919,7 +919,7 @@ Sbar_DeathmatchOverlay
 
 ==================
 */
-static void Sbar_DeathmatchOverlay () {}
+static void Sbar_DeathmatchOverlay (void) {}
 
 /*
 ==================
@@ -927,7 +927,7 @@ Sbar_MiniDeathmatchOverlay
 
 ==================
 */
-static void Sbar_MiniDeathmatchOverlay () {}
+static void Sbar_MiniDeathmatchOverlay (void) {}
 
 /*
 ==================
@@ -935,7 +935,7 @@ Sbar_IntermissionOverlay
 
 ==================
 */
-void Sbar_IntermissionOverlay ()
+void Sbar_IntermissionOverlay (void)
 {
 	qpic_t *pic;
 	int dig;
@@ -979,7 +979,7 @@ Sbar_FinaleOverlay
 
 ==================
 */
-void Sbar_FinaleOverlay ()
+void Sbar_FinaleOverlay (void)
 {
 	qpic_t *pic;
 

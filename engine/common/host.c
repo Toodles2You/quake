@@ -160,7 +160,7 @@ void Host_Error (char *error, ...)
 Host_InitLocal
 ======================
 */
-void Host_InitLocal ()
+void Host_InitLocal (void)
 {
 	Host_InitCommands ();
 
@@ -212,7 +212,7 @@ Host_WriteConfiguration
 Writes key bindings and archived cvars to config.cfg
 ===============
 */
-void Host_WriteConfiguration ()
+void Host_WriteConfiguration (void)
 {
 	FILE *f;
 
@@ -291,7 +291,7 @@ This clears all the memory used by both the client and server, but does
 not reinitialize anything.
 ================
 */
-void Host_ClearMemory ()
+void Host_ClearMemory (void)
 {
 	Con_DPrintf ("Clearing memory\n");
 	CMod_ClearAll ();
@@ -342,7 +342,7 @@ Host_GetConsoleCommands
 Add them exactly as if they had been typed at the console
 ===================
 */
-void Host_GetConsoleCommands ()
+void Host_GetConsoleCommands (void)
 {
 	char *cmd;
 
@@ -534,7 +534,7 @@ void Host_Frame (double time)
 
 extern cvar_t qport;
 
-static void Host_InitNet ()
+static void Host_InitNet (void)
 {
 	int serverPort = PORT_SERVER;
 	int p = COM_CheckParm ("-port");
@@ -630,7 +630,7 @@ void Host_Init (quakeparms_t *parms)
 Host_InitServer
 ===============
 */
-void Host_InitServer ()
+void Host_InitServer (void)
 {
 	int port = PORT_SERVER;
 	int p = COM_CheckParm ("-port");
@@ -648,7 +648,7 @@ FIXME: this is a callback from Sys_Quit and Sys_Error.  It would be better
 to run quit through here before the final handoff to the sys code.
 ===============
 */
-void Host_Shutdown ()
+void Host_Shutdown (void)
 {
 	static bool isdown = false;
 
@@ -673,7 +673,7 @@ void Host_Shutdown ()
 		VID_Shutdown ();
 }
 
-bool Host_IsLocalGame ()
+bool Host_IsLocalGame (void)
 {
 	return sv.active;
 }
@@ -683,7 +683,7 @@ bool Host_IsLocalClient (int userid)
 	return Host_IsLocalGame () && cls.state != ca_dedicated && cl.userid == userid;
 }
 
-bool Host_IsPaused ()
+bool Host_IsPaused (void)
 {
 	return sv.paused || (maxclients.value <= 1 && key_dest != key_game);
 }

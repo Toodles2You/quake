@@ -73,29 +73,29 @@ void Z_Free (void *ptr);
 void *Z_Malloc (size_t size); // returns 0 filled memory
 void *Z_TagMalloc (size_t size, size_t tag);
 
-void Z_CheckHeap ();
+void Z_CheckHeap (void);
 
 void *Hunk_Alloc (size_t size); // returns 0 filled memory
 void *Hunk_AllocName (size_t size, char *name);
 
 void *Hunk_HighAllocName (size_t size, char *name);
 
-size_t Hunk_LowMark ();
+size_t Hunk_LowMark (void);
 void Hunk_FreeToLowMark (size_t mark);
 
-size_t Hunk_HighMark ();
+size_t Hunk_HighMark (void);
 void Hunk_FreeToHighMark (size_t mark);
 
 void *Hunk_TempAlloc (size_t size);
 
-void Hunk_Check ();
+void Hunk_Check (void);
 
 typedef struct cache_user_s
 {
 	void *data;
 } cache_user_t;
 
-void Cache_Flush ();
+void Cache_Flush (void);
 
 void *Cache_Check (cache_user_t *c);
 // returns the cached data, and moves to the head of the LRU list
@@ -107,6 +107,6 @@ void *Cache_Alloc (cache_user_t *c, size_t size, char *name);
 // Returns NULL if all purgable data was tossed and there still
 // wasn't enough room.
 
-void Cache_Report ();
+void Cache_Report (void);
 
 #endif /* !_ZONE_H */

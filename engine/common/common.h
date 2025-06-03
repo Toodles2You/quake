@@ -95,18 +95,18 @@ extern int msg_readcount;
 extern bool msg_badread; // set if a read goes beyond end of message
 
 void MSG_BeginReading (int socket);
-int MSG_GetReadCount ();
-int MSG_ReadChar ();
-int MSG_ReadByte ();
-int MSG_ReadShort ();
-int MSG_ReadLong ();
-float MSG_ReadFloat ();
-char *MSG_ReadString ();
-char *MSG_ReadStringLine ();
+int MSG_GetReadCount (void);
+int MSG_ReadChar (void);
+int MSG_ReadByte (void);
+int MSG_ReadShort (void);
+int MSG_ReadLong (void);
+float MSG_ReadFloat (void);
+char *MSG_ReadString (void);
+char *MSG_ReadStringLine (void);
 
-float MSG_ReadCoord ();
-float MSG_ReadAngle ();
-float MSG_ReadAngle16 ();
+float MSG_ReadCoord (void);
+float MSG_ReadAngle (void);
+float MSG_ReadAngle16 (void);
 void MSG_ReadDeltaUsercmd (struct usercmd_s *from, struct usercmd_s *cmd);
 
 //============================================================================

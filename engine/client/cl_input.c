@@ -110,149 +110,149 @@ static void KeyUp (kbutton_t *b)
 	b->state |= 4;	// impulse up
 }
 
-static void IN_KLookDown ()
+static void IN_KLookDown (void)
 {
 	KeyDown (&in_klook);
 }
-static void IN_KLookUp ()
+static void IN_KLookUp (void)
 {
 	KeyUp (&in_klook);
 }
-static void IN_MLookDown ()
+static void IN_MLookDown (void)
 {
 	KeyDown (&in_mlook);
 }
-static void IN_MLookUp ()
+static void IN_MLookUp (void)
 {
 	KeyUp (&in_mlook);
 	if (!(in_mlook.state & 1) && lookspring.value)
 		V_StartPitchDrift ();
 }
-static void IN_UpDown ()
+static void IN_UpDown (void)
 {
 	KeyDown (&in_up);
 }
-static void IN_UpUp ()
+static void IN_UpUp (void)
 {
 	KeyUp (&in_up);
 }
-static void IN_DownDown ()
+static void IN_DownDown (void)
 {
 	KeyDown (&in_down);
 }
-static void IN_DownUp ()
+static void IN_DownUp (void)
 {
 	KeyUp (&in_down);
 }
-static void IN_LeftDown ()
+static void IN_LeftDown (void)
 {
 	KeyDown (&in_left);
 }
-static void IN_LeftUp ()
+static void IN_LeftUp (void)
 {
 	KeyUp (&in_left);
 }
-static void IN_RightDown ()
+static void IN_RightDown (void)
 {
 	KeyDown (&in_right);
 }
-static void IN_RightUp ()
+static void IN_RightUp (void)
 {
 	KeyUp (&in_right);
 }
-static void IN_ForwardDown ()
+static void IN_ForwardDown (void)
 {
 	KeyDown (&in_forward);
 }
-static void IN_ForwardUp ()
+static void IN_ForwardUp (void)
 {
 	KeyUp (&in_forward);
 }
-static void IN_BackDown ()
+static void IN_BackDown (void)
 {
 	KeyDown (&in_back);
 }
-static void IN_BackUp ()
+static void IN_BackUp (void)
 {
 	KeyUp (&in_back);
 }
-static void IN_LookupDown ()
+static void IN_LookupDown (void)
 {
 	KeyDown (&in_lookup);
 }
-static void IN_LookupUp ()
+static void IN_LookupUp (void)
 {
 	KeyUp (&in_lookup);
 }
-static void IN_LookdownDown ()
+static void IN_LookdownDown (void)
 {
 	KeyDown (&in_lookdown);
 }
-static void IN_LookdownUp ()
+static void IN_LookdownUp (void)
 {
 	KeyUp (&in_lookdown);
 }
-static void IN_MoveleftDown ()
+static void IN_MoveleftDown (void)
 {
 	KeyDown (&in_moveleft);
 }
-static void IN_MoveleftUp ()
+static void IN_MoveleftUp (void)
 {
 	KeyUp (&in_moveleft);
 }
-static void IN_MoverightDown ()
+static void IN_MoverightDown (void)
 {
 	KeyDown (&in_moveright);
 }
-static void IN_MoverightUp ()
+static void IN_MoverightUp (void)
 {
 	KeyUp (&in_moveright);
 }
 
-static void IN_SpeedDown ()
+static void IN_SpeedDown (void)
 {
 	KeyDown (&in_speed);
 }
-static void IN_SpeedUp ()
+static void IN_SpeedUp (void)
 {
 	KeyUp (&in_speed);
 }
-static void IN_StrafeDown ()
+static void IN_StrafeDown (void)
 {
 	KeyDown (&in_strafe);
 }
-static void IN_StrafeUp ()
+static void IN_StrafeUp (void)
 {
 	KeyUp (&in_strafe);
 }
 
-static void IN_AttackDown ()
+static void IN_AttackDown (void)
 {
 	KeyDown (&in_attack);
 }
-static void IN_AttackUp ()
+static void IN_AttackUp (void)
 {
 	KeyUp (&in_attack);
 }
 
-static void IN_UseDown ()
+static void IN_UseDown (void)
 {
 	KeyDown (&in_use);
 }
-static void IN_UseUp ()
+static void IN_UseUp (void)
 {
 	KeyUp (&in_use);
 }
-static void IN_JumpDown ()
+static void IN_JumpDown (void)
 {
 	KeyDown (&in_jump);
 }
-static void IN_JumpUp ()
+static void IN_JumpUp (void)
 {
 	KeyUp (&in_jump);
 }
 
-static void IN_Impulse ()
+static void IN_Impulse (void)
 {
 	in_impulse = atoi (Cmd_Argv (1));
 }
@@ -324,7 +324,7 @@ CL_AdjustAngles
 Moves the local angle positions
 ================
 */
-static void CL_AdjustAngles ()
+static void CL_AdjustAngles (void)
 {
 	float speed;
 	float up, down;
@@ -466,7 +466,7 @@ static void CL_FinishMove (usercmd_t *cmd)
 CL_SendCmd
 =================
 */
-void CL_SendCmd ()
+void CL_SendCmd (void)
 {
 	sizebuf_t buf;
 	byte data[128];
@@ -562,7 +562,7 @@ void CL_SendCmd ()
 CL_InitInput
 ============
 */
-void CL_InitInput ()
+void CL_InitInput (void)
 {
 	Cmd_AddCommand (src_client, "+moveup", IN_UpDown);
 	Cmd_AddCommand (src_client, "-moveup", IN_UpUp);
