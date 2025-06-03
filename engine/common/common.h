@@ -111,7 +111,7 @@ void MSG_ReadDeltaUsercmd(struct usercmd_s *from, struct usercmd_s *cmd);
 
 //============================================================================
 
-#ifdef QUAKE_WINDOWS
+#ifdef _WIN32
 int strcasecmp(char *s1, char *s2);
 int strncasecmp(char *s1, char *s2, int n);
 #endif

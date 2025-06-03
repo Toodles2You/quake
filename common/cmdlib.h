@@ -26,7 +26,7 @@ extern char **myargv;
 char *strupr (char *in);
 char *strlower (char *in);
 
-#ifdef QUAKE_WINDOWS
+#ifdef _WIN32
 int strncasecmp (char *s1, char *s2, int n);
 int strcasecmp (char *s1, char *s2);
 #endif

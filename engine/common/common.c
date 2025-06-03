@@ -143,7 +143,7 @@ void InsertLinkAfter (link_t *l, link_t *after)
 ============================================================================
 */
 
-#ifdef QUAKE_WINDOWS
+#ifdef _WIN32
 
 int strncasecmp (char *s1, char *s2, int n)
 {
@@ -180,7 +180,7 @@ int strcasecmp (char *s1, char *s2)
 	return strncasecmp (s1, s2, 99999);
 }
 
-#endif /* QUAKE_WINDOWS */
+#endif /* _WIN32 */
 
 /*
 ============================================================================
@@ -1371,7 +1371,7 @@ static size_t COM_FindFile (char *filename, int *handle, FILE **file)
 				strcpy (cachepath, netpath);
 			else
 			{	
-#ifdef QUAKE_WINDOWS
+#ifdef _WIN32
 				if ((strlen(netpath) < 2) || (netpath[1] != ':'))
 					sprintf (cachepath,"%s%s", com_cachedir, netpath);
 				else

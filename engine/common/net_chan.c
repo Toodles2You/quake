@@ -85,7 +85,7 @@ void Netchan_Init ()
 	int port;
 
 	// pick a port value that should be nice and random
-#ifdef QUAKE_WINDOWS
+#ifdef _WIN32
 	port = ((int)(timeGetTime() * 1000) * time(NULL)) & 0xffff;
 #else
 	port = ((int)(getpid() + getuid() * 1000) * time(NULL)) & 0xffff;
