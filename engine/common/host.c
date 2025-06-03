@@ -18,8 +18,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "../client/clientdef.h"
-#include "../server/serverdef.h"
+#include "clientdef.h"
+#include "serverdef.h"
 
 /*
 

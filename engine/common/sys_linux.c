@@ -37,8 +37,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <sys/mman.h>
 #include <errno.h>
 
-#include "../client/clientdef.h"
-#include "../server/serverdef.h"
+#include "clientdef.h"
+#include "serverdef.h"
 
 int nostdout = 0;
 

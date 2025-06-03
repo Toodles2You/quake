@@ -2,7 +2,7 @@
 #ifndef _SERVERDEF_H
 #define _SERVERDEF_H
 
-#include "../common/bothdef.h"
+#include "bothdef.h"
 
 #include "bspfile.h"
 #include "progs.h"

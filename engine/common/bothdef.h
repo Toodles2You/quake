@@ -199,17 +199,17 @@ enum
 
 //===========================================
 
-#include "../common/common.h"
-#include "../common/sys.h"
-#include "../common/zone.h"
+#include "common.h"
+#include "sys.h"
+#include "zone.h"
 #include "mathlib.h"
-#include "../common/cmd.h"
-#include "../common/cvar.h"
-#include "../common/net.h"
-#include "../common/protocol.h"
+#include "cmd.h"
+#include "cvar.h"
+#include "net.h"
+#include "protocol.h"
 #include "crc.h"
-#include "../common/cmodel.h"
-#include "../common/host.h"
-#include "../common/pmove.h"
+#include "cmodel.h"
+#include "host.h"
+#include "pmove.h"
 
 #endif /* !_BOTHDEF_H */

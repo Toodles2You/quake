@@ -18,8 +18,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
-#include "../server/serverdef.h"
-#include "../client/clientdef.h"
+#include "serverdef.h"
+#include "clientdef.h"
 
 static cvar_t *cvar_vars[2];
 char	*cvar_null_string = "";

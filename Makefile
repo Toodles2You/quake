@@ -127,7 +127,6 @@ ENGINE_CFLAGS = \
 	-ffast-math \
 	-DQUAKE_VERSION=\"$(ENGINE_VERSION)\" \
 	-DQUAKE_BASEDIR=\"$(ENGINE_BASEDIR)\" \
-	-Iinclude \
 	-Icommon \
 	-Iengine/common \
 	-Iengine/client \

@@ -19,7 +19,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 */
 
 #include "serverdef.h"
-#include "../client/clientdef.h"
+#include "clientdef.h"
 
 edict_t	*sv_player;
 
