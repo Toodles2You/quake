@@ -205,6 +205,8 @@ void EmitBothSkyLayers(msurface_t *fa);
 void EmitWaterPolys(msurface_t *fa);
 void EmitSkyPolys(msurface_t *fa);
 void R_DrawSkyChain(msurface_t *s);
+void R_DrawSkyBox();
+void R_ClearSkyBox();
 
 // gl_draw.c
 int GL_LoadPicTexture(qpic_t *pic);
@@ -217,6 +219,7 @@ void R_RotateForEntity(entity_t *e);
 // gl_rlight.c
 void R_MarkLights(dlight_t *light, int bit, mnode_t *node);
 void R_AnimateLight();
+void R_InitBubble();
 void R_RenderDlights();
 void R_LightPoint(vec3_t p, vec3_t dest);
 
@@ -227,6 +230,7 @@ void R_StoreEfrags(efrag_t **ppefrag);
 void GL_MakeAliasModelDisplayLists(model_t *m, aliashdr_t *hdr);
 
 // gl_rsurf.c
+void R_DrawWaterSurfaces();
 void R_DrawBrushModel(entity_t *e);
 void R_DrawWorld();
 void GL_BuildLightmaps();

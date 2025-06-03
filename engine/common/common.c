@@ -20,6 +20,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "bothdef.h"
 
+void Draw_BeginDisc();
+void Draw_EndDisc();
+
 usercmd_t nullcmd; // guarenteed to be zero
 
 #define MAX_NUM_ARGVS 50

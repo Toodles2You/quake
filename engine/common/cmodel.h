@@ -106,6 +106,7 @@ typedef struct cmodel_s
 
 void CMod_Init();
 cmodel_t *CMod_ForName(char *name, bool crash, bool world);
+void CMod_ClearAll();
 
 mleaf_t *CMod_PointInLeaf(vec3_t p, cmodel_t *model);
 byte *CMod_LeafPVS(mleaf_t *leaf, cmodel_t *model);

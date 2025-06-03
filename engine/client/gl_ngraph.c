@@ -22,6 +22,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "clientdef.h"
 
+void M_DrawTextBox (int x, int y, int width, int lines);
+
 int	netgraphtexture; // netgraph texture
 
 #define NET_GRAPHHEIGHT 32

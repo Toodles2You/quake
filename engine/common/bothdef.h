@@ -212,4 +212,7 @@ enum
 #include "host.h"
 #include "pmove.h"
 
+void Con_Printf(char *fmt, ...);
+void Con_DPrintf(char *fmt, ...);
+
 #endif /* !_BOTHDEF_H */

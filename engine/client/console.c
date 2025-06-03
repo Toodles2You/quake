@@ -24,6 +24,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <fcntl.h>
 #include "clientdef.h"
 
+void SV_FlushRedirect ();
+
 int 		con_linewidth;
 
 float		con_cursorspeed = 4;

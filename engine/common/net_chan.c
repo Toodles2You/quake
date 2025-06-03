@@ -18,6 +18,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 ===========================================================================
 */
 
+#include <sys/types.h>
+#include <unistd.h>
+#include <time.h>
+
 #include "clientdef.h"
 #include "serverdef.h"
 

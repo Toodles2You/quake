@@ -332,13 +332,17 @@ extern FILE *sv_fraglogfile;
 //
 // sv_main.c
 //
-void SV_Shutdown();
-void SV_Frame(float time);
 void SV_FinalMessage(char *message);
 void SV_DropClient(client_t *drop);
+void SV_CheckLog();
+void SV_ReadPackets();
+void SV_CheckTimeouts();
+void SV_CheckVars();
+void SV_Init();
 
 int SV_CalcPing(client_t *cl);
 void SV_FullClientUpdate(client_t *client, sizebuf_t *buf);
+void SV_FullClientUpdateToClient(client_t *client, client_t *cl);
 
 int SV_ModelIndex(char *name);
 
@@ -383,6 +387,7 @@ void SV_SetMoveVars();
 //
 // sv_send.c
 //
+void SV_FlushRedirect();
 void SV_SendClientMessages();
 
 void SV_Multicast(vec3_t origin, int to);
