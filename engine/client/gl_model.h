@@ -44,15 +44,15 @@ typedef struct texture_s
 
 enum
 {
-	SURF_PLANEBACK		= 1 << 1,
-	SURF_DRAWSKY		= 1 << 2,
-	SURF_DRAWSPRITE		= 1 << 3,
-	SURF_DRAWTURB		= 1 << 4,
-	SURF_DRAWTILED		= 1 << 5,
-	SURF_DRAWBACKGROUND	= 1 << 6,
-	SURF_UNDERWATER		= 1 << 7,
-	SURF_DRAWFENCE		= 1 << 8,
-	SURF_NODRAW			= 1 << 9,
+	SURF_PLANEBACK = 1 << 1,
+	SURF_DRAWSKY = 1 << 2,
+	SURF_DRAWSPRITE = 1 << 3,
+	SURF_DRAWTURB = 1 << 4,
+	SURF_DRAWTILED = 1 << 5,
+	SURF_DRAWBACKGROUND = 1 << 6,
+	SURF_UNDERWATER = 1 << 7,
+	SURF_DRAWFENCE = 1 << 8,
+	SURF_NODRAW = 1 << 9,
 };
 
 typedef struct
@@ -276,14 +276,14 @@ extern trivertx_t *poseverts[MAXALIASFRAMES];
 
 enum
 {
-	EF_ROCKET	 = 1 << 0, // leave a trail
-	EF_GRENADE	 = 1 << 1, // leave a trail
-	EF_GIB		 = 1 << 2, // leave a trail
-	EF_ROTATE	 = 1 << 3, // rotate (bonus items)
-	EF_TRACER	 = 1 << 4, // green split trail
-	EF_ZOMGIB	 = 1 << 5, // small blood trail
-	EF_TRACER2	 = 1 << 6, // orange split trail + rotate
-	EF_TRACER3	 = 1 << 7, // purple trail
+	EF_ROCKET = 1 << 0,	 // leave a trail
+	EF_GRENADE = 1 << 1, // leave a trail
+	EF_GIB = 1 << 2,	 // leave a trail
+	EF_ROTATE = 1 << 3,	 // rotate (bonus items)
+	EF_TRACER = 1 << 4,	 // green split trail
+	EF_ZOMGIB = 1 << 5,	 // small blood trail
+	EF_TRACER2 = 1 << 6, // orange split trail + rotate
+	EF_TRACER3 = 1 << 7, // purple trail
 };
 
 typedef struct model_s
@@ -310,8 +310,8 @@ typedef struct model_s
 
 extern texture_t *r_notexture_mip;
 
-void Mod_Init();
-model_t *Mod_ForName(char *name, bool crash, bool world);
-void Mod_ClearAll();
+void Mod_Init ();
+model_t *Mod_ForName (char *name, bool crash, bool world);
+void Mod_ClearAll ();
 
 #endif /* !_MODEL_H */

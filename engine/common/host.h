@@ -37,24 +37,24 @@ extern int host_framecount; // incremented every frame, never reset
 extern double realtime;		// not bounded in any way, changed at
 							// start of every frame, never reset
 
-void Host_ClearMemory();
-void Host_ServerFrame(double time);
-void Host_InitCommands();
-void Host_Init(quakeparms_t *parms);
-void Host_Shutdown();
-void Host_Error(char *error, ...);
-void Host_EndGame(char *message, ...);
-void Host_Frame(double time);
-void Host_Quit_f();
-void Host_InitServer();
-void Host_ShutdownServer(bool crash);
-bool Host_IsLocalGame();
-bool Host_IsLocalClient(int userid);
-bool Host_IsPaused();
+void Host_ClearMemory ();
+void Host_ServerFrame (double time);
+void Host_InitCommands ();
+void Host_Init (quakeparms_t *parms);
+void Host_Shutdown ();
+void Host_Error (char *error, ...);
+void Host_EndGame (char *message, ...);
+void Host_Frame (double time);
+void Host_Quit_f ();
+void Host_InitServer ();
+void Host_ShutdownServer (bool crash);
+bool Host_IsLocalGame ();
+bool Host_IsLocalClient (int userid);
+bool Host_IsPaused ();
 
-extern int current_skill;	// skill level for currently loaded level (in case
-							//  the user changes the cvar while the level is
-							//  running, this reflects the level actually in use)
+extern int current_skill; // skill level for currently loaded level (in case
+						  //  the user changes the cvar while the level is
+						  //  running, this reflects the level actually in use)
 
 typedef enum
 {

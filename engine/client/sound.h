@@ -63,37 +63,37 @@ typedef struct
 	int dataofs; // chunk starts this many bytes from file start
 } wavinfo_t;
 
-void S_Init();
-void S_Startup();
-void S_Shutdown();
-void S_StartSound(int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float fvol, float attenuation);
-void S_StaticSound(sfx_t *sfx, vec3_t origin, float vol, float attenuation);
-void S_StopSound(int entnum, int entchannel);
-void S_StopAllSounds(bool clear);
-void S_ClearBuffer();
-void S_Update(vec3_t origin, vec3_t v_forward, vec3_t v_right, vec3_t v_up);
-void S_ExtraUpdate();
+void S_Init ();
+void S_Startup ();
+void S_Shutdown ();
+void S_StartSound (int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float fvol, float attenuation);
+void S_StaticSound (sfx_t *sfx, vec3_t origin, float vol, float attenuation);
+void S_StopSound (int entnum, int entchannel);
+void S_StopAllSounds (bool clear);
+void S_ClearBuffer ();
+void S_Update (vec3_t origin, vec3_t v_forward, vec3_t v_right, vec3_t v_up);
+void S_ExtraUpdate ();
 
-sfx_t *S_PrecacheSound(char *sample);
-void S_PaintChannels(int endtime);
+sfx_t *S_PrecacheSound (char *sample);
+void S_PaintChannels (int endtime);
 
-void S_BlockSound();
-void S_UnblockSound();
+void S_BlockSound ();
+void S_UnblockSound ();
 
 // picks a channel based on priorities, empty slots, number of channels
-channel_t *SND_PickChannel(int entnum, int entchannel);
+channel_t *SND_PickChannel (int entnum, int entchannel);
 
 // spatializes a channel
-void SND_Spatialize(channel_t *ch);
+void SND_Spatialize (channel_t *ch);
 
 // initializes cycling through a DMA buffer and returns information on it
-bool SNDDMA_Init();
+bool SNDDMA_Init ();
 
 // gets the current DMA position
-int SNDDMA_GetDMAPos();
+int SNDDMA_GetDMAPos ();
 
 // shutdown the DMA xfer.
-void SNDDMA_Shutdown();
+void SNDDMA_Shutdown ();
 
 // ====================================================================
 // User-setable variables
@@ -135,16 +135,16 @@ extern bool snd_initialized;
 
 extern int snd_blocked;
 
-void S_LocalSound(char *s);
-sfxcache_t *S_LoadSound(sfx_t *s);
+void S_LocalSound (char *s);
+sfxcache_t *S_LoadSound (sfx_t *s);
 
-wavinfo_t GetWavinfo(char *name, byte *wav, int wavlength);
+wavinfo_t GetWavinfo (char *name, byte *wav, int wavlength);
 
-void SND_InitScaletable();
-bool SNDDMA_BeginPainting();
-void SNDDMA_Submit();
+void SND_InitScaletable ();
+bool SNDDMA_BeginPainting ();
+void SNDDMA_Submit ();
 
-void S_AmbientOff();
-void S_AmbientOn();
+void S_AmbientOff ();
+void S_AmbientOn ();
 
 #endif /* !_SOUND_H */

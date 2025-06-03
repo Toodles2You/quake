@@ -18,7 +18,7 @@ enum
 #define MAX_MAP_ENTITIES 1024
 #define MAX_MAP_ENTSTRING 131072
 #define MAX_MAP_PLANES 32767
-#define MAX_MAP_NODES 32767		// because negatives are contents
+#define MAX_MAP_NODES 32767 // because negatives are contents
 #define MAX_MAP_CLIPNODES 32767
 #define MAX_MAP_LEAFS 8192
 #define MAX_MAP_VERTS 65535
@@ -132,7 +132,7 @@ enum
 	CONTENTS_CURRENT_90,
 	CONTENTS_CURRENT_0,
 
-	CONTENTS_CLIP,   // changed to contents_solid
+	CONTENTS_CLIP,	 // changed to contents_solid
 	CONTENTS_ORIGIN, // removed at csg time
 	CONTENTS_SKY,
 	CONTENTS_LAVA,
@@ -146,7 +146,7 @@ typedef struct
 {
 	int32_t planenum;
 	int16_t children[2]; // negative numbers are -(leafs+1), not nodes
-	int16_t mins[3];	   // for sphere culling
+	int16_t mins[3];	 // for sphere culling
 	int16_t maxs[3];
 	uint16_t firstface;
 	uint16_t numfaces; // counting both sides

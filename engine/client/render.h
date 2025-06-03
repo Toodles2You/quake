@@ -22,7 +22,7 @@ typedef struct entity_s
 	int keynum; // for matching entities in different frames
 	vec3_t origin;
 	vec3_t angles;
-	struct model_s *model; // NULL = no model
+	struct model_s *model;	 // NULL = no model
 	struct cmodel_s *cmodel; // NULL = no model
 	int frame;
 	byte *colormap;
@@ -89,33 +89,33 @@ extern vec3_t r_origin, vpn, vright, vup;
 
 extern struct texture_s *r_notexture_mip;
 
-void R_Init();
-void R_InitTextures();
-void R_RenderView(); // must set r_refdef first
+void R_Init ();
+void R_InitTextures ();
+void R_RenderView (); // must set r_refdef first
 // called whenever r_refdef or vid change
-void R_LoadSkys(const char *skyname);
-void R_InitSky(struct texture_s *mt); // called at level load
+void R_LoadSkys (const char *skyname);
+void R_InitSky (struct texture_s *mt); // called at level load
 
-void R_AddEfrags(entity_t *ent);
-void R_RemoveEfrags(entity_t *ent);
+void R_AddEfrags (entity_t *ent);
+void R_RemoveEfrags (entity_t *ent);
 
-void R_NewMap();
+void R_NewMap ();
 
-void R_ParseParticleEffect();
-void R_RunParticleEffect(vec3_t org, vec3_t dir, int color, int count);
-void R_RocketTrail(vec3_t start, vec3_t end, int type);
+void R_ParseParticleEffect ();
+void R_RunParticleEffect (vec3_t org, vec3_t dir, int color, int count);
+void R_RocketTrail (vec3_t start, vec3_t end, int type);
 
-void R_InitParticles();
-void R_EntityParticles(entity_t *ent);
-void R_ClearParticles();
-void R_BlobExplosion(vec3_t org);
-void R_ParticleExplosion(vec3_t org);
-void R_ParticleExplosion2(vec3_t org, int colorStart, int colorLength);
-void R_LavaSplash(vec3_t org);
-void R_TeleportSplash(vec3_t org);
-void R_DrawParticles();
+void R_InitParticles ();
+void R_EntityParticles (entity_t *ent);
+void R_ClearParticles ();
+void R_BlobExplosion (vec3_t org);
+void R_ParticleExplosion (vec3_t org);
+void R_ParticleExplosion2 (vec3_t org, int colorStart, int colorLength);
+void R_LavaSplash (vec3_t org);
+void R_TeleportSplash (vec3_t org);
+void R_DrawParticles ();
 
-void R_PushDlights();
-void R_LightPoint(vec3_t p, vec3_t dest);
+void R_PushDlights ();
+void R_LightPoint (vec3_t p, vec3_t dest);
 
 #endif /* !_RENDER_H */

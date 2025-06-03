@@ -1,9 +1,9 @@
 // lbmlib.h
 
-typedef unsigned char	UBYTE;
-typedef short			WORD;
-typedef unsigned short	UWORD;
-typedef long			LONG;
+typedef unsigned char UBYTE;
+typedef short WORD;
+typedef unsigned short UWORD;
+typedef long LONG;
 
 typedef enum
 {
@@ -21,22 +21,19 @@ typedef enum
 
 typedef struct
 {
-	UWORD		w,h;
-	WORD		x,y;
-	UBYTE		nPlanes;
-	UBYTE		masking;
-	UBYTE		compression;
-	UBYTE		pad1;
-	UWORD		transparentColor;
-	UBYTE		xAspect,yAspect;
-	WORD		pageWidth,pageHeight;
+	UWORD w, h;
+	WORD x, y;
+	UBYTE nPlanes;
+	UBYTE masking;
+	UBYTE compression;
+	UBYTE pad1;
+	UWORD transparentColor;
+	UBYTE xAspect, yAspect;
+	WORD pageWidth, pageHeight;
 } bmhd_t;
 
-extern	bmhd_t	bmhd;						// will be in native byte order
-
+extern bmhd_t bmhd; // will be in native byte order
 
 void LoadLBM (char *filename, byte **picture, byte **palette);
 
-void WriteLBMfile (char *filename, byte *data, int width, int height
-	, byte *palette);
-
+void WriteLBMfile (char *filename, byte *data, int width, int height, byte *palette);

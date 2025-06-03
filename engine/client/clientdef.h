@@ -25,8 +25,8 @@
 
 extern cvar_t chase_active;
 
-void Chase_Init();
-void Chase_Reset();
-void Chase_Update();
+void Chase_Init ();
+void Chase_Reset ();
+void Chase_Update ();
 
 #endif /* !_CLIENTDEF_H */

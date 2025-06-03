@@ -7,140 +7,137 @@
 
 typedef struct
 {
-	vec3_t	normal;
-	vec_t	dist;
-	int		type;
+	vec3_t normal;
+	vec_t dist;
+	int type;
 } plane_t;
-
 
 #include "map.h"
 
-#define	MAX_THREADS	4
+#define MAX_THREADS 4
 
-#define	ON_EPSILON	0.05
-#define	BOGUS_RANGE	18000
+#define ON_EPSILON 0.05
+#define BOGUS_RANGE 18000
 
 // the exact bounding box of the brushes is expanded some for the headnode
 // volume.  is this still needed?
-#define	SIDESPACE	24
+#define SIDESPACE 24
 
 //============================================================================
-
 
 typedef struct
 {
-	int		numpoints;
-	vec3_t	points[8];			// variable sized
+	int numpoints;
+	vec3_t points[8]; // variable sized
 } winding_t;
 
-#define MAX_POINTS_ON_WINDING	64
+#define MAX_POINTS_ON_WINDING 64
 
 winding_t *BaseWindingForPlane (plane_t *p);
 void CheckWinding (winding_t *w);
-winding_t	*NewWinding (int points);
-void		FreeWinding (winding_t *w);
-winding_t	*CopyWinding (winding_t *w);
-winding_t	*ClipWinding (winding_t *in, plane_t *split, bool keepon);
-void	DivideWinding (winding_t *in, plane_t *split, winding_t **front, winding_t **back);
+winding_t *NewWinding (int points);
+void FreeWinding (winding_t *w);
+winding_t *CopyWinding (winding_t *w);
+winding_t *ClipWinding (winding_t *in, plane_t *split, bool keepon);
+void DivideWinding (winding_t *in, plane_t *split, winding_t **front, winding_t **back);
 
 //============================================================================
- 
-#define	MAXEDGES			32
-#define	MAXPOINTS			28		// don't let a base face get past this
-									// because it can be split more later
+
+#define MAXEDGES 32
+#define MAXPOINTS                                                                                                                                              \
+	28	// don't let a base face get past this                                                                                                                 \
+		// because it can be split more later
 
 typedef struct visfacet_s
 {
-	struct visfacet_s	*next;
-	
-	int				planenum;
-	int				planeside;	// which side is the front of the face
-	int				texturenum;
-	int				contents[2];	// 0 = front side
+	struct visfacet_s *next;
 
-	struct visfacet_s	*original;		// face on node
-	int				outputnumber;		// only valid for original faces after
-										// write surfaces
-	int				numpoints;
-	vec3_t			pts[MAXEDGES];		// FIXME: change to use winding_t
-	int				edges[MAXEDGES];
+	int planenum;
+	int planeside; // which side is the front of the face
+	int texturenum;
+	int contents[2]; // 0 = front side
+
+	struct visfacet_s *original; // face on node
+	int outputnumber;			 // only valid for original faces after
+								 // write surfaces
+	int numpoints;
+	vec3_t pts[MAXEDGES]; // FIXME: change to use winding_t
+	int edges[MAXEDGES];
 } face_t;
-
 
 typedef struct surface_s
 {
-	struct surface_s	*next;
-	struct surface_s	*original;	// before BSP cuts it up
-	int			planenum;
-	int			outputplanenum;		// only valid after WriteSurfacePlanes
-	vec3_t		mins, maxs;
-	bool		onnode;				// true if surface has already been used
-									// as a splitting node
-	face_t		*faces;	// links to all the faces on either side of the surf
+	struct surface_s *next;
+	struct surface_s *original; // before BSP cuts it up
+	int planenum;
+	int outputplanenum; // only valid after WriteSurfacePlanes
+	vec3_t mins, maxs;
+	bool onnode;   // true if surface has already been used
+				   // as a splitting node
+	face_t *faces; // links to all the faces on either side of the surf
 } surface_t;
-
 
 //
 // there is a node_t structure for every node and leaf in the bsp tree
 //
-#define	PLANENUM_LEAF		-1
+#define PLANENUM_LEAF -1
 
 typedef struct node_s
 {
-	vec3_t			mins,maxs;		// bounding volume, not just points inside
+	vec3_t mins, maxs; // bounding volume, not just points inside
 
-// information for decision nodes	
-	int				planenum;		// -1 = leaf node	
-	int				outputplanenum;	// only valid after WriteNodePlanes
-	int				firstface;		// decision node only
-	int				numfaces;		// decision node only
-	struct node_s	*children[2];	// only valid for decision nodes
-	face_t			*faces;			// decision nodes only, list for both sides
-	
-// information for leafs
-	int				contents;		// leaf nodes (0 for decision nodes)
-	face_t			**markfaces;	// leaf nodes only, point to node faces
-	struct portal_s	*portals;
-	int				visleafnum;		// -1 = solid
-	int				valid;			// for flood filling
-	int				occupied;		// light number in leaf for outside filling
+	// information for decision nodes
+	int planenum;				// -1 = leaf node
+	int outputplanenum;			// only valid after WriteNodePlanes
+	int firstface;				// decision node only
+	int numfaces;				// decision node only
+	struct node_s *children[2]; // only valid for decision nodes
+	face_t *faces;				// decision nodes only, list for both sides
+
+	// information for leafs
+	int contents;		// leaf nodes (0 for decision nodes)
+	face_t **markfaces; // leaf nodes only, point to node faces
+	struct portal_s *portals;
+	int visleafnum; // -1 = solid
+	int valid;		// for flood filling
+	int occupied;	// light number in leaf for outside filling
 } node_t;
 
 //=============================================================================
 
 // brush.c
 
-#define	NUM_HULLS		2				// normal and +16
+#define NUM_HULLS 2 // normal and +16
 
-#define	NUM_CONTENTS	2				// solid and water
+#define NUM_CONTENTS 2 // solid and water
 
 typedef struct brush_s
 {
-	struct brush_s	*next;
-	vec3_t			mins, maxs;
-	face_t			*faces;
-	int				contents;
+	struct brush_s *next;
+	vec3_t mins, maxs;
+	face_t *faces;
+	int contents;
 } brush_t;
 
 typedef struct
 {
-	vec3_t		mins, maxs;
-	brush_t		*brushes;		// NULL terminated list
+	vec3_t mins, maxs;
+	brush_t *brushes; // NULL terminated list
 } brushset_t;
 
-extern	int			numbrushplanes;
-extern	plane_t		planes[MAX_MAP_PLANES];
+extern int numbrushplanes;
+extern plane_t planes[MAX_MAP_PLANES];
 
 brushset_t *Brush_LoadEntity (entity_t *ent, int hullnum);
-int	PlaneTypeForNormal (vec3_t normal);
-int	FindPlane (plane_t *dplane, int *side);
+int PlaneTypeForNormal (vec3_t normal);
+int FindPlane (plane_t *dplane, int *side);
 
 //=============================================================================
 
 // csg4.c
 
 // build surfaces is also used by GatherNodeFaces
-extern	face_t	*validfaces[MAX_MAP_PLANES];
+extern face_t *validfaces[MAX_MAP_PLANES];
 surface_t *BuildSurfaces (void);
 
 face_t *NewFaceFromFace (face_t *in);
@@ -169,12 +166,12 @@ void MergeAll (surface_t *surfhead);
 
 // surfaces.c
 
-extern	int		c_cornerverts;
-extern	int		c_tryedges;
-extern	face_t		*edgefaces[MAX_MAP_EDGES][2];
+extern int c_cornerverts;
+extern int c_tryedges;
+extern face_t *edgefaces[MAX_MAP_EDGES][2];
 
-extern	int		firstmodeledge;
-extern	int		firstmodelface;
+extern int firstmodeledge;
+extern int firstmodelface;
 
 void SubdivideFaces (surface_t *surfhead);
 
@@ -188,13 +185,13 @@ void MakeFaceEdges (node_t *headnode);
 
 typedef struct portal_s
 {
-	int			planenum;
-	node_t		*nodes[2];		// [0] = front side of planenum
-	struct portal_s	*next[2];	
-	winding_t	*winding;
+	int planenum;
+	node_t *nodes[2]; // [0] = front side of planenum
+	struct portal_s *next[2];
+	winding_t *winding;
 } portal_t;
 
-extern	node_t	outside_node;		// portals outside the world face this
+extern node_t outside_node; // portals outside the world face this
 
 void PortalizeWorld (node_t *headnode);
 void WritePortalfile (node_t *headnode);
@@ -256,34 +253,33 @@ bool FillOutside (node_t *node);
 
 //=============================================================================
 
-extern	bool	drawflag;
-extern	bool nofill;
-extern	bool notjunc;
-extern	bool noclip;
-extern	bool	verbose;
-extern	bool notex;
+extern bool drawflag;
+extern bool nofill;
+extern bool notjunc;
+extern bool noclip;
+extern bool verbose;
+extern bool notex;
 
-extern	int		subdivide_size;
+extern int subdivide_size;
 
-extern	int		hullnum;
+extern int hullnum;
 
-extern	brushset_t	*brushset;
+extern brushset_t *brushset;
 
-void qprintf (char *fmt, ...);	// only prints if verbose
+void qprintf (char *fmt, ...); // only prints if verbose
 
-extern	int		valid;
+extern int valid;
 
-extern	char	portfilename[1024];
-extern	char	bspfilename[1024];
-extern	char	pointfilename[1024];
-extern	char	*wadpath;
+extern char portfilename[1024];
+extern char bspfilename[1024];
+extern char pointfilename[1024];
+extern char *wadpath;
 
-extern	bool	worldmodel;
+extern bool worldmodel;
 
-extern	int		bspversion;
+extern int bspversion;
 
-extern	vec3_t	hull_size[MAX_MAP_HULLS][2];
-
+extern vec3_t hull_size[MAX_MAP_HULLS][2];
 
 // misc functions
 
@@ -300,4 +296,3 @@ node_t *AllocNode (void);
 struct brush_s *AllocBrush (void);
 
 //=============================================================================
-

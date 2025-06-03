@@ -20,17 +20,16 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "clientdef.h"
 
-cvar_t	chase_back = {"chase_back", "100"};
-cvar_t	chase_up = {"chase_up", "16"};
-cvar_t	chase_right = {"chase_right", "0"};
-cvar_t	chase_active = {"chase_active", "0"};
+cvar_t chase_back = {"chase_back", "100"};
+cvar_t chase_up = {"chase_up", "16"};
+cvar_t chase_right = {"chase_right", "0"};
+cvar_t chase_active = {"chase_active", "0"};
 
-vec3_t	chase_pos;
-vec3_t	chase_angles;
+vec3_t chase_pos;
+vec3_t chase_angles;
 
-vec3_t	chase_dest;
-vec3_t	chase_dest_angles;
-
+vec3_t chase_dest;
+vec3_t chase_dest_angles;
 
 void Chase_Init ()
 {
@@ -43,7 +42,7 @@ void Chase_Init ()
 void Chase_Reset ()
 {
 	// for respawning and teleporting
-//	start position 12 units behind head
+	//	start position 12 units behind head
 }
 
 void TraceLine (vec3_t start, vec3_t end, vec3_t impact)
@@ -92,4 +91,3 @@ void Chase_Update ()
 	VectorCopy (chase_dest, r_refdef.vieworg);
 #endif
 }
-

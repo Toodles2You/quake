@@ -37,15 +37,15 @@ SV_ModelIndex
 */
 int SV_ModelIndex (char *name)
 {
-	int		i;
-	
+	int i;
+
 	if (!name || !name[0])
 		return 0;
 
-	for (i=0 ; i<MAX_MODELS && sv.model_precache[i] ; i++)
-		if (!strcmp(sv.model_precache[i], name))
+	for (i = 0; i < MAX_MODELS && sv.model_precache[i]; i++)
+		if (!strcmp (sv.model_precache[i], name))
 			return i;
-	if (i==MAX_MODELS || !sv.model_precache[i])
+	if (i == MAX_MODELS || !sv.model_precache[i])
 		Host_Error ("SV_ModelIndex: model %s not precached", name);
 	return i;
 }
@@ -62,10 +62,10 @@ void SV_FlushSignon ()
 	if (sv.signon.cursize < sv.signon.maxsize - 512)
 		return;
 
-	if (sv.num_signon_buffers == MAX_SIGNON_BUFFERS-1)
+	if (sv.num_signon_buffers == MAX_SIGNON_BUFFERS - 1)
 		Host_Error ("sv.num_signon_buffers == MAX_SIGNON_BUFFERS-1");
 
-	sv.signon_buffer_size[sv.num_signon_buffers-1] = sv.signon.cursize;
+	sv.signon_buffer_size[sv.num_signon_buffers - 1] = sv.signon.cursize;
 	sv.signon.data = sv.signon_buffers[sv.num_signon_buffers];
 	sv.num_signon_buffers++;
 	sv.signon.cursize = 0;
@@ -82,37 +82,36 @@ baseline will be transmitted
 */
 void SV_CreateBaseline ()
 {
-	int			i;
-	edict_t			*svent;
-	int				entnum;	
-		
-	for (entnum = 0; entnum < sv.num_edicts ; entnum++)
+	int i;
+	edict_t *svent;
+	int entnum;
+
+	for (entnum = 0; entnum < sv.num_edicts; entnum++)
 	{
-		svent = EDICT_NUM(entnum);
+		svent = EDICT_NUM (entnum);
 		if (svent->free)
 			continue;
 		// create baselines for all player slots,
 		// and any other edict that has a visible model
-		if (entnum > MAX_CLIENTS && !ed_float(svent, modelindex))
+		if (entnum > MAX_CLIENTS && !ed_float (svent, modelindex))
 			continue;
 
-	//
-	// create entity baseline
-	//
-		VectorCopy (ed_vector(svent, origin), svent->baseline.origin);
-		VectorCopy (ed_vector(svent, angles), svent->baseline.angles);
-		svent->baseline.frame = ed_float(svent, frame);
-		svent->baseline.skinnum = ed_float(svent, skin);
+		//
+		// create entity baseline
+		//
+		VectorCopy (ed_vector (svent, origin), svent->baseline.origin);
+		VectorCopy (ed_vector (svent, angles), svent->baseline.angles);
+		svent->baseline.frame = ed_float (svent, frame);
+		svent->baseline.skinnum = ed_float (svent, skin);
 		if (entnum > 0 && entnum <= MAX_CLIENTS)
 		{
 			svent->baseline.colormap = entnum;
-			svent->baseline.modelindex = SV_ModelIndex("progs/player.mdl");
+			svent->baseline.modelindex = SV_ModelIndex ("progs/player.mdl");
 		}
 		else
 		{
 			svent->baseline.colormap = 0;
-			svent->baseline.modelindex =
-				SV_ModelIndex(ed_get_string(svent, model));
+			svent->baseline.modelindex = SV_ModelIndex (ed_get_string (svent, model));
 		}
 
 		//
@@ -124,21 +123,20 @@ void SV_CreateBaseline ()
 		//
 		// add to the message
 		//
-		MSG_WriteByte (&sv.signon,svc_spawnbaseline);		
-		MSG_WriteShort (&sv.signon,entnum);
+		MSG_WriteByte (&sv.signon, svc_spawnbaseline);
+		MSG_WriteShort (&sv.signon, entnum);
 
 		MSG_WriteByte (&sv.signon, svent->baseline.modelindex);
 		MSG_WriteByte (&sv.signon, svent->baseline.frame);
 		MSG_WriteByte (&sv.signon, svent->baseline.colormap);
 		MSG_WriteByte (&sv.signon, svent->baseline.skinnum);
-		for (i=0 ; i<3 ; i++)
+		for (i = 0; i < 3; i++)
 		{
-			MSG_WriteCoord(&sv.signon, svent->baseline.origin[i]);
-			MSG_WriteAngle(&sv.signon, svent->baseline.angles[i]);
+			MSG_WriteCoord (&sv.signon, svent->baseline.origin[i]);
+			MSG_WriteAngle (&sv.signon, svent->baseline.angles[i]);
 		}
 	}
 }
-
 
 /*
 ================
@@ -151,15 +149,15 @@ transition to another level
 */
 void SV_SaveSpawnparms ()
 {
-	int		i, j;
+	int i, j;
 
 	if (!sv.state)
-		return;		// no progs loaded yet
+		return; // no progs loaded yet
 
 	// serverflags is the only game related thing maintained
-	svs.serverflags = sv_pr_float(serverflags);
+	svs.serverflags = sv_pr_float (serverflags);
 
-	for (i=0, host_client = svs.clients ; i<MAX_CLIENTS ; i++, host_client++)
+	for (i = 0, host_client = svs.clients; i < MAX_CLIENTS; i++, host_client++)
 	{
 		if (host_client->state != cs_spawned)
 			continue;
@@ -168,10 +166,10 @@ void SV_SaveSpawnparms ()
 		host_client->state = cs_connected;
 
 		// call the progs to get default spawn parms for the new client
-		sv_pr_int(self) = EDICT_TO_PROG(host_client->edict);
-		sv_pr_execute(SetChangeParms);
-		for (j=0 ; j<NUM_SPAWN_PARMS ; j++)
-			host_client->spawn_parms[j] = sv_pr_vector(parm1)[j];
+		sv_pr_int (self) = EDICT_TO_PROG (host_client->edict);
+		sv_pr_execute (SetChangeParms);
+		for (j = 0; j < NUM_SPAWN_PARMS; j++)
+			host_client->spawn_parms[j] = sv_pr_vector (parm1)[j];
 	}
 }
 
@@ -185,95 +183,92 @@ Expands the PVS and calculates the PHS
 */
 static void SV_CalcPHS ()
 {
-	int		rowbytes, rowwords;
-	int		i, j, k, l, index, num;
-	int		bitbyte;
-	unsigned	*dest, *src;
-	byte	*scan;
-	int		count, vcount;
+	int rowbytes, rowwords;
+	int i, j, k, l, index, num;
+	int bitbyte;
+	unsigned *dest, *src;
+	byte *scan;
+	int count, vcount;
 
 	Con_Printf ("Building PHS...\n");
 
 	num = sv.worldmodel->numleafs;
-	rowwords = (num+31)>>5;
-	rowbytes = rowwords*4;
+	rowwords = (num + 31) >> 5;
+	rowbytes = rowwords * 4;
 
-	sv.pvs = Hunk_Alloc (rowbytes*num);
+	sv.pvs = Hunk_Alloc (rowbytes * num);
 	scan = sv.pvs;
 	vcount = 0;
-	for (i=0 ; i<num ; i++, scan+=rowbytes)
+	for (i = 0; i < num; i++, scan += rowbytes)
 	{
-		memcpy (scan, CMod_LeafPVS(sv.worldmodel->leafs+i, sv.worldmodel),
-			rowbytes);
+		memcpy (scan, CMod_LeafPVS (sv.worldmodel->leafs + i, sv.worldmodel), rowbytes);
 		if (i == 0)
 			continue;
-		for (j=0 ; j<num ; j++)
+		for (j = 0; j < num; j++)
 		{
-			if ( scan[j>>3] & (1<<(j&7)) )
+			if (scan[j >> 3] & (1 << (j & 7)))
 			{
 				vcount++;
 			}
 		}
 	}
 
-
-	sv.phs = Hunk_Alloc (rowbytes*num);
+	sv.phs = Hunk_Alloc (rowbytes * num);
 	count = 0;
 	scan = sv.pvs;
 	dest = (unsigned *)sv.phs;
-	for (i=0 ; i<num ; i++, dest += rowwords, scan += rowbytes)
+	for (i = 0; i < num; i++, dest += rowwords, scan += rowbytes)
 	{
 		memcpy (dest, scan, rowbytes);
-		for (j=0 ; j<rowbytes ; j++)
+		for (j = 0; j < rowbytes; j++)
 		{
 			bitbyte = scan[j];
 			if (!bitbyte)
 				continue;
-			for (k=0 ; k<8 ; k++)
+			for (k = 0; k < 8; k++)
 			{
-				if (! (bitbyte & (1<<k)) )
+				if (!(bitbyte & (1 << k)))
 					continue;
 				// or this pvs row into the phs
 				// +1 because pvs is 1 based
-				index = ((j<<3)+k+1);
+				index = ((j << 3) + k + 1);
 				if (index >= num)
 					continue;
-				src = (unsigned *)sv.pvs + index*rowwords;
-				for (l=0 ; l<rowwords ; l++)
+				src = (unsigned *)sv.pvs + index * rowwords;
+				for (l = 0; l < rowwords; l++)
 					dest[l] |= src[l];
 			}
 		}
 
 		if (i == 0)
 			continue;
-		for (j=0 ; j<num ; j++)
-			if ( ((byte *)dest)[j>>3] & (1<<(j&7)) )
+		for (j = 0; j < num; j++)
+			if (((byte *)dest)[j >> 3] & (1 << (j & 7)))
 				count++;
 	}
 
-	Con_Printf ("Average leafs visible / hearable / total: %i / %i / %i\n"
-		, vcount/num, count/num, num);
+	Con_Printf ("Average leafs visible / hearable / total: %i / %i / %i\n", vcount / num, count / num, num);
 }
 
-static unsigned int SV_CheckModel(char *mdl)
+static unsigned int SV_CheckModel (char *mdl)
 {
 	byte stackbuf[1024]; // avoid dirtying the cache heap
 	byte *buf;
 	unsigned short crc;
 
-	buf = (byte *)COM_LoadStackFile (mdl, stackbuf, sizeof(stackbuf));
-	crc = CRC_Block(buf, com_filesize);
+	buf = (byte *)COM_LoadStackFile (mdl, stackbuf, sizeof (stackbuf));
+	crc = CRC_Block (buf, com_filesize);
 
 	return crc;
 }
 
-static bool SV_LoadProgs()
+static bool SV_LoadProgs ()
 {
-	if (PR_LoadProgs(&sv.pr, "qwprogs.dat", PROG_VERSION_QUAKE, PROG_CRC_ANY) == 0)
+	if (PR_LoadProgs (&sv.pr, "qwprogs.dat", PROG_VERSION_QUAKE, PROG_CRC_ANY) == 0)
 	{
 		svs.protocol = PROTOCOL_QUAKEWORLD;
 	}
-	else if (PR_LoadProgs(&sv.pr, "progs.dat", PROG_VERSION_QUAKE, PROG_CRC_ANY) == 0)
+	else if (PR_LoadProgs (&sv.pr, "progs.dat", PROG_VERSION_QUAKE, PROG_CRC_ANY) == 0)
 	{
 		svs.protocol = PROTOCOL_NETQUAKE;
 	}
@@ -282,28 +277,24 @@ static bool SV_LoadProgs()
 		return false;
 	}
 
-	#define PR_FIELD(_, name) {#name, false},
-	#define PR_FIELD_OPTIONAL(_, name) {#name, true},
+#define PR_FIELD(_, name) {#name, false},
+#define PR_FIELD_OPTIONAL(_, name) {#name, true},
 
-	pr_field_t pr_globals[] =
-	{
-		#include "pr_globals.h"
-		{NULL, true}
-	};
+	pr_field_t pr_globals[] = {
+#include "pr_globals.h"
+		{NULL, true}};
 
-	pr_field_t pr_fields[] =
-	{
-		#include "pr_fields.h"
-		{NULL, true}
-	};
+	pr_field_t pr_fields[] = {
+#include "pr_fields.h"
+		{NULL, true}};
 
-	#undef PR_FIELD
-	#undef PR_FIELD_OPTIONAL
+#undef PR_FIELD
+#undef PR_FIELD_OPTIONAL
 
-	uint32_t *pr_global_struct = Hunk_AllocName((pr_globals_count + pr_fields_count) * sizeof(uint32_t), "pr_tables");
+	uint32_t *pr_global_struct = Hunk_AllocName ((pr_globals_count + pr_fields_count) * sizeof (uint32_t), "pr_tables");
 	uint32_t *pr_fields_struct = pr_global_struct + pr_globals_count;
 
-	PR_BuildStructs(&sv.pr, pr_global_struct, pr_globals, pr_fields_struct, pr_fields);
+	PR_BuildStructs (&sv.pr, pr_global_struct, pr_globals, pr_fields_struct, pr_fields);
 
 	sv.pr.builtins = pr_builtins;
 	sv.pr.numbuiltins = pr_numbuiltins;
@@ -323,19 +314,19 @@ This is only called from the SV_Map_f() function.
 */
 void SV_SpawnServer (char *server, char *startspot)
 {
-	edict_t		*ent;
-	int			i;
+	edict_t *ent;
+	int i;
 
 	Con_DPrintf ("SpawnServer: %s\n", server);
-	
+
 	svs.spawncount++; // any partially connected client will be
 					  // restarted
 
 	sv.state = ss_dead;
 
-//
-// make cvars consistant
-//
+	//
+	// make cvars consistant
+	//
 	if (coop.value)
 		Cvar_SetValue (src_server, "deathmatch", 0);
 	current_skill = (int)(skill.value + 0.5);
@@ -346,28 +337,28 @@ void SV_SpawnServer (char *server, char *startspot)
 
 	Cvar_SetValue (src_server, "skill", (float)current_skill);
 
-//
-// set up the new server
-//
+	//
+	// set up the new server
+	//
 	Host_ClearMemory ();
 
 	// wipe the entire per-level structure
-	memset (&sv, 0, sizeof(sv));
+	memset (&sv, 0, sizeof (sv));
 
-	sv.datagram.maxsize = sizeof(sv.datagram_buf);
+	sv.datagram.maxsize = sizeof (sv.datagram_buf);
 	sv.datagram.data = sv.datagram_buf;
 	sv.datagram.allowoverflow = true;
 
-	sv.reliable_datagram.maxsize = sizeof(sv.reliable_datagram_buf);
+	sv.reliable_datagram.maxsize = sizeof (sv.reliable_datagram_buf);
 	sv.reliable_datagram.data = sv.reliable_datagram_buf;
-	
-	sv.multicast.maxsize = sizeof(sv.multicast_buf);
+
+	sv.multicast.maxsize = sizeof (sv.multicast_buf);
 	sv.multicast.data = sv.multicast_buf;
-	
-	sv.master.maxsize = sizeof(sv.master_buf);
+
+	sv.master.maxsize = sizeof (sv.master_buf);
 	sv.master.data = sv.master_buf;
-	
-	sv.signon.maxsize = sizeof(sv.signon_buffers[0]);
+
+	sv.signon.maxsize = sizeof (sv.signon_buffers[0]);
 	sv.signon.data = sv.signon_buffers[0];
 	sv.num_signon_buffers = 1;
 
@@ -375,12 +366,12 @@ void SV_SpawnServer (char *server, char *startspot)
 
 	if (startspot)
 	{
-		strcpy(sv.startspot, startspot);
+		strcpy (sv.startspot, startspot);
 	}
 
 	// load progs to get entity field count
 	// which determines how big each edict is
-	if (!SV_LoadProgs())
+	if (!SV_LoadProgs ())
 	{
 		sv.active = false;
 		return;
@@ -391,7 +382,7 @@ void SV_SpawnServer (char *server, char *startspot)
 	sv.deltatime = sv_ticrate.value * 2.0;
 
 	strcpy (sv.name, server);
-	sprintf (sv.modelname,"maps/%s.bsp", server);
+	sprintf (sv.modelname, "maps/%s.bsp", server);
 	sv.worldmodel = CMod_ForName (sv.modelname, false, true);
 	if (!sv.worldmodel)
 	{
@@ -404,17 +395,17 @@ void SV_SpawnServer (char *server, char *startspot)
 	size_t numEntities = sv.worldmodel->numentities;
 	// Throw in an extra 20% for good measure.
 	// Round to the next highest multiple of 8, cause why not.
-	sv.max_edicts = (size_t)ceil(numEntities * 1.2 / 8.0) * 8;
+	sv.max_edicts = (size_t)ceil (numEntities * 1.2 / 8.0) * 8;
 
 	if (sv.max_edicts < MIN_EDICTS)
 	{
 		sv.max_edicts = MIN_EDICTS;
 	}
 
-	Con_DPrintf("SV_SpawnServer: Allocating %lu edicts (Counted %lu)\n", sv.max_edicts, numEntities);
+	Con_DPrintf ("SV_SpawnServer: Allocating %lu edicts (Counted %lu)\n", sv.max_edicts, numEntities);
 
 	// allocate edicts
-	sv.edicts = Hunk_AllocName(sv.max_edicts * sv.pr.edict_size, "edicts");
+	sv.edicts = Hunk_AllocName (sv.max_edicts * sv.pr.edict_size, "edicts");
 
 	SV_CalcPHS ();
 
@@ -422,7 +413,7 @@ void SV_SpawnServer (char *server, char *startspot)
 	sv.num_edicts = MAX_CLIENTS + 1;
 	for (i = 0; i < MAX_CLIENTS; i++)
 	{
-		ent = EDICT_NUM(i + 1);
+		ent = EDICT_NUM (i + 1);
 		svs.clients[i].edict = ent;
 		// ZOID - make sure we update frags right
 		svs.clients[i].old_frags = 0;
@@ -432,57 +423,57 @@ void SV_SpawnServer (char *server, char *startspot)
 	// clear physics interaction links
 	//
 	SV_ClearWorld ();
-	
+
 	sv.sound_precache[0] = sv.pr.strings;
 
 	sv.model_precache[0] = sv.pr.strings;
 	sv.model_precache[1] = sv.modelname;
 	sv.models[1] = sv.worldmodel;
-	for (i=1 ; i<sv.worldmodel->numsubmodels ; i++)
+	for (i = 1; i < sv.worldmodel->numsubmodels; i++)
 	{
-		sv.model_precache[1+i] = localmodels[i];
-		sv.models[i+1] = CMod_ForName (localmodels[i], false, false);
+		sv.model_precache[1 + i] = localmodels[i];
+		sv.models[i + 1] = CMod_ForName (localmodels[i], false, false);
 	}
 
 	//check player/eyes models for hacks
-	sv.model_player_checksum = SV_CheckModel("progs/player.mdl");
-	sv.eyes_player_checksum = SV_CheckModel("progs/eyes.mdl");
+	sv.model_player_checksum = SV_CheckModel ("progs/player.mdl");
+	sv.eyes_player_checksum = SV_CheckModel ("progs/eyes.mdl");
 
 	//
 	// spawn the rest of the entities on the map
-	//	
+	//
 
 	// precache and static commands can be issued during
 	// map initialization
 	sv.state = ss_loading;
 
-	ent = EDICT_NUM(0);
+	ent = EDICT_NUM (0);
 	ent->free = false;
-	ed_set_string(ent, model, sv.worldmodel->name);
-	ed_float(ent, modelindex) = 1; // world model
-	ed_float(ent, solid) = SOLID_BSP;
-	ed_float(ent, movetype) = MOVETYPE_PUSH;
+	ed_set_string (ent, model, sv.worldmodel->name);
+	ed_float (ent, modelindex) = 1; // world model
+	ed_float (ent, solid) = SOLID_BSP;
+	ed_float (ent, movetype) = MOVETYPE_PUSH;
 
 	if (coop.value)
 	{
-		if (pr_field(coop))
+		if (pr_field (coop))
 		{
-			sv_pr_float(coop) = coop.value;
+			sv_pr_float (coop) = coop.value;
 		}
 	}
-	else if (pr_field(deathmatch))
+	else if (pr_field (deathmatch))
 	{
-		sv_pr_float(deathmatch) = deathmatch.value;
+		sv_pr_float (deathmatch) = deathmatch.value;
 	}
 
-	sv_pr_int(mapname) = PR_SetString(&sv.pr, sv.name);
+	sv_pr_int (mapname) = PR_SetString (&sv.pr, sv.name);
 #ifdef QUAKE2
-	sv_pr_int(startspot) = PR_SetString(&sv.pr, sv.startspot);
+	sv_pr_int (startspot) = PR_SetString (&sv.pr, sv.startspot);
 #endif
 
-// serverflags are for cross level information (sigils)
-	sv_pr_float(serverflags) = svs.serverflags;
-	
+	// serverflags are for cross level information (sigils)
+	sv_pr_float (serverflags) = svs.serverflags;
+
 	// run the frame start qc function to let progs check cvars
 	SV_ProgStartFrame ();
 
@@ -496,16 +487,16 @@ void SV_SpawnServer (char *server, char *startspot)
 	// or prog writes to the signon message are errors
 	sv.state = ss_active;
 	sv.active = true;
-	
+
 	// run two frames to allow everything to settle
 	SV_Physics ();
 
 	// save movement vars
-	SV_SetMoveVars();
+	SV_SetMoveVars ();
 
 	// create a baseline for more efficient communications
 	SV_CreateBaseline ();
-	sv.signon_buffer_size[sv.num_signon_buffers-1] = sv.signon.cursize;
+	sv.signon_buffer_size[sv.num_signon_buffers - 1] = sv.signon.cursize;
 
 	Info_SetValueForKey (svs.info, "map", sv.name, MAX_SERVERINFO_STRING, sv_highchars.value);
 

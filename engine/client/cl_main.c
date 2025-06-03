@@ -25,69 +25,64 @@ extern cvar_t qport;
 // we need to declare some mouse variables here, because the menu system
 // references them even when on a unix system.
 
-cvar_t	cl_timeout = {"cl_timeout", "60"};
-cvar_t	cl_shownet = {"cl_shownet","0"};	// can be 0, 1, or 2
-cvar_t	cl_nolerp = {"cl_nolerp","0"};
-cvar_t	cl_sbar = {"cl_sbar", "1", CVAR_ARCHIVE};
-cvar_t	cl_maxfps = {"cl_maxfps", "72"};
-cvar_t	cl_showfps = {"cl_showfps", "0"};
+cvar_t cl_timeout = {"cl_timeout", "60"};
+cvar_t cl_shownet = {"cl_shownet", "0"}; // can be 0, 1, or 2
+cvar_t cl_nolerp = {"cl_nolerp", "0"};
+cvar_t cl_sbar = {"cl_sbar", "1", CVAR_ARCHIVE};
+cvar_t cl_maxfps = {"cl_maxfps", "72"};
+cvar_t cl_showfps = {"cl_showfps", "0"};
 
-cvar_t	lookspring = {"lookspring","0", CVAR_ARCHIVE};
-cvar_t	lookstrafe = {"lookstrafe","0", CVAR_ARCHIVE};
-cvar_t	sensitivity = {"sensitivity","3", CVAR_ARCHIVE};
+cvar_t lookspring = {"lookspring", "0", CVAR_ARCHIVE};
+cvar_t lookstrafe = {"lookstrafe", "0", CVAR_ARCHIVE};
+cvar_t sensitivity = {"sensitivity", "3", CVAR_ARCHIVE};
 
-cvar_t	m_pitch = {"m_pitch","0.022", CVAR_ARCHIVE};
-cvar_t	m_yaw = {"m_yaw","0.022", CVAR_ARCHIVE};
-cvar_t	m_forward = {"m_forward","1", CVAR_ARCHIVE};
-cvar_t	m_side = {"m_side","0.8", CVAR_ARCHIVE};
+cvar_t m_pitch = {"m_pitch", "0.022", CVAR_ARCHIVE};
+cvar_t m_yaw = {"m_yaw", "0.022", CVAR_ARCHIVE};
+cvar_t m_forward = {"m_forward", "1", CVAR_ARCHIVE};
+cvar_t m_side = {"m_side", "0.8", CVAR_ARCHIVE};
 
-cvar_t	entlatency = {"entlatency", "20"};
-cvar_t	cl_predict_players = {"cl_predict_players", "1"};
-cvar_t	cl_predict_players2 = {"cl_predict_players2", "1"};
-cvar_t	cl_solid_players = {"cl_solid_players", "1"};
+cvar_t entlatency = {"entlatency", "20"};
+cvar_t cl_predict_players = {"cl_predict_players", "1"};
+cvar_t cl_predict_players2 = {"cl_predict_players2", "1"};
+cvar_t cl_solid_players = {"cl_solid_players", "1"};
 
 //
 // info mirrors
 //
-cvar_t	name = {"name", "Player", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
-cvar_t	team = {"team","", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
-cvar_t	skin = {"skin","", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
-cvar_t	topcolor = {"topcolor","0", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
-cvar_t	bottomcolor = {"bottomcolor","0", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
-cvar_t	rate = {"rate","2500", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
-cvar_t	noaim = {"noaim","0", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
-cvar_t	msg = {"msg","1", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
+cvar_t name = {"name", "Player", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
+cvar_t team = {"team", "", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
+cvar_t skin = {"skin", "", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
+cvar_t topcolor = {"topcolor", "0", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
+cvar_t bottomcolor = {"bottomcolor", "0", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
+cvar_t rate = {"rate", "2500", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
+cvar_t noaim = {"noaim", "0", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
+cvar_t msg = {"msg", "1", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
 
-client_static_t	cls;
-client_state_t	cl;
+client_static_t cls;
+client_state_t cl;
 
-entity_state_t	cl_baselines[MIN_EDICTS];
-efrag_t			cl_efrags[MAX_EFRAGS];
-entity_t		cl_static_entities[MAX_STATIC_ENTITIES];
-lightstyle_t	cl_lightstyle[MAX_LIGHTSTYLES];
-dlight_t		cl_dlights[MAX_DLIGHTS];
+entity_state_t cl_baselines[MIN_EDICTS];
+efrag_t cl_efrags[MAX_EFRAGS];
+entity_t cl_static_entities[MAX_STATIC_ENTITIES];
+lightstyle_t cl_lightstyle[MAX_LIGHTSTYLES];
+dlight_t cl_dlights[MAX_DLIGHTS];
 
-int				cl_numvisedicts, cl_oldnumvisedicts;
-entity_t		*cl_visedicts, *cl_oldvisedicts;
-entity_t		cl_visedicts_list[2][MAX_VISEDICTS];
+int cl_numvisedicts, cl_oldnumvisedicts;
+entity_t *cl_visedicts, *cl_oldvisedicts;
+entity_t cl_visedicts_list[2][MAX_VISEDICTS];
 
 static double connect_time = -1; // for connection retransmits
 
 float server_version = 0; // version of server we connected to
 
-char emodel_name[] = 
-	{ 'e' ^ 0xff, 'm' ^ 0xff, 'o' ^ 0xff, 'd' ^ 0xff, 'e' ^ 0xff, 'l' ^ 0xff, 0 };
-char pmodel_name[] = 
-	{ 'p' ^ 0xff, 'm' ^ 0xff, 'o' ^ 0xff, 'd' ^ 0xff, 'e' ^ 0xff, 'l' ^ 0xff, 0 };
-char prespawn_name[] = 
-	{ 'p'^0xff, 'r'^0xff, 'e'^0xff, 's'^0xff, 'p'^0xff, 'a'^0xff, 'w'^0xff, 'n'^0xff,
-		' '^0xff, '%'^0xff, 'i'^0xff, ' '^0xff, '0'^0xff, ' '^0xff, '%'^0xff, 'i'^0xff, 0 };
-char modellist_name[] = 
-	{ 'm'^0xff, 'o'^0xff, 'd'^0xff, 'e'^0xff, 'l'^0xff, 'l'^0xff, 'i'^0xff, 's'^0xff, 't'^0xff, 
-		' '^0xff, '%'^0xff, 'i'^0xff, ' '^0xff, '%'^0xff, 'i'^0xff, 0 };
-char soundlist_name[] = 
-	{ 's'^0xff, 'o'^0xff, 'u'^0xff, 'n'^0xff, 'd'^0xff, 'l'^0xff, 'i'^0xff, 's'^0xff, 't'^0xff, 
-		' '^0xff, '%'^0xff, 'i'^0xff, ' '^0xff, '%'^0xff, 'i'^0xff, 0 };
+char emodel_name[] = {'e' ^ 0xff, 'm' ^ 0xff, 'o' ^ 0xff, 'd' ^ 0xff, 'e' ^ 0xff, 'l' ^ 0xff, 0};
+char pmodel_name[] = {'p' ^ 0xff, 'm' ^ 0xff, 'o' ^ 0xff, 'd' ^ 0xff, 'e' ^ 0xff, 'l' ^ 0xff, 0};
+char prespawn_name[] = {'p' ^ 0xff, 'r' ^ 0xff, 'e' ^ 0xff, 's' ^ 0xff, 'p' ^ 0xff, 'a' ^ 0xff, 'w' ^ 0xff, 'n' ^ 0xff, ' ' ^ 0xff,
+						'%' ^ 0xff, 'i' ^ 0xff, ' ' ^ 0xff, '0' ^ 0xff, ' ' ^ 0xff, '%' ^ 0xff, 'i' ^ 0xff, 0};
+char modellist_name[] = {'m' ^ 0xff, 'o' ^ 0xff, 'd' ^ 0xff, 'e' ^ 0xff, 'l' ^ 0xff, 'l' ^ 0xff, 'i' ^ 0xff, 's' ^ 0xff,
+						 't' ^ 0xff, ' ' ^ 0xff, '%' ^ 0xff, 'i' ^ 0xff, ' ' ^ 0xff, '%' ^ 0xff, 'i' ^ 0xff, 0};
+char soundlist_name[] = {'s' ^ 0xff, 'o' ^ 0xff, 'u' ^ 0xff, 'n' ^ 0xff, 'd' ^ 0xff, 'l' ^ 0xff, 'i' ^ 0xff, 's' ^ 0xff,
+						 't' ^ 0xff, ' ' ^ 0xff, '%' ^ 0xff, 'i' ^ 0xff, ' ' ^ 0xff, '%' ^ 0xff, 'i' ^ 0xff, 0};
 
 /*
 =======================
@@ -110,40 +105,39 @@ static void CL_SendConnectPacket ()
 		return;
 	}
 
-	t1 = Sys_FloatTime();
+	t1 = Sys_FloatTime ();
 
-	if (!NET_StringToAdr(cls.servername, &adr))
+	if (!NET_StringToAdr (cls.servername, &adr))
 	{
-		Con_Printf("Bad server address\n");
+		Con_Printf ("Bad server address\n");
 		connect_time = -1;
 		return;
 	}
 
-	if (!NET_IsClientLegal(&adr))
+	if (!NET_IsClientLegal (&adr))
 	{
-		Con_Printf("Illegal server address\n");
+		Con_Printf ("Illegal server address\n");
 		connect_time = -1;
 		return;
 	}
 
 	if (adr.port == 0)
 	{
-		adr.port = BigShort(PORT_SERVER);
+		adr.port = BigShort (PORT_SERVER);
 	}
 
-	t2 = Sys_FloatTime();
+	t2 = Sys_FloatTime ();
 
 	connect_time = realtime + t2 - t1; // for retransmit requests
 
 	cls.qport = qport.value;
 
-	Info_SetValueForStarKey(cls.userinfo, "*ip", NET_AdrToString(adr), MAX_INFO_STRING, true);
+	Info_SetValueForStarKey (cls.userinfo, "*ip", NET_AdrToString (adr), MAX_INFO_STRING, true);
 
 	//	Con_Printf ("Connecting to %s...\n", cls.servername);
-	sprintf(data, "%c%c%c%cconnect %i %i %i \"%s\"\n",
-			255, 255, 255, 255, PROTOCOL_QUAKEWORLD, cls.qport, cls.challenge, cls.userinfo);
+	sprintf (data, "%c%c%c%cconnect %i %i %i \"%s\"\n", 255, 255, 255, 255, PROTOCOL_QUAKEWORLD, cls.qport, cls.challenge, cls.userinfo);
 
-	NET_SendPacket(CLIENT, strlen(data), data, adr);
+	NET_SendPacket (CLIENT, strlen (data), data, adr);
 }
 
 /*
@@ -155,8 +149,8 @@ Resend a connect message if the last one has timed out
 */
 void CL_CheckForResend ()
 {
-	netadr_t	adr;
-	char	data[2048];
+	netadr_t adr;
+	char data[2048];
 	double t1, t2;
 
 	if (connect_time == -1)
@@ -181,7 +175,7 @@ void CL_CheckForResend ()
 		return;
 	}
 
-	if (!NET_IsClientLegal(&adr))
+	if (!NET_IsClientLegal (&adr))
 	{
 		Con_Printf ("Illegal server address\n");
 		connect_time = -1;
@@ -195,18 +189,18 @@ void CL_CheckForResend ()
 
 	t2 = Sys_FloatTime ();
 
-	connect_time = realtime+t2-t1;	// for retransmit requests
+	connect_time = realtime + t2 - t1; // for retransmit requests
 
 	Con_Printf ("Connecting to %s...\n", cls.servername);
 	sprintf (data, "%c%c%c%cgetchallenge\n", 255, 255, 255, 255);
 
-	NET_SendPacket (CLIENT, strlen(data), data, adr);
+	NET_SendPacket (CLIENT, strlen (data), data, adr);
 }
 
-void CL_BeginServerConnect()
+void CL_BeginServerConnect ()
 {
 	connect_time = 0;
-	CL_CheckForResend();
+	CL_CheckForResend ();
 }
 
 /*
@@ -217,22 +211,21 @@ CL_Connect_f
 */
 static void CL_Connect_f ()
 {
-	char	*server;
+	char *server;
 
-	if (Cmd_Argc() != 2)
+	if (Cmd_Argc () != 2)
 	{
 		Con_Printf ("usage: connect <server>\n");
-		return;	
+		return;
 	}
-	
+
 	server = Cmd_Argv (1);
 
 	CL_Disconnect ();
 
-	strncpy (cls.servername, server, sizeof(cls.servername)-1);
-	CL_BeginServerConnect();
+	strncpy (cls.servername, server, sizeof (cls.servername) - 1);
+	CL_BeginServerConnect ();
 }
-
 
 /*
 =====================
@@ -244,11 +237,11 @@ CL_Rcon_f
 */
 static void CL_Rcon_f ()
 {
-	char	message[1024];
-	int		i;
-	netadr_t	to;
+	char message[1024];
+	int i;
+	netadr_t to;
 
-	if (!strlen(rcon_password.string))
+	if (!strlen (rcon_password.string))
 	{
 		Con_Printf ("You must set 'rcon_password' before\n"
 					"issuing an rcon command.\n");
@@ -266,9 +259,9 @@ static void CL_Rcon_f ()
 	strcat (message, rcon_password.string);
 	strcat (message, " ");
 
-	for (i=1 ; i<Cmd_Argc() ; i++)
+	for (i = 1; i < Cmd_Argc (); i++)
 	{
-		strcat (message, Cmd_Argv(i));
+		strcat (message, Cmd_Argv (i));
 		strcat (message, " ");
 	}
 
@@ -276,7 +269,7 @@ static void CL_Rcon_f ()
 		to = cls.netchan.remote_address;
 	else
 	{
-		if (!strlen(rcon_address.string))
+		if (!strlen (rcon_address.string))
 		{
 			Con_Printf ("You must either be connected,\n"
 						"or set the 'rcon_address' cvar\n"
@@ -286,11 +279,9 @@ static void CL_Rcon_f ()
 		}
 		NET_StringToAdr (rcon_address.string, &to);
 	}
-	
-	NET_SendPacket (CLIENT, strlen(message)+1, message
-		, to);
-}
 
+	NET_SendPacket (CLIENT, strlen (message) + 1, message, to);
+}
 
 /*
 =====================
@@ -300,7 +291,7 @@ CL_ClearState
 */
 void CL_ClearState ()
 {
-	int			i;
+	int i;
 
 	S_StopAllSounds (true);
 
@@ -309,22 +300,22 @@ void CL_ClearState ()
 
 	CL_ClearTEnts ();
 
-// wipe the entire cl structure
-	memset (&cl, 0, sizeof(cl));
+	// wipe the entire cl structure
+	memset (&cl, 0, sizeof (cl));
 
 	SZ_Clear (&cls.netchan.message);
 
-// clear other arrays	
-	memset (cl_efrags, 0, sizeof(cl_efrags));
-	memset (cl_dlights, 0, sizeof(cl_dlights));
-	memset (cl_lightstyle, 0, sizeof(cl_lightstyle));
+	// clear other arrays
+	memset (cl_efrags, 0, sizeof (cl_efrags));
+	memset (cl_dlights, 0, sizeof (cl_dlights));
+	memset (cl_lightstyle, 0, sizeof (cl_lightstyle));
 
-//
-// allocate the efrags and chain together into a free list
-//
+	//
+	// allocate the efrags and chain together into a free list
+	//
 	cl.free_efrags = cl_efrags;
-	for (i=0 ; i<MAX_EFRAGS-1 ; i++)
-		cl.free_efrags[i].entnext = &cl.free_efrags[i+1];
+	for (i = 0; i < MAX_EFRAGS - 1; i++)
+		cl.free_efrags[i].entnext = &cl.free_efrags[i + 1];
 	cl.free_efrags[i].entnext = NULL;
 }
 
@@ -342,11 +333,11 @@ void CL_Disconnect ()
 
 	connect_time = -1;
 
-// stop sounds (especially looping!)
+	// stop sounds (especially looping!)
 	S_StopAllSounds (true);
 	CDAudio_Stop ();
-	
-// if running a local server, shut it down
+
+	// if running a local server, shut it down
 	if (cls.demoplayback)
 	{
 		CL_StopPlayback ();
@@ -357,7 +348,7 @@ void CL_Disconnect ()
 			CL_Stop_f ();
 
 		final[0] = clc_stringcmd;
-		strcpy (final+1, "drop");
+		strcpy (final + 1, "drop");
 		Netchan_Transmit (&cls.netchan, 6, final);
 		Netchan_Transmit (&cls.netchan, 6, final);
 		Netchan_Transmit (&cls.netchan, 6, final);
@@ -366,20 +357,19 @@ void CL_Disconnect ()
 
 		cls.state = ca_disconnected;
 		if (Host_IsLocalGame ())
-			Host_ShutdownServer(false);
+			Host_ShutdownServer (false);
 
 		cls.demoplayback = cls.demorecording = cls.timedemo = false;
 	}
-	Cam_Reset();
+	Cam_Reset ();
 
 	if (cls.download)
 	{
-		fclose(cls.download);
+		fclose (cls.download);
 		cls.download = NULL;
 	}
 
-	CL_StopUpload();
-
+	CL_StopUpload ();
 }
 
 void CL_Disconnect_f ()
@@ -400,23 +390,22 @@ Dump userdata / masterdata for a user
 */
 static void CL_User_f (void)
 {
-	int		uid;
-	int		i;
+	int uid;
+	int i;
 
-	if (Cmd_Argc() != 2)
+	if (Cmd_Argc () != 2)
 	{
 		Con_Printf ("Usage: user <username / userid>\n");
 		return;
 	}
 
-	uid = atoi(Cmd_Argv(1));
+	uid = atoi (Cmd_Argv (1));
 
-	for (i=0 ; i<MAX_CLIENTS ; i++)
+	for (i = 0; i < MAX_CLIENTS; i++)
 	{
 		if (!cl.players[i].name[0])
 			continue;
-		if (cl.players[i].userid == uid
-		 || !strcasecmp(cl.players[i].name, Cmd_Argv(1)))
+		if (cl.players[i].userid == uid || !strcasecmp (cl.players[i].name, Cmd_Argv (1)))
 		{
 			Info_Print (cl.players[i].userinfo);
 			return;
@@ -434,13 +423,13 @@ Dump userids for all current players
 */
 static void CL_Users_f (void)
 {
-	int		i;
-	int		c;
+	int i;
+	int c;
 
 	c = 0;
 	Con_Printf ("userid frags name\n");
 	Con_Printf ("------ ----- ----\n");
-	for (i=0 ; i<MAX_CLIENTS ; i++)
+	for (i = 0; i < MAX_CLIENTS; i++)
 	{
 		if (cl.players[i].name[0])
 		{
@@ -455,33 +444,31 @@ static void CL_Users_f (void)
 void CL_Color_f (void)
 {
 	// just for quake compatability...
-	int		top, bottom;
-	char	num[16];
+	int top, bottom;
+	char num[16];
 
-	if (Cmd_Argc() == 1)
+	if (Cmd_Argc () == 1)
 	{
-		Con_Printf ("\"color\" is \"%s %s\"\n",
-			Info_ValueForKey (cls.userinfo, "topcolor"),
-			Info_ValueForKey (cls.userinfo, "bottomcolor") );
+		Con_Printf ("\"color\" is \"%s %s\"\n", Info_ValueForKey (cls.userinfo, "topcolor"), Info_ValueForKey (cls.userinfo, "bottomcolor"));
 		Con_Printf ("color <0-13> [0-13]\n");
 		return;
 	}
 
-	if (Cmd_Argc() == 2)
-		top = bottom = atoi(Cmd_Argv(1));
+	if (Cmd_Argc () == 2)
+		top = bottom = atoi (Cmd_Argv (1));
 	else
 	{
-		top = atoi(Cmd_Argv(1));
-		bottom = atoi(Cmd_Argv(2));
+		top = atoi (Cmd_Argv (1));
+		bottom = atoi (Cmd_Argv (2));
 	}
-	
+
 	top &= 15;
 	if (top > 13)
 		top = 13;
 	bottom &= 15;
 	if (bottom > 13)
 		bottom = 13;
-	
+
 	sprintf (num, "%i", top);
 	Cvar_Set (src_client, "topcolor", num);
 	sprintf (num, "%i", bottom);
@@ -500,19 +487,21 @@ static void CL_FullServerinfo_f (void)
 	char *p;
 	float v;
 
-	if (Cmd_Argc() != 2)
+	if (Cmd_Argc () != 2)
 	{
 		Con_Printf ("usage: fullserverinfo <complete info string>\n");
 		return;
 	}
 
-	strcpy (cl.serverinfo, Cmd_Argv(1));
+	strcpy (cl.serverinfo, Cmd_Argv (1));
 
-	if ((p = Info_ValueForKey(cl.serverinfo, "*vesion")) && *p) {
-		v = atof(p);
-		if (v) {
+	if ((p = Info_ValueForKey (cl.serverinfo, "*vesion")) && *p)
+	{
+		v = atof (p);
+		if (v)
+		{
 			if (!server_version)
-				Con_Printf("Version %1.2f Server\n", v);
+				Con_Printf ("Version %1.2f Server\n", v);
 			server_version = v;
 		}
 	}
@@ -527,18 +516,18 @@ Allow clients to change userinfo
 */
 static void CL_FullInfo_f (void)
 {
-	char	key[512];
-	char	value[512];
-	char	*o;
-	char	*s;
+	char key[512];
+	char value[512];
+	char *o;
+	char *s;
 
-	if (Cmd_Argc() != 2)
+	if (Cmd_Argc () != 2)
 	{
 		Con_Printf ("fullinfo <complete info string>\n");
 		return;
 	}
 
-	s = Cmd_Argv(1);
+	s = Cmd_Argv (1);
 	if (*s == '\\')
 		s++;
 	while (*s)
@@ -563,7 +552,7 @@ static void CL_FullInfo_f (void)
 		if (*s)
 			s++;
 
-		if (!strcasecmp(key, pmodel_name) || !strcasecmp(key, emodel_name))
+		if (!strcasecmp (key, pmodel_name) || !strcasecmp (key, emodel_name))
 			continue;
 
 		Info_SetValueForKey (cls.userinfo, key, value, MAX_INFO_STRING, true);
@@ -579,20 +568,20 @@ Allow clients to change userinfo
 */
 void CL_SetInfo_f (void)
 {
-	if (Cmd_Argc() == 1)
+	if (Cmd_Argc () == 1)
 	{
 		Info_Print (cls.userinfo);
 		return;
 	}
-	if (Cmd_Argc() != 3)
+	if (Cmd_Argc () != 3)
 	{
 		Con_Printf ("usage: setinfo [ <key> <value> ]\n");
 		return;
 	}
-	if (!strcasecmp(Cmd_Argv(1), pmodel_name) || !strcmp(Cmd_Argv(1), emodel_name))
+	if (!strcasecmp (Cmd_Argv (1), pmodel_name) || !strcmp (Cmd_Argv (1), emodel_name))
 		return;
 
-	Info_SetValueForKey (cls.userinfo, Cmd_Argv(1), Cmd_Argv(2), MAX_INFO_STRING, true);
+	Info_SetValueForKey (cls.userinfo, Cmd_Argv (1), Cmd_Argv (2), MAX_INFO_STRING, true);
 	if (cls.state >= ca_connected)
 		Cmd_ForwardToServer ();
 }
@@ -606,10 +595,7 @@ packet <destination> <contents>
 Contents allows \n escape character
 ====================
 */
-void CL_Packet_f (void)
-{
-}
-
+void CL_Packet_f (void) {}
 
 /*
 =====================
@@ -620,10 +606,10 @@ Called to play the next demo in the demo loop
 */
 void CL_NextDemo ()
 {
-	char	str[1024];
+	char str[1024];
 
 	if (cls.demonum == -1)
-		return;		// don't play demos
+		return; // don't play demos
 
 	SCR_BeginLoadingPlaque ();
 
@@ -638,7 +624,7 @@ void CL_NextDemo ()
 		}
 	}
 
-	sprintf (str,"playdemo %s\n", cls.demos[cls.demonum]);
+	sprintf (str, "playdemo %s\n", cls.demos[cls.demonum]);
 	Cbuf_InsertText (src_client, str);
 	cls.demonum++;
 }
@@ -653,14 +639,14 @@ drop to full console
 */
 static void CL_Changing_f ()
 {
-	if (cls.download)  // don't change when downloading
+	if (cls.download) // don't change when downloading
 	{
 		return;
 	}
 
 	S_StopAllSounds (true);
 	cl.intermission = 0;
-	cls.state = ca_connected;	// not active anymore, but not disconnected
+	cls.state = ca_connected; // not active anymore, but not disconnected
 	Con_Printf ("\nChanging map...\n");
 }
 
@@ -673,7 +659,7 @@ The server is changing levels
 */
 void CL_Reconnect_f ()
 {
-	if (cls.download)  // don't change when downloading
+	if (cls.download) // don't change when downloading
 	{
 		return;
 	}
@@ -688,13 +674,14 @@ void CL_Reconnect_f ()
 		return;
 	}
 
-	if (!*cls.servername) {
-		Con_Printf("No server to reconnect to...\n");
+	if (!*cls.servername)
+	{
+		Con_Printf ("No server to reconnect to...\n");
 		return;
 	}
 
-	CL_Disconnect();
-	CL_BeginServerConnect();
+	CL_Disconnect ();
+	CL_BeginServerConnect ();
 }
 
 /*
@@ -709,50 +696,50 @@ static void CL_ConnectionlessPacket ()
 	char *s;
 	int c;
 
-	MSG_BeginReading(CLIENT);
-	MSG_ReadLong(); // skip the -1
+	MSG_BeginReading (CLIENT);
+	MSG_ReadLong (); // skip the -1
 
-	c = MSG_ReadByte();
+	c = MSG_ReadByte ();
 
 	if (!cls.demoplayback)
 	{
-		Con_Printf("%s: ", NET_AdrToString(net_from));
+		Con_Printf ("%s: ", NET_AdrToString (net_from));
 	}
 
 	if (c == S2C_CONNECTION)
 	{
-		Con_Printf("connection\n");
+		Con_Printf ("connection\n");
 		if (cls.state >= ca_connected)
 		{
 			if (!cls.demoplayback)
 			{
-				Con_Printf("Dup connect received.  Ignored.\n");
+				Con_Printf ("Dup connect received.  Ignored.\n");
 			}
 			return;
 		}
-		Netchan_Setup(&cls.netchan, net_from, CLIENT, cls.qport);
-		MSG_WriteChar(&cls.netchan.message, clc_stringcmd);
-		MSG_WriteString(&cls.netchan.message, "new");
+		Netchan_Setup (&cls.netchan, net_from, CLIENT, cls.qport);
+		MSG_WriteChar (&cls.netchan.message, clc_stringcmd);
+		MSG_WriteString (&cls.netchan.message, "new");
 		cls.state = ca_connected;
-		Con_Printf("Connected.\n");
+		Con_Printf ("Connected.\n");
 		return;
 	}
 
 	// remote command from gui front end
 	if (c == A2C_CLIENT_COMMAND)
 	{
-		Con_Printf("client command\n");
-		Con_Printf("Ignored.\n");
+		Con_Printf ("client command\n");
+		Con_Printf ("Ignored.\n");
 		return;
 	}
 
 	// print command from somewhere
 	if (c == A2C_PRINT)
 	{
-		Con_Printf("print\n");
+		Con_Printf ("print\n");
 
-		s = MSG_ReadString();
-		Con_Print(s);
+		s = MSG_ReadString ();
+		Con_Print (s);
 		return;
 	}
 
@@ -761,7 +748,7 @@ static void CL_ConnectionlessPacket ()
 	{
 		char data[6];
 
-		Con_Printf("ping\n");
+		Con_Printf ("ping\n");
 
 		data[0] = 0xff;
 		data[1] = 0xff;
@@ -770,23 +757,22 @@ static void CL_ConnectionlessPacket ()
 		data[4] = A2A_ACK;
 		data[5] = 0;
 
-		NET_SendPacket(CLIENT, 6, &data, net_from);
+		NET_SendPacket (CLIENT, 6, &data, net_from);
 		return;
 	}
 
 	if (c == S2C_CHALLENGE)
 	{
-		Con_Printf("challenge\n");
+		Con_Printf ("challenge\n");
 
-		s = MSG_ReadString();
-		cls.challenge = atoi(s);
-		CL_SendConnectPacket();
+		s = MSG_ReadString ();
+		cls.challenge = atoi (s);
+		CL_SendConnectPacket ();
 		return;
 	}
 
-	Con_Printf("unknown:  %c\n", c);
+	Con_Printf ("unknown:  %c\n", c);
 }
-
 
 /*
 ===============
@@ -797,41 +783,40 @@ Read all incoming data from the server
 */
 void CL_ReadPackets ()
 {
-	while (CL_GetMessage())
+	while (CL_GetMessage ())
 	{
 		//
 		// remote command packet
 		//
 		if (*(int32_t *)net_message[CLIENT].data == -1)
 		{
-			CL_ConnectionlessPacket();
+			CL_ConnectionlessPacket ();
 			continue;
 		}
 
-		MSG_BeginReading(CLIENT);
+		MSG_BeginReading (CLIENT);
 
 		if (net_message[CLIENT].cursize < 8)
 		{
-			Con_Printf("%s: Runt packet\n", NET_AdrToString(net_from));
+			Con_Printf ("%s: Runt packet\n", NET_AdrToString (net_from));
 			continue;
 		}
 
 		//
 		// packet from server
 		//
-		if (!cls.demoplayback
-		 && !NET_CompareAdr(net_from, cls.netchan.remote_address))
+		if (!cls.demoplayback && !NET_CompareAdr (net_from, cls.netchan.remote_address))
 		{
-			Con_DPrintf("%s: Sequenced packet without connection\n", NET_AdrToString(net_from));
+			Con_DPrintf ("%s: Sequenced packet without connection\n", NET_AdrToString (net_from));
 			continue;
 		}
 
-		if (!Netchan_Process(&cls.netchan))
+		if (!Netchan_Process (&cls.netchan))
 		{
 			continue; // wasn't accepted for some reason
 		}
 
-		CL_ParseServerMessage();
+		CL_ParseServerMessage ();
 	}
 
 	//
@@ -839,8 +824,8 @@ void CL_ReadPackets ()
 	//
 	if (cls.state >= ca_connected && realtime - cls.netchan.last_received > cl_timeout.value)
 	{
-		Con_Printf("\nServer connection timed out.\n");
-		CL_Disconnect();
+		Con_Printf ("\nServer connection timed out.\n");
+		CL_Disconnect ();
 		return;
 	}
 }
@@ -862,46 +847,49 @@ static void CL_Download_f (void)
 		return;
 	}
 
-	if (Cmd_Argc() != 2)
+	if (Cmd_Argc () != 2)
 	{
 		Con_Printf ("Usage: download <datafile>\n");
 		return;
 	}
 
-	sprintf (cls.downloadname, "%s/%s", com_gamedir, Cmd_Argv(1));
+	sprintf (cls.downloadname, "%s/%s", com_gamedir, Cmd_Argv (1));
 
 	p = cls.downloadname;
-	for (;;) {
-		if ((q = strchr(p, '/')) != NULL) {
+	for (;;)
+	{
+		if ((q = strchr (p, '/')) != NULL)
+		{
 			*q = 0;
-			Sys_mkdir(cls.downloadname);
+			Sys_mkdir (cls.downloadname);
 			*q = '/';
 			p = q + 1;
-		} else
+		}
+		else
 			break;
 	}
 
-	strcpy(cls.downloadtempname, cls.downloadname);
+	strcpy (cls.downloadtempname, cls.downloadname);
 	cls.download = fopen (cls.downloadname, "wb");
 	cls.downloadtype = dl_single;
 
 	MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
-	SZ_Print (&cls.netchan.message, va("download %s\n",Cmd_Argv(1)));
+	SZ_Print (&cls.netchan.message, va ("download %s\n", Cmd_Argv (1)));
 }
 
-static void simple_crypt(char *buf, int len)
+static void simple_crypt (char *buf, int len)
 {
 	while (len--)
 		*buf++ ^= 0xff;
 }
 
-static void CL_FixupModelNames()
+static void CL_FixupModelNames ()
 {
-	simple_crypt(emodel_name, sizeof(emodel_name) - 1);
-	simple_crypt(pmodel_name, sizeof(pmodel_name) - 1);
-	simple_crypt(prespawn_name,  sizeof(prespawn_name)  - 1);
-	simple_crypt(modellist_name, sizeof(modellist_name) - 1);
-	simple_crypt(soundlist_name, sizeof(soundlist_name) - 1);
+	simple_crypt (emodel_name, sizeof (emodel_name) - 1);
+	simple_crypt (pmodel_name, sizeof (pmodel_name) - 1);
+	simple_crypt (prespawn_name, sizeof (prespawn_name) - 1);
+	simple_crypt (modellist_name, sizeof (modellist_name) - 1);
+	simple_crypt (soundlist_name, sizeof (soundlist_name) - 1);
 }
 
 /*
@@ -916,7 +904,7 @@ void CL_Init ()
 
 	cls.state = ca_disconnected;
 
-	CL_FixupModelNames();
+	CL_FixupModelNames ();
 
 	Info_SetValueForKey (cls.userinfo, "name", "Player", MAX_INFO_STRING, true);
 	Info_SetValueForKey (cls.userinfo, "topcolor", "0", MAX_INFO_STRING, true);
@@ -929,10 +917,10 @@ void CL_Init ()
 	CL_InitPrediction ();
 	CL_InitCam ();
 	Pmove_Init ();
-	
-//
-// register our commands
-//
+
+	//
+	// register our commands
+	//
 	Cvar_RegisterVariable (src_client, &cl_upspeed);
 	Cvar_RegisterVariable (src_client, &cl_forwardspeed);
 	Cvar_RegisterVariable (src_client, &cl_backspeed);
@@ -1005,4 +993,3 @@ void CL_Init ()
 	Cmd_AddCommand (src_client, "nextul", CL_NextUpload);
 	Cmd_AddCommand (src_client, "stopul", CL_StopUpload);
 }
-

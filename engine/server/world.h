@@ -28,37 +28,37 @@ enum
 
 typedef struct areanode_s
 {
-	int		axis;		// -1 = leaf node
-	float	dist;
-	struct areanode_s	*children[2];
-	link_t	trigger_edicts;
-	link_t	solid_edicts;
+	int axis; // -1 = leaf node
+	float dist;
+	struct areanode_s *children[2];
+	link_t trigger_edicts;
+	link_t solid_edicts;
 } areanode_t;
 
-#define	AREA_DEPTH	4
-#define	AREA_NODES	32
+#define AREA_DEPTH 4
+#define AREA_NODES 32
 
-void SV_ClearWorld();
+void SV_ClearWorld ();
 // called after the world model has been loaded, before linking any entities
 
-void SV_UnlinkEdict(edict_t *ent);
+void SV_UnlinkEdict (edict_t *ent);
 // call before removing an entity, and before trying to move one,
 // so it doesn't clip against itself
 
-void SV_LinkEdict(edict_t *ent, bool touch_triggers);
+void SV_LinkEdict (edict_t *ent, bool touch_triggers);
 // Needs to be called any time an entity changes origin, mins, maxs, or solid
 // sets absmin and absmax
 // if touchtriggers, calls prog functions for the intersected triggers
 
-int SV_PointContents(vec3_t p);
-int SV_TruePointContents(vec3_t p);
+int SV_PointContents (vec3_t p);
+int SV_TruePointContents (vec3_t p);
 // returns the CONTENTS_* value from the world at the given point.
 // does not check any entities at all
 // the non-true version remaps the water current contents to content_water
 
-edict_t *SV_TestEntityPosition(edict_t *ent);
+edict_t *SV_TestEntityPosition (edict_t *ent);
 
-trace_t SV_Move(vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int type, edict_t *passedict);
+trace_t SV_Move (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int type, edict_t *passedict);
 // mins and maxs are reletive
 
 // if the entire move stays in a solid volume, trace.allsolid will be set

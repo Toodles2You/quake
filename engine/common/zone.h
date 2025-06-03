@@ -67,46 +67,46 @@ Zone block
 #ifndef _ZONE_H
 #define _ZONE_H
 
-void Memory_Init(void *buf, size_t size);
+void Memory_Init (void *buf, size_t size);
 
-void Z_Free(void *ptr);
-void *Z_Malloc(size_t size); // returns 0 filled memory
-void *Z_TagMalloc(size_t size, size_t tag);
+void Z_Free (void *ptr);
+void *Z_Malloc (size_t size); // returns 0 filled memory
+void *Z_TagMalloc (size_t size, size_t tag);
 
-void Z_CheckHeap();
+void Z_CheckHeap ();
 
-void *Hunk_Alloc(size_t size); // returns 0 filled memory
-void *Hunk_AllocName(size_t size, char *name);
+void *Hunk_Alloc (size_t size); // returns 0 filled memory
+void *Hunk_AllocName (size_t size, char *name);
 
-void *Hunk_HighAllocName(size_t size, char *name);
+void *Hunk_HighAllocName (size_t size, char *name);
 
-size_t Hunk_LowMark();
-void Hunk_FreeToLowMark(size_t mark);
+size_t Hunk_LowMark ();
+void Hunk_FreeToLowMark (size_t mark);
 
-size_t Hunk_HighMark();
-void Hunk_FreeToHighMark(size_t mark);
+size_t Hunk_HighMark ();
+void Hunk_FreeToHighMark (size_t mark);
 
-void *Hunk_TempAlloc(size_t size);
+void *Hunk_TempAlloc (size_t size);
 
-void Hunk_Check();
+void Hunk_Check ();
 
 typedef struct cache_user_s
 {
 	void *data;
 } cache_user_t;
 
-void Cache_Flush();
+void Cache_Flush ();
 
-void *Cache_Check(cache_user_t *c);
+void *Cache_Check (cache_user_t *c);
 // returns the cached data, and moves to the head of the LRU list
 // if present, otherwise returns NULL
 
-void Cache_Free(cache_user_t *c);
+void Cache_Free (cache_user_t *c);
 
-void *Cache_Alloc(cache_user_t *c, size_t size, char *name);
+void *Cache_Alloc (cache_user_t *c, size_t size, char *name);
 // Returns NULL if all purgable data was tossed and there still
 // wasn't enough room.
 
-void Cache_Report();
+void Cache_Report ();
 
 #endif /* !_ZONE_H */

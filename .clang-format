@@ -1,0 +1,13 @@
+BasedOnStyle: LLVM
+AllowShortBlocksOnASingleLine: Empty
+AllowShortFunctionsOnASingleLine: Empty
+BreakBeforeBraces: Allman
+ColumnLimit: 160
+IndentWidth: 4
+ReflowComments: false
+SortIncludes: Never
+SpaceBeforeParens: Always
+SpacesInLineCommentPrefix:
+  Maximum: 1
+TabWidth: 4
+UseTab: Always

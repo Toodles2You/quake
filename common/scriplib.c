@@ -11,12 +11,12 @@
 =============================================================================
 */
 
-char    token[MAXTOKEN];
-char    *scriptbuffer,*script_p,*scriptend_p;
-int             grabbed;
-int             scriptline;
+char token[MAXTOKEN];
+char *scriptbuffer, *script_p, *scriptend_p;
+int grabbed;
+int scriptline;
 bool endofscript;
-bool tokenready;                     // only true if UnGetToken was just called
+bool tokenready; // only true if UnGetToken was just called
 
 /*
 ==============
@@ -28,7 +28,7 @@ bool tokenready;                     // only true if UnGetToken was just called
 
 void LoadScriptFile (char *filename)
 {
-	int            size;
+	int size;
 
 	size = LoadFile (filename, (void **)&scriptbuffer);
 
@@ -38,7 +38,6 @@ void LoadScriptFile (char *filename)
 	endofscript = false;
 	tokenready = false;
 }
-
 
 /*
 ==============
@@ -62,7 +61,6 @@ void UnGetToken (void)
 	tokenready = true;
 }
 
-
 /*
 ==============
 GetToken
@@ -70,9 +68,9 @@ GetToken
 */
 bool GetToken (bool crossline)
 {
-	char    *token_p;
+	char *token_p;
 
-	if (tokenready)                         // is a token allready waiting?
+	if (tokenready) // is a token allready waiting?
 	{
 		tokenready = false;
 		return true;
@@ -81,7 +79,7 @@ bool GetToken (bool crossline)
 	if (script_p >= scriptend_p)
 	{
 		if (!crossline)
-			Error ("Line %i is incomplete\n",scriptline);
+			Error ("Line %i is incomplete\n", scriptline);
 		endofscript = true;
 		return false;
 	}
@@ -95,14 +93,14 @@ skipspace:
 		if (script_p >= scriptend_p)
 		{
 			if (!crossline)
-				Error ("Line %i is incomplete\n",scriptline);
+				Error ("Line %i is incomplete\n", scriptline);
 			endofscript = true;
 			return true;
 		}
 		if (*script_p++ == '\n')
 		{
 			if (!crossline)
-				Error ("Line %i is incomplete\n",scriptline);
+				Error ("Line %i is incomplete\n", scriptline);
 			scriptline++;
 		}
 	}
@@ -110,15 +108,15 @@ skipspace:
 	if (script_p >= scriptend_p)
 	{
 		if (!crossline)
-			Error ("Line %i is incomplete\n",scriptline);
+			Error ("Line %i is incomplete\n", scriptline);
 		endofscript = true;
 		return true;
 	}
 
-	if (*script_p == ';' || *script_p == '#')   // semicolon is comment field
-	{											// also make # a comment field
+	if (*script_p == ';' || *script_p == '#') // semicolon is comment field
+	{										  // also make # a comment field
 		if (!crossline)
-			Error ("Line %i is incomplete\n",scriptline);
+			Error ("Line %i is incomplete\n", scriptline);
 		while (*script_p++ != '\n')
 			if (script_p >= scriptend_p)
 			{
@@ -128,24 +126,23 @@ skipspace:
 		goto skipspace;
 	}
 
-//
-// copy token
-//
+	//
+	// copy token
+	//
 	token_p = token;
 
-	while ( *script_p > 32 && *script_p != ';')
+	while (*script_p > 32 && *script_p != ';')
 	{
 		*token_p++ = *script_p++;
 		if (script_p == scriptend_p)
 			break;
 		if (token_p == &token[MAXTOKEN])
-			Error ("Token too large on line %i\n",scriptline);
+			Error ("Token too large on line %i\n", scriptline);
 	}
 
 	*token_p = 0;
 	return true;
 }
-
 
 /*
 ==============
@@ -159,21 +156,20 @@ skipspace:
 
 bool TokenAvailable (void)
 {
-	char    *search_p;
+	char *search_p;
 
 	search_p = script_p;
 
 	if (search_p >= scriptend_p)
 		return false;
 
-	while ( *search_p <= 32)
+	while (*search_p <= 32)
 	{
 		if (*search_p == '\n')
 			return false;
 		search_p++;
 		if (search_p == scriptend_p)
 			return false;
-
 	}
 
 	if (*search_p == ';')
@@ -181,5 +177,3 @@ bool TokenAvailable (void)
 
 	return true;
 }
-
-

@@ -20,38 +20,36 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "bothdef.h"
 
-static const vec3_t hull_sizes[MAX_MAP_HULLS][2] =
-{
-    {{0, 0, 0}, {0, 0, 0}},
-    {{-16, -16, -36}, {16, 16, 36}},
-    {{-32, -32, -36}, {32, 32, 36}},
-    {{-16, -16, -18}, {16, 16, 18}},
+static const vec3_t hull_sizes[MAX_MAP_HULLS][2] = {
+	{{0, 0, 0}, {0, 0, 0}},
+	{{-16, -16, -36}, {16, 16, 36}},
+	{{-32, -32, -36}, {32, 32, 36}},
+	{{-16, -16, -18}, {16, 16, 18}},
 };
 
-static const vec3_t quake_hull_sizes[MAX_MAP_HULLS][2] =
-{
-    {{0, 0, 0}, {0, 0, 0}},
-    {{-16, -16, -24}, {16, 16, 32}},
-    {{-32, -32, -24}, {32, 32, 64}},
-    {{-16, -16, -12}, {16, 16, 16}},
+static const vec3_t quake_hull_sizes[MAX_MAP_HULLS][2] = {
+	{{0, 0, 0}, {0, 0, 0}},
+	{{-16, -16, -24}, {16, 16, 32}},
+	{{-32, -32, -24}, {32, 32, 64}},
+	{{-16, -16, -12}, {16, 16, 16}},
 };
 
-static void CMod_LoadBrushModel(cmodel_t *mod, void *buffer, bool world);
+static void CMod_LoadBrushModel (cmodel_t *mod, void *buffer, bool world);
 
 static cmodel_t *loadcmod;
-static char     loadname[32]; // for hunk tags
-static byte     cmod_novis[MAX_MAP_LEAFS / 8];
+static char loadname[32]; // for hunk tags
+static byte cmod_novis[MAX_MAP_LEAFS / 8];
 static cmodel_t cmod_known[MAX_MODELS];
-static int      cmod_numknown;
+static int cmod_numknown;
 
 /*
 ===============
 CMod_Init
 ===============
 */
-void CMod_Init()
+void CMod_Init ()
 {
-    memset(cmod_novis, 255, sizeof(cmod_novis));
+	memset (cmod_novis, 255, sizeof (cmod_novis));
 }
 
 /*
@@ -59,32 +57,32 @@ void CMod_Init()
 CMod_PointInLeaf
 ===============
 */
-mleaf_t *CMod_PointInLeaf(vec3_t p, cmodel_t *model)
+mleaf_t *CMod_PointInLeaf (vec3_t p, cmodel_t *model)
 {
-    mnode_t *node;
-    float d;
-    mplane_t *plane;
+	mnode_t *node;
+	float d;
+	mplane_t *plane;
 
-    node = model->nodes;
-    while (true)
-    {
-        if (node->contents < 0)
-        {
-            return (mleaf_t *)node;
-        }
-        plane = node->plane;
-        d = DotProduct(p, plane->normal) - plane->dist;
-        if (d > 0)
-        {
-            node = node->children[0];
-        }
-        else
-        {
-            node = node->children[1];
-        }
-    }
+	node = model->nodes;
+	while (true)
+	{
+		if (node->contents < 0)
+		{
+			return (mleaf_t *)node;
+		}
+		plane = node->plane;
+		d = DotProduct (p, plane->normal) - plane->dist;
+		if (d > 0)
+		{
+			node = node->children[0];
+		}
+		else
+		{
+			node = node->children[1];
+		}
+	}
 
-    return NULL; // never reached
+	return NULL; // never reached
 }
 
 /*
@@ -92,53 +90,53 @@ mleaf_t *CMod_PointInLeaf(vec3_t p, cmodel_t *model)
 CMod_DecompressVis
 ===================
 */
-static byte *CMod_DecompressVis(byte *in, cmodel_t *model)
+static byte *CMod_DecompressVis (byte *in, cmodel_t *model)
 {
-    static byte decompressed[MAX_MAP_LEAFS / 8];
-    int c;
-    byte *out;
-    int row;
+	static byte decompressed[MAX_MAP_LEAFS / 8];
+	int c;
+	byte *out;
+	int row;
 
-    row = (model->numleafs + 7) >> 3;
-    out = decompressed;
+	row = (model->numleafs + 7) >> 3;
+	out = decompressed;
 
-    if (!in)
-    { // no vis info, so make all visible
-        while (row)
-        {
-            *out++ = 0xff;
-            row--;
-        }
-        return decompressed;
-    }
+	if (!in)
+	{ // no vis info, so make all visible
+		while (row)
+		{
+			*out++ = 0xff;
+			row--;
+		}
+		return decompressed;
+	}
 
-    do
-    {
-        if (*in)
-        {
-            *out++ = *in++;
-            continue;
-        }
+	do
+	{
+		if (*in)
+		{
+			*out++ = *in++;
+			continue;
+		}
 
-        c = in[1];
-        in += 2;
-        while (c)
-        {
-            *out++ = 0;
-            c--;
-        }
-    } while (out - decompressed < row);
+		c = in[1];
+		in += 2;
+		while (c)
+		{
+			*out++ = 0;
+			c--;
+		}
+	} while (out - decompressed < row);
 
-    return decompressed;
+	return decompressed;
 }
 
-byte *CMod_LeafPVS(mleaf_t *leaf, cmodel_t *model)
+byte *CMod_LeafPVS (mleaf_t *leaf, cmodel_t *model)
 {
-    if (leaf == model->leafs)
-    {
-        return cmod_novis;
-    }
-    return CMod_DecompressVis(leaf->compressed_vis, model);
+	if (leaf == model->leafs)
+	{
+		return cmod_novis;
+	}
+	return CMod_DecompressVis (leaf->compressed_vis, model);
 }
 
 /*
@@ -146,17 +144,17 @@ byte *CMod_LeafPVS(mleaf_t *leaf, cmodel_t *model)
 CMod_ClearAll
 ===================
 */
-void CMod_ClearAll()
+void CMod_ClearAll ()
 {
-    int i;
-    cmodel_t *mod;
+	int i;
+	cmodel_t *mod;
 
-    for (i = 0, mod = cmod_known; i < cmod_numknown; i++, mod++)
-    {
-		memset (mod, 0, sizeof(*mod));
-    }
+	for (i = 0, mod = cmod_known; i < cmod_numknown; i++, mod++)
+	{
+		memset (mod, 0, sizeof (*mod));
+	}
 
-    cmod_numknown = 0;
+	cmod_numknown = 0;
 }
 
 /*
@@ -164,42 +162,42 @@ void CMod_ClearAll()
 CMod_FindName
 ==================
 */
-static cmodel_t *CMod_FindName(char *name, bool *load)
+static cmodel_t *CMod_FindName (char *name, bool *load)
 {
-    int i;
-    cmodel_t *mod;
+	int i;
+	cmodel_t *mod;
 
-    if (!name[0])
-    {
-        Sys_Error("CMod_ForName: NULL name");
-    }
+	if (!name[0])
+	{
+		Sys_Error ("CMod_ForName: NULL name");
+	}
 
-    //
-    // search the currently loaded models
-    //
-    for (i = 0, mod = cmod_known; i < cmod_numknown; i++, mod++)
-    {
-        if (!strcmp(mod->name, name))
-        {
-            break;
-        }
-    }
+	//
+	// search the currently loaded models
+	//
+	for (i = 0, mod = cmod_known; i < cmod_numknown; i++, mod++)
+	{
+		if (!strcmp (mod->name, name))
+		{
+			break;
+		}
+	}
 
-    if (i == cmod_numknown)
-    {
-        if (cmod_numknown == MAX_MODELS)
-        {
-            Sys_Error("cmod_numknown == MAX_MODELS");
-        }
-        strcpy(mod->name, name);
-        if (load)
-        {
-            *load = true;
-        }
-        cmod_numknown++;
-    }
+	if (i == cmod_numknown)
+	{
+		if (cmod_numknown == MAX_MODELS)
+		{
+			Sys_Error ("cmod_numknown == MAX_MODELS");
+		}
+		strcpy (mod->name, name);
+		if (load)
+		{
+			*load = true;
+		}
+		cmod_numknown++;
+	}
 
-    return mod;
+	return mod;
 }
 
 /*
@@ -209,50 +207,50 @@ CMod_LoadModel
 Loads a model into the cache
 ==================
 */
-static void CMod_LoadModel(cmodel_t *mod, bool crash, bool world)
+static void CMod_LoadModel (cmodel_t *mod, bool crash, bool world)
 {
-    uint32_t *buf;
-    byte stackbuf[1024]; // avoid dirtying the cache heap
+	uint32_t *buf;
+	byte stackbuf[1024]; // avoid dirtying the cache heap
 
-    //
-    // load the file
-    //
-    buf = (uint32_t *)COM_LoadStackFile(mod->name, stackbuf, sizeof(stackbuf));
-    if (!buf)
-    {
-        if (crash)
-        {
-            Sys_Error("CMod_NumForName: %s not found", mod->name);
-        }
-        return;
-    }
+	//
+	// load the file
+	//
+	buf = (uint32_t *)COM_LoadStackFile (mod->name, stackbuf, sizeof (stackbuf));
+	if (!buf)
+	{
+		if (crash)
+		{
+			Sys_Error ("CMod_NumForName: %s not found", mod->name);
+		}
+		return;
+	}
 
-    //
-    // allocate a new model
-    //
-    COM_FileBase(mod->name, loadname);
+	//
+	// allocate a new model
+	//
+	COM_FileBase (mod->name, loadname);
 
-    loadcmod = mod;
+	loadcmod = mod;
 
-    //
-    // fill it in
-    //
+	//
+	// fill it in
+	//
 
-    switch (LittleLong(*(uint32_t *)buf))
-    {
-    case IDPOLYHEADER:
-        mod->type = mod_alias;
-        break;
+	switch (LittleLong (*(uint32_t *)buf))
+	{
+	case IDPOLYHEADER:
+		mod->type = mod_alias;
+		break;
 
-    case IDSPRITEHEADER:
-        mod->type = mod_sprite;
-        break;
+	case IDSPRITEHEADER:
+		mod->type = mod_sprite;
+		break;
 
-    default:
-        mod->type = mod_brush;
-        CMod_LoadBrushModel(mod, buf, world);
-        break;
-    }
+	default:
+		mod->type = mod_brush;
+		CMod_LoadBrushModel (mod, buf, world);
+		break;
+	}
 }
 
 /*
@@ -262,17 +260,17 @@ CMod_ForName
 Loads in a model for the given name
 ==================
 */
-cmodel_t *CMod_ForName(char *name, bool crash, bool world)
+cmodel_t *CMod_ForName (char *name, bool crash, bool world)
 {
-    bool load = false;
-    cmodel_t *mod = CMod_FindName(name, &load);
+	bool load = false;
+	cmodel_t *mod = CMod_FindName (name, &load);
 
-    if (load)
-    {
-        CMod_LoadModel(mod, crash, world);
-    }
+	if (load)
+	{
+		CMod_LoadModel (mod, crash, world);
+	}
 
-    return mod;
+	return mod;
 }
 
 /*
@@ -291,17 +289,16 @@ static int mod_version;
 CMod_LoadVisibility
 =================
 */
-static void CMod_LoadVisibility(lump_t *l)
+static void CMod_LoadVisibility (lump_t *l)
 {
-    if (!l->filelen)
-    {
-        loadcmod->visdata = NULL;
-        return;
-    }
-    loadcmod->visdata = Hunk_AllocName(l->filelen, loadname);
-    memcpy(loadcmod->visdata, mod_base + l->fileofs, l->filelen);
+	if (!l->filelen)
+	{
+		loadcmod->visdata = NULL;
+		return;
+	}
+	loadcmod->visdata = Hunk_AllocName (l->filelen, loadname);
+	memcpy (loadcmod->visdata, mod_base + l->fileofs, l->filelen);
 }
-
 
 /*
 ================
@@ -310,30 +307,30 @@ CMod_CountEntities
 Does exactly what you think it does.
 Toodles TODO: This could save the tokens for later use in ED_LoadFromFile.
 ================*/
-static size_t CMod_CountEntities(char *data)
+static size_t CMod_CountEntities (char *data)
 {
 	size_t i = 0;
 	while (true)
 	{
-		data = COM_Parse(data);
+		data = COM_Parse (data);
 		if (!data)
 		{
 			break;
 		}
 		if (com_token[0] != '{')
 		{
-			Sys_Error("CMod_CountEntities: found %s when expecting {", com_token);
+			Sys_Error ("CMod_CountEntities: found %s when expecting {", com_token);
 		}
 		while (true)
 		{
-			data = COM_Parse(data);
+			data = COM_Parse (data);
 			if (com_token[0] == '}')
 			{
 				break;
 			}
 			if (!data)
 			{
-				Sys_Error("CMod_CountEntities: EOF without closing brace");
+				Sys_Error ("CMod_CountEntities: EOF without closing brace");
 			}
 		}
 		i++;
@@ -346,16 +343,16 @@ static size_t CMod_CountEntities(char *data)
 CMod_LoadEntities
 =================
 */
-static void CMod_LoadEntities(lump_t *l)
+static void CMod_LoadEntities (lump_t *l)
 {
-    if (!l->filelen)
-    {
-        return;
-    }
+	if (!l->filelen)
+	{
+		return;
+	}
 
-    loadcmod->entities = Hunk_AllocName(l->filelen, loadname);
-    memcpy(loadcmod->entities, mod_base + l->fileofs, l->filelen);
-    loadcmod->numentities = CMod_CountEntities(loadcmod->entities);
+	loadcmod->entities = Hunk_AllocName (l->filelen, loadname);
+	memcpy (loadcmod->entities, mod_base + l->fileofs, l->filelen);
+	loadcmod->numentities = CMod_CountEntities (loadcmod->entities);
 }
 
 /*
@@ -363,57 +360,57 @@ static void CMod_LoadEntities(lump_t *l)
 CMod_LoadSubmodels
 =================
 */
-static void CMod_LoadSubmodels(lump_t *l)
+static void CMod_LoadSubmodels (lump_t *l)
 {
-    dmodel_t *in;
-    cmodel_t *out, *next;
-    int i, j, count;
-    char name[10];
+	dmodel_t *in;
+	cmodel_t *out, *next;
+	int i, j, count;
+	char name[10];
 
-    in = (void *)(mod_base + l->fileofs);
+	in = (void *)(mod_base + l->fileofs);
 
-    if (l->filelen % sizeof(*in))
-    {
-        Sys_Error("CMOD_LoadBmodel: funny lump size in %s", loadcmod->name);
-    }
+	if (l->filelen % sizeof (*in))
+	{
+		Sys_Error ("CMOD_LoadBmodel: funny lump size in %s", loadcmod->name);
+	}
 
-    count = l->filelen / sizeof(*in);
-    out = loadcmod;
+	count = l->filelen / sizeof (*in);
+	out = loadcmod;
 
-    loadcmod->numsubmodels = count;
+	loadcmod->numsubmodels = count;
 
-    for (i = 0; i < count; i++, in++)
-    {
-        if (i > 0)
-        {
-            /* Get the next cmodel_t to be filled. */
-            sprintf(name, "*%i", i);
-            next = CMod_FindName(name, NULL);
+	for (i = 0; i < count; i++, in++)
+	{
+		if (i > 0)
+		{
+			/* Get the next cmodel_t to be filled. */
+			sprintf (name, "*%i", i);
+			next = CMod_FindName (name, NULL);
 
-            /* Duplicate the basic information. */
+			/* Duplicate the basic information. */
 			*next = *out;
-			strcpy(next->name, name);
+			strcpy (next->name, name);
 
-            /* Switch it out. */
-            out = next;
-        }
+			/* Switch it out. */
+			out = next;
+		}
 
-        for (j = 0; j < 3; j++)
-        {
-            out->mins[j] = LittleFloat(in->mins[j]) - 1.0f;
-            out->maxs[j] = LittleFloat(in->maxs[j]) + 1.0f;
-        }
+		for (j = 0; j < 3; j++)
+		{
+			out->mins[j] = LittleFloat (in->mins[j]) - 1.0f;
+			out->maxs[j] = LittleFloat (in->maxs[j]) + 1.0f;
+		}
 
-        out->hulls[HULL_POINT].firstclipnode = LittleLong(in->headnode[HULL_POINT]);
+		out->hulls[HULL_POINT].firstclipnode = LittleLong (in->headnode[HULL_POINT]);
 
-        for (j = 1; j < MAX_MAP_HULLS; j++)
-        {
-            out->hulls[j].firstclipnode = LittleLong(in->headnode[j]);
-            out->hulls[j].lastclipnode = out->numclipnodes - 1;
-        }
+		for (j = 1; j < MAX_MAP_HULLS; j++)
+		{
+			out->hulls[j].firstclipnode = LittleLong (in->headnode[j]);
+			out->hulls[j].lastclipnode = out->numclipnodes - 1;
+		}
 
-        out->numleafs = LittleLong(in->visleafs);
-    }
+		out->numleafs = LittleLong (in->visleafs);
+	}
 }
 
 /*
@@ -421,15 +418,15 @@ static void CMod_LoadSubmodels(lump_t *l)
 CMod_SetParent
 =================
 */
-static void CMod_SetParent(mnode_t *node, mnode_t *parent)
+static void CMod_SetParent (mnode_t *node, mnode_t *parent)
 {
-    node->parent = parent;
-    if (node->contents < 0)
-    {
-        return;
-    }
-    CMod_SetParent(node->children[0], node);
-    CMod_SetParent(node->children[1], node);
+	node->parent = parent;
+	if (node->contents < 0)
+	{
+		return;
+	}
+	CMod_SetParent (node->children[0], node);
+	CMod_SetParent (node->children[1], node);
 }
 
 /*
@@ -437,54 +434,54 @@ static void CMod_SetParent(mnode_t *node, mnode_t *parent)
 CMod_LoadNodes
 =================
 */
-static void CMod_LoadNodes(lump_t *l)
+static void CMod_LoadNodes (lump_t *l)
 {
-    int i, j, count, p;
-    dnode_t *in;
-    mnode_t *out;
+	int i, j, count, p;
+	dnode_t *in;
+	mnode_t *out;
 
-    in = (void *)(mod_base + l->fileofs);
+	in = (void *)(mod_base + l->fileofs);
 
-    if (l->filelen % sizeof(*in))
-    {
-        Sys_Error("CMOD_LoadBmodel: funny lump size in %s", loadcmod->name);
-    }
+	if (l->filelen % sizeof (*in))
+	{
+		Sys_Error ("CMOD_LoadBmodel: funny lump size in %s", loadcmod->name);
+	}
 
-    count = l->filelen / sizeof(*in);
-    out = Hunk_AllocName(count * sizeof(*out), loadname);
+	count = l->filelen / sizeof (*in);
+	out = Hunk_AllocName (count * sizeof (*out), loadname);
 
-    loadcmod->nodes = out;
-    loadcmod->numnodes = count;
+	loadcmod->nodes = out;
+	loadcmod->numnodes = count;
 
-    for (i = 0; i < count; i++, in++, out++)
-    {
-        for (j = 0; j < 3; j++)
-        {
-            out->minmaxs[j] = LittleShort(in->mins[j]);
-            out->minmaxs[3 + j] = LittleShort(in->maxs[j]);
-        }
+	for (i = 0; i < count; i++, in++, out++)
+	{
+		for (j = 0; j < 3; j++)
+		{
+			out->minmaxs[j] = LittleShort (in->mins[j]);
+			out->minmaxs[3 + j] = LittleShort (in->maxs[j]);
+		}
 
-        p = LittleLong(in->planenum);
-        out->plane = loadcmod->planes + p;
+		p = LittleLong (in->planenum);
+		out->plane = loadcmod->planes + p;
 
-		out->firstsurface = LittleShort(in->firstface);
-		out->numsurfaces = LittleShort(in->numfaces);
+		out->firstsurface = LittleShort (in->firstface);
+		out->numsurfaces = LittleShort (in->numfaces);
 
-        for (j = 0; j < 2; j++)
-        {
-            p = LittleShort(in->children[j]);
-            if (p >= 0)
-            {
-                out->children[j] = loadcmod->nodes + p;
-            }
-            else
-            {
-                out->children[j] = (mnode_t *)(loadcmod->leafs + (-1 - p));
-            }
-        }
-    }
+		for (j = 0; j < 2; j++)
+		{
+			p = LittleShort (in->children[j]);
+			if (p >= 0)
+			{
+				out->children[j] = loadcmod->nodes + p;
+			}
+			else
+			{
+				out->children[j] = (mnode_t *)(loadcmod->leafs + (-1 - p));
+			}
+		}
+	}
 
-    CMod_SetParent(loadcmod->nodes, NULL); // sets nodes and leafs
+	CMod_SetParent (loadcmod->nodes, NULL); // sets nodes and leafs
 }
 
 /*
@@ -492,38 +489,38 @@ static void CMod_LoadNodes(lump_t *l)
 CMod_LoadLeafs
 =================
 */
-static void CMod_LoadLeafs(lump_t *l)
+static void CMod_LoadLeafs (lump_t *l)
 {
-    dleaf_t *in;
-    mleaf_t *out;
-    int i, j, count, p;
+	dleaf_t *in;
+	mleaf_t *out;
+	int i, j, count, p;
 
-    in = (void *)(mod_base + l->fileofs);
+	in = (void *)(mod_base + l->fileofs);
 
-    if (l->filelen % sizeof(*in))
-    {
-        Sys_Error("CMOD_LoadBmodel: funny lump size in %s", loadcmod->name);
-    }
+	if (l->filelen % sizeof (*in))
+	{
+		Sys_Error ("CMOD_LoadBmodel: funny lump size in %s", loadcmod->name);
+	}
 
-    count = l->filelen / sizeof(*in);
-    out = Hunk_AllocName(count * sizeof(*out), loadname);
+	count = l->filelen / sizeof (*in);
+	out = Hunk_AllocName (count * sizeof (*out), loadname);
 
-    loadcmod->leafs = out;
-    loadcmod->numleafs = count;
+	loadcmod->leafs = out;
+	loadcmod->numleafs = count;
 
-    for (i = 0; i < count; i++, in++, out++)
-    {
-        for (j = 0; j < 3; j++)
-        {
-            out->minmaxs[j] = LittleShort(in->mins[j]);
-            out->minmaxs[3 + j] = LittleShort(in->maxs[j]);
-        }
+	for (i = 0; i < count; i++, in++, out++)
+	{
+		for (j = 0; j < 3; j++)
+		{
+			out->minmaxs[j] = LittleShort (in->mins[j]);
+			out->minmaxs[3 + j] = LittleShort (in->maxs[j]);
+		}
 
-        p = LittleLong(in->contents);
-        out->contents = p;
+		p = LittleLong (in->contents);
+		out->contents = p;
 
-		out->firstmarksurface = LittleShort(in->firstmarksurface);
-		out->nummarksurfaces = LittleShort(in->nummarksurfaces);
+		out->firstmarksurface = LittleShort (in->firstmarksurface);
+		out->nummarksurfaces = LittleShort (in->nummarksurfaces);
 
 		out->efrags = NULL;
 
@@ -532,17 +529,17 @@ static void CMod_LoadLeafs(lump_t *l)
 			out->ambient_sound_level[j] = in->ambient_level[j];
 		}
 
-        p = LittleLong(in->visofs);
+		p = LittleLong (in->visofs);
 
-        if (p == -1)
-        {
-            out->compressed_vis = NULL;
-        }
-        else
-        {
-            out->compressed_vis = loadcmod->visdata + p;
-        }
-    }
+		if (p == -1)
+		{
+			out->compressed_vis = NULL;
+		}
+		else
+		{
+			out->compressed_vis = loadcmod->visdata + p;
+		}
+	}
 }
 
 /*
@@ -550,51 +547,51 @@ static void CMod_LoadLeafs(lump_t *l)
 CMod_LoadClipnodes
 =================
 */
-static void CMod_LoadClipnodes(lump_t *l)
+static void CMod_LoadClipnodes (lump_t *l)
 {
-    dclipnode_t *in, *out;
-    int i, count;
-    hull_t *hull;
+	dclipnode_t *in, *out;
+	int i, count;
+	hull_t *hull;
 
-    in = (void *)(mod_base + l->fileofs);
+	in = (void *)(mod_base + l->fileofs);
 
-    if (l->filelen % sizeof(*in))
-    {
-        Sys_Error("CMOD_LoadBmodel: funny lump size in %s", loadcmod->name);
-    }
+	if (l->filelen % sizeof (*in))
+	{
+		Sys_Error ("CMOD_LoadBmodel: funny lump size in %s", loadcmod->name);
+	}
 
-    count = l->filelen / sizeof(*in);
-    out = Hunk_AllocName(count * sizeof(*out), loadname);
+	count = l->filelen / sizeof (*in);
+	out = Hunk_AllocName (count * sizeof (*out), loadname);
 
-    loadcmod->clipnodes = out;
-    loadcmod->numclipnodes = count;
+	loadcmod->clipnodes = out;
+	loadcmod->numclipnodes = count;
 
-    for (i = 1; i < MAX_MAP_HULLS; i++)
-    {
-        hull = &loadcmod->hulls[i];
-        hull->clipnodes = out;
-        hull->firstclipnode = 0;
-        hull->lastclipnode = count - 1;
-        hull->planes = loadcmod->planes;
+	for (i = 1; i < MAX_MAP_HULLS; i++)
+	{
+		hull = &loadcmod->hulls[i];
+		hull->clipnodes = out;
+		hull->firstclipnode = 0;
+		hull->lastclipnode = count - 1;
+		hull->planes = loadcmod->planes;
 
-        if (mod_version == BSPQUAKE)
-        {
-            VectorCopy(quake_hull_sizes[i][0], hull->clip_mins);
-            VectorCopy(quake_hull_sizes[i][1], hull->clip_maxs);
-        }
-        else
-        {
-            VectorCopy(hull_sizes[i][0], hull->clip_mins);
-            VectorCopy(hull_sizes[i][1], hull->clip_maxs);
-        }
-    }
+		if (mod_version == BSPQUAKE)
+		{
+			VectorCopy (quake_hull_sizes[i][0], hull->clip_mins);
+			VectorCopy (quake_hull_sizes[i][1], hull->clip_maxs);
+		}
+		else
+		{
+			VectorCopy (hull_sizes[i][0], hull->clip_mins);
+			VectorCopy (hull_sizes[i][1], hull->clip_maxs);
+		}
+	}
 
-    for (i = 0; i < count; i++, out++, in++)
-    {
-        out->planenum = LittleLong(in->planenum);
-        out->children[0] = LittleShort(in->children[0]);
-        out->children[1] = LittleShort(in->children[1]);
-    }
+	for (i = 0; i < count; i++, out++, in++)
+	{
+		out->planenum = LittleLong (in->planenum);
+		out->children[0] = LittleShort (in->children[0]);
+		out->children[1] = LittleShort (in->children[1]);
+	}
 }
 
 /*
@@ -604,40 +601,40 @@ CMod_MakeHull0
 Deplicate the drawing hull structure as a clipping hull
 =================
 */
-static void CMod_MakeHull0()
+static void CMod_MakeHull0 ()
 {
-    mnode_t *in, *child;
-    dclipnode_t *out;
-    int i, j, count;
-    hull_t *hull;
+	mnode_t *in, *child;
+	dclipnode_t *out;
+	int i, j, count;
+	hull_t *hull;
 
-    hull = &loadcmod->hulls[HULL_POINT];
+	hull = &loadcmod->hulls[HULL_POINT];
 
-    in = loadcmod->nodes;
-    count = loadcmod->numnodes;
-    out = Hunk_AllocName(count * sizeof(*out), loadname);
+	in = loadcmod->nodes;
+	count = loadcmod->numnodes;
+	out = Hunk_AllocName (count * sizeof (*out), loadname);
 
-    hull->clipnodes = out;
-    hull->firstclipnode = 0;
-    hull->lastclipnode = count - 1;
-    hull->planes = loadcmod->planes;
+	hull->clipnodes = out;
+	hull->firstclipnode = 0;
+	hull->lastclipnode = count - 1;
+	hull->planes = loadcmod->planes;
 
-    for (i = 0; i < count; i++, out++, in++)
-    {
-        out->planenum = in->plane - loadcmod->planes;
-        for (j = 0; j < 2; j++)
-        {
-            child = in->children[j];
-            if (child->contents < 0)
-            {
-                out->children[j] = child->contents;
-            }
-            else
-            {
-                out->children[j] = child - loadcmod->nodes;
-            }
-        }
-    }
+	for (i = 0; i < count; i++, out++, in++)
+	{
+		out->planenum = in->plane - loadcmod->planes;
+		for (j = 0; j < 2; j++)
+		{
+			child = in->children[j];
+			if (child->contents < 0)
+			{
+				out->children[j] = child->contents;
+			}
+			else
+			{
+				out->children[j] = child - loadcmod->nodes;
+			}
+		}
+	}
 }
 
 /*
@@ -645,43 +642,43 @@ static void CMod_MakeHull0()
 CMod_LoadPlanes
 =================
 */
-static void CMod_LoadPlanes(lump_t *l)
+static void CMod_LoadPlanes (lump_t *l)
 {
-    int i, j;
-    mplane_t *out;
-    dplane_t *in;
-    int count;
-    int bits;
+	int i, j;
+	mplane_t *out;
+	dplane_t *in;
+	int count;
+	int bits;
 
-    in = (void *)(mod_base + l->fileofs);
+	in = (void *)(mod_base + l->fileofs);
 
-    if (l->filelen % sizeof(*in))
-    {
-        Sys_Error("CMOD_LoadBmodel: funny lump size in %s", loadcmod->name);
-    }
+	if (l->filelen % sizeof (*in))
+	{
+		Sys_Error ("CMOD_LoadBmodel: funny lump size in %s", loadcmod->name);
+	}
 
-    count = l->filelen / sizeof(*in);
-    out = Hunk_AllocName(count * 2 * sizeof(*out), loadname);
+	count = l->filelen / sizeof (*in);
+	out = Hunk_AllocName (count * 2 * sizeof (*out), loadname);
 
-    loadcmod->planes = out;
-    loadcmod->numplanes = count;
+	loadcmod->planes = out;
+	loadcmod->numplanes = count;
 
-    for (i = 0; i < count; i++, in++, out++)
-    {
-        bits = 0;
-        for (j = 0; j < 3; j++)
-        {
-            out->normal[j] = LittleFloat(in->normal[j]);
-            if (out->normal[j] < 0)
-            {
-                bits |= 1 << j;
-            }
-        }
+	for (i = 0; i < count; i++, in++, out++)
+	{
+		bits = 0;
+		for (j = 0; j < 3; j++)
+		{
+			out->normal[j] = LittleFloat (in->normal[j]);
+			if (out->normal[j] < 0)
+			{
+				bits |= 1 << j;
+			}
+		}
 
-        out->dist = LittleFloat(in->dist);
-        out->type = LittleLong(in->type);
-        out->signbits = bits;
-    }
+		out->dist = LittleFloat (in->dist);
+		out->type = LittleLong (in->type);
+		out->signbits = bits;
+	}
 }
 
 /*
@@ -689,81 +686,71 @@ static void CMod_LoadPlanes(lump_t *l)
 CMod_LoadBrushModel
 =================
 */
-static void CMod_LoadBrushModel(cmodel_t *mod, void *buffer, bool world)
+static void CMod_LoadBrushModel (cmodel_t *mod, void *buffer, bool world)
 {
-    int i;
-    dheader_t *header;
+	int i;
+	dheader_t *header;
 
-    header = (dheader_t *)buffer;
+	header = (dheader_t *)buffer;
 
-    mod_version = LittleLong(header->version);
+	mod_version = LittleLong (header->version);
 
-    if (mod_version != BSPVERSION && mod_version != BSPQUAKE)
-    {
-        Sys_Error(
-            "CMod_LoadBrushModel: %s has wrong version number \
+	if (mod_version != BSPVERSION && mod_version != BSPQUAKE)
+	{
+		Sys_Error ("CMod_LoadBrushModel: %s has wrong version number \
 			(%i should be %i or %i)",
-            mod->name,
-            mod_version,
-            BSPVERSION,
-            BSPQUAKE);
-    }
+				   mod->name, mod_version, BSPVERSION, BSPQUAKE);
+	}
 
-    // swap all the lumps
-    mod_base = (byte *)header;
+	// swap all the lumps
+	mod_base = (byte *)header;
 
-    for (i = 0; i < sizeof(dheader_t) / 4; i++)
-    {
-        ((int32_t *)header)[i] = LittleLong(((int32_t *)header)[i]);
-    }
+	for (i = 0; i < sizeof (dheader_t) / 4; i++)
+	{
+		((int32_t *)header)[i] = LittleLong (((int32_t *)header)[i]);
+	}
 
-// checksum all of the map, except for entities
+	// checksum all of the map, except for entities
 	mod->checksum = 0;
 	mod->checksum2 = 0;
 
 	for (i = 0; i < HEADER_LUMPS; i++)
-    {
+	{
 		if (i == LUMP_ENTITIES)
-        {
+		{
 			continue;
-        }
+		}
 
-		mod->checksum ^=
-            COM_BlockChecksum(
-                mod_base + header->lumps[i].fileofs, 
-                header->lumps[i].filelen);
+		mod->checksum ^= COM_BlockChecksum (mod_base + header->lumps[i].fileofs, header->lumps[i].filelen);
 
 		if (i == LUMP_VISIBILITY || i == LUMP_LEAFS || i == LUMP_NODES)
-        {
+		{
 			continue;
-        }
+		}
 
-		mod->checksum2 ^=
-            COM_BlockChecksum(
-                mod_base + header->lumps[i].fileofs, 
-                header->lumps[i].filelen);
+		mod->checksum2 ^= COM_BlockChecksum (mod_base + header->lumps[i].fileofs, header->lumps[i].filelen);
 	}
 
-    // load into heap
-    if (world)
-    {
-        CMod_LoadEntities(&header->lumps[LUMP_ENTITIES]);
-    }
-    else
-    {
-        mod->entities = NULL;
-        mod->numentities = 0;
-    }
+	// load into heap
+	if (world)
+	{
+		CMod_LoadEntities (&header->lumps[LUMP_ENTITIES]);
+	}
+	else
+	{
+		mod->entities = NULL;
+		mod->numentities = 0;
+	}
 
-    CMod_LoadPlanes     (&header->lumps[LUMP_PLANES]);
-    CMod_LoadVisibility (&header->lumps[LUMP_VISIBILITY]);
-    CMod_LoadLeafs      (&header->lumps[LUMP_LEAFS]);
-    CMod_LoadNodes      (&header->lumps[LUMP_NODES]);
-    CMod_LoadClipnodes  (&header->lumps[LUMP_CLIPNODES]);
+	CMod_LoadPlanes (&header->lumps[LUMP_PLANES]);
+	CMod_LoadVisibility (&header->lumps[LUMP_VISIBILITY]);
+	CMod_LoadLeafs (&header->lumps[LUMP_LEAFS]);
+	CMod_LoadNodes (&header->lumps[LUMP_NODES]);
+	CMod_LoadClipnodes (&header->lumps[LUMP_CLIPNODES]);
 
-    CMod_MakeHull0();
+	CMod_MakeHull0 ();
 
-    CMod_LoadSubmodels  (&header->lumps[LUMP_MODELS]);
+	CMod_LoadSubmodels (&header->lumps[LUMP_MODELS]);
 }
 
 //=============================================================================
@@ -773,14 +760,14 @@ static void CMod_LoadBrushModel(cmodel_t *mod, void *buffer, bool world)
 CMod_Print
 ================
 */
-void CMod_Print()
+void CMod_Print ()
 {
-    int i;
-    cmodel_t *mod;
+	int i;
+	cmodel_t *mod;
 
-    Con_Printf("Cached cmodels:\n");
-    for (i = 0, mod = cmod_known; i < cmod_numknown; i++, mod++)
-    {
-        Con_Printf("%u : %s\n", i, mod->name);
-    }
+	Con_Printf ("Cached cmodels:\n");
+	for (i = 0, mod = cmod_known; i < cmod_numknown; i++, mod++)
+	{
+		Con_Printf ("%u : %s\n", i, mod->name);
+	}
 }

@@ -39,9 +39,9 @@ Skin_Find
 */
 void Skin_Find (player_info_t *sc)
 {
-	skin_t		*skin;
-	int			i;
-	char		name[128], *s;
+	skin_t *skin;
+	int i;
+	char name[128], *s;
 
 	if (allskins[0])
 		strcpy (name, allskins);
@@ -59,7 +59,7 @@ void Skin_Find (player_info_t *sc)
 
 	COM_StripExtension (name, name);
 
-	for (i=0 ; i<numskins ; i++)
+	for (i = 0; i < numskins; i++)
 	{
 		if (!strcmp (name, skins[i].name))
 		{
@@ -70,7 +70,7 @@ void Skin_Find (player_info_t *sc)
 	}
 
 	if (numskins == MAX_CACHED_SKINS)
-	{	// ran out of spots, so flush everything
+	{ // ran out of spots, so flush everything
 		Skin_Skins_f ();
 		return;
 	}
@@ -79,10 +79,9 @@ void Skin_Find (player_info_t *sc)
 	sc->skin = skin;
 	numskins++;
 
-	memset (skin, 0, sizeof(*skin));
-	strncpy(skin->name, name, sizeof(skin->name) - 1);
+	memset (skin, 0, sizeof (*skin));
+	strncpy (skin->name, name, sizeof (skin->name) - 1);
 }
-
 
 /*
 ==========
@@ -91,21 +90,21 @@ Skin_Cache
 Returns a pointer to the skin bitmap, or NULL to use the default
 ==========
 */
-byte	*Skin_Cache (skin_t *skin)
+byte *Skin_Cache (skin_t *skin)
 {
-	char	name[1024];
-	byte	*raw;
-	byte	*out, *pix;
-	pcx_t	*pcx;
-	int		x, y;
-	int		dataByte;
-	int		runLength;
+	char name[1024];
+	byte *raw;
+	byte *out, *pix;
+	pcx_t *pcx;
+	int x, y;
+	int dataByte;
+	int runLength;
 
 	if (cls.downloadtype == dl_skin)
-		return NULL;		// use base until downloaded
+		return NULL; // use base until downloaded
 
-	if (noskins.value==1) // JACK: So NOSKINS > 1 will show skins, but
-		return NULL;	  // not download new ones.
+	if (noskins.value == 1) // JACK: So NOSKINS > 1 will show skins, but
+		return NULL;		// not download new ones.
 
 	if (skin->failedload)
 		return NULL;
@@ -114,9 +113,9 @@ byte	*Skin_Cache (skin_t *skin)
 	if (out)
 		return out;
 
-//
-// load the pic from disk
-//
+	//
+	// load the pic from disk
+	//
 	sprintf (name, "skins/%s.pcx", skin->name);
 	raw = COM_LoadTempFile (name);
 	if (!raw)
@@ -131,36 +130,31 @@ byte	*Skin_Cache (skin_t *skin)
 		}
 	}
 
-//
-// parse the PCX file
-//
+	//
+	// parse the PCX file
+	//
 	pcx = (pcx_t *)raw;
 	raw = &pcx->data;
 
-	if (pcx->manufacturer != 0x0a
-		|| pcx->version != 5
-		|| pcx->encoding != 1
-		|| pcx->bits_per_pixel != 8
-		|| pcx->xmax >= 320
-		|| pcx->ymax >= 200)
+	if (pcx->manufacturer != 0x0a || pcx->version != 5 || pcx->encoding != 1 || pcx->bits_per_pixel != 8 || pcx->xmax >= 320 || pcx->ymax >= 200)
 	{
 		skin->failedload = true;
 		Con_Printf ("Bad skin %s\n", name);
 		return NULL;
 	}
-	
-	out = Cache_Alloc (&skin->cache, 320*200, skin->name);
+
+	out = Cache_Alloc (&skin->cache, 320 * 200, skin->name);
 	if (!out)
 		Sys_Error ("Skin_Cache: couldn't allocate");
 
 	pix = out;
-	memset (out, 0, 320*200);
+	memset (out, 0, 320 * 200);
 
-	for (y=0 ; y<pcx->ymax ; y++, pix += 320)
+	for (y = 0; y < pcx->ymax; y++, pix += 320)
 	{
-		for (x=0 ; x<=pcx->xmax ; )
+		for (x = 0; x <= pcx->xmax;)
 		{
-			if (raw - (byte*)pcx > com_filesize) 
+			if (raw - (byte *)pcx > com_filesize)
 			{
 				Cache_Free (&skin->cache);
 				skin->failedload = true;
@@ -169,10 +163,10 @@ byte	*Skin_Cache (skin_t *skin)
 			}
 			dataByte = *raw++;
 
-			if((dataByte & 0xC0) == 0xC0)
+			if ((dataByte & 0xC0) == 0xC0)
 			{
 				runLength = dataByte & 0x3F;
-				if (raw - (byte*)pcx > com_filesize) 
+				if (raw - (byte *)pcx > com_filesize)
 				{
 					Cache_Free (&skin->cache);
 					skin->failedload = true;
@@ -185,19 +179,19 @@ byte	*Skin_Cache (skin_t *skin)
 				runLength = 1;
 
 			// skin sanity check
-			if (runLength + x > pcx->xmax + 2) {
+			if (runLength + x > pcx->xmax + 2)
+			{
 				Cache_Free (&skin->cache);
 				skin->failedload = true;
 				Con_Printf ("Skin %s was malformed.  You should delete it.\n", name);
 				return NULL;
 			}
-			while(runLength-- > 0)
+			while (runLength-- > 0)
 				pix[x++] = dataByte;
 		}
-
 	}
 
-	if ( raw - (byte *)pcx > com_filesize)
+	if (raw - (byte *)pcx > com_filesize)
 	{
 		Cache_Free (&skin->cache);
 		skin->failedload = true;
@@ -210,7 +204,6 @@ byte	*Skin_Cache (skin_t *skin)
 	return out;
 }
 
-
 /*
 =================
 Skin_NextDownload
@@ -218,16 +211,14 @@ Skin_NextDownload
 */
 void Skin_NextDownload ()
 {
-	player_info_t	*sc;
-	int			i;
+	player_info_t *sc;
+	int i;
 
 	if (cls.downloadnumber == 0)
 		Con_Printf ("Checking skins...\n");
 	cls.downloadtype = dl_skin;
 
-	for ( 
-		; cls.downloadnumber != MAX_CLIENTS
-		; cls.downloadnumber++)
+	for (; cls.downloadnumber != MAX_CLIENTS; cls.downloadnumber++)
 	{
 		sc = &cl.players[cls.downloadnumber];
 		if (!sc->name[0])
@@ -235,14 +226,14 @@ void Skin_NextDownload ()
 		Skin_Find (sc);
 		if (noskins.value)
 			continue;
-		if (!CL_CheckOrDownloadFile(va("skins/%s.pcx", sc->skin->name)))
-			return;		// started a download
+		if (!CL_CheckOrDownloadFile (va ("skins/%s.pcx", sc->skin->name)))
+			return; // started a download
 	}
 
 	cls.downloadtype = dl_none;
 
 	// now load them in for real
-	for (i=0 ; i<MAX_CLIENTS ; i++)
+	for (i = 0; i < MAX_CLIENTS; i++)
 	{
 		sc = &cl.players[i];
 		if (!sc->name[0])
@@ -252,14 +243,12 @@ void Skin_NextDownload ()
 	}
 
 	if (cls.state != ca_active)
-	{	// get next signon phase
+	{ // get next signon phase
 		MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
-		MSG_WriteString (&cls.netchan.message,
-			va("begin %i", cl.servercount));
-		Cache_Report ();		// print remaining memory
+		MSG_WriteString (&cls.netchan.message, va ("begin %i", cl.servercount));
+		Cache_Report (); // print remaining memory
 	}
 }
-
 
 /*
 ==========
@@ -268,11 +257,11 @@ Skin_Skins_f
 Refind all skins, downloading if needed.
 ==========
 */
-void	Skin_Skins_f ()
+void Skin_Skins_f ()
 {
-	int		i;
+	int i;
 
-	for (i=0 ; i<numskins ; i++)
+	for (i = 0; i < numskins; i++)
 	{
 		if (skins[i].cache.data)
 			Cache_Free (&skins[i].cache);
@@ -284,7 +273,6 @@ void	Skin_Skins_f ()
 	Skin_NextDownload ();
 }
 
-
 /*
 ==========
 Skin_AllSkins_f
@@ -292,8 +280,8 @@ Skin_AllSkins_f
 Sets all skins to one specific one
 ==========
 */
-void	Skin_AllSkins_f ()
+void Skin_AllSkins_f ()
 {
-	strcpy (allskins, Cmd_Argv(1));
+	strcpy (allskins, Cmd_Argv (1));
 	Skin_Skins_f ();
 }

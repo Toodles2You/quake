@@ -10,10 +10,10 @@ extern float v_blend[4];
 
 extern cvar_t lcd_x;
 
-void V_Init();
-void V_RenderView();
-float V_CalcRoll(vec3_t angles, vec3_t velocity);
-void V_UpdatePalette();
-void V_ClampViewAngles();
+void V_Init ();
+void V_RenderView ();
+float V_CalcRoll (vec3_t angles, vec3_t velocity);
+void V_UpdatePalette ();
+void V_ClampViewAngles ();
 
 #endif /* !_VIEW_H */

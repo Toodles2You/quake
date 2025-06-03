@@ -2,17 +2,17 @@
 #ifndef _SCREEN_H
 #define _SCREEN_H
 
-void SCR_Init();
+void SCR_Init ();
 
-void SCR_UpdateScreen();
+void SCR_UpdateScreen ();
 
-void SCR_BringDownConsole();
-void SCR_CenterPrint(char *str);
+void SCR_BringDownConsole ();
+void SCR_CenterPrint (char *str);
 
-void SCR_BeginLoadingPlaque();
-void SCR_EndLoadingPlaque();
+void SCR_BeginLoadingPlaque ();
+void SCR_EndLoadingPlaque ();
 
-int SCR_ModalMessage(char *text);
+int SCR_ModalMessage (char *text);
 
 extern float scr_con_current;
 extern float scr_conlines; // lines of console to display

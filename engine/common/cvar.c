@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "clientdef.h"
 
 static cvar_t *cvar_vars[2];
-char	*cvar_null_string = "";
+char *cvar_null_string = "";
 
 /*
 ============
@@ -31,9 +31,9 @@ Cvar_FindVar
 */
 cvar_t *Cvar_FindVar (cmd_source_e src, char *var_name)
 {
-	cvar_t	*var;
-	
-	for (var=cvar_vars[src] ; var ; var=var->next[src])
+	cvar_t *var;
+
+	for (var = cvar_vars[src]; var; var = var->next[src])
 		if (!strcmp (var_name, var->name))
 			return var;
 
@@ -45,16 +45,15 @@ cvar_t *Cvar_FindVar (cmd_source_e src, char *var_name)
 Cvar_VariableValue
 ============
 */
-float	Cvar_VariableValue (cmd_source_e src, char *var_name)
+float Cvar_VariableValue (cmd_source_e src, char *var_name)
 {
-	cvar_t	*var;
-	
+	cvar_t *var;
+
 	var = Cvar_FindVar (src, var_name);
 	if (!var)
 		return 0;
 	return atof (var->string);
 }
-
 
 /*
 ============
@@ -64,13 +63,12 @@ Cvar_VariableString
 char *Cvar_VariableString (cmd_source_e src, char *var_name)
 {
 	cvar_t *var;
-	
+
 	var = Cvar_FindVar (src, var_name);
 	if (!var)
 		return cvar_null_string;
 	return var->string;
 }
-
 
 static void Cvar_GetBestVariable (cmd_source_e src, char *partial, int len, char **best, int *bestLen)
 {
@@ -79,9 +77,9 @@ static void Cvar_GetBestVariable (cmd_source_e src, char *partial, int len, char
 
 	for (cvar = cvar_vars[src]; cvar; cvar = cvar->next[src])
 	{
-		curLen = abs(strlen(cvar->name) - len);
+		curLen = abs (strlen (cvar->name) - len);
 
-		if (curLen < *bestLen && !strncmp(partial, cvar->name, len))
+		if (curLen < *bestLen && !strncmp (partial, cvar->name, len))
 		{
 			*best = cvar->name;
 			*bestLen = curLen;
@@ -99,9 +97,9 @@ char *Cvar_CompleteVariable (cmd_source_e src, char *partial)
 	int len;
 	char *best = NULL;
 	int bestLen = 256;
-	
-	len = strlen(partial);
-	
+
+	len = strlen (partial);
+
 	if (!len)
 		return NULL;
 
@@ -120,8 +118,7 @@ char *Cvar_CompleteVariable (cmd_source_e src, char *partial)
 	return best;
 }
 
-
-void SV_SendServerInfoChange(char *key, char *value);
+void SV_SendServerInfoChange (char *key, char *value);
 
 /*
 ============
@@ -130,22 +127,22 @@ Cvar_Set
 */
 void Cvar_Set (cmd_source_e src, char *var_name, char *value)
 {
-	cvar_t	*var;
+	cvar_t *var;
 	bool changed;
-	
+
 	var = Cvar_FindVar (src, var_name);
 	if (!var)
-	{	// there is an error in C code if this happens
+	{ // there is an error in C code if this happens
 		Con_Printf ("Cvar_Set: variable %s not found\n", var_name);
 		return;
 	}
 
-	changed = strcmp(var->string, value);
+	changed = strcmp (var->string, value);
 
 	if ((var->flags & CVAR_SERVER_INFO) && Host_IsLocalGame ())
 	{
 		Info_SetValueForKey (svs.info, var_name, value, MAX_SERVERINFO_STRING, sv_highchars.value);
-		SV_SendServerInfoChange(var_name, value);
+		SV_SendServerInfoChange (var_name, value);
 	}
 
 	if (var->flags & CVAR_CLIENT_INFO)
@@ -154,13 +151,13 @@ void Cvar_Set (cmd_source_e src, char *var_name, char *value)
 		if (cls.state >= ca_connected)
 		{
 			MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
-			SZ_Print (&cls.netchan.message, va("setinfo \"%s\" \"%s\"\n", var_name, value));
+			SZ_Print (&cls.netchan.message, va ("setinfo \"%s\" \"%s\"\n", var_name, value));
 		}
 	}
-	
-	Z_Free (var->string);	// free the old value string
-	
-	var->string = Z_Malloc (strlen(value)+1);
+
+	Z_Free (var->string); // free the old value string
+
+	var->string = Z_Malloc (strlen (value) + 1);
 	strcpy (var->string, value);
 	var->value = atof (var->string);
 
@@ -177,12 +174,11 @@ Cvar_SetValue
 */
 void Cvar_SetValue (cmd_source_e src, char *var_name, float value)
 {
-	char	val[32];
-	
-	sprintf (val, "%f",value);
+	char val[32];
+
+	sprintf (val, "%f", value);
 	Cvar_Set (src, var_name, val);
 }
-
 
 /*
 ============
@@ -193,7 +189,7 @@ Adds a freestanding variable to the variable list.
 */
 void Cvar_RegisterVariable (cmd_source_e src, cvar_t *variable)
 {
-	char	value[512];
+	char value[512];
 
 	if (src == src_host)
 	{
@@ -201,30 +197,30 @@ void Cvar_RegisterVariable (cmd_source_e src, cvar_t *variable)
 		Cvar_RegisterVariable (src_server, variable);
 		return;
 	}
-	
-// first check to see if it has allready been defined
+
+	// first check to see if it has allready been defined
 	if (Cvar_FindVar (src, variable->name))
 	{
 		Con_Printf ("Can't register variable %s, allready defined\n", variable->name);
 		return;
 	}
-	
-// check for overlap with a command
+
+	// check for overlap with a command
 	if (Cmd_Exists (src, variable->name))
 	{
 		Con_Printf ("Cvar_RegisterVariable: %s is a command\n", variable->name);
 		return;
 	}
-		
-// link the variable in
+
+	// link the variable in
 	variable->next[src] = cvar_vars[src];
 	cvar_vars[src] = variable;
 
-// copy the value off, because future sets will Z_Free it
+	// copy the value off, because future sets will Z_Free it
 	strcpy (value, variable->string);
-	variable->string = Z_Malloc (1);	
-	
-// set it through the function to be consistant
+	variable->string = Z_Malloc (1);
+
+	// set it through the function to be consistant
 	Cvar_Set (src, variable->name, value);
 }
 
@@ -235,26 +231,25 @@ Cvar_Command
 Handles variable inspection and changing from the console
 ============
 */
-bool	Cvar_Command (cmd_source_e src)
+bool Cvar_Command (cmd_source_e src)
 {
-	cvar_t			*v;
+	cvar_t *v;
 
-// check variables
-	v = Cvar_FindVar (src, Cmd_Argv(0));
+	// check variables
+	v = Cvar_FindVar (src, Cmd_Argv (0));
 	if (!v)
 		return false;
-		
-// perform a variable print or set
-	if (Cmd_Argc() == 1)
+
+	// perform a variable print or set
+	if (Cmd_Argc () == 1)
 	{
 		Con_Printf ("\"%s\" is \"%s\"\n", v->name, v->string);
 		return true;
 	}
 
-	Cvar_Set (src, v->name, Cmd_Argv(1));
+	Cvar_Set (src, v->name, Cmd_Argv (1));
 	return true;
 }
-
 
 /*
 ============
@@ -266,10 +261,9 @@ with the archive flag set to true.
 */
 void Cvar_WriteVariables (FILE *f)
 {
-	cvar_t	*var;
-	
-	for (var = cvar_vars[src_client] ; var ; var = var->next[src_client])
+	cvar_t *var;
+
+	for (var = cvar_vars[src_client]; var; var = var->next[src_client])
 		if (var->flags & CVAR_ARCHIVE)
 			fprintf (f, "%s \"%s\"\n", var->name, var->string);
 }
-

@@ -10,23 +10,23 @@ Returns the distance between the points, or -1 if blocked
 */
 vec_t CastRay (vec3_t p1, vec3_t p2)
 {
-	int		i;
-	vec_t	t;
-	bool	trace;
-	int		contents;
-		
+	int i;
+	vec_t t;
+	bool trace;
+	int contents;
+
 	trace = TestLine (p1, p2, &contents);
-		
+
 	if (!trace)
-		return -1;		// ray was blocked
-		
+		return -1; // ray was blocked
+
 	t = 0;
-	for (i=0 ; i< 3 ; i++)
-		t += (p2[i]-p1[i]) * (p2[i]-p1[i]);
-		
+	for (i = 0; i < 3; i++)
+		t += (p2[i] - p1[i]) * (p2[i] - p1[i]);
+
 	if (t == 0)
-		t = 1;		// don't blow up...
-	return sqrt(t);
+		t = 1; // don't blow up...
+	return sqrt (t);
 }
 
 /*
@@ -41,8 +41,8 @@ bool CastRaySky (vec3_t p1, vec3_t p2)
 	vec3_t p3, p4;
 	int contents;
 
-	VectorMA(p1, ON_EPSILON, p2, p3);
-	VectorMA(p1, 8192.0, p2, p4);
+	VectorMA (p1, ON_EPSILON, p2, p3);
+	VectorMA (p1, 8192.0, p2, p4);
 
 	TestLine (p3, p4, &contents);
 
@@ -70,31 +70,30 @@ towards the center until it is valid.
 ===============================================================================
 */
 
-#define	SINGLEMAP	(18*18*4)
+#define SINGLEMAP (18 * 18 * 4)
 
 typedef struct
 {
-	vec3_t	lightmaps[MAXLIGHTMAPS][SINGLEMAP];
-	int		numlightstyles;
-	vec3_t	*light;
-	vec_t	facedist;
-	vec3_t	facenormal;
+	vec3_t lightmaps[MAXLIGHTMAPS][SINGLEMAP];
+	int numlightstyles;
+	vec3_t *light;
+	vec_t facedist;
+	vec3_t facenormal;
 
-	int		numsurfpt;
-	vec3_t	surfpt[SINGLEMAP];
+	int numsurfpt;
+	vec3_t surfpt[SINGLEMAP];
 
-	vec3_t	texorg;
-	vec3_t	worldtotex[2];	// s = (world - texorg) . worldtotex[0]
-	vec3_t	textoworld[2];	// world = texorg + s * textoworld[0]
+	vec3_t texorg;
+	vec3_t worldtotex[2]; // s = (world - texorg) . worldtotex[0]
+	vec3_t textoworld[2]; // world = texorg + s * textoworld[0]
 
-	vec_t	exactmins[2], exactmaxs[2];
-	
-	int		texmins[2], texsize[2];
-	int		lightstyles[256];
-	int		surfnum;
-	dface_t	*face;
+	vec_t exactmins[2], exactmaxs[2];
+
+	int texmins[2], texsize[2];
+	int lightstyles[256];
+	int surfnum;
+	dface_t *face;
 } lightinfo_t;
-
 
 /*
 ================
@@ -105,30 +104,27 @@ Fills in texorg, worldtotex. and textoworld
 */
 void CalcFaceVectors (lightinfo_t *l)
 {
-	texinfo_t	*tex;
-	int			i, j;
-	vec3_t	texnormal;
-	float	distscale;
-	vec_t	dist, len;
+	texinfo_t *tex;
+	int i, j;
+	vec3_t texnormal;
+	float distscale;
+	vec_t dist, len;
 
 	tex = &texinfo[l->face->texinfo];
-	
-// convert from float to vec_t
-	for (i=0 ; i<2 ; i++)
-		for (j=0 ; j<3 ; j++)
+
+	// convert from float to vec_t
+	for (i = 0; i < 2; i++)
+		for (j = 0; j < 3; j++)
 			l->worldtotex[i][j] = tex->vecs[i][j];
 
-// calculate a normal to the texture axis.  points can be moved along this
-// without changing their S/T
-	texnormal[0] = tex->vecs[1][1]*tex->vecs[0][2]
-		- tex->vecs[1][2]*tex->vecs[0][1];
-	texnormal[1] = tex->vecs[1][2]*tex->vecs[0][0]
-		- tex->vecs[1][0]*tex->vecs[0][2];
-	texnormal[2] = tex->vecs[1][0]*tex->vecs[0][1]
-		- tex->vecs[1][1]*tex->vecs[0][0];
+	// calculate a normal to the texture axis.  points can be moved along this
+	// without changing their S/T
+	texnormal[0] = tex->vecs[1][1] * tex->vecs[0][2] - tex->vecs[1][2] * tex->vecs[0][1];
+	texnormal[1] = tex->vecs[1][2] * tex->vecs[0][0] - tex->vecs[1][0] * tex->vecs[0][2];
+	texnormal[2] = tex->vecs[1][0] * tex->vecs[0][1] - tex->vecs[1][1] * tex->vecs[0][0];
 	VectorNormalize (texnormal);
 
-// flip it towards plane normal
+	// flip it towards plane normal
 	distscale = DotProduct (texnormal, l->facenormal);
 	if (!distscale)
 		Error ("Texture axis perpendicular to face");
@@ -136,31 +132,29 @@ void CalcFaceVectors (lightinfo_t *l)
 	{
 		distscale = -distscale;
 		VectorSubtract (vec3_origin, texnormal, texnormal);
-	}	
+	}
 
-// distscale is the ratio of the distance along the texture normal to
-// the distance along the plane normal
-	distscale = 1/distscale;
+	// distscale is the ratio of the distance along the texture normal to
+	// the distance along the plane normal
+	distscale = 1 / distscale;
 
-	for (i=0 ; i<2 ; i++)
+	for (i = 0; i < 2; i++)
 	{
 		len = Length (l->worldtotex[i]);
 		dist = DotProduct (l->worldtotex[i], l->facenormal);
 		dist *= distscale;
 		VectorMA (l->worldtotex[i], -dist, texnormal, l->textoworld[i]);
-		VectorScale (l->textoworld[i], (1/len)*(1/len), l->textoworld[i]);
+		VectorScale (l->textoworld[i], (1 / len) * (1 / len), l->textoworld[i]);
 	}
 
+	// calculate texorg on the texture plane
+	for (i = 0; i < 3; i++)
+		l->texorg[i] = -tex->vecs[0][3] * l->textoworld[0][i] - tex->vecs[1][3] * l->textoworld[1][i];
 
-// calculate texorg on the texture plane
-	for (i=0 ; i<3 ; i++)
-		l->texorg[i] = -tex->vecs[0][3]* l->textoworld[0][i] - tex->vecs[1][3] * l->textoworld[1][i];
-
-// project back to the face plane
+	// project back to the face plane
 	dist = DotProduct (l->texorg, l->facenormal) - l->facedist - 1;
 	dist *= distscale;
 	VectorMA (l->texorg, -dist, texnormal, l->texorg);
-	
 }
 
 /*
@@ -174,32 +168,29 @@ also sets exactmins[] and exactmaxs[]
 void CalcFaceExtents (lightinfo_t *l)
 {
 	dface_t *s;
-	vec_t	mins[2], maxs[2], val;
-	int		i,j, e;
-	dvertex_t	*v;
-	texinfo_t	*tex;
-	
+	vec_t mins[2], maxs[2], val;
+	int i, j, e;
+	dvertex_t *v;
+	texinfo_t *tex;
+
 	s = l->face;
 
 	mins[0] = mins[1] = 999999;
 	maxs[0] = maxs[1] = -99999;
 
 	tex = &texinfo[s->texinfo];
-	
-	for (i=0 ; i<s->numedges ; i++)
+
+	for (i = 0; i < s->numedges; i++)
 	{
-		e = dsurfedges[s->firstedge+i];
+		e = dsurfedges[s->firstedge + i];
 		if (e >= 0)
 			v = dvertexes + dedges[e].v[0];
 		else
 			v = dvertexes + dedges[-e].v[1];
-		
-		for (j=0 ; j<2 ; j++)
+
+		for (j = 0; j < 2; j++)
 		{
-			val = v->point[0] * tex->vecs[j][0] + 
-				v->point[1] * tex->vecs[j][1] +
-				v->point[2] * tex->vecs[j][2] +
-				tex->vecs[j][3];
+			val = v->point[0] * tex->vecs[j][0] + v->point[1] * tex->vecs[j][1] + v->point[2] * tex->vecs[j][2] + tex->vecs[j][3];
 			if (val < mins[j])
 				mins[j] = val;
 			if (val > maxs[j])
@@ -207,13 +198,13 @@ void CalcFaceExtents (lightinfo_t *l)
 		}
 	}
 
-	for (i=0 ; i<2 ; i++)
-	{	
+	for (i = 0; i < 2; i++)
+	{
 		l->exactmins[i] = mins[i];
 		l->exactmaxs[i] = maxs[i];
-		
-		mins[i] = floor(mins[i]/16);
-		maxs[i] = ceil(maxs[i]/16);
+
+		mins[i] = floor (mins[i] / 16);
+		maxs[i] = ceil (maxs[i] / 16);
 
 		l->texmins[i] = mins[i];
 		l->texsize[i] = maxs[i] - mins[i];
@@ -233,61 +224,60 @@ to get the world xyz value of the sample point
 int c_bad;
 void CalcPoints (lightinfo_t *l)
 {
-	int		i;
-	int		s, t, j;
-	int		w, h, step;
-	vec_t	starts, startt, us, ut;
-	vec_t	*surf;
-	vec_t	mids, midt;
-	vec3_t	facemid, move;
+	int i;
+	int s, t, j;
+	int w, h, step;
+	vec_t starts, startt, us, ut;
+	vec_t *surf;
+	vec_t mids, midt;
+	vec3_t facemid, move;
 
-//
-// fill in surforg
-// the points are biased towards the center of the surface
-// to help avoid edge cases just inside walls
-//
+	//
+	// fill in surforg
+	// the points are biased towards the center of the surface
+	// to help avoid edge cases just inside walls
+	//
 	surf = l->surfpt[0];
-	mids = (l->exactmaxs[0] + l->exactmins[0])/2;
-	midt = (l->exactmaxs[1] + l->exactmins[1])/2;
+	mids = (l->exactmaxs[0] + l->exactmins[0]) / 2;
+	midt = (l->exactmaxs[1] + l->exactmins[1]) / 2;
 
-	for (j=0 ; j<3 ; j++)
-		facemid[j] = l->texorg[j] + l->textoworld[0][j]*mids + l->textoworld[1][j]*midt;
+	for (j = 0; j < 3; j++)
+		facemid[j] = l->texorg[j] + l->textoworld[0][j] * mids + l->textoworld[1][j] * midt;
 
 	if (extrasamples)
-	{	// extra filtering
-		h = (l->texsize[1]+1)*2;
-		w = (l->texsize[0]+1)*2;
-		starts = (l->texmins[0]-0.5)*16;
-		startt = (l->texmins[1]-0.5)*16;
+	{ // extra filtering
+		h = (l->texsize[1] + 1) * 2;
+		w = (l->texsize[0] + 1) * 2;
+		starts = (l->texmins[0] - 0.5) * 16;
+		startt = (l->texmins[1] - 0.5) * 16;
 		step = 8;
 	}
 	else
 	{
-		h = l->texsize[1]+1;
-		w = l->texsize[0]+1;
-		starts = l->texmins[0]*16;
-		startt = l->texmins[1]*16;
+		h = l->texsize[1] + 1;
+		w = l->texsize[0] + 1;
+		starts = l->texmins[0] * 16;
+		startt = l->texmins[1] * 16;
 		step = 16;
 	}
 
 	l->numsurfpt = w * h;
-	for (t=0 ; t<h ; t++)
+	for (t = 0; t < h; t++)
 	{
-		for (s=0 ; s<w ; s++, surf+=3)
+		for (s = 0; s < w; s++, surf += 3)
 		{
-			us = starts + s*step;
-			ut = startt + t*step;
+			us = starts + s * step;
+			ut = startt + t * step;
 
-		// if a line can be traced from surf to facemid, the point is good
-			for (i=0 ; i<6 ; i++)
+			// if a line can be traced from surf to facemid, the point is good
+			for (i = 0; i < 6; i++)
 			{
-			// calculate texture point
-				for (j=0 ; j<3 ; j++)
-					surf[j] = l->texorg[j] + l->textoworld[0][j]*us
-					+ l->textoworld[1][j]*ut;
+				// calculate texture point
+				for (j = 0; j < 3; j++)
+					surf[j] = l->texorg[j] + l->textoworld[0][j] * us + l->textoworld[1][j] * ut;
 
 				if (CastRay (facemid, surf) != -1)
-					break;	// got it
+					break; // got it
 				if (i & 1)
 				{
 					if (us > mids)
@@ -318,7 +308,7 @@ void CalcPoints (lightinfo_t *l)
 							ut = midt;
 					}
 				}
-				
+
 				// move surf 8 pixels towards the center
 				VectorSubtract (facemid, surf, move);
 				VectorNormalize (move);
@@ -328,9 +318,7 @@ void CalcPoints (lightinfo_t *l)
 				c_bad++;
 		}
 	}
-	
 }
-
 
 /*
 ===============================================================================
@@ -340,7 +328,7 @@ FACE LIGHTING
 ===============================================================================
 */
 
-int		c_culldistplane, c_proper;
+int c_culldistplane, c_proper;
 
 /*
 ================
@@ -365,10 +353,10 @@ void SingleEnvLightFace (entity_t *light, lightinfo_t *l)
 	int bytes;
 	vec3_t forward;
 
-	AngleVectors(light->angles, forward, NULL, NULL);
-	VectorScale(forward, -1, spotvec);
+	AngleVectors (light->angles, forward, NULL, NULL);
+	VectorScale (forward, -1, spotvec);
 
-	dot = DotProduct(spotvec, l->facenormal);
+	dot = DotProduct (spotvec, l->facenormal);
 
 	// don't bother with lights behind the surface
 	if (dot < 0)
@@ -390,7 +378,7 @@ void SingleEnvLightFace (entity_t *light, lightinfo_t *l)
 	{
 		if (mapnum == MAXLIGHTMAPS)
 		{
-			printf("WARNING: Too many light styles on a face\n");
+			printf ("WARNING: Too many light styles on a face\n");
 			return;
 		}
 		size = (l->texsize[1] + 1) * (l->texsize[0] + 1);
@@ -412,7 +400,7 @@ void SingleEnvLightFace (entity_t *light, lightinfo_t *l)
 	surf = l->surfpt[0];
 	for (c = 0; c < l->numsurfpt; c++, surf += 3)
 	{
-		if (!CastRaySky(surf, spotvec))
+		if (!CastRaySky (surf, spotvec))
 		{
 			continue; // light doesn't reach
 		}
@@ -449,35 +437,35 @@ SingleLightFace
 */
 void SingleLightFace (entity_t *light, lightinfo_t *l)
 {
-	vec_t	dist;
-	vec3_t	incoming;
-	vec_t	angle;
-	vec_t	add;
-	vec_t	*surf;
-	bool	hit;
-	int		mapnum;
-	int		size;
-	int		c, i, j;
-	vec3_t	rel;
-	vec3_t	spotvec;
-	vec_t	falloff;
-	vec3_t	*lightsamp;
-	int		bytes;
+	vec_t dist;
+	vec3_t incoming;
+	vec_t angle;
+	vec_t add;
+	vec_t *surf;
+	bool hit;
+	int mapnum;
+	int size;
+	int c, i, j;
+	vec3_t rel;
+	vec3_t spotvec;
+	vec_t falloff;
+	vec3_t *lightsamp;
+	int bytes;
 
 	if (light->sky)
 	{
 		SingleEnvLightFace (light, l);
 		return;
 	}
-	
+
 	VectorSubtract (light->origin, bsp_origin, rel);
 	dist = scaledist * (DotProduct (rel, l->facenormal) - l->facedist);
-	
-// don't bother with lights behind the surface
+
+	// don't bother with lights behind the surface
 	if (dist <= 0)
 		return;
-		
-// don't bother with light too far away
+
+	// don't bother with light too far away
 	if (dist > light->light)
 	{
 		c_culldistplane++;
@@ -489,27 +477,27 @@ void SingleLightFace (entity_t *light, lightinfo_t *l)
 		VectorSubtract (light->targetent->origin, light->origin, spotvec);
 		VectorNormalize (spotvec);
 		if (!light->angles[1])
-			falloff = -cos(20*M_PI/180);	
+			falloff = -cos (20 * M_PI / 180);
 		else
-			falloff = -cos(light->angles[1]/2*M_PI/180);
+			falloff = -cos (light->angles[1] / 2 * M_PI / 180);
 	}
 	else
-		falloff = 0;	// shut up compiler warnings
-	
+		falloff = 0; // shut up compiler warnings
+
 	mapnum = 0;
-	for (mapnum=0 ; mapnum<l->numlightstyles ; mapnum++)
+	for (mapnum = 0; mapnum < l->numlightstyles; mapnum++)
 		if (l->lightstyles[mapnum] == light->style)
 			break;
 	lightsamp = (vec3_t *)l->lightmaps[mapnum];
 	if (mapnum == l->numlightstyles)
-	{	// init a new light map
+	{ // init a new light map
 		if (mapnum == MAXLIGHTMAPS)
 		{
 			printf ("WARNING: Too many light styles on a face\n");
 			return;
 		}
-		size = (l->texsize[1]+1)*(l->texsize[0]+1);
-		for (i=0 ; i<size ; i++)
+		size = (l->texsize[1] + 1) * (l->texsize[0] + 1);
+		for (i = 0; i < size; i++)
 		{
 			lightsamp[i][0] = 0.0f;
 			lightsamp[i][1] = 0.0f;
@@ -517,30 +505,30 @@ void SingleLightFace (entity_t *light, lightinfo_t *l)
 		}
 	}
 
-//
-// check it for real
-//
+	//
+	// check it for real
+	//
 	hit = false;
 	c_proper++;
 	bytes = hasrgb ? 3 : 1;
-	
+
 	surf = l->surfpt[0];
-	for (c=0 ; c<l->numsurfpt ; c++, surf+=3)
+	for (c = 0; c < l->numsurfpt; c++, surf += 3)
 	{
-		dist = CastRay(light->origin, surf)*scaledist;
+		dist = CastRay (light->origin, surf) * scaledist;
 		if (dist < 0)
-			continue;	// light doesn't reach
+			continue; // light doesn't reach
 
 		VectorSubtract (light->origin, surf, incoming);
 		VectorNormalize (incoming);
 		angle = DotProduct (incoming, l->facenormal);
 		if (light->targetent)
-		{	// spotlight cutoff
+		{ // spotlight cutoff
 			if (DotProduct (spotvec, incoming) > falloff)
 				continue;
 		}
 
-		angle = (1.0-scalecos) + scalecos*angle;
+		angle = (1.0 - scalecos) + scalecos * angle;
 
 		for (j = 0; j < bytes; j++)
 		{
@@ -557,11 +545,11 @@ void SingleLightFace (entity_t *light, lightinfo_t *l)
 			}
 		}
 	}
-		
+
 	if (mapnum == l->numlightstyles && hit)
 	{
 		l->lightstyles[mapnum] = light->style;
-		l->numlightstyles++;	// the style has some real data now
+		l->numlightstyles++; // the style has some real data now
 	}
 }
 
@@ -572,19 +560,19 @@ FixMinlight
 */
 void FixMinlight (lightinfo_t *l)
 {
-	int		i, j, k;
-	float	minlight;
-	int		bytes;
-	
+	int i, j, k;
+	float minlight;
+	int bytes;
+
 	minlight = minlights[l->surfnum];
 
-// if minlight is set, there must be a style 0 light map
+	// if minlight is set, there must be a style 0 light map
 	if (!minlight)
 		return;
-	
+
 	bytes = hasrgb ? 3 : 1;
-	
-	for (i=0 ; i< l->numlightstyles ; i++)
+
+	for (i = 0; i < l->numlightstyles; i++)
 	{
 		if (l->lightstyles[i] == 0)
 			break;
@@ -592,8 +580,8 @@ void FixMinlight (lightinfo_t *l)
 	if (i == l->numlightstyles)
 	{
 		if (l->numlightstyles == MAXLIGHTMAPS)
-			return;		// oh well..
-		for (j=0 ; j<l->numsurfpt ; j++)
+			return; // oh well..
+		for (j = 0; j < l->numsurfpt; j++)
 		{
 			for (k = 0; k < bytes; k++)
 			{
@@ -605,7 +593,7 @@ void FixMinlight (lightinfo_t *l)
 	}
 	else
 	{
-		for (j=0 ; j<l->numsurfpt ; j++)
+		for (j = 0; j < l->numsurfpt; j++)
 		{
 			for (k = 0; k < bytes; k++)
 			{
@@ -618,7 +606,6 @@ void FixMinlight (lightinfo_t *l)
 	}
 }
 
-
 /*
 ============
 LightFace
@@ -627,38 +614,38 @@ LightFace
 void LightFace (int surfnum)
 {
 	dface_t *f;
-	lightinfo_t	l;
-	int		s, t;
-	int		i,j,c;
-	vec3_t	total;
-	int		size;
-	int		lightmapwidth, lightmapsize;
-	byte	*out;
-	vec3_t	*light;
-	int		w, h;
-	int		bytes;
-	
+	lightinfo_t l;
+	int s, t;
+	int i, j, c;
+	vec3_t total;
+	int size;
+	int lightmapwidth, lightmapsize;
+	byte *out;
+	vec3_t *light;
+	int w, h;
+	int bytes;
+
 	f = dfaces + surfnum;
 
-//
-// some surfaces don't need lightmaps
-//
+	//
+	// some surfaces don't need lightmaps
+	//
 	f->lightofs = -1;
-	for (j=0 ; j<MAXLIGHTMAPS ; j++)
+	for (j = 0; j < MAXLIGHTMAPS; j++)
 		f->styles[j] = 255;
 
-	if ( texinfo[f->texinfo].flags & TEX_SPECIAL)
-	{	// non-lit texture
+	if (texinfo[f->texinfo].flags & TEX_SPECIAL)
+	{ // non-lit texture
 		return;
 	}
 
-	memset (&l, 0, sizeof(l));
+	memset (&l, 0, sizeof (l));
 	l.surfnum = surfnum;
 	l.face = f;
 
-//
-// rotate plane
-//
+	//
+	// rotate plane
+	//
 	VectorCopy (dplanes[f->planenum].normal, l.facenormal);
 	l.facedist = dplanes[f->planenum].dist;
 	if (f->side)
@@ -666,72 +653,68 @@ void LightFace (int surfnum)
 		VectorSubtract (vec3_origin, l.facenormal, l.facenormal);
 		l.facedist = -l.facedist;
 	}
-	
 
-	
 	CalcFaceVectors (&l);
 	CalcFaceExtents (&l);
 	CalcPoints (&l);
 
-	lightmapwidth = l.texsize[0]+1;
+	lightmapwidth = l.texsize[0] + 1;
 
-	size = lightmapwidth*(l.texsize[1]+1);
+	size = lightmapwidth * (l.texsize[1] + 1);
 	if (size > SINGLEMAP)
 		Error ("Bad lightmap size");
 
-	for (i=0 ; i<MAXLIGHTMAPS ; i++)
+	for (i = 0; i < MAXLIGHTMAPS; i++)
 		l.lightstyles[i] = 255;
-	
-//
-// cast all lights
-//	
+
+	//
+	// cast all lights
+	//
 	l.numlightstyles = 0;
-	for (i=0 ; i<num_entities ; i++)
+	for (i = 0; i < num_entities; i++)
 	{
 		if (entities[i].light)
 			SingleLightFace (&entities[i], &l);
 	}
 
 	FixMinlight (&l);
-		
+
 	if (!l.numlightstyles)
-	{	// no light hitting it
+	{ // no light hitting it
 		return;
 	}
-	
-//
-// save out the values
-//
-	for (i=0 ; i <MAXLIGHTMAPS ; i++)
+
+	//
+	// save out the values
+	//
+	for (i = 0; i < MAXLIGHTMAPS; i++)
 		f->styles[i] = l.lightstyles[i];
 
 	bytes = hasrgb ? 3 : 1;
-	lightmapsize = size*bytes*l.numlightstyles;
+	lightmapsize = size * bytes * l.numlightstyles;
 
 	out = GetFileSpace (lightmapsize);
 	f->lightofs = out - filebase;
-	
-// extra filtering
-	h = (l.texsize[1]+1)*2;
-	w = (l.texsize[0]+1)*2;
 
-	for (i=0 ; i< l.numlightstyles ; i++)
+	// extra filtering
+	h = (l.texsize[1] + 1) * 2;
+	w = (l.texsize[0] + 1) * 2;
+
+	for (i = 0; i < l.numlightstyles; i++)
 	{
 		if (l.lightstyles[i] == 0xff)
 			Error ("Wrote empty lightmap");
 		light = (vec3_t *)l.lightmaps[i];
 		c = 0;
-		for (t=0 ; t<=l.texsize[1] ; t++)
-			for (s=0 ; s<=l.texsize[0] ; s++, c++)
+		for (t = 0; t <= l.texsize[1]; t++)
+			for (s = 0; s <= l.texsize[0]; s++, c++)
 			{
 				if (extrasamples)
-				{	// filtered sample
+				{ // filtered sample
 					for (j = 0; j < bytes; j++)
 					{
-						total[j] = light[t * 2 * w + s * 2][j]
-								 + light[t * 2 * w + s * 2 + 1][j]
-								 + light[(t * 2 + 1) * w + s * 2][j]
-								 + light[(t * 2 + 1) * w + s * 2 + 1][j];
+						total[j] = light[t * 2 * w + s * 2][j] + light[t * 2 * w + s * 2 + 1][j] + light[(t * 2 + 1) * w + s * 2][j] +
+								   light[(t * 2 + 1) * w + s * 2 + 1][j];
 						total[j] *= 0.25f;
 					}
 				}
@@ -745,15 +728,15 @@ void LightFace (int surfnum)
 				// scale before clamping
 				if (hasrgb)
 				{
-					VectorScale(total, rangescale, total);
+					VectorScale (total, rangescale, total);
 					if (total[0] < 0 || total[1] < 0 || total[2] < 0)
 					{
-						Error("light < 0");
+						Error ("light < 0");
 					}
 					if (total[0] > 255 || total[1] > 255 || total[2] > 255)
 					{
-						VectorNormalize(total);
-						VectorScale(total, 255, total);
+						VectorNormalize (total);
+						VectorScale (total, 255, total);
 					}
 					*out++ = (byte)total[0];
 					*out++ = (byte)total[1];
@@ -764,7 +747,7 @@ void LightFace (int surfnum)
 					total[0] *= rangescale;
 					if (total[0] < 0)
 					{
-						Error("light < 0");
+						Error ("light < 0");
 					}
 					if (total[0] > 255)
 					{
@@ -774,7 +757,4 @@ void LightFace (int surfnum)
 				}
 			}
 	}
-
-	
 }
-

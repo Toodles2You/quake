@@ -24,7 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 void M_DrawTextBox (int x, int y, int width, int lines);
 
-int	netgraphtexture; // netgraph texture
+int netgraphtexture; // netgraph texture
 
 #define NET_GRAPHHEIGHT 32
 
@@ -32,31 +32,31 @@ static byte ngraph_texels[NET_GRAPHHEIGHT][NET_TIMINGS];
 
 static void R_LineGraph (int x, int h)
 {
-	int		i;
-	int		s;
-	int		color;
+	int i;
+	int s;
+	int color;
 
 	s = NET_GRAPHHEIGHT;
 
 	if (h == 10000)
-		color = 0x6f;	// yellow
+		color = 0x6f; // yellow
 	else if (h == 9999)
-		color = 0x4f;	// red
+		color = 0x4f; // red
 	else if (h == 9998)
-		color = 0xd0;	// blue
+		color = 0xd0; // blue
 	else
-		color = 0xfe;	// white
+		color = 0xfe; // white
 
-	if (h>s)
+	if (h > s)
 		h = s;
-	
-	for (i=0 ; i<h ; i++)
+
+	for (i = 0; i < h; i++)
 		if (i & 1)
 			ngraph_texels[NET_GRAPHHEIGHT - i - 1][x] = 0xff;
 		else
 			ngraph_texels[NET_GRAPHHEIGHT - i - 1][x] = (byte)color;
 
-	for ( ; i<s ; i++)
+	for (; i < s; i++)
 		ngraph_texels[NET_GRAPHHEIGHT - i - 1][x] = (byte)0xff;
 }
 
@@ -67,17 +67,17 @@ R_NetGraph
 */
 void R_NetGraph ()
 {
-	int		a, x, i, y;
+	int a, x, i, y;
 	int lost;
 	char st[80];
-	unsigned	ngraph_pixels[NET_GRAPHHEIGHT][NET_TIMINGS];
+	unsigned ngraph_pixels[NET_GRAPHHEIGHT][NET_TIMINGS];
 
 	x = 0;
-	lost = CL_CalcNet();
-	for (a=0 ; a<NET_TIMINGS ; a++)
+	lost = CL_CalcNet ();
+	for (a = 0; a < NET_TIMINGS; a++)
 	{
-		i = (cls.netchan.outgoing_sequence-a) & NET_TIMINGSMASK;
-		R_LineGraph (NET_TIMINGS-1-a, packet_latency[i]);
+		i = (cls.netchan.outgoing_sequence - a) & NET_TIMINGSMASK;
+		R_LineGraph (NET_TIMINGS - 1 - a, packet_latency[i]);
 	}
 
 	// now load the netgraph texture into gl and draw it
@@ -85,37 +85,34 @@ void R_NetGraph ()
 		for (x = 0; x < NET_TIMINGS; x++)
 			ngraph_pixels[y][x] = d_8to24table[ngraph_texels[y][x]];
 
-	x =	-((vid.width - 320)>>1);
+	x = -((vid.width - 320) >> 1);
 	y = vid.height - sb_lines - 24 - NET_GRAPHHEIGHT - 1;
 
-	M_DrawTextBox (x, y, NET_TIMINGS/8, NET_GRAPHHEIGHT/8 + 1);
+	M_DrawTextBox (x, y, NET_TIMINGS / 8, NET_GRAPHHEIGHT / 8 + 1);
 	y += 8;
 
-	sprintf(st, "%3i%% packet loss", lost);
-	Draw_String(8, y, st);
+	sprintf (st, "%3i%% packet loss", lost);
+	Draw_String (8, y, st);
 	y += 8;
-	
-    GL_Bind(netgraphtexture);
 
-	glTexImage2D (GL_TEXTURE_2D, 0, gl_alpha_format, 
-		NET_TIMINGS, NET_GRAPHHEIGHT, 0, GL_RGBA, 
-		GL_UNSIGNED_BYTE, ngraph_pixels);
+	GL_Bind (netgraphtexture);
 
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
-	glTexParameterf(GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
+	glTexImage2D (GL_TEXTURE_2D, 0, gl_alpha_format, NET_TIMINGS, NET_GRAPHHEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, ngraph_pixels);
+
+	glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
+	glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);
+	glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, GL_LINEAR);
 
 	x = 8;
-	glColor3f (1,1,1);
+	glColor3f (1, 1, 1);
 	glBegin (GL_QUADS);
 	glTexCoord2f (0, 0);
 	glVertex2f (x, y);
 	glTexCoord2f (1, 0);
-	glVertex2f (x+NET_TIMINGS, y);
+	glVertex2f (x + NET_TIMINGS, y);
 	glTexCoord2f (1, 1);
-	glVertex2f (x+NET_TIMINGS, y+NET_GRAPHHEIGHT);
+	glVertex2f (x + NET_TIMINGS, y + NET_GRAPHHEIGHT);
 	glTexCoord2f (0, 1);
-	glVertex2f (x, y+NET_GRAPHHEIGHT);
+	glVertex2f (x, y + NET_GRAPHHEIGHT);
 	glEnd ();
 }
-

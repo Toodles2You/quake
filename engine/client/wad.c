@@ -20,9 +20,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "clientdef.h"
 
-static int			wad_numlumps;
-static lumpinfo_t	*wad_lumps;
-static byte			*wad_base;
+static int wad_numlumps;
+static lumpinfo_t *wad_lumps;
+static byte *wad_base;
 
 /*
 ==================
@@ -37,25 +37,23 @@ Can safely be performed in place.
 */
 void W_CleanupName (char *in, char *out)
 {
-	int		i;
-	int		c;
-	
-	for (i=0 ; i<16 ; i++ )
+	int i;
+	int c;
+
+	for (i = 0; i < 16; i++)
 	{
 		c = in[i];
 		if (!c)
 			break;
-			
+
 		if (c >= 'A' && c <= 'Z')
 			c += ('a' - 'A');
 		out[i] = c;
 	}
-	
-	for ( ; i< 16 ; i++ )
+
+	for (; i < 16; i++)
 		out[i] = 0;
 }
-
-
 
 /*
 ====================
@@ -64,101 +62,98 @@ W_LoadWadFile
 */
 void W_LoadWadFile (char *filename)
 {
-	lumpinfo_t		*lump_p;
-	wadinfo_t		*header;
-	unsigned		i;
-	int				infotableofs;
-	
+	lumpinfo_t *lump_p;
+	wadinfo_t *header;
+	unsigned i;
+	int infotableofs;
+
 	wad_base = COM_LoadHunkFile (filename);
 	if (!wad_base)
 		Sys_Error ("W_LoadWadFile: couldn't load %s", filename);
 
 	header = (wadinfo_t *)wad_base;
-	
-	if (header->identification[0] != 'W'
-	|| header->identification[1] != 'A'
-	|| header->identification[2] != 'D'
-	|| (header->identification[3] != '2'
-	&& header->identification[3] != '3'))
-		Sys_Error ("Wad file %s doesn't have WAD2 or WAD3 id\n",filename);
-		
-	wad_numlumps = LittleLong(header->numlumps);
-	infotableofs = LittleLong(header->infotableofs);
+
+	if (header->identification[0] != 'W' || header->identification[1] != 'A' || header->identification[2] != 'D' ||
+		(header->identification[3] != '2' && header->identification[3] != '3'))
+		Sys_Error ("Wad file %s doesn't have WAD2 or WAD3 id\n", filename);
+
+	wad_numlumps = LittleLong (header->numlumps);
+	infotableofs = LittleLong (header->infotableofs);
 	wad_lumps = (lumpinfo_t *)(wad_base + infotableofs);
-	
-	for (i=0, lump_p = wad_lumps ; i<wad_numlumps ; i++,lump_p++)
+
+	for (i = 0, lump_p = wad_lumps; i < wad_numlumps; i++, lump_p++)
 	{
-		lump_p->filepos = LittleLong(lump_p->filepos);
-		lump_p->size = LittleLong(lump_p->size);
+		lump_p->filepos = LittleLong (lump_p->filepos);
+		lump_p->size = LittleLong (lump_p->size);
 		W_CleanupName (lump_p->name, lump_p->name);
 		if (lump_p->type == TYP_QPIC)
-			W_SwapPic ( (qpic_t *)(wad_base + lump_p->filepos));
+			W_SwapPic ((qpic_t *)(wad_base + lump_p->filepos));
 	}
 }
-
 
 /*
 =============
 W_GetLumpinfo
 =============
 */
-lumpinfo_t	*W_GetLumpinfo (char *name)
+lumpinfo_t *W_GetLumpinfo (char *name)
 {
-	int		i;
-	lumpinfo_t	*lump_p;
-	char	clean[16];
-	
+	int i;
+	lumpinfo_t *lump_p;
+	char clean[16];
+
 	W_CleanupName (name, clean);
-	
-	for (lump_p=wad_lumps, i=0 ; i<wad_numlumps ; i++,lump_p++)
+
+	for (lump_p = wad_lumps, i = 0; i < wad_numlumps; i++, lump_p++)
 	{
-		if (!strcmp(clean, lump_p->name))
+		if (!strcmp (clean, lump_p->name))
 			return lump_p;
 	}
-	
+
 	Sys_Error ("W_GetLumpinfo: %s not found", name);
 	return NULL;
 }
 
 void *W_GetLumpName (char *name)
 {
-	lumpinfo_t	*lump;
-	
+	lumpinfo_t *lump;
+
 	lump = W_GetLumpinfo (name);
-	
+
 	return (void *)(wad_base + lump->filepos);
 }
 
 void *W_GetLumpNum (int num)
 {
-	lumpinfo_t	*lump;
-	
+	lumpinfo_t *lump;
+
 	if (num < 0 || num > wad_numlumps)
 		Sys_Error ("W_GetLumpNum: bad number: %i", num);
-		
+
 	lump = wad_lumps + num;
-	
+
 	return (void *)(wad_base + lump->filepos);
 }
 
 typedef struct wad_s wad_t;
 
-typedef struct wad_s {
-	char		name[16];
-	wad_t		*next;
-	int			handle;
-	int			numlumps;
-	lumpinfo_t	lumps[];
+typedef struct wad_s
+{
+	char name[16];
+	wad_t *next;
+	int handle;
+	int numlumps;
+	lumpinfo_t lumps[];
 } wad_t;
 
-static wad_t* wad_head = NULL;
+static wad_t *wad_head = NULL;
 
 /*
 ====================
 W_LoadMapWadFile
 ====================
 */
-void W_LoadMapWadFile(char *filename)
+void W_LoadMapWadFile (char *filename)
 {
 	lumpinfo_t *lump_p;
 	unsigned i;
@@ -166,77 +161,74 @@ void W_LoadMapWadFile(char *filename)
 
 	int handle;
 
-	if (COM_OpenFile(filename, &handle) == -1)
+	if (COM_OpenFile (filename, &handle) == -1)
 	{
-		Con_DPrintf("W_LoadWadFile: couldn't load %s\n", filename);
+		Con_DPrintf ("W_LoadWadFile: couldn't load %s\n", filename);
 		return;
 	}
 
 	wadinfo_t header;
-	
-	Sys_FileSeek(handle, 0);
-	if (Sys_FileRead(handle, &header, sizeof(header)) <= 0)
+
+	Sys_FileSeek (handle, 0);
+	if (Sys_FileRead (handle, &header, sizeof (header)) <= 0)
 	{
-		Con_DPrintf("W_LoadWadFile: couldn't read %s\n", filename);
+		Con_DPrintf ("W_LoadWadFile: couldn't read %s\n", filename);
 		return;
 	}
 
-	if (header.identification[0] != 'W'
-		|| header.identification[1] != 'A'
-		|| header.identification[2] != 'D'
-		|| (header.identification[3] != '2'
-			&& header.identification[3] != '3'))
+	if (header.identification[0] != 'W' || header.identification[1] != 'A' || header.identification[2] != 'D' ||
+		(header.identification[3] != '2' && header.identification[3] != '3'))
 	{
-		Con_DPrintf("Wad file %s doesn't have WAD2 or WAD3 id\n", filename);
+		Con_DPrintf ("Wad file %s doesn't have WAD2 or WAD3 id\n", filename);
 		return;
 	}
 
-	Con_DPrintf("%s\n", filename);
+	Con_DPrintf ("%s\n", filename);
 
-	int numlumps = LittleLong(header.numlumps);
+	int numlumps = LittleLong (header.numlumps);
 
-	wad_t *wad = Hunk_Alloc(sizeof(wad_t) + sizeof(lumpinfo_t) * numlumps);
+	wad_t *wad = Hunk_Alloc (sizeof (wad_t) + sizeof (lumpinfo_t) * numlumps);
 	strncpy (wad->name, filename, 16);
 	wad->numlumps = numlumps;
 	wad->handle = handle;
 	wad->next = wad_head;
 	wad_head = wad;
 
-	infotableofs = LittleLong(header.infotableofs);
-	
-	Sys_FileSeek(wad->handle, infotableofs);
-	if (Sys_FileRead(wad->handle, &wad->lumps[0], sizeof(lumpinfo_t) * wad->numlumps) <= 0)
+	infotableofs = LittleLong (header.infotableofs);
+
+	Sys_FileSeek (wad->handle, infotableofs);
+	if (Sys_FileRead (wad->handle, &wad->lumps[0], sizeof (lumpinfo_t) * wad->numlumps) <= 0)
 	{
-		Con_DPrintf("W_LoadWadFile: couldn't read %s\n", filename);
+		Con_DPrintf ("W_LoadWadFile: couldn't read %s\n", filename);
 		return;
 	}
 
 	for (i = 0, lump_p = wad->lumps; i < wad->numlumps; i++, lump_p++)
 	{
-		lump_p->filepos = LittleLong(lump_p->filepos);
-		lump_p->size = LittleLong(lump_p->size);
-		W_CleanupName(lump_p->name, lump_p->name);
+		lump_p->filepos = LittleLong (lump_p->filepos);
+		lump_p->size = LittleLong (lump_p->size);
+		W_CleanupName (lump_p->name, lump_p->name);
 	}
 }
 
-static bool W_GetMapLumpInfo(char *name, wad_t** wad, lumpinfo_t **lump)
+static bool W_GetMapLumpInfo (char *name, wad_t **wad, lumpinfo_t **lump)
 {
 	if (!wad_head)
 		return false;
-	
+
 	int i;
 	lumpinfo_t *lump_p;
 	char clean[16];
 
-	W_CleanupName(name, clean);
+	W_CleanupName (name, clean);
 
-	wad_t* wad_p;
+	wad_t *wad_p;
 
 	for (wad_p = wad_head; wad_p != NULL; wad_p = wad_p->next)
 	{
 		for (lump_p = wad_p->lumps, i = 0; i < wad_p->numlumps; i++, lump_p++)
 		{
-			if (!strcmp(clean, lump_p->name))
+			if (!strcmp (clean, lump_p->name))
 			{
 				*wad = wad_p;
 				*lump = lump_p;
@@ -246,37 +238,37 @@ static bool W_GetMapLumpInfo(char *name, wad_t** wad, lumpinfo_t **lump)
 		}
 	}
 
-	Con_DPrintf("W_GetLumpinfo: %s not found\n", clean);
+	Con_DPrintf ("W_GetLumpinfo: %s not found\n", clean);
 	return false;
 }
 
-static wad_t* mip_wad = NULL;
-static lumpinfo_t* mip_lump = NULL;
+static wad_t *mip_wad = NULL;
+static lumpinfo_t *mip_lump = NULL;
 
-bool W_LoadMapMiptexInfo(char *name, void* dst)
+bool W_LoadMapMiptexInfo (char *name, void *dst)
 {
-	if (!W_GetMapLumpInfo(name, &mip_wad, &mip_lump))
+	if (!W_GetMapLumpInfo (name, &mip_wad, &mip_lump))
 	{
 		return false;
 	}
-	
-	Sys_FileSeek(mip_wad->handle, mip_lump->filepos);
-	return Sys_FileRead(mip_wad->handle, dst, sizeof(miptex_t)) > 0;
+
+	Sys_FileSeek (mip_wad->handle, mip_lump->filepos);
+	return Sys_FileRead (mip_wad->handle, dst, sizeof (miptex_t)) > 0;
 }
 
-bool W_LoadMapMiptexData(void* dst)
+bool W_LoadMapMiptexData (void *dst)
 {
 	if (!mip_wad || !mip_lump)
 	{
 		return false;
 	}
 
-	Sys_FileSeek(mip_wad->handle, mip_lump->filepos + sizeof(miptex_t));
-	bool result = Sys_FileRead(mip_wad->handle, dst, mip_lump->size - sizeof(miptex_t)) > 0;
-	
+	Sys_FileSeek (mip_wad->handle, mip_lump->filepos + sizeof (miptex_t));
+	bool result = Sys_FileRead (mip_wad->handle, dst, mip_lump->size - sizeof (miptex_t)) > 0;
+
 	mip_wad = NULL;
 	mip_lump = NULL;
-	
+
 	return result;
 }
 
@@ -285,20 +277,19 @@ bool W_LoadMapMiptexData(void* dst)
 W_FreeMapWadFiles
 ====================
 */
-void W_FreeMapWadFiles()
+void W_FreeMapWadFiles ()
 {
-	wad_t* wad = wad_head;
-	wad_t* next;
+	wad_t *wad = wad_head;
+	wad_t *next;
 
 	if (!wad_head)
 		return;
 
 	do
 	{
-		COM_CloseFile(wad->handle);
+		COM_CloseFile (wad->handle);
 		next = wad->next;
-	}
-	while (wad = next);
+	} while (wad = next);
 
 	wad_head = NULL;
 }
@@ -313,6 +304,6 @@ automatic byte swapping
 
 void W_SwapPic (qpic_t *pic)
 {
-	pic->width = LittleLong(pic->width);
-	pic->height = LittleLong(pic->height);	
+	pic->width = LittleLong (pic->width);
+	pic->height = LittleLong (pic->height);
 }

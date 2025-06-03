@@ -99,7 +99,6 @@ typedef struct client_s
 	netchan_t netchan;
 } client_t;
 
-
 #define STATFRAMES 100
 typedef struct
 {
@@ -129,7 +128,7 @@ typedef struct
 {
 	int protocol;
 	int spawncount; // number of servers spawned since start,
-					// used to check late spawns
+		// used to check late spawns
 	client_t clients[MAX_CLIENTS];
 	int serverflags; // episode completion information
 
@@ -184,7 +183,7 @@ typedef struct
 	unsigned model_player_checksum;
 	unsigned eyes_player_checksum;
 
-	char name[64];			   // map name
+	char name[64]; // map name
 	char startspot[64];
 	char modelname[MAX_QPATH]; // maps/<name>.bsp, for model_precache[0]
 	struct cmodel_s *worldmodel;
@@ -250,29 +249,29 @@ enum
 // edict->flags values
 enum
 {
-	FL_FLY				= 1 << 0,
-	FL_SWIM				= 1 << 1,
-	FL_CONVEYOR			= 1 << 2,
-	FL_CLIENT			= 1 << 3,
-	FL_INWATER			= 1 << 4,
-	FL_MONSTER			= 1 << 5,
-	FL_GODMODE			= 1 << 6,
-	FL_NOTARGET			= 1 << 7,
-	FL_ITEM				= 1 << 8,
-	FL_ONGROUND			= 1 << 9,
-	FL_PARTIALGROUND	= 1 << 10, // not all corners are valid
-	FL_WATERJUMP		= 1 << 11, // player jumping out of water
-	FL_JUMPRELEASED		= 1 << 12, // for jump debouncing
+	FL_FLY = 1 << 0,
+	FL_SWIM = 1 << 1,
+	FL_CONVEYOR = 1 << 2,
+	FL_CLIENT = 1 << 3,
+	FL_INWATER = 1 << 4,
+	FL_MONSTER = 1 << 5,
+	FL_GODMODE = 1 << 6,
+	FL_NOTARGET = 1 << 7,
+	FL_ITEM = 1 << 8,
+	FL_ONGROUND = 1 << 9,
+	FL_PARTIALGROUND = 1 << 10, // not all corners are valid
+	FL_WATERJUMP = 1 << 11,		// player jumping out of water
+	FL_JUMPRELEASED = 1 << 12,	// for jump debouncing
 	FL_ARCHIVE_OVERRIDE = 1048576,
 };
 
 // spawn flags
 enum
 {
-	SPAWNFLAG_NOT_EASY			= 1 << 8,
-	SPAWNFLAG_NOT_MEDIUM		= 1 << 9,
-	SPAWNFLAG_NOT_HARD			= 1 << 10,
-	SPAWNFLAG_NOT_DEATHMATCH	= 1 << 11,
+	SPAWNFLAG_NOT_EASY = 1 << 8,
+	SPAWNFLAG_NOT_MEDIUM = 1 << 9,
+	SPAWNFLAG_NOT_HARD = 1 << 10,
+	SPAWNFLAG_NOT_DEATHMATCH = 1 << 11,
 };
 
 enum
@@ -288,18 +287,18 @@ enum
 // server flags
 enum
 {
-	SFL_EPISODE_1		= 1 << 0,
-	SFL_EPISODE_2		= 1 << 1,
-	SFL_EPISODE_3		= 1 << 2,
-	SFL_EPISODE_4		= 1 << 3,
-	SFL_NEW_UNIT		= 1 << 4,
-	SFL_NEW_EPISODE		= 1 << 5,
-	SFL_CROSS_TRIGGERS	= 65280,
+	SFL_EPISODE_1 = 1 << 0,
+	SFL_EPISODE_2 = 1 << 1,
+	SFL_EPISODE_3 = 1 << 2,
+	SFL_EPISODE_4 = 1 << 3,
+	SFL_NEW_UNIT = 1 << 4,
+	SFL_NEW_EPISODE = 1 << 5,
+	SFL_CROSS_TRIGGERS = 65280,
 };
 
 //============================================================================
 
-extern	cvar_t	sv_maxspeed;
+extern cvar_t sv_maxspeed;
 
 extern cvar_t teamplay;
 extern cvar_t skill;
@@ -332,72 +331,72 @@ extern FILE *sv_fraglogfile;
 //
 // sv_main.c
 //
-void SV_FinalMessage(char *message);
-void SV_DropClient(client_t *drop);
-void SV_CheckLog();
-void SV_ReadPackets();
-void SV_CheckTimeouts();
-void SV_CheckVars();
-void SV_Init();
+void SV_FinalMessage (char *message);
+void SV_DropClient (client_t *drop);
+void SV_CheckLog ();
+void SV_ReadPackets ();
+void SV_CheckTimeouts ();
+void SV_CheckVars ();
+void SV_Init ();
 
-int SV_CalcPing(client_t *cl);
-void SV_FullClientUpdate(client_t *client, sizebuf_t *buf);
-void SV_FullClientUpdateToClient(client_t *client, client_t *cl);
+int SV_CalcPing (client_t *cl);
+void SV_FullClientUpdate (client_t *client, sizebuf_t *buf);
+void SV_FullClientUpdateToClient (client_t *client, client_t *cl);
 
-int SV_ModelIndex(char *name);
+int SV_ModelIndex (char *name);
 
-bool SV_CheckBottom(edict_t *ent);
-bool SV_movestep(edict_t *ent, vec3_t move, bool relink);
+bool SV_CheckBottom (edict_t *ent);
+bool SV_movestep (edict_t *ent, vec3_t move, bool relink);
 
-void SV_MoveToGoal();
+void SV_MoveToGoal ();
 
-void SV_SaveSpawnparms();
+void SV_SaveSpawnparms ();
 
-void SV_Physics_Client(edict_t *ent);
+void SV_Physics_Client (edict_t *ent);
 
-void SV_ExecuteUserCommand(char *s);
-void SV_InitOperatorCommands();
+void SV_ExecuteUserCommand (char *s);
+void SV_InitOperatorCommands ();
 
-void SV_SendServerinfo(client_t *client);
-void SV_ExtractFromUserinfo(client_t *cl);
+void SV_SendServerinfo (client_t *client);
+void SV_ExtractFromUserinfo (client_t *cl);
 
-void Master_Heartbeat();
-void Master_Packet();
+void Master_Heartbeat ();
+void Master_Packet ();
 void Master_Shutdown ();
 
 //
 // sv_init.c
 //
-void SV_SpawnServer(char *server, char *startspot);
-void SV_FlushSignon();
+void SV_SpawnServer (char *server, char *startspot);
+void SV_FlushSignon ();
 
 //
 // sv_phys.c
 //
-void SV_ProgStartFrame();
-void SV_Physics();
-void SV_CheckVelocity(edict_t *ent);
-void SV_AddGravity(edict_t *ent, float scale);
-bool SV_RunThink(edict_t *ent);
-void SV_Physics_Toss(edict_t *ent);
-void SV_RunNewmis();
-void SV_Impact(edict_t *e1, edict_t *e2);
-void SV_SetMoveVars();
+void SV_ProgStartFrame ();
+void SV_Physics ();
+void SV_CheckVelocity (edict_t *ent);
+void SV_AddGravity (edict_t *ent, float scale);
+bool SV_RunThink (edict_t *ent);
+void SV_Physics_Toss (edict_t *ent);
+void SV_RunNewmis ();
+void SV_Impact (edict_t *e1, edict_t *e2);
+void SV_SetMoveVars ();
 
 //
 // sv_send.c
 //
-void SV_FlushRedirect();
-void SV_SendClientMessages();
+void SV_FlushRedirect ();
+void SV_SendClientMessages ();
 
-void SV_Multicast(vec3_t origin, int to);
-void SV_StartParticle(vec3_t org, vec3_t dir, int color, int count);
-void SV_StartSound(edict_t *entity, int channel, char *sample, int volume, float attenuation);
-void SV_ClientPrintf(client_t *cl, int level, char *fmt, ...);
-void SV_BroadcastPrintf(int level, char *fmt, ...);
-void SV_BroadcastCommand(char *fmt, ...);
-void SV_SendMessagesToAll();
-void SV_FindModelNumbers();
+void SV_Multicast (vec3_t origin, int to);
+void SV_StartParticle (vec3_t org, vec3_t dir, int color, int count);
+void SV_StartSound (edict_t *entity, int channel, char *sample, int volume, float attenuation);
+void SV_ClientPrintf (client_t *cl, int level, char *fmt, ...);
+void SV_BroadcastPrintf (int level, char *fmt, ...);
+void SV_BroadcastCommand (char *fmt, ...);
+void SV_SendMessagesToAll ();
+void SV_FindModelNumbers ();
 
 void SV_BeginRedirect (redirect_t rd);
 void SV_EndRedirect ();
@@ -405,37 +404,37 @@ void SV_EndRedirect ();
 //
 // sv_user.c
 //
-void SV_ExecuteClientMessage(client_t *cl);
-void SV_UserInit();
-void SV_TogglePause(const char *msg);
+void SV_ExecuteClientMessage (client_t *cl);
+void SV_UserInit ();
+void SV_TogglePause (const char *msg);
 
 //
 // sv_ccmds.c
 //
-void SV_Status_f();
+void SV_Status_f ();
 
 //
 // sv_ents.c
 //
-void SV_SendCompatibilityMessages();
-void SV_CleanupEnts();
-void SV_WriteEntitiesToClient(client_t *client, sizebuf_t *msg);
+void SV_SendCompatibilityMessages ();
+void SV_CleanupEnts ();
+void SV_WriteEntitiesToClient (client_t *client, sizebuf_t *msg);
 
 //
 // sv_nchan.c
 //
-void ClientReliableCheckBlock(client_t *cl, int maxsize);
-void ClientReliable_FinishWrite(client_t *cl);
-void ClientReliableWrite_Begin(client_t *cl, int c, int maxsize);
-void ClientReliableWrite_Angle(client_t *cl, float f);
-void ClientReliableWrite_Angle16(client_t *cl, float f);
-void ClientReliableWrite_Byte(client_t *cl, int c);
-void ClientReliableWrite_Char(client_t *cl, int c);
-void ClientReliableWrite_Float(client_t *cl, float f);
-void ClientReliableWrite_Coord(client_t *cl, float f);
-void ClientReliableWrite_Long(client_t *cl, int c);
-void ClientReliableWrite_Short(client_t *cl, int c);
-void ClientReliableWrite_String(client_t *cl, char *s);
-void ClientReliableWrite_SZ(client_t *cl, void *data, int len);
+void ClientReliableCheckBlock (client_t *cl, int maxsize);
+void ClientReliable_FinishWrite (client_t *cl);
+void ClientReliableWrite_Begin (client_t *cl, int c, int maxsize);
+void ClientReliableWrite_Angle (client_t *cl, float f);
+void ClientReliableWrite_Angle16 (client_t *cl, float f);
+void ClientReliableWrite_Byte (client_t *cl, int c);
+void ClientReliableWrite_Char (client_t *cl, int c);
+void ClientReliableWrite_Float (client_t *cl, float f);
+void ClientReliableWrite_Coord (client_t *cl, float f);
+void ClientReliableWrite_Long (client_t *cl, int c);
+void ClientReliableWrite_Short (client_t *cl, int c);
+void ClientReliableWrite_String (client_t *cl, char *s);
+void ClientReliableWrite_SZ (client_t *cl, void *data, int len);
 
 #endif /* !_SERVER_H */

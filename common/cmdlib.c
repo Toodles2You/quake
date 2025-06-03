@@ -12,18 +12,17 @@
 #include <libc.h>
 #endif
 
-#define PATHSEPERATOR   '/'
+#define PATHSEPERATOR '/'
 
 // set these before calling CheckParm
 int myargc;
 char **myargv;
 
-char		com_token[1024];
-bool	com_eof;
+char com_token[1024];
+bool com_eof;
 
-bool		archive;
-char			archivedir[1024];
-
+bool archive;
+char archivedir[1024];
 
 /*
 =================
@@ -38,13 +37,12 @@ void Error (char *error, ...)
 
 	printf ("************ ERROR ************\n");
 
-	va_start (argptr,error);
-	vprintf (error,argptr);
+	va_start (argptr, error);
+	vprintf (error, argptr);
 	va_end (argptr);
 	printf ("\n");
 	exit (1);
 }
-
 
 /*
 
@@ -57,16 +55,16 @@ gamedir will hold qdir + the game directory (id1, id2, etc)
 
   */
 
-char		qdir[1024];
-char		gamedir[1024];
+char qdir[1024];
+char gamedir[1024];
 
 void SetQdirFromPath (char *path)
 {
-	char	temp[1024];
-	char	*c;
+	char temp[1024];
+	char *c;
 
 	if (!(path[0] == '/' || path[0] == '\\' || path[1] == ':'))
-	{	// path is partial
+	{ // path is partial
 		Q_getwd (temp);
 		strcat (temp, path);
 		path = temp;
@@ -74,17 +72,17 @@ void SetQdirFromPath (char *path)
 
 	// search for "quake" in path
 
-	for (c=path ; *c ; c++)
+	for (c = path; *c; c++)
 		if (!strncasecmp (c, "quake", 5))
 		{
-			strncpy (qdir, path, c+6-path);
+			strncpy (qdir, path, c + 6 - path);
 			printf ("qdir: %s\n", qdir);
 			c += 6;
 			while (*c)
 			{
 				if (*c == '/' || *c == '\\')
 				{
-					strncpy (gamedir, path, c+1-path);
+					strncpy (gamedir, path, c + 1 - path);
 					printf ("gamedir: %s\n", gamedir);
 					return;
 				}
@@ -109,8 +107,8 @@ char *ExpandPath (char *path)
 
 char *ExpandPathAndArchive (char *path)
 {
-	char	*expanded;
-	char	archivename[1024];
+	char *expanded;
+	char archivename[1024];
 
 	expanded = ExpandPath (path);
 
@@ -122,16 +120,13 @@ char *ExpandPathAndArchive (char *path)
 	return expanded;
 }
 
-
-char *copystring(char *s)
+char *copystring (char *s)
 {
-	char	*b;
-	b = malloc(strlen(s)+1);
+	char *b;
+	b = malloc (strlen (s) + 1);
 	strcpy (b, s);
 	return b;
 }
-
-
 
 /*
 ================
@@ -140,10 +135,10 @@ I_FloatTime
 */
 double I_FloatTime (void)
 {
-	time_t	t;
-	
+	time_t t;
+
 	time (&t);
-	
+
 	return t;
 #if 0
 // more precise, less portable
@@ -166,13 +161,12 @@ double I_FloatTime (void)
 void Q_getwd (char *out)
 {
 #ifdef WIN32
-   _getcwd (out, 256);
-   strcat (out, "\\");
+	_getcwd (out, 256);
+	strcat (out, "\\");
 #else
-   getwd (out);
+	getwd (out);
 #endif
 }
-
 
 void Q_mkdir (char *path)
 {
@@ -184,7 +178,7 @@ void Q_mkdir (char *path)
 		return;
 #endif
 	if (errno != EEXIST)
-		Error ("mkdir %s: %s",path, strerror(errno));
+		Error ("mkdir %s: %s", path, strerror (errno));
 }
 
 /*
@@ -194,17 +188,15 @@ FileTime
 returns -1 if not present
 ============
 */
-int	FileTime (char *path)
+int FileTime (char *path)
 {
-	struct	stat	buf;
-	
-	if (stat (path,&buf) == -1)
+	struct stat buf;
+
+	if (stat (path, &buf) == -1)
 		return -1;
-	
+
 	return buf.st_mtime;
 }
-
-
 
 /*
 ==============
@@ -215,44 +207,43 @@ Parse a token out of a string
 */
 char *COM_Parse (char *data)
 {
-	int		c;
-	int		len;
-	
+	int c;
+	int len;
+
 	len = 0;
 	com_token[0] = 0;
-	
+
 	if (!data)
 		return NULL;
-		
+
 // skip whitespace
 skipwhite:
-	while ( (c = *data) <= ' ')
+	while ((c = *data) <= ' ')
 	{
 		if (c == 0)
 		{
 			com_eof = true;
-			return NULL;			// end of file;
+			return NULL; // end of file;
 		}
 		data++;
 	}
-	
-// skip // comments
-	if (c=='/' && data[1] == '/')
+
+	// skip // comments
+	if (c == '/' && data[1] == '/')
 	{
 		while (*data && *data != '\n')
 			data++;
 		goto skipwhite;
 	}
-	
 
-// handle quoted strings specially
+	// handle quoted strings specially
 	if (c == '\"')
 	{
 		data++;
 		do
 		{
 			c = *data++;
-			if (c=='\"')
+			if (c == '\"')
 			{
 				com_token[len] = 0;
 				return data;
@@ -262,26 +253,26 @@ skipwhite:
 		} while (1);
 	}
 
-// parse single characters
-	if (c=='{' || c=='}'|| c==')'|| c=='(' || c=='\'' || c==':')
+	// parse single characters
+	if (c == '{' || c == '}' || c == ')' || c == '(' || c == '\'' || c == ':')
 	{
 		com_token[len] = c;
 		len++;
 		com_token[len] = 0;
-		return data+1;
+		return data + 1;
 	}
 
-// parse a regular word
+	// parse a regular word
 	do
 	{
 		com_token[len] = c;
 		data++;
 		len++;
 		c = *data;
-	if (c=='{' || c=='}'|| c==')'|| c=='(' || c=='\'' || c==':')
+		if (c == '{' || c == '}' || c == ')' || c == '(' || c == '\'' || c == ':')
 			break;
-	} while (c>32);
-	
+	} while (c > 32);
+
 	com_token[len] = 0;
 	return data;
 }
@@ -290,16 +281,16 @@ skipwhite:
 
 int strncasecmp (char *s1, char *s2, int n)
 {
-	int		c1, c2;
-	
+	int c1, c2;
+
 	while (1)
 	{
 		c1 = *s1++;
 		c2 = *s2++;
 
 		if (!n--)
-			return 0;		// strings are equal until end point
-		
+			return 0; // strings are equal until end point
+
 		if (c1 != c2)
 		{
 			if (c1 >= 'a' && c1 <= 'z')
@@ -307,12 +298,12 @@ int strncasecmp (char *s1, char *s2, int n)
 			if (c2 >= 'a' && c2 <= 'z')
 				c2 -= ('a' - 'A');
 			if (c1 != c2)
-				return -1;		// strings not equal
+				return -1; // strings not equal
 		}
 		if (!c1)
-			return 0;		// strings are equal
+			return 0; // strings are equal
 	}
-	
+
 	return -1;
 }
 
@@ -325,11 +316,11 @@ int strcasecmp (char *s1, char *s2)
 
 char *strupr (char *start)
 {
-	char	*in;
+	char *in;
 	in = start;
 	while (*in)
 	{
-		*in = toupper(*in);
+		*in = toupper (*in);
 		in++;
 	}
 	return start;
@@ -337,16 +328,15 @@ char *strupr (char *start)
 
 char *strlower (char *start)
 {
-	char	*in;
+	char *in;
 	in = start;
 	while (*in)
 	{
-		*in = tolower(*in);
+		*in = tolower (*in);
 		in++;
 	}
 	return start;
 }
-
 
 /*
 =============================================================================
@@ -355,7 +345,6 @@ char *strlower (char *start)
 
 =============================================================================
 */
-
 
 /*
 =================
@@ -367,18 +356,16 @@ Returns the argument number (1 to argc-1) or 0 if not present
 */
 int CheckParm (char *check)
 {
-	int             i;
+	int i;
 
-	for (i = 1;i<myargc;i++)
+	for (i = 1; i < myargc; i++)
 	{
-		if ( !strcasecmp(check, myargv[i]) )
+		if (!strcasecmp (check, myargv[i]))
 			return i;
 	}
 
 	return 0;
 }
-
-
 
 /*
 ================
@@ -387,8 +374,8 @@ filelength
 */
 int filelength (FILE *f)
 {
-	int		pos;
-	int		end;
+	int pos;
+	int end;
 
 	pos = ftell (f);
 	fseek (f, 0, SEEK_END);
@@ -398,38 +385,35 @@ int filelength (FILE *f)
 	return end;
 }
 
-
 FILE *SafeOpenWrite (char *filename)
 {
-	FILE	*f;
+	FILE *f;
 
-	f = fopen(filename, "wb");
+	f = fopen (filename, "wb");
 
 	if (!f)
-		Error ("Error opening %s: %s",filename,strerror(errno));
+		Error ("Error opening %s: %s", filename, strerror (errno));
 
 	return f;
 }
 
 FILE *SafeOpenRead (char *filename)
 {
-	FILE	*f;
+	FILE *f;
 
-	f = fopen(filename, "rb");
+	f = fopen (filename, "rb");
 
 	if (!f)
-		Error ("Error opening %s: %s",filename,strerror(errno));
+		Error ("Error opening %s: %s", filename, strerror (errno));
 
 	return f;
 }
 
-
 void SafeRead (FILE *f, void *buffer, int count)
 {
-	if ( fread (buffer, 1, count, f) != (size_t)count)
+	if (fread (buffer, 1, count, f) != (size_t)count)
 		Error ("File read failure");
 }
-
 
 void SafeWrite (FILE *f, void *buffer, int count)
 {
@@ -437,22 +421,20 @@ void SafeWrite (FILE *f, void *buffer, int count)
 		Error ("File read failure");
 }
 
-
-
 /*
 ==============
 LoadFile
 ==============
 */
-int    LoadFile (char *filename, void **bufferptr)
+int LoadFile (char *filename, void **bufferptr)
 {
-	FILE	*f;
-	int    length;
-	void    *buffer;
+	FILE *f;
+	int length;
+	void *buffer;
 
 	f = SafeOpenRead (filename);
 	length = filelength (f);
-	buffer = malloc (length+1);
+	buffer = malloc (length + 1);
 	((char *)buffer)[length] = 0;
 	SafeRead (f, buffer, length);
 	fclose (f);
@@ -461,80 +443,74 @@ int    LoadFile (char *filename, void **bufferptr)
 	return length;
 }
 
-
 /*
 ==============
 SaveFile
 ==============
 */
-void    SaveFile (char *filename, void *buffer, int count)
+void SaveFile (char *filename, void *buffer, int count)
 {
-	FILE	*f;
+	FILE *f;
 
 	f = SafeOpenWrite (filename);
 	SafeWrite (f, buffer, count);
 	fclose (f);
 }
 
-
-
 void DefaultExtension (char *path, char *extension)
 {
-	char    *src;
-//
-// if path doesn't have a .EXT, append extension
-// (extension should include the .)
-//
-	src = path + strlen(path) - 1;
+	char *src;
+	//
+	// if path doesn't have a .EXT, append extension
+	// (extension should include the .)
+	//
+	src = path + strlen (path) - 1;
 
 	while (*src != PATHSEPERATOR && src != path)
 	{
 		if (*src == '.')
-			return;                 // it has an extension
+			return; // it has an extension
 		src--;
 	}
 
 	strcat (path, extension);
 }
 
-
 void DefaultPath (char *path, char *basepath)
 {
-	char    temp[128];
+	char temp[128];
 
 	if (path[0] == PATHSEPERATOR)
-		return;                   // absolute path location
-	strcpy (temp,path);
-	strcpy (path,basepath);
-	strcat (path,temp);
+		return; // absolute path location
+	strcpy (temp, path);
+	strcpy (path, basepath);
+	strcat (path, temp);
 }
 
-
-void    StripFilename (char *path)
+void StripFilename (char *path)
 {
-	int             length;
+	int length;
 
-	length = strlen(path)-1;
+	length = strlen (path) - 1;
 	while (length > 0 && path[length] != PATHSEPERATOR)
 		length--;
 	path[length] = 0;
 }
 
-void    StripExtension (char *path)
+void StripExtension (char *path)
 {
-	int             length;
+	int length;
 
-	length = strlen(path)-1;
+	length = strlen (path) - 1;
 	while (length > 0 && path[length] != '.')
 	{
 		length--;
 		if (path[length] == '/')
-			return;		// no extension
+			return; // no extension
 	}
 	if (length)
 		path[length] = 0;
 }
-
 
 /*
 ====================
@@ -543,30 +519,30 @@ Extract file parts
 */
 void ExtractFilePath (char *path, char *dest)
 {
-	char    *src;
+	char *src;
 
-	src = path + strlen(path) - 1;
+	src = path + strlen (path) - 1;
 
-//
-// back up until a \ or the start
-//
-	while (src != path && *(src-1) != PATHSEPERATOR)
+	//
+	// back up until a \ or the start
+	//
+	while (src != path && *(src - 1) != PATHSEPERATOR)
 		src--;
 
-	memcpy (dest, path, src-path);
-	dest[src-path] = 0;
+	memcpy (dest, path, src - path);
+	dest[src - path] = 0;
 }
 
 void ExtractFileBase (char *path, char *dest, bool ext)
 {
-	char    *src;
+	char *src;
 
-	src = path + strlen(path) - 1;
+	src = path + strlen (path) - 1;
 
-//
-// back up until a \ or the start
-//
-	while (src != path && *(src-1) != PATHSEPERATOR)
+	//
+	// back up until a \ or the start
+	//
+	while (src != path && *(src - 1) != PATHSEPERATOR)
 		src--;
 
 	while (*src && (ext || *src != '.'))
@@ -578,24 +554,23 @@ void ExtractFileBase (char *path, char *dest, bool ext)
 
 void ExtractFileExtension (char *path, char *dest)
 {
-	char    *src;
+	char *src;
 
-	src = path + strlen(path) - 1;
+	src = path + strlen (path) - 1;
 
-//
-// back up until a . or the start
-//
-	while (src != path && *(src-1) != '.')
+	//
+	// back up until a . or the start
+	//
+	while (src != path && *(src - 1) != '.')
 		src--;
 	if (src == path)
 	{
-		*dest = 0;	// no extension
+		*dest = 0; // no extension
 		return;
 	}
 
-	strcpy (dest,src);
+	strcpy (dest, src);
 }
-
 
 /*
 ==============
@@ -604,8 +579,8 @@ ParseNum / ParseHex
 */
 int ParseHex (char *hex)
 {
-	char    *str;
-	int    num;
+	char *str;
+	int num;
 
 	num = 0;
 	str = hex;
@@ -614,30 +589,27 @@ int ParseHex (char *hex)
 	{
 		num <<= 4;
 		if (*str >= '0' && *str <= '9')
-			num += *str-'0';
+			num += *str - '0';
 		else if (*str >= 'a' && *str <= 'f')
-			num += 10 + *str-'a';
+			num += 10 + *str - 'a';
 		else if (*str >= 'A' && *str <= 'F')
-			num += 10 + *str-'A';
+			num += 10 + *str - 'A';
 		else
-			Error ("Bad hex number: %s",hex);
+			Error ("Bad hex number: %s", hex);
 		str++;
 	}
 
 	return num;
 }
 
-
 int ParseNum (char *str)
 {
 	if (str[0] == '$')
-		return ParseHex (str+1);
+		return ParseHex (str + 1);
 	if (str[0] == '0' && str[1] == 'x')
-		return ParseHex (str+2);
+		return ParseHex (str + 2);
 	return atol (str);
 }
-
-
 
 /*
 ============================================================================
@@ -648,121 +620,122 @@ int ParseNum (char *str)
 */
 
 #ifdef _SGI_SOURCE
-#define	__BIG_ENDIAN__
+#define __BIG_ENDIAN__
 #endif
 
 #ifdef __BIG_ENDIAN__
 
-int16_t   LittleShort (int16_t l)
+int16_t LittleShort (int16_t l)
 {
-	byte    b1,b2;
+	byte b1, b2;
 
-	b1 = l&255;
-	b2 = (l>>8)&255;
+	b1 = l & 255;
+	b2 = (l >> 8) & 255;
 
-	return (b1<<8) + b2;
+	return (b1 << 8) + b2;
 }
 
-int16_t   BigShort (int16_t l)
+int16_t BigShort (int16_t l)
 {
 	return l;
 }
 
-
-int32_t    LittleLong (int32_t l)
+int32_t LittleLong (int32_t l)
 {
-	byte    b1,b2,b3,b4;
+	byte b1, b2, b3, b4;
 
-	b1 = l&255;
-	b2 = (l>>8)&255;
-	b3 = (l>>16)&255;
-	b4 = (l>>24)&255;
+	b1 = l & 255;
+	b2 = (l >> 8) & 255;
+	b3 = (l >> 16) & 255;
+	b4 = (l >> 24) & 255;
 
-	return ((int32_t)b1<<24) + ((int32_t)b2<<16) + ((int32_t)b3<<8) + b4;
+	return ((int32_t)b1 << 24) + ((int32_t)b2 << 16) + ((int32_t)b3 << 8) + b4;
 }
 
-int32_t    BigLong (int32_t l)
+int32_t BigLong (int32_t l)
 {
 	return l;
 }
 
-
-float	LittleFloat (float l)
+float LittleFloat (float l)
 {
-	union {byte b[4]; float f;} in, out;
-	
+	union
+	{
+		byte b[4];
+		float f;
+	} in, out;
+
 	in.f = l;
 	out.b[0] = in.b[3];
 	out.b[1] = in.b[2];
 	out.b[2] = in.b[1];
 	out.b[3] = in.b[0];
-	
+
 	return out.f;
 }
 
-float	BigFloat (float l)
+float BigFloat (float l)
 {
 	return l;
 }
-
 
 #else
 
-
-int16_t   BigShort (int16_t l)
+int16_t BigShort (int16_t l)
 {
-	byte    b1,b2;
+	byte b1, b2;
 
-	b1 = l&255;
-	b2 = (l>>8)&255;
+	b1 = l & 255;
+	b2 = (l >> 8) & 255;
 
-	return (b1<<8) + b2;
+	return (b1 << 8) + b2;
 }
 
-int16_t   LittleShort (int16_t l)
+int16_t LittleShort (int16_t l)
 {
 	return l;
 }
 
-
-int32_t    BigLong (int32_t l)
+int32_t BigLong (int32_t l)
 {
-	byte    b1,b2,b3,b4;
+	byte b1, b2, b3, b4;
 
-	b1 = l&255;
-	b2 = (l>>8)&255;
-	b3 = (l>>16)&255;
-	b4 = (l>>24)&255;
+	b1 = l & 255;
+	b2 = (l >> 8) & 255;
+	b3 = (l >> 16) & 255;
+	b4 = (l >> 24) & 255;
 
-	return ((int32_t)b1<<24) + ((int32_t)b2<<16) + ((int32_t)b3<<8) + b4;
+	return ((int32_t)b1 << 24) + ((int32_t)b2 << 16) + ((int32_t)b3 << 8) + b4;
 }
 
-int32_t    LittleLong (int32_t l)
+int32_t LittleLong (int32_t l)
 {
 	return l;
 }
 
-float	BigFloat (float l)
+float BigFloat (float l)
 {
-	union {byte b[4]; float f;} in, out;
-	
+	union
+	{
+		byte b[4];
+		float f;
+	} in, out;
+
 	in.f = l;
 	out.b[0] = in.b[3];
 	out.b[1] = in.b[2];
 	out.b[2] = in.b[1];
 	out.b[3] = in.b[0];
-	
+
 	return out.f;
 }
 
-float	LittleFloat (float l)
+float LittleFloat (float l)
 {
 	return l;
 }
 
-
 #endif
-
 
 //=============================================================================
 
@@ -771,22 +744,21 @@ float	LittleFloat (float l)
 CreatePath
 ============
 */
-void	CreatePath (char *path)
+void CreatePath (char *path)
 {
-	char	*ofs, c;
-	
-	for (ofs = path+1 ; *ofs ; ofs++)
+	char *ofs, c;
+
+	for (ofs = path + 1; *ofs; ofs++)
 	{
 		c = *ofs;
 		if (c == '/' || c == '\\')
-		{	// create the directory
+		{ // create the directory
 			*ofs = 0;
 			Q_mkdir (path);
 			*ofs = c;
 		}
 	}
 }
-
 
 /*
 ============
@@ -797,8 +769,8 @@ CopyFile
 */
 void CopyFile (char *from, char *to)
 {
-	void	*buffer;
-	int		length;
+	void *buffer;
+	int length;
 
 	length = LoadFile (from, &buffer);
 	CreatePath (to);

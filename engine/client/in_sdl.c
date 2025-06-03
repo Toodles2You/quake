@@ -24,10 +24,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 extern SDL_Window *window;
 
-typedef enum {
-    MOUSE_AVAILABLE = 1,
-    MOUSE_ACTIVE = 2,
-    MOUSE_RELATIVE = 4,
+typedef enum
+{
+	MOUSE_AVAILABLE = 1,
+	MOUSE_ACTIVE = 2,
+	MOUSE_RELATIVE = 4,
 } mstate_t;
 
 static mstate_t mouse_state;
@@ -39,410 +40,405 @@ static cvar_t m_rawinput = {"m_rawinput", "1"};
 static cvar_t m_filter = {"m_filter", "0"};
 static cvar_t m_look = {"m_look", "1"};
 
-static int IN_TranslateKey(SDL_KeyboardEvent *k)
+static int IN_TranslateKey (SDL_KeyboardEvent *k)
 {
-    int key = 0;
+	int key = 0;
 
-    switch (k->keysym.sym)
-    {
-    case SDLK_KP_9:
-        key = K_PGUP; /* K_KP_PGUP */
-        break;
-    case SDLK_PAGEUP:
-        key = K_PGUP;
-        break;
-    case SDLK_KP_3:
-        key = K_PGDN; /* K_KP_PGDN */
-        break;
-    case SDLK_PAGEDOWN:
-        key = K_PGDN;
-        break;
-    case SDLK_KP_7:
-        key = K_HOME; /* K_KP_HOME */
-        break;
-    case SDLK_HOME:
-        key = K_HOME;
-        break;
-    case SDLK_KP_1:
-        key = K_END; /* K_KP_END */
-        break;
-    case SDLK_END:
-        key = K_END;
-        break;
-    case SDLK_KP_4:
-        key = K_LEFTARROW; /* K_KP_LEFTARROW */
-        break;
-    case SDLK_LEFT:
-        key = K_LEFTARROW;
-        break;
-    case SDLK_KP_6:
-        key = K_RIGHTARROW; /* K_KP_RIGHTARROW */
-        break;
-    case SDLK_RIGHT:
-        key = K_RIGHTARROW;
-        break;
-    case SDLK_KP_2:
-        key = K_DOWNARROW; /* K_KP_DOWNARROW */
-        break;
-    case SDLK_DOWN:
-        key = K_DOWNARROW;
-        break;
-    case SDLK_KP_8:
-        key = K_UPARROW; /* K_KP_UPARROW */
-        break;
-    case SDLK_UP:
-        key = K_UPARROW;
-        break;
-    case SDLK_ESCAPE:
-        key = K_ESCAPE;
-        break;
-    case SDLK_KP_ENTER:
-        key = K_ENTER; /* K_KP_ENTER */
-        break;
-    case SDLK_RETURN:
-        key = K_ENTER;
-        break;
-    case SDLK_TAB:
-        key = K_TAB;
-        break;
-    case SDLK_F1:
-        key = K_F1;
-        break;
-    case SDLK_F2:
-        key = K_F2;
-        break;
-    case SDLK_F3:
-        key = K_F3;
-        break;
-    case SDLK_F4:
-        key = K_F4;
-        break;
-    case SDLK_F5:
-        key = K_F5;
-        break;
-    case SDLK_F6:
-        key = K_F6;
-        break;
-    case SDLK_F7:
-        key = K_F7;
-        break;
-    case SDLK_F8:
-        key = K_F8;
-        break;
-    case SDLK_F9:
-        key = K_F9;
-        break;
-    case SDLK_F10:
-        key = K_F10;
-        break;
-    case SDLK_F11:
-        key = K_F11;
-        break;
-    case SDLK_F12:
-        key = K_F12;
-        break;
-    case SDLK_BACKSPACE:
-        key = K_BACKSPACE;
-        break;
-    case SDLK_KP_DECIMAL:
-        key = K_DEL; /* K_KP_DEL */
-        break;
-    case SDLK_DELETE:
-        key = K_DEL;
-        break;
-    case SDLK_PAUSE:
-        key = K_PAUSE;
-        break;
-    case SDLK_LSHIFT:
-    case SDLK_RSHIFT:
-        key = K_SHIFT;
-        break;
-    case SDLK_EXECUTE:
-    case SDLK_LCTRL:
-    case SDLK_RCTRL:
-        key = K_CTRL;
-        break;
-    case SDLK_LALT:
-    case SDLK_LGUI:
-    case SDLK_RALT:
-    case SDLK_RGUI:
-        key = K_ALT;
-        break;
-    case SDLK_KP_5:
-        key = '5'; /* K_KP_5 */
-        break;
-    case SDLK_INSERT:
-        key = K_INS;
-        break;
-    case SDLK_KP_0:
-        key = K_INS; /* K_KP_INS */
-        break;
-    case SDLK_KP_MULTIPLY:
-        key = '*';
-        break;
-    case SDLK_KP_PLUS:
-        key = '+'; /* K_KP_PLUS */
-        break;
-    case SDLK_KP_MINUS:
-        key = '-'; /* K_KP_MINUS */
-        break;
-    case SDLK_KP_DIVIDE:
-        key = '/'; /* K_KP_SLASH */
-        break;
-    case SDLK_SPACE:
-        key = K_SPACE;
-        break;
-    default:
-        key = *SDL_GetKeyName(k->keysym.sym);
-        if (key >= 'A' && key <= 'Z')
-            key = key - 'A' + 'a';
-        break;
-    }
-    return key;
+	switch (k->keysym.sym)
+	{
+	case SDLK_KP_9:
+		key = K_PGUP; /* K_KP_PGUP */
+		break;
+	case SDLK_PAGEUP:
+		key = K_PGUP;
+		break;
+	case SDLK_KP_3:
+		key = K_PGDN; /* K_KP_PGDN */
+		break;
+	case SDLK_PAGEDOWN:
+		key = K_PGDN;
+		break;
+	case SDLK_KP_7:
+		key = K_HOME; /* K_KP_HOME */
+		break;
+	case SDLK_HOME:
+		key = K_HOME;
+		break;
+	case SDLK_KP_1:
+		key = K_END; /* K_KP_END */
+		break;
+	case SDLK_END:
+		key = K_END;
+		break;
+	case SDLK_KP_4:
+		key = K_LEFTARROW; /* K_KP_LEFTARROW */
+		break;
+	case SDLK_LEFT:
+		key = K_LEFTARROW;
+		break;
+	case SDLK_KP_6:
+		key = K_RIGHTARROW; /* K_KP_RIGHTARROW */
+		break;
+	case SDLK_RIGHT:
+		key = K_RIGHTARROW;
+		break;
+	case SDLK_KP_2:
+		key = K_DOWNARROW; /* K_KP_DOWNARROW */
+		break;
+	case SDLK_DOWN:
+		key = K_DOWNARROW;
+		break;
+	case SDLK_KP_8:
+		key = K_UPARROW; /* K_KP_UPARROW */
+		break;
+	case SDLK_UP:
+		key = K_UPARROW;
+		break;
+	case SDLK_ESCAPE:
+		key = K_ESCAPE;
+		break;
+	case SDLK_KP_ENTER:
+		key = K_ENTER; /* K_KP_ENTER */
+		break;
+	case SDLK_RETURN:
+		key = K_ENTER;
+		break;
+	case SDLK_TAB:
+		key = K_TAB;
+		break;
+	case SDLK_F1:
+		key = K_F1;
+		break;
+	case SDLK_F2:
+		key = K_F2;
+		break;
+	case SDLK_F3:
+		key = K_F3;
+		break;
+	case SDLK_F4:
+		key = K_F4;
+		break;
+	case SDLK_F5:
+		key = K_F5;
+		break;
+	case SDLK_F6:
+		key = K_F6;
+		break;
+	case SDLK_F7:
+		key = K_F7;
+		break;
+	case SDLK_F8:
+		key = K_F8;
+		break;
+	case SDLK_F9:
+		key = K_F9;
+		break;
+	case SDLK_F10:
+		key = K_F10;
+		break;
+	case SDLK_F11:
+		key = K_F11;
+		break;
+	case SDLK_F12:
+		key = K_F12;
+		break;
+	case SDLK_BACKSPACE:
+		key = K_BACKSPACE;
+		break;
+	case SDLK_KP_DECIMAL:
+		key = K_DEL; /* K_KP_DEL */
+		break;
+	case SDLK_DELETE:
+		key = K_DEL;
+		break;
+	case SDLK_PAUSE:
+		key = K_PAUSE;
+		break;
+	case SDLK_LSHIFT:
+	case SDLK_RSHIFT:
+		key = K_SHIFT;
+		break;
+	case SDLK_EXECUTE:
+	case SDLK_LCTRL:
+	case SDLK_RCTRL:
+		key = K_CTRL;
+		break;
+	case SDLK_LALT:
+	case SDLK_LGUI:
+	case SDLK_RALT:
+	case SDLK_RGUI:
+		key = K_ALT;
+		break;
+	case SDLK_KP_5:
+		key = '5'; /* K_KP_5 */
+		break;
+	case SDLK_INSERT:
+		key = K_INS;
+		break;
+	case SDLK_KP_0:
+		key = K_INS; /* K_KP_INS */
+		break;
+	case SDLK_KP_MULTIPLY:
+		key = '*';
+		break;
+	case SDLK_KP_PLUS:
+		key = '+'; /* K_KP_PLUS */
+		break;
+	case SDLK_KP_MINUS:
+		key = '-'; /* K_KP_MINUS */
+		break;
+	case SDLK_KP_DIVIDE:
+		key = '/'; /* K_KP_SLASH */
+		break;
+	case SDLK_SPACE:
+		key = K_SPACE;
+		break;
+	default:
+		key = *SDL_GetKeyName (k->keysym.sym);
+		if (key >= 'A' && key <= 'Z')
+			key = key - 'A' + 'a';
+		break;
+	}
+	return key;
 }
 
-static int IN_TranslateButton(SDL_MouseButtonEvent *b)
+static int IN_TranslateButton (SDL_MouseButtonEvent *b)
 {
-    switch (b->button)
-    {
-    case SDL_BUTTON_LEFT:
-        return K_MOUSE1;
-    case SDL_BUTTON_RIGHT:
-        return K_MOUSE2;
-    case SDL_BUTTON_MIDDLE:
-        return K_MOUSE3;
-    }
-    return -1;
+	switch (b->button)
+	{
+	case SDL_BUTTON_LEFT:
+		return K_MOUSE1;
+	case SDL_BUTTON_RIGHT:
+		return K_MOUSE2;
+	case SDL_BUTTON_MIDDLE:
+		return K_MOUSE3;
+	}
+	return -1;
 }
 
-static void IN_HandleEvent(SDL_Event* event, bool* warp_mouse)
+static void IN_HandleEvent (SDL_Event *event, bool *warp_mouse)
 {
-    switch (event->type)
-    {
-    case SDL_KEYDOWN:
-    case SDL_KEYUP:
-    {
-        Key_Event(IN_TranslateKey(&event->key), event->type == SDL_KEYDOWN);
-        break;
-    }
-    case SDL_MOUSEBUTTONDOWN:
-    case SDL_MOUSEBUTTONUP:
-    {
-        int button = IN_TranslateButton(&event->button);
+	switch (event->type)
+	{
+	case SDL_KEYDOWN:
+	case SDL_KEYUP:
+	{
+		Key_Event (IN_TranslateKey (&event->key), event->type == SDL_KEYDOWN);
+		break;
+	}
+	case SDL_MOUSEBUTTONDOWN:
+	case SDL_MOUSEBUTTONUP:
+	{
+		int button = IN_TranslateButton (&event->button);
 
-        if (button == -1)
-            break;
+		if (button == -1)
+			break;
 
-        Key_Event(button, event->type == SDL_MOUSEBUTTONDOWN);
-        break;
-    }
-    case SDL_MOUSEMOTION:
-    {
-        if (!(mouse_state & MOUSE_ACTIVE))
-            break;
+		Key_Event (button, event->type == SDL_MOUSEBUTTONDOWN);
+		break;
+	}
+	case SDL_MOUSEMOTION:
+	{
+		if (!(mouse_state & MOUSE_ACTIVE))
+			break;
 
-        mouse[0] += event->motion.xrel * 2;
-        mouse[1] += event->motion.yrel * 2;
+		mouse[0] += event->motion.xrel * 2;
+		mouse[1] += event->motion.yrel * 2;
 
-        if (!(mouse_state & MOUSE_RELATIVE) && (mouse[0] || mouse[1]))
-        {
-            *warp_mouse = true;
-        }
+		if (!(mouse_state & MOUSE_RELATIVE) && (mouse[0] || mouse[1]))
+		{
+			*warp_mouse = true;
+		}
 
-        break;
-    }
-    case SDL_MOUSEWHEEL:
-    {
-        int dir = (event->wheel.y < 0);
+		break;
+	}
+	case SDL_MOUSEWHEEL:
+	{
+		int dir = (event->wheel.y < 0);
 
-        if (event->wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
-        {
-            dir = !dir;
-        }
-        
-        Key_Event(K_MWHEELUP + dir, true);
-        Key_Event(K_MWHEELUP + dir, false);
-        break;
-    }
-    case SDL_QUIT:
-    {
-        Sys_Quit();
-        break;
-    }
-    case SDL_WINDOWEVENT:
-    {
-        switch (event->window.event)
-        {
-        case SDL_WINDOWEVENT_FOCUS_LOST:
-            
-            if (cls.state == ca_active
-                && !cls.demoplayback
-                && key_dest == key_game)
-            {
-                M_ToggleMenu_f();
-            }
+		if (event->wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
+		{
+			dir = !dir;
+		}
 
-            S_BlockSound();
-            break;
-        case SDL_WINDOWEVENT_FOCUS_GAINED:
-            S_UnblockSound();
-            break;
-        }
-    }
-    }
+		Key_Event (K_MWHEELUP + dir, true);
+		Key_Event (K_MWHEELUP + dir, false);
+		break;
+	}
+	case SDL_QUIT:
+	{
+		Sys_Quit ();
+		break;
+	}
+	case SDL_WINDOWEVENT:
+	{
+		switch (event->window.event)
+		{
+		case SDL_WINDOWEVENT_FOCUS_LOST:
+
+			if (cls.state == ca_active && !cls.demoplayback && key_dest == key_game)
+			{
+				M_ToggleMenu_f ();
+			}
+
+			S_BlockSound ();
+			break;
+		case SDL_WINDOWEVENT_FOCUS_GAINED:
+			S_UnblockSound ();
+			break;
+		}
+	}
+	}
 }
 
-void Sys_SendKeyEvents()
+void Sys_SendKeyEvents ()
 {
-    SDL_Event event;
-    bool warp_mouse = false;
+	SDL_Event event;
+	bool warp_mouse = false;
 
-    while (SDL_PollEvent(&event))
-    {
-        IN_HandleEvent(&event, &warp_mouse);
-    }
+	while (SDL_PollEvent (&event))
+	{
+		IN_HandleEvent (&event, &warp_mouse);
+	}
 
-    if (warp_mouse && window)
-    {
-        /* move the mouse to the window center again */
-        SDL_WarpMouseInWindow(window, vid.width / 2, vid.height / 2);
-    }
+	if (warp_mouse && window)
+	{
+		/* move the mouse to the window center again */
+		SDL_WarpMouseInWindow (window, vid.width / 2, vid.height / 2);
+	}
 }
 
-static void Force_CenterView_f()
+static void Force_CenterView_f ()
 {
-    cl.viewangles[PITCH] = 0;
+	cl.viewangles[PITCH] = 0;
 }
 
-void IN_Init()
+void IN_Init ()
 {
-    mouse_state = MOUSE_AVAILABLE;
-    mouse[0] = mouse[1] = 0;
-    
-    Cvar_RegisterVariable(src_client, &in_mouse);
-    Cvar_RegisterVariable(src_client, &m_rawinput);
-    Cvar_RegisterVariable(src_client, &m_filter);
-    Cvar_RegisterVariable(src_client, &m_look);
-    Cmd_AddCommand(src_client, "force_centerview", Force_CenterView_f);
+	mouse_state = MOUSE_AVAILABLE;
+	mouse[0] = mouse[1] = 0;
+
+	Cvar_RegisterVariable (src_client, &in_mouse);
+	Cvar_RegisterVariable (src_client, &m_rawinput);
+	Cvar_RegisterVariable (src_client, &m_filter);
+	Cvar_RegisterVariable (src_client, &m_look);
+	Cmd_AddCommand (src_client, "force_centerview", Force_CenterView_f);
 }
 
-static void IN_ActivateGrabs()
+static void IN_ActivateGrabs ()
 {
-	SDL_ShowCursor(SDL_DISABLE);
+	SDL_ShowCursor (SDL_DISABLE);
 	/* SDL_SetWindowMouseGrab(window, SDL_TRUE); */
 
-	if (m_rawinput.value && SDL_SetRelativeMouseMode(SDL_TRUE) == 0)
+	if (m_rawinput.value && SDL_SetRelativeMouseMode (SDL_TRUE) == 0)
 	{
-        mouse_state |= MOUSE_RELATIVE;
+		mouse_state |= MOUSE_RELATIVE;
 	}
 	else
 	{
-		SDL_WarpMouseInWindow(window, vid.width / 2, vid.height / 2);
-        mouse_state &= ~MOUSE_RELATIVE;
+		SDL_WarpMouseInWindow (window, vid.width / 2, vid.height / 2);
+		mouse_state &= ~MOUSE_RELATIVE;
 	}
 
 	/* SDL_SetWindowKeyboardGrab(window, SDL_TRUE); */
 
-    mouse_state |= MOUSE_ACTIVE;
-    mouse[0] = mouse[1] = 0;
+	mouse_state |= MOUSE_ACTIVE;
+	mouse[0] = mouse[1] = 0;
 }
 
-static void IN_DeactivateGrabs()
+static void IN_DeactivateGrabs ()
 {
 	/* SDL_SetWindowKeyboardGrab(window, SDL_FALSE); */
 
 	if (mouse_state & MOUSE_RELATIVE)
 	{
-		SDL_SetRelativeMouseMode(SDL_FALSE);
+		SDL_SetRelativeMouseMode (SDL_FALSE);
 	}
 
 	/* SDL_SetWindowMouseGrab(window, SDL_FALSE); */
-	SDL_ShowCursor(SDL_ENABLE);
+	SDL_ShowCursor (SDL_ENABLE);
 
-    mouse_state &= ~(MOUSE_ACTIVE | MOUSE_RELATIVE);
+	mouse_state &= ~(MOUSE_ACTIVE | MOUSE_RELATIVE);
 }
 
-void IN_Shutdown()
+void IN_Shutdown ()
 {
-    if (mouse_state & MOUSE_AVAILABLE)
-    {
-        IN_DeactivateGrabs();
-    }
-    mouse_state = 0;
+	if (mouse_state & MOUSE_AVAILABLE)
+	{
+		IN_DeactivateGrabs ();
+	}
+	mouse_state = 0;
 }
 
-void IN_Commands()
+void IN_Commands ()
 {
-    if (!window)
-        return;
+	if (!window)
+		return;
 
-    if (!(mouse_state & MOUSE_AVAILABLE))
-        return;
+	if (!(mouse_state & MOUSE_AVAILABLE))
+		return;
 
-    if (in_mouse.value
-        && cls.state == ca_active
-        && !cls.demoplayback
-        && key_dest == key_game)
-    {
-        if (!(mouse_state & MOUSE_ACTIVE))
-            IN_ActivateGrabs();
-    }
-    else
-    {
-        if (mouse_state & MOUSE_ACTIVE)
-            IN_DeactivateGrabs();
-    }
+	if (in_mouse.value && cls.state == ca_active && !cls.demoplayback && key_dest == key_game)
+	{
+		if (!(mouse_state & MOUSE_ACTIVE))
+			IN_ActivateGrabs ();
+	}
+	else
+	{
+		if (mouse_state & MOUSE_ACTIVE)
+			IN_DeactivateGrabs ();
+	}
 }
 
-void IN_Move(usercmd_t *cmd)
+void IN_Move (usercmd_t *cmd)
 {
-    if (!(mouse_state & MOUSE_ACTIVE))
-        return;
+	if (!(mouse_state & MOUSE_ACTIVE))
+		return;
 
-    if (m_filter.value)
-    {
-        mouse[0] = (mouse[0] + old_mouse[0]) * 0.5;
-        mouse[1] = (mouse[1] + old_mouse[1]) * 0.5;
-    }
+	if (m_filter.value)
+	{
+		mouse[0] = (mouse[0] + old_mouse[0]) * 0.5;
+		mouse[1] = (mouse[1] + old_mouse[1]) * 0.5;
+	}
 
-    old_mouse[0] = mouse[0];
-    old_mouse[1] = mouse[1];
+	old_mouse[0] = mouse[0];
+	old_mouse[1] = mouse[1];
 
-    mouse[0] *= sensitivity.value;
-    mouse[1] *= sensitivity.value;
+	mouse[0] *= sensitivity.value;
+	mouse[1] *= sensitivity.value;
 
-    bool looking = m_look.value || (in_mlook.state & 1);
-    bool strafing = (in_strafe.state & 1);
+	bool looking = m_look.value || (in_mlook.state & 1);
+	bool strafing = (in_strafe.state & 1);
 
-    // add mouse X/Y movement to cmd
-    if (strafing || (lookstrafe.value && looking))
-    {
-        cmd->sidemove += m_side.value * mouse[0];
-    }
-    else
-    {
-        cl.viewangles[YAW] -= m_yaw.value * mouse[0];
-    }
+	// add mouse X/Y movement to cmd
+	if (strafing || (lookstrafe.value && looking))
+	{
+		cmd->sidemove += m_side.value * mouse[0];
+	}
+	else
+	{
+		cl.viewangles[YAW] -= m_yaw.value * mouse[0];
+	}
 
-    if (looking)
-        V_StopPitchDrift();
+	if (looking)
+		V_StopPitchDrift ();
 
-    if (looking && !strafing)
-    {
-        cl.viewangles[PITCH] += m_pitch.value * mouse[1];
-        V_ClampViewAngles();
-    }
-    else
-    {
-        if (strafing)
-        {
-            cmd->upmove -= m_forward.value * mouse[1];
-        }
-        else
-        {
-            cmd->forwardmove -= m_forward.value * mouse[1];
-        }
-    }
+	if (looking && !strafing)
+	{
+		cl.viewangles[PITCH] += m_pitch.value * mouse[1];
+		V_ClampViewAngles ();
+	}
+	else
+	{
+		if (strafing)
+		{
+			cmd->upmove -= m_forward.value * mouse[1];
+		}
+		else
+		{
+			cmd->forwardmove -= m_forward.value * mouse[1];
+		}
+	}
 
-    mouse[0] = mouse[1] = 0;
+	mouse[0] = mouse[1] = 0;
 }

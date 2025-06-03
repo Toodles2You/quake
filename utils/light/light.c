@@ -9,33 +9,32 @@ NOTES
 
 */
 
-float		scaledist = 1.0;
-float		scalecos = 0.5;
-float		rangescale = 0.5;
+float scaledist = 1.0;
+float scalecos = 0.5;
+float rangescale = 0.5;
 
-byte		*filebase, *file_p, *file_end;
+byte *filebase, *file_p, *file_end;
 
-dmodel_t	*bspmodel;
-int			bspfileface;	// next surface to dispatch
+dmodel_t *bspmodel;
+int bspfileface; // next surface to dispatch
 
-vec3_t	bsp_origin;
+vec3_t bsp_origin;
 
-bool	extrasamples;
-bool	hasrgb;
+bool extrasamples;
+bool hasrgb;
 
-int		bspversion;
+int bspversion;
 
-float		minlights[MAX_MAP_FACES];
+float minlights[MAX_MAP_FACES];
 
 extern dheader_t *header;
 
-
 byte *GetFileSpace (int size)
 {
-	byte	*buf;
-	
+	byte *buf;
+
 	LOCK;
-	file_p = (byte *)(((long)file_p + 3)&~3);
+	file_p = (byte *)(((long)file_p + 3) & ~3);
 	buf = file_p;
 	file_p += size;
 	UNLOCK;
@@ -44,11 +43,10 @@ byte *GetFileSpace (int size)
 	return buf;
 }
 
-
 void LightThread (void *junk)
 {
-	int			i;
-	
+	int i;
+
 	while (1)
 	{
 		LOCK;
@@ -56,7 +54,7 @@ void LightThread (void *junk)
 		UNLOCK;
 		if (i >= numfaces)
 			return;
-		
+
 		LightFace (i);
 	}
 }
@@ -74,10 +72,9 @@ void LightWorld (void)
 	RunThreadsOn (LightThread);
 
 	lightdatasize = file_p - filebase;
-	
+
 	printf ("lightdatasize: %i\n", lightdatasize);
 }
-
 
 /*
 ========
@@ -88,34 +85,34 @@ light modelfile
 */
 int main (int argc, char **argv)
 {
-	int		i;
-	double		start, end;
-	char		source[1024];
+	int i;
+	double start, end;
+	char source[1024];
 
 	printf ("----- LightFaces ----\n");
 
 	hasrgb = true;
 
-	for (i=1 ; i<argc ; i++)
+	for (i = 1; i < argc; i++)
 	{
-		if (!strcmp(argv[i],"-threads"))
+		if (!strcmp (argv[i], "-threads"))
 		{
-			numthreads = atoi (argv[i+1]);
+			numthreads = atoi (argv[i + 1]);
 			i++;
 		}
-		else if (!strcmp(argv[i],"-extra"))
+		else if (!strcmp (argv[i], "-extra"))
 		{
 			extrasamples = true;
 			printf ("extra sampling enabled\n");
 		}
-		else if (!strcmp(argv[i],"-dist"))
+		else if (!strcmp (argv[i], "-dist"))
 		{
-			scaledist = atof (argv[i+1]);
+			scaledist = atof (argv[i + 1]);
 			i++;
 		}
-		else if (!strcmp(argv[i],"-range"))
+		else if (!strcmp (argv[i], "-range"))
 		{
-			rangescale = atof (argv[i+1]);
+			rangescale = atof (argv[i + 1]);
 			i++;
 		}
 		else if (argv[i][0] == '-')
@@ -134,7 +131,7 @@ int main (int argc, char **argv)
 	strcpy (source, argv[i]);
 	StripExtension (source);
 	DefaultExtension (source, ".bsp");
-	
+
 	LoadBSPFile (source);
 
 	bspversion = header->version;
@@ -151,17 +148,16 @@ int main (int argc, char **argv)
 	}
 
 	LoadEntities ();
-		
+
 	MakeTnodes (&dmodels[0]);
 
 	LightWorld ();
 
-	WriteEntitiesToString ();	
+	WriteEntitiesToString ();
 	WriteBSPFile (source);
 
 	end = I_FloatTime ();
-	printf ("%5.1f seconds elapsed\n", end-start);
-	
+	printf ("%5.1f seconds elapsed\n", end - start);
+
 	return 0;
 }
-

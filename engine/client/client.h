@@ -102,7 +102,7 @@ enum
 
 typedef struct
 {
-	int key;		// so entities can reuse same entry
+	int key; // so entities can reuse same entry
 	vec3_t origin;
 	float radius;
 	float die;		// stop lighting after this time
@@ -226,7 +226,7 @@ typedef struct
 
 	// the client simulates or interpolates movement to get these values
 	double time; // this is the time value that the client
-				 // is rendering at.  allways <= realtime
+		// is rendering at.  allways <= realtime
 	vec3_t simorg;
 	vec3_t simvel;
 	vec3_t simangles;
@@ -313,30 +313,30 @@ extern cvar_t in_mouse;
 extern client_state_t cl;
 
 // FIXME, allocate dynamically
-extern	entity_state_t	cl_baselines[MIN_EDICTS];
-extern	efrag_t			cl_efrags[MAX_EFRAGS];
-extern	entity_t		cl_static_entities[MAX_STATIC_ENTITIES];
-extern	lightstyle_t	cl_lightstyle[MAX_LIGHTSTYLES];
-extern	dlight_t		cl_dlights[MAX_DLIGHTS];
+extern entity_state_t cl_baselines[MIN_EDICTS];
+extern efrag_t cl_efrags[MAX_EFRAGS];
+extern entity_t cl_static_entities[MAX_STATIC_ENTITIES];
+extern lightstyle_t cl_lightstyle[MAX_LIGHTSTYLES];
+extern dlight_t cl_dlights[MAX_DLIGHTS];
 
 //=============================================================================
 
 //
 // cl_main.c
 //
-dlight_t *CL_AllocDlight(int key);
-void CL_DecayLights();
+dlight_t *CL_AllocDlight (int key);
+void CL_DecayLights ();
 
-void CL_Init();
-void Host_WriteConfiguration();
+void CL_Init ();
+void Host_WriteConfiguration ();
 
-void CL_Disconnect();
-void CL_Disconnect_f();
-void CL_NextDemo();
+void CL_Disconnect ();
+void CL_Disconnect_f ();
+void CL_NextDemo ();
 void CL_Reconnect_f ();
 
 void CL_CheckForResend ();
-void CL_BeginServerConnect();
+void CL_BeginServerConnect ();
 
 #define MAX_VISEDICTS 256
 extern int cl_numvisedicts, cl_oldnumvisedicts;
@@ -358,30 +358,30 @@ extern kbutton_t in_mlook, in_klook;
 extern kbutton_t in_strafe;
 extern kbutton_t in_speed;
 
-void CL_InitInput();
-void CL_SendCmd();
+void CL_InitInput ();
+void CL_SendCmd ();
 
-void CL_ParseTEnt();
-void CL_UpdateTEnts();
+void CL_ParseTEnt ();
+void CL_UpdateTEnts ();
 
-void CL_ClearState();
+void CL_ClearState ();
 
-void CL_ReadPackets();
+void CL_ReadPackets ();
 
-char *Key_KeynumToString(int keynum);
+char *Key_KeynumToString (int keynum);
 
 //
 // cl_demo.c
 //
-void CL_StopPlayback();
-bool CL_GetMessage();
-void CL_WriteDemoCmd(usercmd_t *pcmd);
+void CL_StopPlayback ();
+bool CL_GetMessage ();
+void CL_WriteDemoCmd (usercmd_t *pcmd);
 
-void CL_Stop_f();
-void CL_Record_f();
-void CL_ReRecord_f();
-void CL_PlayDemo_f();
-void CL_TimeDemo_f();
+void CL_Stop_f ();
+void CL_Record_f ();
+void CL_ReRecord_f ();
+void CL_PlayDemo_f ();
+void CL_TimeDemo_f ();
 
 //
 // cl_parse.c
@@ -389,51 +389,51 @@ void CL_TimeDemo_f();
 #define NET_TIMINGS 256
 #define NET_TIMINGSMASK 255
 extern int packet_latency[NET_TIMINGS];
-int CL_CalcNet();
-void CL_ParseServerMessage();
-void CL_NewTranslation(int slot);
-bool CL_CheckOrDownloadFile(char *filename);
-bool CL_IsUploading();
-void CL_NextUpload();
-void CL_StartUpload(byte *data, int size);
-void CL_StopUpload();
+int CL_CalcNet ();
+void CL_ParseServerMessage ();
+void CL_NewTranslation (int slot);
+bool CL_CheckOrDownloadFile (char *filename);
+bool CL_IsUploading ();
+void CL_NextUpload ();
+void CL_StartUpload (byte *data, int size);
+void CL_StopUpload ();
 
 //
 // view.c
 //
-void V_StartPitchDrift();
-void V_StopPitchDrift();
+void V_StartPitchDrift ();
+void V_StopPitchDrift ();
 
-void V_RenderView();
-void V_UpdatePalette();
-void V_ParseDamage();
-void V_SetContentsColor(int contents);
-void V_CalcBlend();
+void V_RenderView ();
+void V_UpdatePalette ();
+void V_ParseDamage ();
+void V_SetContentsColor (int contents);
+void V_CalcBlend ();
 
 //
 // cl_tent.c
 //
-void CL_InitTEnts();
-void CL_ClearTEnts();
+void CL_InitTEnts ();
+void CL_ClearTEnts ();
 
 //
 // cl_ents.c
 //
-void CL_SetSolidPlayers(int playernum);
-void CL_SetUpPlayerPrediction(bool dopred);
-void CL_EmitEntities();
-void CL_ClearProjectiles();
-void CL_ParseProjectiles();
-void CL_ParsePacketEntities(bool delta);
-void CL_SetSolidEntities();
-void CL_ParsePlayerinfo();
+void CL_SetSolidPlayers (int playernum);
+void CL_SetUpPlayerPrediction (bool dopred);
+void CL_EmitEntities ();
+void CL_ClearProjectiles ();
+void CL_ParseProjectiles ();
+void CL_ParsePacketEntities (bool delta);
+void CL_SetSolidEntities ();
+void CL_ParsePlayerinfo ();
 
 //
 // cl_pred.c
 //
-void CL_InitPrediction();
-void CL_PredictMove();
-void CL_PredictUsercmd(player_state_t *from, player_state_t *to, usercmd_t *u, bool spectator);
+void CL_InitPrediction ();
+void CL_PredictMove ();
+void CL_PredictUsercmd (player_state_t *from, player_state_t *to, usercmd_t *u, bool spectator);
 
 //
 // cl_cam.c
@@ -447,12 +447,12 @@ enum
 extern int autocam;
 extern int spec_track; // player# of who we are tracking
 
-bool Cam_DrawViewModel();
-bool Cam_DrawPlayer(int playernum);
-void Cam_Track(usercmd_t *cmd);
-void Cam_FinishMove(usercmd_t *cmd);
-void Cam_Reset();
-void CL_InitCam();
+bool Cam_DrawViewModel ();
+bool Cam_DrawPlayer (int playernum);
+void Cam_Track (usercmd_t *cmd);
+void Cam_FinishMove (usercmd_t *cmd);
+void Cam_Reset ();
+void CL_InitCam ();
 
 //
 // skin.c
@@ -474,10 +474,10 @@ typedef struct
 	unsigned char data; // unbounded
 } pcx_t;
 
-void Skin_Find(player_info_t *sc);
-byte *Skin_Cache(skin_t *skin);
-void Skin_Skins_f();
-void Skin_AllSkins_f();
-void Skin_NextDownload();
+void Skin_Find (player_info_t *sc);
+byte *Skin_Cache (skin_t *skin);
+void Skin_Skins_f ();
+void Skin_AllSkins_f ();
+void Skin_NextDownload ();
 
 #endif /* !_CLIENT_H */
