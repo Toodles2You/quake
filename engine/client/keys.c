@@ -149,9 +149,7 @@ static void CompleteCommand ()
 {
 	char *cmd = Cmd_CompleteCommand (src_client, key_lines[edit_line] + 1);
 	if (!cmd)
-	{
 		cmd = Cvar_CompleteVariable (src_client, key_lines[edit_line] + 1);
-	}
 
 	if (cmd)
 	{
@@ -346,10 +344,8 @@ static int Key_StringToKeynum (char *str)
 		return str[0];
 
 	for (kn = keynames; kn->name; kn++)
-	{
 		if (!strcasecmp (str, kn->name))
 			return kn->keynum;
-	}
 	return -1;
 }
 
@@ -604,18 +600,14 @@ void Key_Event (int key, bool down)
 	key_lastpress = key;
 	key_count++;
 	if (key_count <= 0)
-	{
 		return; // just catching keys for Con_NotifyBox
-	}
 
 	// update auto-repeat status
 	if (down)
 	{
 		key_repeats[key]++;
 		if (key != K_BACKSPACE && key != K_PAUSE && key != K_PGUP && key != K_PGDN && key_repeats[key] > 1)
-		{
 			return; // ignore most autorepeats
-		}
 
 		if (key >= 200 && !keybindings[key])
 			Con_Printf ("%s is unbound, hit F4 to set.\n", Key_KeynumToString (key));
@@ -720,9 +712,7 @@ void Key_Event (int key, bool down)
 		return; // other systems only care about key down events
 
 	if (shift_down)
-	{
 		key = keyshift[key];
-	}
 
 	switch (key_dest)
 	{

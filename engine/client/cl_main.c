@@ -101,9 +101,7 @@ static void CL_SendConnectPacket ()
 	//		 Should I add it to realtime instead?!?!
 
 	if (cls.state != ca_disconnected)
-	{
 		return;
-	}
 
 	t1 = Sys_FloatTime ();
 
@@ -122,9 +120,7 @@ static void CL_SendConnectPacket ()
 	}
 
 	if (adr.port == 0)
-	{
 		adr.port = BigShort (PORT_SERVER);
-	}
 
 	t2 = Sys_FloatTime ();
 
@@ -154,17 +150,11 @@ void CL_CheckForResend ()
 	double t1, t2;
 
 	if (connect_time == -1)
-	{
 		return;
-	}
 	if (cls.state != ca_disconnected)
-	{
 		return;
-	}
 	if (connect_time && realtime - connect_time < 5.0)
-	{
 		return;
-	}
 
 	t1 = Sys_FloatTime ();
 
@@ -183,9 +173,7 @@ void CL_CheckForResend ()
 	}
 
 	if (adr.port == 0)
-	{
 		adr.port = BigShort (PORT_SERVER);
-	}
 
 	t2 = Sys_FloatTime ();
 
@@ -640,9 +628,7 @@ drop to full console
 static void CL_Changing_f ()
 {
 	if (cls.download) // don't change when downloading
-	{
 		return;
-	}
 
 	S_StopAllSounds (true);
 	cl.intermission = 0;
@@ -660,9 +646,7 @@ The server is changing levels
 void CL_Reconnect_f ()
 {
 	if (cls.download) // don't change when downloading
-	{
 		return;
-	}
 
 	S_StopAllSounds (true);
 
@@ -702,9 +686,7 @@ static void CL_ConnectionlessPacket ()
 	c = MSG_ReadByte ();
 
 	if (!cls.demoplayback)
-	{
 		Con_Printf ("%s: ", NET_AdrToString (net_from));
-	}
 
 	if (c == S2C_CONNECTION)
 	{
@@ -712,9 +694,7 @@ static void CL_ConnectionlessPacket ()
 		if (cls.state >= ca_connected)
 		{
 			if (!cls.demoplayback)
-			{
 				Con_Printf ("Dup connect received.  Ignored.\n");
-			}
 			return;
 		}
 		Netchan_Setup (&cls.netchan, net_from, CLIENT, cls.qport);
@@ -812,9 +792,7 @@ void CL_ReadPackets ()
 		}
 
 		if (!Netchan_Process (&cls.netchan))
-		{
 			continue; // wasn't accepted for some reason
-		}
 
 		CL_ParseServerMessage ();
 	}

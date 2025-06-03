@@ -116,10 +116,8 @@ int W_CheckNumForName (char *name)
 
 	lump_p = lumpinfo;
 	for (i = 0; i < numlumps; i++, lump_p++)
-	{
 		if (*(int32_t *)lump_p->name == v1 && *(int32_t *)&lump_p->name[4] == v2 && *(int32_t *)&lump_p->name[8] == v3 && *(int32_t *)&lump_p->name[12] == v4)
 			return i;
-	}
 
 	return -1;
 }

@@ -150,13 +150,9 @@ int PM_FlyMove (void)
 		pmove.numtouch++;
 
 		if (trace.plane.normal[2] > 0.7)
-		{
 			blocked |= 1; // floor
-		}
 		if (!trace.plane.normal[2])
-		{
 			blocked |= 2; // step
-		}
 
 		time_left -= time_left * trace.fraction;
 
@@ -214,9 +210,7 @@ int PM_FlyMove (void)
 	}
 
 	if (pmove.waterjumptime)
-	{
 		VectorCopy (primal_velocity, pmove.velocity);
-	}
 	return blocked;
 }
 
@@ -271,9 +265,7 @@ void PM_GroundMove (void)
 	dest[2] += STEPSIZE;
 	trace = PM_PlayerMove (pmove.origin, dest);
 	if (!trace.startsolid && !trace.allsolid)
-	{
 		VectorCopy (trace.endpos, pmove.origin);
-	}
 
 	// slide move
 	PM_FlyMove ();
@@ -285,9 +277,7 @@ void PM_GroundMove (void)
 	if (trace.plane.normal[2] < 0.7)
 		goto usedown;
 	if (!trace.startsolid && !trace.allsolid)
-	{
 		VectorCopy (trace.endpos, pmove.origin);
-	}
 	VectorCopy (pmove.origin, up);
 
 	// decide which one went farther
@@ -348,9 +338,7 @@ void PM_Friction (void)
 		trace = PM_PlayerMove (start, stop);
 
 		if (trace.fraction == 1)
-		{
 			friction *= 2;
-		}
 	}
 
 	drop = 0;

@@ -379,13 +379,9 @@ void SV_AddGravity (edict_t *ent, float scale)
 	float ent_gravity;
 
 	if (ed_field (gravity) && ed_float (ent, gravity))
-	{
 		ent_gravity = ed_float (ent, gravity);
-	}
 	else
-	{
 		ent_gravity = 1.0;
-	}
 
 	ed_vector (ent, velocity)[2] -= ent_gravity * scale * sv_gravity.value * sv.frametime;
 }
@@ -800,18 +796,16 @@ void SV_CheckWaterTransition (edict_t *ent)
 	if (cont <= CONTENTS_WATER)
 	{
 		if (ed_float (ent, watertype) == CONTENTS_EMPTY)
-		{ // just crossed into water
+			// just crossed into water
 			SV_StartSound (ent, 0, "misc/h2ohit1.wav", 255, 1);
-		}
 		ed_float (ent, watertype) = cont;
 		ed_float (ent, waterlevel) = 1;
 	}
 	else
 	{
 		if (ed_float (ent, watertype) != CONTENTS_EMPTY)
-		{ // just crossed into water
+			// just crossed into water
 			SV_StartSound (ent, 0, "misc/h2ohit1.wav", 255, 1);
-		}
 		ed_float (ent, watertype) = CONTENTS_EMPTY;
 		ed_float (ent, waterlevel) = cont;
 	}
@@ -987,9 +981,7 @@ static void SV_RunEntity (edict_t *ent)
 	if (ed_field (lastruntime))
 	{
 		if (ed_float (ent, lastruntime) == (float)realtime)
-		{
 			return;
-		}
 
 		ed_float (ent, lastruntime) = (float)realtime;
 	}
@@ -1034,9 +1026,7 @@ void SV_RunNewmis ()
 	edict_t *ent;
 
 	if (!pr_field (newmis) || !sv_pr_int (newmis))
-	{
 		return;
-	}
 	ent = PROG_TO_EDICT (sv_pr_int (newmis));
 	// sv.frametime = 0.05;
 	sv_pr_int (newmis) = 0;

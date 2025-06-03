@@ -110,9 +110,7 @@ char *Cvar_CompleteVariable (cmd_source_e src, char *partial)
 	{
 		/* Toodles: If running a local server, query server variables, too. */
 		if (Host_IsLocalGame ())
-		{
 			Cvar_GetBestVariable (src_server, partial, len, &best, &bestLen);
-		}
 	}
 
 	return best;
@@ -162,9 +160,7 @@ void Cvar_Set (cmd_source_e src, char *var_name, char *value)
 	var->value = atof (var->string);
 
 	if ((var->flags & CVAR_NOTIFY) && changed && Host_IsLocalGame ())
-	{
 		SV_BroadcastPrintf (PRINT_HIGH, "\"%s\" changed to \"%s\"\n", var->name, var->string);
-	}
 }
 
 /*

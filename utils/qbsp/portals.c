@@ -260,9 +260,7 @@ void CutNodePortals_r (node_t *node)
 	// seperate the portals on node into it's children
 	//
 	if (node->contents)
-	{
 		return; // at a leaf, no more dividing
-	}
 
 	plane = &planes[node->planenum];
 
@@ -468,9 +466,8 @@ void WritePortalFile_r (node_t *node)
 			pl = &planes[p->planenum];
 			PlaneFromWinding (w, &plane2);
 			if (DotProduct (pl->normal, plane2.normal) < 0.99)
-			{ // backwards...
+				// backwards...
 				fprintf (pf, "%i %i %i ", w->numpoints, p->nodes[1]->visleafnum, p->nodes[0]->visleafnum);
-			}
 			else
 				fprintf (pf, "%i %i %i ", w->numpoints, p->nodes[0]->visleafnum, p->nodes[1]->visleafnum);
 			for (i = 0; i < w->numpoints; i++)

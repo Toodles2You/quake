@@ -749,9 +749,7 @@ void Cache_Print ()
 	cache_system_t *cd;
 
 	for (cd = cache_head.next; cd != &cache_head; cd = cd->next)
-	{
 		Con_Printf ("%8lu : %s\n", cd->size, cd->name);
-	}
 }
 
 /*

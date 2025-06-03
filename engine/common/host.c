@@ -265,12 +265,8 @@ void Host_ShutdownServer (bool crash)
 	MSG_WriteByte (&net_message[SERVER], svc_disconnect);
 
 	for (i = 0, host_client = svs.clients; i < MAX_CLIENTS; i++, host_client++)
-	{
 		if (host_client->state >= cs_spawned)
-		{
 			Netchan_Transmit (&host_client->netchan, net_message[SERVER].cursize, net_message[SERVER].data);
-		}
-	}
 
 	NET_Close (SERVER);
 
@@ -459,13 +455,9 @@ void Host_Frame (double time)
 	Host_GetConsoleCommands ();
 
 	if (Host_IsLocalGame ())
-	{
 		Host_ServerFrame (host_frametime);
-	}
 	else
-	{
 		Cbuf_Execute (src_server);
-	}
 
 	//-------------------
 	//
@@ -566,20 +558,14 @@ void Host_Init (quakeparms_t *parms)
 {
 	int minimum_memory = MINIMUM_MEMORY;
 	if (!standard_quake)
-	{
 		minimum_memory = MINIMUM_MEMORY_LEVELPAK;
-	}
 	if (COM_CheckParm ("-minmemory"))
-	{
 		parms->memsize = minimum_memory;
-	}
 
 	host_parms = *parms;
 
 	if (parms->memsize < minimum_memory)
-	{
 		Sys_Error ("Only %4.1f megs of memory available, can't execute game", parms->memsize / (float)0x100000);
-	}
 
 	com_argc = parms->argc;
 	com_argv = parms->argv;
@@ -649,9 +635,7 @@ void Host_InitServer ()
 	int port = PORT_SERVER;
 	int p = COM_CheckParm ("-port");
 	if (p && p < com_argc)
-	{
 		port = atoi (com_argv[p + 1]);
-	}
 
 	NET_Open (SERVER, port);
 }
@@ -686,9 +670,7 @@ void Host_Shutdown ()
 	IN_Shutdown ();
 
 	if (cls.state != ca_dedicated)
-	{
 		VID_Shutdown ();
-	}
 }
 
 bool Host_IsLocalGame ()

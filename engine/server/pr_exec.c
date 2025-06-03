@@ -140,9 +140,7 @@ static void PR_StackTrace (progs_state_t *pr)
 		f = pr_stack[i].f;
 
 		if (!f)
-		{
 			Con_Printf ("<NO FUNCTION>\n");
-		}
 		else
 			Con_Printf ("%12s : %s\n", PR_GetString (pr, f->s_file), PR_GetString (pr, f->s_name));
 	}
@@ -567,9 +565,7 @@ void PR_ExecuteProgram (progs_state_t *pr, func_t fnum)
 			ed = PROG_TO_EDICT (pr_int (pr, self));
 			ed_float (ed, nextthink) = pr_float (pr, time) + 0.1;
 			if (a->_float != ed_float (ed, frame))
-			{
 				ed_float (ed, frame) = a->_float;
-			}
 			ed_int (ed, think) = b->function;
 			break;
 

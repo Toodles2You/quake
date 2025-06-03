@@ -832,14 +832,10 @@ bool COM_ReadPair (byte **data, char *key, char *value)
 	*data = COM_Parse (*data);
 
 	if (com_token[0] == '}')
-	{
 		return false;
-	}
 
 	if (!(*data))
-	{
 		Sys_Error ("COM_ReadPair: EOF without closing brace.");
-	}
 
 	strcpy (key, com_token);
 
@@ -853,14 +849,10 @@ bool COM_ReadPair (byte **data, char *key, char *value)
 
 	*data = COM_Parse (*data);
 	if (!(*data))
-	{
 		Sys_Error ("COM_ReadPair: EOF without closing brace.");
-	}
 
 	if (com_token[0] == '}')
-	{
 		Sys_Error ("COM_ReadPair: Closing brace without data.");
-	}
 
 	strcpy (value, com_token);
 	return true;
@@ -914,9 +906,7 @@ static void COM_CheckRegistered (bool modified)
 		/* Sys_Error ("This dedicated server requires a full registered copy of Quake"); */
 		Con_Printf ("Playing shareware version.\n");
 		if (modified)
-		{
 			Sys_Error ("You must have the registered version to use modified games");
-		}
 		return;
 	}
 
@@ -984,9 +974,7 @@ void COM_InitArgv (int argc, char **argv)
 	}
 
 	if (COM_CheckParm ("-game"))
-	{
 		standard_quake = false;
-	}
 }
 
 /*
@@ -1168,9 +1156,7 @@ void COM_Path_f ()
 		if (s == com_base_searchpaths)
 			Con_Printf ("----------\n");
 		if (s->pack)
-		{
 			Con_Printf ("%s (%lu files)\n", s->pack->filename, s->pack->numfiles);
-		}
 		else
 			Con_Printf ("%s\n", s->filename);
 	}
@@ -1605,13 +1591,9 @@ static void COM_AddGameDirectory (char *dir, bool *modified)
 	char *p;
 
 	if ((p = strrchr (dir, '/')) != NULL)
-	{
 		strcpy (gamedirfile, ++p);
-	}
 	else
-	{
 		strcpy (gamedirfile, p);
-	}
 
 	strcpy (com_gamedir, dir);
 
@@ -1660,9 +1642,7 @@ void COM_Gamedir (char *dir)
 	}
 
 	if (!strcmp (gamedirfile, dir))
-	{
 		return; // still the same
-	}
 
 	strcpy (gamedirfile, dir);
 

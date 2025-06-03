@@ -39,9 +39,7 @@ void ByteSwapTri (tf_triangle *tri)
 	int i;
 
 	for (i = 0; i < sizeof (tf_triangle) / 4; i++)
-	{
 		((int32_t *)tri)[i] = BigLong (((int32_t *)tri)[i]);
-	}
 }
 
 void LoadTriangleList (char *filename, triangle_t **pptri, int32_t *numtriangles)
@@ -160,9 +158,7 @@ void LoadTriangleList (char *filename, triangle_t **pptri, int32_t *numtriangles
 				int k;
 
 				for (k = 0; k < 3; k++)
-				{
 					ptri->verts[j][k] = tri.pt[j].p.v[k];
-				}
 			}
 
 			ptri++;

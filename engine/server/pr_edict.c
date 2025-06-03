@@ -88,9 +88,7 @@ edict_t *ED_Alloc ()
 	}
 
 	if (i == sv.max_edicts)
-	{
 		Sys_Error ("ED_Alloc: no free edicts");
-	}
 
 	sv.num_edicts++;
 	e = EDICT_NUM (i);
@@ -538,9 +536,7 @@ char *ED_ParseEdict (char *data, edict_t *ent)
 
 	// clear it
 	if (ent != sv.edicts) // hack
-	{
 		ED_ClearEdict (ent);
-	}
 
 	// go through all the dictionary pairs
 	while (1)
@@ -593,9 +589,7 @@ char *ED_ParseEdict (char *data, edict_t *ent)
 
 		key = PR_FindField (&sv.pr, keyname);
 		if (!key)
-		{
 			continue;
-		}
 
 		if (anglehack)
 		{

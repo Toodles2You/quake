@@ -360,18 +360,12 @@ void SingleEnvLightFace (entity_t *light, lightinfo_t *l)
 
 	// don't bother with lights behind the surface
 	if (dot < 0)
-	{
 		return;
-	}
 
 	mapnum = 0;
 	for (mapnum = 0; mapnum < l->numlightstyles; mapnum++)
-	{
 		if (l->lightstyles[mapnum] == light->style)
-		{
 			break;
-		}
-	}
 	lightsamp = (vec3_t *)l->lightmaps[mapnum];
 	// init a new light map
 	if (mapnum == l->numlightstyles)
@@ -401,9 +395,7 @@ void SingleEnvLightFace (entity_t *light, lightinfo_t *l)
 	for (c = 0; c < l->numsurfpt; c++, surf += 3)
 	{
 		if (!CastRaySky (surf, spotvec))
-		{
 			continue; // light doesn't reach
-		}
 
 		angle = (1.0 - scalecos) + scalecos * dot;
 
@@ -412,14 +404,10 @@ void SingleEnvLightFace (entity_t *light, lightinfo_t *l)
 			add = (light->color[j] * light->light);
 			add *= angle;
 			if (add <= 0)
-			{
 				continue;
-			}
 			lightsamp[c][j] += add;
 			if (lightsamp[c][j] > 1) // ignore real tiny lights
-			{
 				hit = true;
-			}
 		}
 	}
 
@@ -535,14 +523,10 @@ void SingleLightFace (entity_t *light, lightinfo_t *l)
 			add = (light->color[j] * light->light) - dist;
 			add *= angle;
 			if (add <= 0)
-			{
 				continue;
-			}
 			lightsamp[c][j] += add;
 			if (lightsamp[c][j] > 1) // ignore real tiny lights
-			{
 				hit = true;
-			}
 		}
 	}
 
@@ -573,21 +557,15 @@ void FixMinlight (lightinfo_t *l)
 	bytes = hasrgb ? 3 : 1;
 
 	for (i = 0; i < l->numlightstyles; i++)
-	{
 		if (l->lightstyles[i] == 0)
 			break;
-	}
 	if (i == l->numlightstyles)
 	{
 		if (l->numlightstyles == MAXLIGHTMAPS)
 			return; // oh well..
 		for (j = 0; j < l->numsurfpt; j++)
-		{
 			for (k = 0; k < bytes; k++)
-			{
 				l->lightmaps[i][j][k] = minlight;
-			}
-		}
 		l->lightstyles[i] = 0;
 		l->numlightstyles++;
 	}
@@ -596,12 +574,8 @@ void FixMinlight (lightinfo_t *l)
 		for (j = 0; j < l->numsurfpt; j++)
 		{
 			for (k = 0; k < bytes; k++)
-			{
 				if (l->lightmaps[i][j][k] < minlight)
-				{
 					l->lightmaps[i][j][k] = minlight;
-				}
-			}
 		}
 	}
 }
@@ -635,9 +609,8 @@ void LightFace (int surfnum)
 		f->styles[j] = 255;
 
 	if (texinfo[f->texinfo].flags & TEX_SPECIAL)
-	{ // non-lit texture
+		// non-lit texture
 		return;
-	}
 
 	memset (&l, 0, sizeof (l));
 	l.surfnum = surfnum;
@@ -672,17 +645,14 @@ void LightFace (int surfnum)
 	//
 	l.numlightstyles = 0;
 	for (i = 0; i < num_entities; i++)
-	{
 		if (entities[i].light)
 			SingleLightFace (&entities[i], &l);
-	}
 
 	FixMinlight (&l);
 
 	if (!l.numlightstyles)
-	{ // no light hitting it
+		// no light hitting it
 		return;
-	}
 
 	//
 	// save out the values
@@ -721,18 +691,14 @@ void LightFace (int surfnum)
 				else
 				{
 					for (j = 0; j < bytes; j++)
-					{
 						total[j] = light[c][j];
-					}
 				}
 				// scale before clamping
 				if (hasrgb)
 				{
 					VectorScale (total, rangescale, total);
 					if (total[0] < 0 || total[1] < 0 || total[2] < 0)
-					{
 						Error ("light < 0");
-					}
 					if (total[0] > 255 || total[1] > 255 || total[2] > 255)
 					{
 						VectorNormalize (total);
@@ -746,13 +712,9 @@ void LightFace (int surfnum)
 				{
 					total[0] *= rangescale;
 					if (total[0] < 0)
-					{
 						Error ("light < 0");
-					}
 					if (total[0] > 255)
-					{
 						total[0] = 255;
-					}
 					*out++ = (byte)total[0];
 				}
 			}

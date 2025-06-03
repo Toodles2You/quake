@@ -207,9 +207,7 @@ winding_t *ClipWinding (winding_t *in, plane_t *split, bool keepon)
 		else if (dot < -ON_EPSILON)
 			sides[i] = SIDE_BACK;
 		else
-		{
 			sides[i] = SIDE_ON;
-		}
 		counts[sides[i]]++;
 	}
 	sides[i] = sides[0];
@@ -494,16 +492,12 @@ void CalcPortalVis (void)
 			Error ("pthread_attr_setstacksize failed");
 
 		for (i = 0; i < numthreads; i++)
-		{
 			if (pthread_create (&work_threads[i], attrib, LeafThread, (pthread_addr_t)i) == -1)
 				Error ("pthread_create failed");
-		}
 
 		for (i = 0; i < numthreads; i++)
-		{
 			if (pthread_join (work_threads[i], &status) == -1)
 				Error ("pthread_join failed");
-		}
 
 		if (pthread_mutex_destroy (my_mutex) == -1)
 			Error ("pthread_mutex_destroy failed");

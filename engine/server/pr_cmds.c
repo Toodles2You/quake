@@ -37,9 +37,7 @@ char *PF_VarString (progs_state_t *pr, int first)
 
 	out[0] = 0;
 	for (i = first; i < pr->argc; i++)
-	{
 		strcat (out, pr_get_string (pr, (OFS_PARM0 + i * 3)));
-	}
 	return out;
 }
 
@@ -585,7 +583,7 @@ void PF_break (progs_state_t *pr)
 {
 	Con_Printf ("break statement\n");
 	*(int32_t *)-4 = 0; // dump to debugger
-	//	PR_RunError (pr, "break statement");
+						//	PR_RunError (pr, "break statement");
 }
 
 /*
@@ -1681,9 +1679,7 @@ void PF_infokey (progs_state_t *pr)
 	{
 		strcpy (pr_string_temp, Info_ValueForKey (svs.info, key));
 		if (pr_string_temp[0] == '\0')
-		{
 			strcpy (pr_string_temp, Info_ValueForKey (localinfo, key));
-		}
 	}
 	else if (e1 <= MAX_CLIENTS)
 	{

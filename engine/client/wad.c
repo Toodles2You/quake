@@ -105,10 +105,8 @@ lumpinfo_t *W_GetLumpinfo (char *name)
 	W_CleanupName (name, clean);
 
 	for (lump_p = wad_lumps, i = 0; i < wad_numlumps; i++, lump_p++)
-	{
 		if (!strcmp (clean, lump_p->name))
 			return lump_p;
-	}
 
 	Sys_Error ("W_GetLumpinfo: %s not found", name);
 	return NULL;
@@ -248,9 +246,7 @@ static lumpinfo_t *mip_lump = NULL;
 bool W_LoadMapMiptexInfo (char *name, void *dst)
 {
 	if (!W_GetMapLumpInfo (name, &mip_wad, &mip_lump))
-	{
 		return false;
-	}
 
 	Sys_FileSeek (mip_wad->handle, mip_lump->filepos);
 	return Sys_FileRead (mip_wad->handle, dst, sizeof (miptex_t)) > 0;
@@ -259,9 +255,7 @@ bool W_LoadMapMiptexInfo (char *name, void *dst)
 bool W_LoadMapMiptexData (void *dst)
 {
 	if (!mip_wad || !mip_lump)
-	{
 		return false;
-	}
 
 	Sys_FileSeek (mip_wad->handle, mip_lump->filepos + sizeof (miptex_t));
 	bool result = Sys_FileRead (mip_wad->handle, dst, mip_lump->size - sizeof (miptex_t)) > 0;

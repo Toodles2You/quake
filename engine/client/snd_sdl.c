@@ -92,61 +92,35 @@ static void SNDDMA_CheckParms (SDL_AudioSpec *desired)
 	int bits;
 
 	if ((i = COM_CheckParm ("-sndbits")) != 0)
-	{
 		bits = atoi (com_argv[i + 1]);
-	}
 
 	if (bits == 8)
-	{
 		desired->format = AUDIO_U8;
-	}
 	else if (bits == 16)
-	{
 		desired->format = AUDIO_S16LSB;
-	}
 	else
-	{
 		desired->format = AUDIO_U8;
-	}
 
 	if ((i = COM_CheckParm ("-sndspeed")) != 0)
-	{
 		desired->freq = atoi (com_argv[i + 1]);
-	}
 	else
-	{
 		desired->freq = 11025;
-	}
 
 	if ((i = COM_CheckParm ("-sndmono")) != 0)
-	{
 		desired->channels = 1;
-	}
 	else if ((i = COM_CheckParm ("-sndstereo")) != 0)
-	{
 		desired->channels = 2;
-	}
 	else
-	{
 		desired->channels = 2;
-	}
 
 	if (desired->freq <= 11025)
-	{
 		desired->samples = 256;
-	}
 	else if (desired->freq <= 22050)
-	{
 		desired->samples = 512;
-	}
 	else if (desired->freq <= 44100)
-	{
 		desired->samples = 1024;
-	}
 	else
-	{
 		desired->samples = 2048;
-	}
 }
 
 bool SNDDMA_Init ()

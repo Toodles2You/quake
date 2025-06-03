@@ -205,12 +205,8 @@ static void SV_CalcPHS ()
 		if (i == 0)
 			continue;
 		for (j = 0; j < num; j++)
-		{
 			if (scan[j >> 3] & (1 << (j & 7)))
-			{
 				vcount++;
-			}
-		}
 	}
 
 	sv.phs = Hunk_Alloc (rowbytes * num);
@@ -265,17 +261,11 @@ static unsigned int SV_CheckModel (char *mdl)
 static bool SV_LoadProgs ()
 {
 	if (PR_LoadProgs (&sv.pr, "qwprogs.dat", PROG_VERSION_QUAKE, PROG_CRC_ANY) == 0)
-	{
 		svs.protocol = PROTOCOL_QUAKEWORLD;
-	}
 	else if (PR_LoadProgs (&sv.pr, "progs.dat", PROG_VERSION_QUAKE, PROG_CRC_ANY) == 0)
-	{
 		svs.protocol = PROTOCOL_NETQUAKE;
-	}
 	else
-	{
 		return false;
-	}
 
 #define PR_FIELD(_, name) {#name, false},
 #define PR_FIELD_OPTIONAL(_, name) {#name, true},
@@ -365,9 +355,7 @@ void SV_SpawnServer (char *server, char *startspot)
 	strcpy (sv.name, server);
 
 	if (startspot)
-	{
 		strcpy (sv.startspot, startspot);
-	}
 
 	// load progs to get entity field count
 	// which determines how big each edict is
@@ -398,9 +386,7 @@ void SV_SpawnServer (char *server, char *startspot)
 	sv.max_edicts = (size_t)ceil (numEntities * 1.2 / 8.0) * 8;
 
 	if (sv.max_edicts < MIN_EDICTS)
-	{
 		sv.max_edicts = MIN_EDICTS;
-	}
 
 	Con_DPrintf ("SV_SpawnServer: Allocating %lu edicts (Counted %lu)\n", sv.max_edicts, numEntities);
 
@@ -457,9 +443,7 @@ void SV_SpawnServer (char *server, char *startspot)
 	if (coop.value)
 	{
 		if (pr_field (coop))
-		{
 			sv_pr_float (coop) = coop.value;
-		}
 	}
 	else if (pr_field (deathmatch))
 	{

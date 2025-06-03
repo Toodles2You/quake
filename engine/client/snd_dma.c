@@ -243,9 +243,7 @@ void S_Shutdown ()
 	sound_started = 0;
 
 	if (!fakedma)
-	{
 		SNDDMA_Shutdown ();
-	}
 }
 
 // =======================================================================
@@ -272,9 +270,7 @@ sfx_t *S_FindName (char *name)
 	// see if already loaded
 	for (i = 0; i < num_sfx; i++)
 		if (!strcmp (known_sfx[i].name, name))
-		{
 			return &known_sfx[i];
-		}
 
 	if (num_sfx == MAX_SFX)
 		Sys_Error ("S_FindName: out of sfx_t");

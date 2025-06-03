@@ -150,16 +150,12 @@ bool NET_IsClientLegal (netadr_t *adr)
 	int newsocket;
 
 	if (adr->ip[0] == 127)
-	{
 		return true; // local connections are always valid
-	}
 
 	NetadrToSockadr (adr, &sadr);
 
 	if ((newsocket = socket (PF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
-	{
 		Sys_Error ("NET_IsClientLegal: socket:", strerror (errno));
-	}
 
 	sadr.sin_port = 0;
 
@@ -233,14 +229,10 @@ int UDP_OpenSocket (int port)
 	int i;
 
 	if ((newsocket = socket (PF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
-	{
 		Sys_Error ("UDP_OpenSocket: socket:", strerror (errno));
-	}
 
 	if (ioctl (newsocket, FIONBIO, (char *)&_true) == -1)
-	{
 		Sys_Error ("UDP_OpenSocket: ioctl FIONBIO:", strerror (errno));
-	}
 
 	address.sin_family = AF_INET;
 
@@ -256,18 +248,12 @@ int UDP_OpenSocket (int port)
 	}
 
 	if (port == PORT_ANY)
-	{
 		address.sin_port = 0;
-	}
 	else
-	{
 		address.sin_port = htons ((uint16_t)port);
-	}
 
 	if (bind (newsocket, (void *)&address, sizeof (address)) == -1)
-	{
 		Sys_Error ("UDP_OpenSocket: bind: %s", strerror (errno));
-	}
 
 	return newsocket;
 }
@@ -287,9 +273,7 @@ netadr_t NET_GetLocalAddress ()
 	{
 		bool isOpen = net_socket[SERVER];
 		if (!isOpen)
-		{
 			Host_InitServer ();
-		}
 
 		gethostname (buff, MAXHOSTNAMELEN);
 		buff[MAXHOSTNAMELEN - 1] = 0;
@@ -299,18 +283,14 @@ netadr_t NET_GetLocalAddress ()
 		namelen = sizeof (address);
 
 		if (getsockname (net_socket[SERVER], (struct sockaddr *)&address, &namelen) == -1)
-		{
 			Sys_Error ("NET_Init: getsockname:", strerror (errno));
-		}
 
 		net_local_adr.port = address.sin_port;
 
 		Con_Printf ("IP address %s\n", NET_AdrToString (net_local_adr));
 
 		if (!isOpen)
-		{
 			NET_Close (SERVER);
-		}
 	}
 
 	return net_local_adr;
@@ -328,9 +308,7 @@ char *NET_GetPublicAddress ()
 #define PINGHOST "api.ipify.org"
 
 	if (net_public_adr[0] != '\0')
-	{
 		return net_public_adr;
-	}
 
 	/* Use our local IP address in case something goes wrong. */
 	strcpy (net_public_adr, NET_BaseAdrToString (net_local_adr));
@@ -363,9 +341,7 @@ char *NET_GetPublicAddress ()
 
 				/* Establish the connection! */
 				if (connect (remote, i->ai_addr, i->ai_addrlen) == 0)
-				{
 					break;
-				}
 
 				close (remote);
 				remote = -1;

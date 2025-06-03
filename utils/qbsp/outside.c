@@ -64,17 +64,13 @@ void MarkLeakTrail (portal_t *n2)
 
 	VectorCopy (n2->winding->points[0], p1);
 	for (i = 1; i < n2->winding->numpoints; i++)
-	{
 		for (j = 0; j < 3; j++)
 			p1[j] = (p1[j] + n2->winding->points[i][j]) / 2;
-	}
 
 	VectorCopy (n1->winding->points[0], p2);
 	for (i = 1; i < n1->winding->numpoints; i++)
-	{
 		for (j = 0; j < 3; j++)
 			p2[j] = (p2[j] + n1->winding->points[i][j]) / 2;
-	}
 
 	VectorSubtract (p2, p1, dir);
 	len = Length (dir);

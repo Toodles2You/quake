@@ -359,10 +359,8 @@ int CheckParm (char *check)
 	int i;
 
 	for (i = 1; i < myargc; i++)
-	{
 		if (!strcasecmp (check, myargv[i]))
 			return i;
-	}
 
 	return 0;
 }
@@ -546,9 +544,7 @@ void ExtractFileBase (char *path, char *dest, bool ext)
 		src--;
 
 	while (*src && (ext || *src != '.'))
-	{
 		*dest++ = *src++;
-	}
 	*dest = 0;
 }
 

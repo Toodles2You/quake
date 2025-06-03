@@ -246,9 +246,7 @@ static void IN_HandleEvent (SDL_Event *event, bool *warp_mouse)
 		mouse[1] += event->motion.yrel * 2;
 
 		if (!(mouse_state & MOUSE_RELATIVE) && (mouse[0] || mouse[1]))
-		{
 			*warp_mouse = true;
-		}
 
 		break;
 	}
@@ -257,9 +255,7 @@ static void IN_HandleEvent (SDL_Event *event, bool *warp_mouse)
 		int dir = (event->wheel.y < 0);
 
 		if (event->wheel.direction == SDL_MOUSEWHEEL_FLIPPED)
-		{
 			dir = !dir;
-		}
 
 		Key_Event (K_MWHEELUP + dir, true);
 		Key_Event (K_MWHEELUP + dir, false);
@@ -277,9 +273,7 @@ static void IN_HandleEvent (SDL_Event *event, bool *warp_mouse)
 		case SDL_WINDOWEVENT_FOCUS_LOST:
 
 			if (cls.state == ca_active && !cls.demoplayback && key_dest == key_game)
-			{
 				M_ToggleMenu_f ();
-			}
 
 			S_BlockSound ();
 			break;
@@ -297,9 +291,7 @@ void Sys_SendKeyEvents ()
 	bool warp_mouse = false;
 
 	while (SDL_PollEvent (&event))
-	{
 		IN_HandleEvent (&event, &warp_mouse);
-	}
 
 	if (warp_mouse && window)
 	{
@@ -351,9 +343,7 @@ static void IN_DeactivateGrabs ()
 	/* SDL_SetWindowKeyboardGrab(window, SDL_FALSE); */
 
 	if (mouse_state & MOUSE_RELATIVE)
-	{
 		SDL_SetRelativeMouseMode (SDL_FALSE);
-	}
 
 	/* SDL_SetWindowMouseGrab(window, SDL_FALSE); */
 	SDL_ShowCursor (SDL_ENABLE);
@@ -364,9 +354,7 @@ static void IN_DeactivateGrabs ()
 void IN_Shutdown ()
 {
 	if (mouse_state & MOUSE_AVAILABLE)
-	{
 		IN_DeactivateGrabs ();
-	}
 	mouse_state = 0;
 }
 
@@ -412,13 +400,9 @@ void IN_Move (usercmd_t *cmd)
 
 	// add mouse X/Y movement to cmd
 	if (strafing || (lookstrafe.value && looking))
-	{
 		cmd->sidemove += m_side.value * mouse[0];
-	}
 	else
-	{
 		cl.viewangles[YAW] -= m_yaw.value * mouse[0];
-	}
 
 	if (looking)
 		V_StopPitchDrift ();
@@ -431,13 +415,9 @@ void IN_Move (usercmd_t *cmd)
 	else
 	{
 		if (strafing)
-		{
 			cmd->upmove -= m_forward.value * mouse[1];
-		}
 		else
-		{
 			cmd->forwardmove -= m_forward.value * mouse[1];
-		}
 	}
 
 	mouse[0] = mouse[1] = 0;

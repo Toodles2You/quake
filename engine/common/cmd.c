@@ -300,9 +300,7 @@ static void Cmd_Exec_f ()
 		return;
 	}
 	if (!Cvar_Command (cmd_source) && (cl_warncmd.value || developer.value))
-	{
 		Con_Printf ("execing %s\n", Cmd_Argv (1));
-	}
 
 	Cbuf_InsertText (cmd_source, f);
 	Hunk_FreeToLowMark (mark);
@@ -476,9 +474,7 @@ void Cmd_TokenizeString (cmd_source_e src, char *text)
 	{
 		// skip whitespace up to a /n
 		while (*text && *text <= ' ' && *text != '\n')
-		{
 			text++;
-		}
 
 		if (*text == '\n')
 		{ // a newline seperates commands in the buffer
@@ -558,10 +554,8 @@ bool Cmd_Exists (cmd_source_e src, char *cmd_name)
 	cmd_function_t *cmd;
 
 	for (cmd = cmd_functions[src]; cmd; cmd = cmd->next[src])
-	{
 		if (!strcmp (cmd_name, cmd->name))
 			return true;
-	}
 
 	return false;
 }
@@ -606,9 +600,7 @@ char *Cmd_CompleteCommand (cmd_source_e src, char *partial)
 	{
 		/* Toodles: If running a local server, query server commands, too. */
 		if (Host_IsLocalGame ())
-		{
 			Cmd_GetBestCommand (src_server, partial, len, &best, &bestLen);
-		}
 	}
 
 	return best;
@@ -701,18 +693,12 @@ void Cmd_ExecuteString (cmd_source_e src, char *text)
 
 	// check cvars
 	if (Cvar_Command (src))
-	{
 		return;
-	}
 
 	if (src == src_client)
-	{
 		Cmd_ForwardToServer ();
-	}
 	else
-	{
 		Con_Printf ("Unknown command \"%s\"\n", Cmd_Argv (0));
-	}
 }
 
 /*

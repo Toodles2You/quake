@@ -254,9 +254,7 @@ void SaveOutside (bool mirror)
 			newf->contents[1] = f->contents[0];
 
 			for (i = 0; i < f->numpoints; i++) // add points backwards
-			{
 				VectorCopy (f->pts[f->numpoints - 1 - i], newf->pts[i]);
-			}
 		}
 		else
 			newf = NULL;

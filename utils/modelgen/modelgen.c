@@ -158,13 +158,9 @@ void WriteFrame (FILE *modelouthandle, int framenum)
 			tarray[j].v[k] = v;
 
 			if (tarray[j].v[k] < aframe.bboxmin.v[k])
-			{
 				aframe.bboxmin.v[k] = tarray[j].v[k];
-			}
 			if (tarray[j].v[k] > aframe.bboxmax.v[k])
-			{
 				aframe.bboxmax.v[k] = tarray[j].v[k];
-			}
 		}
 	}
 
@@ -288,13 +284,9 @@ void WriteModelFile (FILE *modelouthandle)
 	for (i = 0; i < model.numverts; i++)
 	{
 		if (stverts[i].onseam == 3)
-		{
 			stverts[i].onseam = LittleLong (ALIAS_ONSEAM);
-		}
 		else
-		{
 			stverts[i].onseam = LittleLong (0);
-		}
 
 		stverts[i].s = LittleLong (stverts[i].s);
 		stverts[i].t = LittleLong (stverts[i].t);
@@ -315,9 +307,7 @@ void WriteModelFile (FILE *modelouthandle)
 			tri.facesfront = LittleLong (triangles[i].facesfront);
 
 			for (j = 0; j < 3; j++)
-			{
 				tri.vertindex[j] = LittleLong (triangles[i].vertindex[j]);
-			}
 
 			SafeWrite (modelouthandle, &tri, sizeof (tri));
 		}
@@ -513,13 +503,9 @@ void SetSkinValues (void)
 			pstvert = &stverts[triangles[i].vertindex[j]];
 
 			if (triangles[i].facesfront)
-			{
 				pstvert->onseam |= 1;
-			}
 			else
-			{
 				pstvert->onseam |= 2;
-			}
 
 			if ((triangles[i].facesfront) || ((pstvert->onseam & 1) == 0))
 			{
@@ -733,9 +719,7 @@ void GrabFrame (char *frame, int isgroup)
 	frames[framecount].type = ALIAS_SINGLE;
 
 	for (i = 0; i < model.numverts; i++)
-	{
 		vnorms[i].numnormals = 0;
-	}
 
 	//
 	// store the frame's vertices in the same order as the base. This assumes the
@@ -820,9 +804,7 @@ void GrabFrame (char *frame, int isgroup)
 				v[j] = 0;
 
 				for (k = 0; k < vnorms[i].numnormals; k++)
-				{
 					v[j] += vnorms[i].normals[k][j];
-				}
 
 				v[j] /= vnorms[i].numnormals;
 			}
@@ -942,17 +924,11 @@ void Cmd_FrameGroupStart (void)
 			Error ("End of file during group");
 
 		if (!strcmp (token, "$frame"))
-		{
 			Cmd_Frame (1);
-		}
 		else if (!strcmp (token, "$framegroupend"))
-		{
 			break;
-		}
 		else
-		{
 			Error ("$frame or $framegroupend expected\n");
-		}
 	}
 
 	frames[groupframe].numgroupframes += framecount - groupframe - 1;

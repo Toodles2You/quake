@@ -289,9 +289,7 @@ void SplitFaceForTjunc (face_t *f, face_t *original)
 			VectorNormalize (test);
 			v = DotProduct (test, dir);
 			if (v < 0.9999 || v > 1.00001)
-			{
 				break;
-			}
 		}
 
 		// find the first corner
@@ -303,9 +301,7 @@ void SplitFaceForTjunc (face_t *f, face_t *original)
 			VectorNormalize (test);
 			v = DotProduct (test, dir);
 			if (v < 0.9999 || v > 1.00001)
-			{
 				break;
-			}
 		}
 
 		if (firstcorner + 2 >= MAXPOINTS)
@@ -313,9 +309,7 @@ void SplitFaceForTjunc (face_t *f, face_t *original)
 			// rotate the point winding
 			VectorCopy (f->pts[0], test);
 			for (i = 1; i < f->numpoints; i++)
-			{
 				VectorCopy (f->pts[i], f->pts[i - 1]);
-			}
 			VectorCopy (test, f->pts[f->numpoints - 1]);
 			goto restart;
 		}
@@ -339,14 +333,10 @@ void SplitFaceForTjunc (face_t *f, face_t *original)
 			new->numpoints = MAXPOINTS;
 
 		for (i = 0; i < new->numpoints; i++)
-		{
 			VectorCopy (f->pts[i], new->pts[i]);
-		}
 
 		for (i = new->numpoints - 1; i < f->numpoints; i++)
-		{
 			VectorCopy (f->pts[i], f->pts[i - (new->numpoints - 2)]);
-		}
 		f->numpoints -= (new->numpoints - 2);
 	} while (1);
 }
@@ -382,9 +372,7 @@ restart:
 			tjuncs++;
 			// insert a new vertex here
 			for (k = superface->numpoints; k > j; k--)
-			{
 				VectorCopy (superface->pts[k - 1], superface->pts[k]);
-			}
 			VectorMA (w->origin, v->t, w->dir, superface->pts[j]);
 			superface->numpoints++;
 			goto restart;

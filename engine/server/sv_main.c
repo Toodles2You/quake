@@ -558,9 +558,7 @@ void SVC_DirectConnect (void)
 	}
 
 	if (sv.loadgame)
-	{
 		memcpy (spawn_parms, svs.clients->spawn_parms, sizeof (spawn_parms));
-	}
 
 	// build a new connection
 	// accept the new client
@@ -744,9 +742,7 @@ void Master_Heartbeat ()
 	int i;
 
 	if (realtime - svs.last_heartbeat < HEARTBEAT_SECONDS)
-	{
 		return; // not time to send yet
-	}
 
 	svs.last_heartbeat = realtime;
 
@@ -755,12 +751,8 @@ void Master_Heartbeat ()
 	//
 	active = 0;
 	for (i = 0; i < MAX_CLIENTS; i++)
-	{
 		if (svs.clients[i].state == cs_connected || svs.clients[i].state == cs_spawned)
-		{
 			active++;
-		}
-	}
 
 	svs.heartbeat_sequence++;
 	sprintf (string, "%c\n%i\n%i\n", S2M_HEARTBEAT, svs.heartbeat_sequence, active);
@@ -925,9 +917,7 @@ void SV_ExtractFromUserinfo (client_t *cl)
 	// msg command
 	val = Info_ValueForKey (cl->userinfo, "msg");
 	if (strlen (val))
-	{
 		cl->messagelevel = atoi (val);
-	}
 }
 
 /*
@@ -1002,9 +992,7 @@ static bool StringToFilter (char *s, ipfilter_t *f)
 
 		j = 0;
 		while (*s >= '0' && *s <= '9')
-		{
 			num[j++] = *s++;
-		}
 		num[j] = 0;
 		b[i] = atoi (num);
 		if (b[i] != 0)
@@ -1031,12 +1019,8 @@ static void SV_AddIP_f ()
 	int i;
 
 	for (i = 0; i < numipfilters; i++)
-	{
 		if (ipfilters[i].compare == 0xffffffff)
-		{
 			break; // free spot
-		}
-	}
 
 	if (i == numipfilters)
 	{
@@ -1049,9 +1033,7 @@ static void SV_AddIP_f ()
 	}
 
 	if (!StringToFilter (Cmd_Argv (1), &ipfilters[i]))
-	{
 		ipfilters[i].compare = 0xffffffff;
-	}
 }
 
 /*
@@ -1065,18 +1047,14 @@ static void SV_RemoveIP_f ()
 	int i, j;
 
 	if (!StringToFilter (Cmd_Argv (1), &f))
-	{
 		return;
-	}
 
 	for (i = 0; i < numipfilters; i++)
 	{
 		if (ipfilters[i].mask == f.mask && ipfilters[i].compare == f.compare)
 		{
 			for (j = i + 1; j < numipfilters; j++)
-			{
 				ipfilters[j - 1] = ipfilters[j];
-			}
 			numipfilters--;
 			Con_Printf ("Removed.\n");
 			return;
@@ -1166,12 +1144,8 @@ static bool SV_FilterPacket ()
 	in = *(uint32_t *)net_from.ip;
 
 	for (i = 0; i < numipfilters; i++)
-	{
 		if ((in & ipfilters[i].mask) == ipfilters[i].compare)
-		{
 			return filterban.value;
-		}
-	}
 
 	return !filterban.value;
 }
@@ -1281,9 +1255,7 @@ void SV_CheckTimeouts (void)
 			}
 		}
 		if (cl->state == cs_zombie && realtime - cl->connection_started > zombietime.value)
-		{
 			cl->state = cs_free; // can now be reused
-		}
 	}
 	if (Host_IsPaused () && !nclients)
 	{
@@ -1385,9 +1357,7 @@ void SV_Init ()
 	Cmd_AddCommand (src_server, "writeip", SV_WriteIP_f);
 
 	for (i = 0; i < MAX_MODELS; i++)
-	{
 		sprintf (localmodels[i], "*%i", i);
-	}
 
 	Info_SetValueForStarKey (svs.info, "*version", QUAKE_VERSION, MAX_SERVERINFO_STRING, sv_highchars.value);
 

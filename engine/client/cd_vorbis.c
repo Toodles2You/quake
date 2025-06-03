@@ -212,9 +212,7 @@ static void CD_f ()
 	if (strcasecmp (command, "on") == 0)
 	{
 		if (snd_initialized)
-		{
 			cd_state |= CD_ENABLED;
-		}
 	}
 	else if (strcasecmp (command, "off") == 0)
 	{
@@ -224,9 +222,7 @@ static void CD_f ()
 	else if (strcasecmp (command, "reset") == 0)
 	{
 		if (snd_initialized)
-		{
 			cd_state |= CD_ENABLED;
-		}
 
 		CDAudio_ForceStop ();
 
@@ -242,10 +238,8 @@ static void CD_f ()
 			Con_Printf ("CDAudio:\n");
 
 			for (n = 0; n < 100; n++)
-			{
 				if (remap[n] != n)
 					Con_Printf ("  %u -> %u\n", n, remap[n]);
-			}
 			return;
 		}
 

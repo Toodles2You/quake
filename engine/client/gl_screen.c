@@ -911,9 +911,7 @@ void SCR_UpdateScreen ()
 	SCR_TileClear ();
 
 	if (r_netgraph.value)
-	{
 		R_NetGraph ();
-	}
 
 	if (scr_drawdialog)
 	{

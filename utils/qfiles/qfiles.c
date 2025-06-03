@@ -227,13 +227,9 @@ int main (int argc, char **argv)
 	ReadFiles ();
 
 	if (!strcmp (argv[1], "-pak"))
-	{
 		CopyQFiles (atoi (argv[2]));
-	}
 	else if (!strcmp (argv[1], "-bspmodels"))
-	{
 		BspModels ();
-	}
 	else
 		Error ("unknown command: %s", argv[1]);
 

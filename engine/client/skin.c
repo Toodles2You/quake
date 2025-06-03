@@ -262,10 +262,8 @@ void Skin_Skins_f ()
 	int i;
 
 	for (i = 0; i < numskins; i++)
-	{
 		if (skins[i].cache.data)
 			Cache_Free (&skins[i].cache);
-	}
 	numskins = 0;
 
 	cls.downloadnumber = 0;

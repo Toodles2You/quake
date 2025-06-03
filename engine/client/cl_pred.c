@@ -140,9 +140,8 @@ void CL_PredictMove ()
 
 	// we can now render a frame
 	if (cls.state == ca_onserver)
-	{ // first update is the final signon stage
+		// first update is the final signon stage
 		cls.state = ca_active;
-	}
 
 	if (cl_nopred.value)
 	{

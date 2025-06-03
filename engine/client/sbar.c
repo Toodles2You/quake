@@ -488,9 +488,7 @@ void Sbar_DrawInventory ()
 			Sbar_DrawPic (0, -24, rsb_invbar[1]);
 	}
 	else
-	{
 		Sbar_DrawPic (0, -24, sb_ibar);
-	}
 
 	// weapons
 	for (i = 0; i < 7; i++)
@@ -557,13 +555,9 @@ void Sbar_DrawInventory ()
 					if (cl.stats[STAT_ITEMS] & (IT_SHOTGUN << 4))
 					{
 						if (flashon && !grenadeflashing)
-						{
 							Sbar_DrawPic (96, -16, hsb_weapons[flashon][3]);
-						}
 						else if (!grenadeflashing)
-						{
 							Sbar_DrawPic (96, -16, hsb_weapons[0][3]);
-						}
 					}
 					else
 						Sbar_DrawPic (96, -16, hsb_weapons[flashon][4]);
@@ -582,12 +576,8 @@ void Sbar_DrawInventory ()
 		if (cl.stats[STAT_ACTIVEWEAPON] >= RIT_LAVA_NAILGUN)
 		{
 			for (i = 0; i < 5; i++)
-			{
 				if (cl.stats[STAT_ACTIVEWEAPON] == (RIT_LAVA_NAILGUN << i))
-				{
 					Sbar_DrawPic ((i + 2) * 24, -16, rsb_weapons[i]);
-				}
-			}
 		}
 	}
 
@@ -610,16 +600,10 @@ void Sbar_DrawInventory ()
 		{
 			time = cl.item_gettime[17 + i];
 			if (time && time > cl.time - 2 && flashon)
-			{ // flash frame
+				// flash frame
 				sb_updates = 0;
-			}
-			else
-			{
-				if (!hipnotic || (i > 1))
-				{
-					Sbar_DrawPic (192 + i * 16, -16, sb_items[i]);
-				}
-			}
+			else if (!hipnotic || (i > 1))
+				Sbar_DrawPic (192 + i * 16, -16, sb_items[i]);
 			if (time && time > cl.time - 2)
 				sb_updates = 0;
 		}
@@ -631,13 +615,10 @@ void Sbar_DrawInventory ()
 			{
 				time = cl.item_gettime[24 + i];
 				if (time && time > cl.time - 2 && flashon)
-				{ // flash frame
+					// flash frame
 					sb_updates = 0;
-				}
 				else
-				{
 					Sbar_DrawPic (288 + i * 16, -16, hsb_items[i]);
-				}
 				if (time && time > cl.time - 2)
 					sb_updates = 0;
 			}
@@ -653,13 +634,10 @@ void Sbar_DrawInventory ()
 				time = cl.item_gettime[29 + i];
 
 				if (time && time > cl.time - 2 && flashon)
-				{ // flash frame
+					// flash frame
 					sb_updates = 0;
-				}
 				else
-				{
 					Sbar_DrawPic (288 + i * 16, -16, rsb_items[i]);
-				}
 
 				if (time && time > cl.time - 2)
 					sb_updates = 0;
@@ -675,9 +653,8 @@ void Sbar_DrawInventory ()
 			{
 				time = cl.item_gettime[28 + i];
 				if (time && time > cl.time - 2 && flashon)
-				{ // flash frame
+					// flash frame
 					sb_updates = 0;
-				}
 				else
 					Sbar_DrawPic (320 - 32 + i * 8, -16, sb_sigil[i]);
 				if (time && time > cl.time - 2)
@@ -806,9 +783,7 @@ void Sbar_Draw ()
 		Draw_TileClear (0, vid.height - sb_lines, vid.width, sb_lines);
 
 	if (sb_lines > 24)
-	{
 		Sbar_DrawInventory ();
-	}
 
 	if (sb_showscores || cl.stats[STAT_HEALTH] <= 0)
 	{

@@ -263,13 +263,9 @@ void M_ToggleMenu_f ()
 		return;
 	}
 	if (key_dest == key_console)
-	{
 		Con_ToggleConsole_f ();
-	}
 	else
-	{
 		M_Menu_Main_f ();
-	}
 }
 
 //=============================================================================
@@ -1460,17 +1456,11 @@ void M_LanConfig_Draw ()
 
 	M_Print (basex, lanConfig_cursor_table[0], "Address:");
 	if (lanConfig_showAddress == 2)
-	{
 		M_Print (basex + 9 * 8, lanConfig_cursor_table[0], NET_GetPublicAddress ());
-	}
 	else if (lanConfig_showAddress == 1)
-	{
 		M_Print (basex + 9 * 8, lanConfig_cursor_table[0], "Press again to confirm...");
-	}
 	else
-	{
 		M_Print (basex + 9 * 8, lanConfig_cursor_table[0], "Press to reveal...");
-	}
 
 	M_Print (basex, lanConfig_cursor_table[1], "Port");
 	M_DrawTextBox (basex + 8 * 8, lanConfig_cursor_table[1] - 8, 6, 1);
@@ -1885,13 +1875,9 @@ void M_NetStart_Change (int dir)
 	case 1:
 		maxplayers += dir;
 		if (maxplayers > MAX_CLIENTS)
-		{
 			maxplayers = MAX_CLIENTS;
-		}
 		if (maxplayers < 2)
-		{
 			maxplayers = 2;
-		}
 		break;
 
 	case 2:

@@ -63,9 +63,7 @@ unsigned short CRC_Block (unsigned char *start, int count)
 	CRC_Init (&crc);
 
 	while (count--)
-	{
 		CRC_ProcessByte (&crc, *start++);
-	}
 
 	return crc;
 }

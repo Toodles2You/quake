@@ -89,10 +89,8 @@ void R_EntityParticles (entity_t *ent)
 	dist = 64;
 
 	if (!avelocities[0][0])
-	{
 		for (i = 0; i < NUMVERTEXNORMALS * 3; i++)
 			avelocities[0][i] = (rand () & 255) * 0.01;
-	}
 
 	for (i = 0; i < NUMVERTEXNORMALS; i++)
 	{
@@ -611,9 +609,7 @@ void R_DrawParticles ()
 	alphaTestEnabled = glIsEnabled (GL_ALPHA_TEST);
 
 	if (alphaTestEnabled)
-	{
 		glDisable (GL_ALPHA_TEST);
-	}
 
 	glEnable (GL_BLEND);
 	glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
@@ -671,13 +667,9 @@ void R_DrawParticles ()
 		at = (byte *)&d_8to24table[(int)p->color];
 
 		if (gl_partblend.value && p->type == pt_fire)
-		{
 			theAlpha = 255 * (6 - p->ramp) / 6;
-		}
 		else
-		{
 			theAlpha = 255;
-		}
 
 		glColor4ub (*at, *(at + 1), *(at + 2), theAlpha);
 #else
@@ -756,9 +748,7 @@ void R_DrawParticles ()
 	glDisable (GL_BLEND);
 
 	if (alphaTestEnabled)
-	{
 		glEnable (GL_ALPHA_TEST);
-	}
 
 	glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 }

@@ -270,14 +270,10 @@ Handles recording and playback of demos, on top of NET_ code
 bool CL_GetMessage ()
 {
 	if (cls.demoplayback)
-	{
 		return CL_GetDemoMessage ();
-	}
 
 	if (!NET_GetPacket (CLIENT))
-	{
 		return false;
-	}
 
 	CL_WriteDemoMessage (&net_message[CLIENT]);
 

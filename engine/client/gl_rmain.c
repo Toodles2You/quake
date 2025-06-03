@@ -168,10 +168,8 @@ mspriteframe_t *R_GetSpriteFrame (entity_t *currententity)
 		targettime = time - ((int)(time / fullinterval)) * fullinterval;
 
 		for (i = 0; i < (numframes - 1); i++)
-		{
 			if (pintervals[i] > targettime)
 				break;
-		}
 
 		pspriteframe = pspritegroup->frames[i];
 	}
@@ -452,9 +450,7 @@ void R_DrawAliasModel (entity_t *e)
 		}
 
 		if (i >= 0 && i < MAX_CLIENTS)
-		{
 			GL_Bind (playertextures + i);
-		}
 	}
 
 	if (gl_smoothmodels.value)
@@ -642,10 +638,8 @@ int SignbitsForPlane (mplane_t *out)
 
 	bits = 0;
 	for (j = 0; j < 3; j++)
-	{
 		if (out->normal[j] < 0)
 			bits |= 1 << j;
-	}
 	return bits;
 }
 
@@ -945,7 +939,5 @@ void R_RenderView ()
 	}
 
 	if (r_wireframe.value == 1)
-	{
 		glPolygonMode (GL_FRONT_AND_BACK, GL_FILL);
-	}
 }

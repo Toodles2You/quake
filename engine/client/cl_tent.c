@@ -293,13 +293,9 @@ void CL_ParseTEnt ()
 
 	case TE_GUNSHOT: // bullet hitting wall
 		if (cl.serverprotocol == PROTOCOL_NETQUAKE)
-		{
 			cnt = 1;
-		}
 		else
-		{
 			cnt = MSG_ReadByte ();
-		}
 		pos[0] = MSG_ReadCoord ();
 		pos[1] = MSG_ReadCoord ();
 		pos[2] = MSG_ReadCoord ();
@@ -399,9 +395,7 @@ static void CL_UpdateBeams ()
 
 		// if coming from the player, update the start position
 		if (b->entity == cl.playernum + 1) // entity 0 is the world
-		{
 			VectorCopy (cl.simorg, b->start);
-		}
 
 		// calculate pitch and yaw
 		VectorSubtract (b->end, b->start, dist);

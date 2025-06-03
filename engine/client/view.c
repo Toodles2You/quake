@@ -147,9 +147,7 @@ void V_StartPitchDrift ()
 {
 #if 1
 	if (cl.laststop == cl.time)
-	{
 		return; // something else is keeping it from drifting
-	}
 #endif
 	if (cl.nodrift || !cl.pitchvel)
 	{
@@ -199,9 +197,7 @@ void V_DriftPitch ()
 			cl.driftmove += host_frametime;
 
 		if (cl.driftmove > v_centermove.value)
-		{
 			V_StartPitchDrift ();
-		}
 		return;
 	}
 
@@ -880,9 +876,7 @@ static void V_DropPunchAngle ()
 		cl.punchangle -= s * host_frametime;
 
 		if (sign != signbit (cl.punchangle))
-		{
 			cl.punchangle = 0.0f;
-		}
 	}
 }
 
@@ -910,13 +904,10 @@ void V_RenderView ()
 
 	V_DropPunchAngle ();
 	if (cl.intermission)
-	{ // intermission / finale rendering
+		// intermission / finale rendering
 		V_CalcIntermissionRefdef ();
-	}
 	else
-	{
 		V_CalcRefdef ();
-	}
 
 	R_PushDlights ();
 	R_RenderView ();
@@ -926,13 +917,9 @@ void V_ClampViewAngles ()
 {
 	/* Toodles: View pitch is inverted. */
 	if (cl.viewangles[PITCH] > cl_pitchmin.value)
-	{
 		cl.viewangles[PITCH] = cl_pitchmin.value;
-	}
 	else if (cl.viewangles[PITCH] < -cl_pitchmax.value)
-	{
 		cl.viewangles[PITCH] = -cl_pitchmax.value;
-	}
 }
 
 //============================================================================

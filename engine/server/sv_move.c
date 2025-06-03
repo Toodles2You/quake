@@ -244,9 +244,8 @@ bool SV_StepDirection (edict_t *ent, float yaw, float dist)
 	{
 		delta = ed_vector (ent, angles)[YAW] - ed_float (ent, ideal_yaw);
 		if (delta > 45 && delta < 315)
-		{ // not turned far enough, so don't take the step
+			// not turned far enough, so don't take the step
 			VectorCopy (oldorigin, ed_vector (ent, origin));
-		}
 		SV_LinkEdict (ent, true);
 		return true;
 	}
@@ -402,7 +401,5 @@ void SV_MoveToGoal ()
 
 	// bump around...
 	if ((rand () & 3) == 1 || !SV_StepDirection (ent, ed_float (ent, ideal_yaw), dist))
-	{
 		SV_NewChaseDir (ent, goal, dist);
-	}
 }

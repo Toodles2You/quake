@@ -389,9 +389,7 @@ void ParseScript (void)
 			break;
 
 		if (!strcmp (token, "$load"))
-		{
 			Cmd_Load ();
-		}
 		if (!strcmp (token, "$spritename"))
 		{
 			Cmd_Spritename ();

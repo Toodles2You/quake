@@ -385,9 +385,7 @@ void SV_StartSound (edict_t *entity, int channel, char *sample, int volume, floa
 		float *entityMaxs = ed_vector (entity, maxs);
 
 		for (i = 0; i < 3; i++)
-		{
 			origin[i] = entityOrigin[i] + 0.5 * (entityMins[i] + entityMaxs[i]);
-		}
 	}
 	else
 	{
@@ -776,12 +774,8 @@ void SV_SendMessagesToAll ()
 	client_t *c;
 
 	for (i = 0, c = svs.clients; i < MAX_CLIENTS; i++, c++)
-	{
 		if (c->state) // FIXME: should this only send to active?
-		{
 			c->send_message = true;
-		}
-	}
 
 	SV_SendClientMessages ();
 }

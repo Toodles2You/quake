@@ -110,9 +110,7 @@ static void SV_New_f ()
 	MSG_WriteByte (&host_client->netchan.message, svc_cdtrack);
 	MSG_WriteByte (&host_client->netchan.message, ed_float (sv.edicts, sounds));
 	if (svs.protocol == PROTOCOL_NETQUAKE)
-	{
 		MSG_WriteByte (&host_client->netchan.message, 3);
-	}
 
 	// send server info string
 	MSG_WriteByte (&host_client->netchan.message, svc_stufftext);
@@ -348,22 +346,14 @@ static void SV_Spawn_f ()
 	if (sv.loadgame)
 	{
 		if (ed_field (gravity))
-		{
 			host_client->entgravity = ed_float (ent, gravity);
-		}
 		else
-		{
 			host_client->entgravity = 1.0;
-		}
 
 		if (ed_field (maxspeed))
-		{
 			host_client->maxspeed = ed_float (ent, maxspeed);
-		}
 		else
-		{
 			host_client->maxspeed = sv_maxspeed.value;
-		}
 	}
 	else
 	{
@@ -371,15 +361,11 @@ static void SV_Spawn_f ()
 
 		host_client->entgravity = 1.0;
 		if (ed_field (gravity))
-		{
 			ed_float (ent, gravity) = 1.0f;
-		}
 
 		host_client->maxspeed = sv_maxspeed.value;
 		if (ed_field (maxspeed))
-		{
 			ed_float (ent, maxspeed) = sv_maxspeed.value;
-		}
 	}
 
 	ed_float (ent, colormap) = NUM_FOR_EDICT (ent);
@@ -776,9 +762,7 @@ static void SV_Say (bool team)
 	else if (team)
 		sprintf (text, "(%s): ", host_client->name);
 	else
-	{
 		sprintf (text, "%s: ", host_client->name);
-	}
 
 	if (fp_messages)
 	{
@@ -1415,9 +1399,7 @@ static void SV_RunCmd (usercmd_t *ucmd)
 	ed_float (sv_player, button2) = (ucmd->buttons & 2) >> 1;
 
 	if (ucmd->impulse)
-	{
 		ed_float (sv_player, impulse) = ucmd->impulse;
-	}
 
 	//
 	// angles
@@ -1454,9 +1436,7 @@ static void SV_RunCmd (usercmd_t *ucmd)
 	float *playerMins = ed_vector (sv_player, mins);
 
 	for (i = 0; i < 3; i++)
-	{
 		pmove.origin[i] = playerOrigin[i] + (playerMins[i] - player_mins[i]);
-	}
 
 	float *playerVelocity = ed_vector (sv_player, velocity);
 	float *playerVangle = ed_vector (sv_player, v_angle);
@@ -1518,9 +1498,7 @@ if (sv_player->v.health > 0 && before && !after )
 	}
 
 	for (i = 0; i < 3; i++)
-	{
 		playerOrigin[i] = pmove.origin[i] - (playerMins[i] - player_mins[i]);
-	}
 
 #if 0
 	// truncate velocity the same way the net protocol will
@@ -1543,9 +1521,7 @@ if (sv_player->v.health > 0 && before && !after )
 			n = pmove.physents[pmove.touchindex[i]].info;
 			ent = EDICT_NUM (n);
 			if (!ed_int (ent, touch) || (playertouch[n / 8] & (1 << (n % 8))))
-			{
 				continue;
-			}
 
 			sv_pr_int (self) = EDICT_TO_PROG (ent);
 			sv_pr_int (other) = EDICT_TO_PROG (sv_player);

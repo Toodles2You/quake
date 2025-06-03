@@ -344,9 +344,7 @@ bool RecursiveLightPoint (mnode_t *node, vec3_t start, vec3_t end, vec3_t dest)
 			else
 			{
 				for (k = 0; k < 3; k++)
-				{
 					dest[k] += lightmap[k] * scale;
-				}
 			}
 			lightmap += d_lightmap_bytes * (((surf->extents[0] >> 4) + 1) * ((surf->extents[1] >> 4) + 1));
 		}

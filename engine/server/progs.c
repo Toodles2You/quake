@@ -220,9 +220,7 @@ char *PR_GlobalString (progs_state_t *pr, int ofs)
 
 	i = strlen (line);
 	for (; i < 20; i++)
-	{
 		strcat (line, " ");
-	}
 	strcat (line, " ");
 
 	return line;
@@ -236,19 +234,13 @@ char *PR_GlobalStringNoContents (progs_state_t *pr, int ofs)
 
 	def = PR_GlobalAtOfs (pr, ofs);
 	if (!def)
-	{
 		sprintf (line, "%i(?)", ofs);
-	}
 	else
-	{
 		sprintf (line, "%i(%s)", ofs, PR_GetString (pr, def->s_name));
-	}
 
 	i = strlen (line);
 	for (; i < 20; i++)
-	{
 		strcat (line, " ");
-	}
 	strcat (line, " ");
 
 	return line;
@@ -272,9 +264,7 @@ int PR_LoadProgs (progs_state_t *pr, char *filename, int version, int crc)
 	Con_DPrintf ("Programs occupy %iK.\n", com_filesize / 1024);
 
 	for (i = 0; i < com_filesize; i++)
-	{
 		CRC_ProcessByte (&pr->crc, ((byte *)pr->progs)[i]);
-	}
 
 	// add prog crc to the serverinfo
 	sprintf (num, "%i", pr->crc);
@@ -282,9 +272,7 @@ int PR_LoadProgs (progs_state_t *pr, char *filename, int version, int crc)
 
 	// byte swap the header
 	for (i = 0; i < sizeof (*pr->progs) / sizeof (int32_t); i++)
-	{
 		((int32_t *)pr->progs)[i] = LittleLong (((int32_t *)pr->progs)[i]);
-	}
 
 	if (version != PROG_VERSION_ANY && version != pr->progs->version)
 	{
@@ -345,9 +333,7 @@ int PR_LoadProgs (progs_state_t *pr, char *filename, int version, int crc)
 	}
 
 	for (i = 0; i < pr->progs->numglobals; i++)
-	{
 		((int32_t *)pr->globals)[i] = LittleLong (((int32_t *)pr->globals)[i]);
-	}
 
 	return 0;
 }

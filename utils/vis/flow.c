@@ -129,9 +129,7 @@ winding_t *ClipToSeperators (winding_t *source, winding_t *pass, winding_t *targ
 				continue; // points on negative side, not a seperating plane
 
 			if (!counts[0])
-			{
 				continue; // planar with seperating plane
-			}
 
 			//
 			// flip the normal if we want the back side

@@ -233,9 +233,7 @@ void ClipWinding (winding_t *in, vec3_t normal, vec_t dist, winding_t **front, w
 		else if (dot < -ON_EPSILON)
 			sides[i] = SIDE_BACK;
 		else
-		{
 			sides[i] = SIDE_ON;
-		}
 		counts[sides[i]]++;
 	}
 	sides[i] = sides[0];

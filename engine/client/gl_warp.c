@@ -625,9 +625,7 @@ return;
 	// decide which face it maps to
 	VectorCopy (vec3_origin, v);
 	for (i = 0, vp = vecs; i < nump; i++, vp += 3)
-	{
 		VectorAdd (vp, v, v);
-	}
 	av[0] = fabs (v[0]);
 	av[1] = fabs (v[1]);
 	av[2] = fabs (v[2]);
@@ -804,9 +802,7 @@ void R_DrawSkyChain (msurface_t *s)
 		for (p = fa->polys; p; p = p->next)
 		{
 			for (i = 0; i < p->numverts; i++)
-			{
 				VectorSubtract (p->verts[i], r_origin, verts[i]);
-			}
 			ClipSkyPolygon (p->numverts, verts[0], 0);
 		}
 	}

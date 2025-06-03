@@ -49,16 +49,12 @@ void RunThreadsOn (threadfunc_t func)
 		Error ("pthread_attr_setstacksize failed");
 
 	for (i = 0; i < numthreads; i++)
-	{
 		if (pthread_create (&work_threads[i], attrib, (pthread_startroutine_t)func, (pthread_addr_t)i) == -1)
 			Error ("pthread_create failed");
-	}
 
 	for (i = 0; i < numthreads; i++)
-	{
 		if (pthread_join (work_threads[i], &status) == -1)
 			Error ("pthread_join failed");
-	}
 #else
 	func (NULL);
 #endif

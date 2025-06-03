@@ -27,9 +27,7 @@ void CheckFace (face_t *f)
 
 	VectorCopy (planes[f->planenum].normal, facenormal);
 	if (f->planeside)
-	{
 		VectorSubtract (vec3_origin, facenormal, facenormal);
-	}
 
 	for (i = 0; i < f->numpoints; i++)
 	{
@@ -219,9 +217,8 @@ int FindPlane (plane_t *dplane, int *side)
 	{
 		dot = DotProduct (dp->normal, pl.normal);
 		if (dot > 1.0 - ANGLEEPSILON && fabs (dp->dist - pl.dist) < DISTEPSILON)
-		{ // regular match
+			// regular match
 			return i;
-		}
 	}
 
 	if (numbrushplanes == MAX_MAP_PLANES)

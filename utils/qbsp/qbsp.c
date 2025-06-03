@@ -196,9 +196,7 @@ winding_t *ClipWinding (winding_t *in, plane_t *split, bool keepon)
 		else if (dot < -ON_EPSILON)
 			sides[i] = SIDE_BACK;
 		else
-		{
 			sides[i] = SIDE_ON;
-		}
 		counts[sides[i]]++;
 	}
 	sides[i] = sides[0];
@@ -301,9 +299,7 @@ void DivideWinding (winding_t *in, plane_t *split, winding_t **front, winding_t 
 		else if (dot < -ON_EPSILON)
 			sides[i] = SIDE_BACK;
 		else
-		{
 			sides[i] = SIDE_ON;
-		}
 		counts[sides[i]]++;
 	}
 	sides[i] = sides[0];
@@ -811,13 +807,9 @@ CreateHulls
 void CreateHulls (void)
 {
 	if (bspversion == BSPQUAKE)
-	{
 		memcpy (hull_size, quake_hull_sizes, sizeof (hull_size));
-	}
 	else
-	{
 		memcpy (hull_size, hull_sizes, sizeof (hull_size));
-	}
 
 	// commanded to create a single hull only
 	if (hullnum)

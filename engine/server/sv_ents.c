@@ -100,14 +100,10 @@ extern int sv_nailmodel, sv_supernailmodel, sv_playermodel;
 static bool SV_AddNailUpdate (edict_t *ent)
 {
 	if (ed_float (ent, modelindex) != sv_nailmodel && ed_float (ent, modelindex) != sv_supernailmodel)
-	{
 		return false;
-	}
 
 	if (numnails == MAX_NAILS)
-	{
 		return true;
-	}
 
 	nails[numnails] = ent;
 	numnails++;
@@ -350,12 +346,8 @@ static void SV_WritePlayersToClient (client_t *client, edict_t *clent, byte *pvs
 
 			// ignore if not touching a PV leaf
 			for (i = 0; i < ent->num_leafs; i++)
-			{
 				if (pvs[ent->leafnums[i] >> 3] & (1 << (ent->leafnums[i] & 7)))
-				{
 					break;
-				}
-			}
 
 			if (i == ent->num_leafs)
 				continue; // not visible
@@ -366,12 +358,8 @@ static void SV_WritePlayersToClient (client_t *client, edict_t *clent, byte *pvs
 		if (ed_float (ent, modelindex) != sv_playermodel)
 			pflags |= PF_MODEL;
 		for (i = 0; i < 3; i++)
-		{
 			if (ed_vector (ent, velocity)[i])
-			{
 				pflags |= PF_VELOCITY1 << i;
-			}
-		}
 		if (ed_float (ent, effects))
 			pflags |= PF_EFFECTS;
 		if (ed_float (ent, skin))
@@ -393,18 +381,14 @@ static void SV_WritePlayersToClient (client_t *client, edict_t *clent, byte *pvs
 		}
 
 		if (client->spec_track && client->spec_track - 1 == j && ed_float (ent, weaponframe))
-		{
 			pflags |= PF_WEAPONFRAME;
-		}
 
 		MSG_WriteByte (msg, svc_playerinfo);
 		MSG_WriteByte (msg, j);
 		MSG_WriteShort (msg, pflags);
 
 		for (i = 0; i < 3; i++)
-		{
 			MSG_WriteCoord (msg, ed_vector (ent, origin)[i]);
-		}
 
 		MSG_WriteByte (msg, ed_float (ent, frame));
 
@@ -435,12 +419,8 @@ static void SV_WritePlayersToClient (client_t *client, edict_t *clent, byte *pvs
 		}
 
 		for (i = 0; i < 3; i++)
-		{
 			if (pflags & (PF_VELOCITY1 << i))
-			{
 				MSG_WriteShort (msg, ed_vector (ent, velocity)[i]);
-			}
-		}
 
 		if (pflags & PF_MODEL)
 			MSG_WriteByte (msg, ed_float (ent, modelindex));
@@ -471,9 +451,7 @@ void SV_SendCompatibilityMessages ()
 	for (e = 0, cl = svs.clients; e < MAX_CLIENTS; e++, cl++)
 	{
 		if (cl->state != cs_spawned)
-		{
 			continue;
-		}
 
 		ent = cl->edict;
 		punchangle = ed_vector (ent, punchangle);
@@ -482,13 +460,9 @@ void SV_SendCompatibilityMessages ()
 		if (ed_field (punchangle))
 		{
 			if (punchangle[PITCH] <= -4.0f)
-			{
 				ClientReliableWrite_Begin (cl, svc_bigkick, 1);
-			}
 			else if (punchangle[PITCH] <= -2.0f)
-			{
 				ClientReliableWrite_Begin (cl, svc_smallkick, 1);
-			}
 
 			punchangle[PITCH] = punchangle[YAW] = punchangle[ROLL] = 0.0f;
 		}
@@ -518,9 +492,7 @@ void SV_CleanupEnts ()
 
 	/* Clear non-player muzzle flashes. */
 	for (e = MAX_CLIENTS + 1, ent = EDICT_NUM (e); e < sv.num_edicts; e++, ent = NEXT_EDICT (ent))
-	{
 		ed_float (ent, effects) = (int)ed_float (ent, effects) & ~EF_MUZZLEFLASH;
-	}
 }
 
 /*
@@ -573,12 +545,8 @@ void SV_WriteEntitiesToClient (client_t *client, sizebuf_t *msg)
 
 		// ignore if not touching a PV leaf
 		for (i = 0; i < ent->num_leafs; i++)
-		{
 			if (pvs[ent->leafnums[i] >> 3] & (1 << (ent->leafnums[i] & 7)))
-			{
 				break;
-			}
-		}
 
 		if (i == ent->num_leafs)
 			continue; // not visible

@@ -527,9 +527,7 @@ static void CL_ParseServerData ()
 	cl.serverprotocol = MSG_ReadLong ();
 
 	if (!cls.demoplayback && cl.serverprotocol != PROTOCOL_QUAKEWORLD && cl.serverprotocol != PROTOCOL_NETQUAKE)
-	{
 		Host_Error ("Server returned version %i, not %i or %i\n", cl.serverprotocol, PROTOCOL_QUAKEWORLD, PROTOCOL_NETQUAKE);
-	}
 
 	Con_Printf ("Using protocol %i\n", cl.serverprotocol);
 
@@ -878,9 +876,7 @@ static void CL_ProcessUserInfo (int slot, player_info_t *player)
 		Skin_Find (player);
 
 	if (slot == cl.playernum)
-	{
 		cl.userid = player->userid;
-	}
 
 	Sbar_Changed ();
 	CL_NewTranslation (slot);
@@ -1212,9 +1208,7 @@ void CL_ParseServerMessage ()
 			cl.cdtrack = MSG_ReadByte ();
 			i = 1;
 			if (cl.serverprotocol == PROTOCOL_NETQUAKE)
-			{
 				i = MSG_ReadByte ();
-			}
 			CDAudio_Play ((byte)cl.cdtrack, i);
 			break;
 

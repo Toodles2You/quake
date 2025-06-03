@@ -352,31 +352,19 @@ static void VID_CheckParms (int *width, int *height, bool *fullscreen)
 	int i;
 
 	if ((i = COM_CheckParm ("-window")) != 0)
-	{
 		*fullscreen = false;
-	}
 	else
-	{
 		*fullscreen = true;
-	}
 
 	if ((i = COM_CheckParm ("-width")) != 0)
-	{
 		*width = atoi (com_argv[i + 1]);
-	}
 	else
-	{
 		*width = 640;
-	}
 
 	if ((i = COM_CheckParm ("-height")) != 0)
-	{
 		*height = atoi (com_argv[i + 1]);
-	}
 	else
-	{
 		*height = 480;
-	}
 
 	if ((i = COM_CheckParm ("-conwidth")) != 0)
 	{
@@ -390,13 +378,9 @@ static void VID_CheckParms (int *width, int *height, bool *fullscreen)
 	}
 
 	if ((i = COM_CheckParm ("-conheight")) != 0)
-	{
 		vid.conheight = SDL_max (atoi (com_argv[i + 1]), 200);
-	}
 	else
-	{
 		vid.conheight = vid.conwidth * (*height) / (*width);
-	}
 }
 
 void VID_Init (unsigned char *palette)

@@ -180,12 +180,8 @@ void Con_CheckResize ()
 		memset (con_text, ' ', CON_TEXTSIZE);
 
 		for (i = 0; i < numlines; i++)
-		{
 			for (j = 0; j < numchars; j++)
-			{
 				con_text[(con_totallines - 1 - i) * con_linewidth + j] = tbuf[((con_current - i + oldtotallines) % oldtotallines) * oldwidth + j];
-			}
-		}
 
 		Con_ClearNotify ();
 	}
@@ -373,9 +369,7 @@ void Con_Printf (char *fmt, ...)
 	if (sv_redirected)
 	{
 		if (strlen (msg) + strlen (outputbuf) > sizeof (outputbuf) - 1)
-		{
 			SV_FlushRedirect ();
-		}
 		strcat (outputbuf, msg);
 		return;
 	}

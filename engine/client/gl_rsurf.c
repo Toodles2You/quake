@@ -94,9 +94,7 @@ void R_AddDynamicLights (msurface_t *surf)
 		minlight = rad - minlight;
 
 		for (i = 0; i < 3; i++)
-		{
 			impact[i] = cl_dlights[lnum].origin[i] - surf->plane->normal[i] * dist;
-		}
 
 		local[0] = DotProduct (impact, tex->vecs[0]) + tex->vecs[0][3];
 		local[1] = DotProduct (impact, tex->vecs[1]) + tex->vecs[1][3];
@@ -119,12 +117,8 @@ void R_AddDynamicLights (msurface_t *surf)
 				else
 					dist = td + (sd >> 1);
 				if (dist < minlight)
-				{
 					for (k = 0; k < d_lightmap_bytes; k++)
-					{
 						blocklights[d_lightmap_bytes * (t * smax + s) + k] += (rad - dist) * 256;
-					}
-				}
 			}
 		}
 	}
@@ -739,14 +733,10 @@ void R_BlendLightmaps ()
 	}
 
 	if (!r_lightmap.value)
-	{
 		glEnable (GL_BLEND);
-	}
 
 	if (r_luminescent.value)
-	{
 		glStencilFunc (GL_NOTEQUAL, 1, 1);
-	}
 
 	for (i = 0; i < MAX_LIGHTMAPS; i++)
 	{
@@ -838,9 +828,7 @@ void R_RenderBrushPoly (msurface_t *fa)
 	glStencilMask (1);
 
 	if ((fa->flags & SURF_DRAWFENCE) && r_fence.value)
-	{
 		glEnable (GL_ALPHA_TEST);
-	}
 
 	if (fa->flags & SURF_UNDERWATER)
 		DrawGLWaterPoly (fa->polys);
@@ -1293,13 +1281,11 @@ void R_RecursiveWorldNode (msurface_t **surfs, mnode_t *node)
 		c = pleaf->nummarksurfaces;
 
 		if (c)
-		{
 			do
 			{
 				(*mark)->visframe = r_framecount;
 				mark++;
 			} while (--c);
-		}
 
 		// deal with model fragments in this leaf
 		if (pleaf->efrags)

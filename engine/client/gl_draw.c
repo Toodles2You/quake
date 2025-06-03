@@ -320,10 +320,8 @@ void Draw_TextureMode_f ()
 	}
 
 	for (i = 0; i < 6; i++)
-	{
 		if (!strcasecmp (modes[i].name, Cmd_Argv (1)))
 			break;
-	}
 	if (i == 6)
 	{
 		Con_Printf ("bad filter name\n");
@@ -628,9 +626,7 @@ Draw_TransPic
 void Draw_TransPic (int x, int y, qpic_t *pic)
 {
 	if (x < 0 || (unsigned)(x + pic->width) > vid.width || y < 0 || (unsigned)(y + pic->height) > vid.height)
-	{
 		Sys_Error ("Draw_TransPic: bad coordinates");
-	}
 
 	Draw_Pic (x, y, pic);
 }
@@ -843,10 +839,8 @@ int GL_FindTexture (char *identifier)
 	gltexture_t *glt;
 
 	for (i = 0, glt = gltextures; i < numgltextures; i++, glt++)
-	{
 		if (!strcmp (identifier, glt->identifier))
 			return gltextures[i].texnum;
-	}
 
 	return -1;
 }
@@ -1193,9 +1187,7 @@ void GL_Upload8 (int *gl_texturenum, int *gl_brightnum, byte *data, int width, i
 	}
 
 	if (alpha)
-	{
 		GL_ResampleAlphaTexture (remap, width, height);
-	}
 
 	GL_Bind (*gl_texturenum);
 	GL_Upload32 (remap, width, height, mipmap, alpha);

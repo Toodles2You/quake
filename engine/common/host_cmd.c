@@ -73,14 +73,10 @@ static bool Host_CheckLevel (char *server)
 static void Host_ChangingLevel ()
 {
 	if (!Host_IsLocalGame ())
-	{
 		return;
-	}
 
 	if (cls.download) // don't change when downloading
-	{
 		return;
-	}
 
 	SV_BroadcastCommand ("changing\n");
 	SV_SendMessagesToAll ();
@@ -117,9 +113,7 @@ void Host_Map_f ()
 	strcpy (level, Cmd_Argv (1));
 
 	if (!Host_CheckLevel (level))
-	{
 		return;
-	}
 
 	Host_ShutdownServer (false);
 	Host_InitServer ();
@@ -131,9 +125,7 @@ void Host_Map_f ()
 	if (Host_IsLocalGame ())
 	{
 		if (cls.state != ca_dedicated)
-		{
 			Cmd_ExecuteString (src_client, "connect localhost");
-		}
 	}
 }
 
@@ -164,9 +156,7 @@ void Host_Changelevel_f ()
 	strcpy (level, Cmd_Argv (1));
 
 	if (!Host_CheckLevel (level))
-	{
 		return;
-	}
 
 	Host_ChangingLevel ();
 
@@ -198,9 +188,7 @@ void Host_Restart_f ()
 	strcpy (startspot, sv.startspot);
 
 	if (!Host_CheckLevel (mapname))
-	{
 		return;
-	}
 
 	Host_ChangingLevel ();
 
@@ -485,9 +473,7 @@ void Host_Loadgame_f ()
 		svs.clients->spawn_parms[i] = spawn_parms[i];
 
 	if (cls.state != ca_dedicated)
-	{
 		Cmd_ExecuteString (src_client, "connect localhost");
-	}
 }
 
 void SaveGamestate ()

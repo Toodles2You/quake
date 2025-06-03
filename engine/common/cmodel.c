@@ -67,19 +67,13 @@ mleaf_t *CMod_PointInLeaf (vec3_t p, cmodel_t *model)
 	while (true)
 	{
 		if (node->contents < 0)
-		{
 			return (mleaf_t *)node;
-		}
 		plane = node->plane;
 		d = DotProduct (p, plane->normal) - plane->dist;
 		if (d > 0)
-		{
 			node = node->children[0];
-		}
 		else
-		{
 			node = node->children[1];
-		}
 	}
 
 	return NULL; // never reached
@@ -133,9 +127,7 @@ static byte *CMod_DecompressVis (byte *in, cmodel_t *model)
 byte *CMod_LeafPVS (mleaf_t *leaf, cmodel_t *model)
 {
 	if (leaf == model->leafs)
-	{
 		return cmod_novis;
-	}
 	return CMod_DecompressVis (leaf->compressed_vis, model);
 }
 
@@ -150,9 +142,7 @@ void CMod_ClearAll ()
 	cmodel_t *mod;
 
 	for (i = 0, mod = cmod_known; i < cmod_numknown; i++, mod++)
-	{
 		memset (mod, 0, sizeof (*mod));
-	}
 
 	cmod_numknown = 0;
 }
@@ -168,32 +158,22 @@ static cmodel_t *CMod_FindName (char *name, bool *load)
 	cmodel_t *mod;
 
 	if (!name[0])
-	{
 		Sys_Error ("CMod_ForName: NULL name");
-	}
 
 	//
 	// search the currently loaded models
 	//
 	for (i = 0, mod = cmod_known; i < cmod_numknown; i++, mod++)
-	{
 		if (!strcmp (mod->name, name))
-		{
 			break;
-		}
-	}
 
 	if (i == cmod_numknown)
 	{
 		if (cmod_numknown == MAX_MODELS)
-		{
 			Sys_Error ("cmod_numknown == MAX_MODELS");
-		}
 		strcpy (mod->name, name);
 		if (load)
-		{
 			*load = true;
-		}
 		cmod_numknown++;
 	}
 
@@ -219,9 +199,7 @@ static void CMod_LoadModel (cmodel_t *mod, bool crash, bool world)
 	if (!buf)
 	{
 		if (crash)
-		{
 			Sys_Error ("CMod_NumForName: %s not found", mod->name);
-		}
 		return;
 	}
 
@@ -266,9 +244,7 @@ cmodel_t *CMod_ForName (char *name, bool crash, bool world)
 	cmodel_t *mod = CMod_FindName (name, &load);
 
 	if (load)
-	{
 		CMod_LoadModel (mod, crash, world);
-	}
 
 	return mod;
 }
@@ -314,24 +290,16 @@ static size_t CMod_CountEntities (char *data)
 	{
 		data = COM_Parse (data);
 		if (!data)
-		{
 			break;
-		}
 		if (com_token[0] != '{')
-		{
 			Sys_Error ("CMod_CountEntities: found %s when expecting {", com_token);
-		}
 		while (true)
 		{
 			data = COM_Parse (data);
 			if (com_token[0] == '}')
-			{
 				break;
-			}
 			if (!data)
-			{
 				Sys_Error ("CMod_CountEntities: EOF without closing brace");
-			}
 		}
 		i++;
 	}
@@ -346,9 +314,7 @@ CMod_LoadEntities
 static void CMod_LoadEntities (lump_t *l)
 {
 	if (!l->filelen)
-	{
 		return;
-	}
 
 	loadcmod->entities = Hunk_AllocName (l->filelen, loadname);
 	memcpy (loadcmod->entities, mod_base + l->fileofs, l->filelen);
@@ -370,9 +336,7 @@ static void CMod_LoadSubmodels (lump_t *l)
 	in = (void *)(mod_base + l->fileofs);
 
 	if (l->filelen % sizeof (*in))
-	{
 		Sys_Error ("CMOD_LoadBmodel: funny lump size in %s", loadcmod->name);
-	}
 
 	count = l->filelen / sizeof (*in);
 	out = loadcmod;
@@ -422,9 +386,7 @@ static void CMod_SetParent (mnode_t *node, mnode_t *parent)
 {
 	node->parent = parent;
 	if (node->contents < 0)
-	{
 		return;
-	}
 	CMod_SetParent (node->children[0], node);
 	CMod_SetParent (node->children[1], node);
 }
@@ -443,9 +405,7 @@ static void CMod_LoadNodes (lump_t *l)
 	in = (void *)(mod_base + l->fileofs);
 
 	if (l->filelen % sizeof (*in))
-	{
 		Sys_Error ("CMOD_LoadBmodel: funny lump size in %s", loadcmod->name);
-	}
 
 	count = l->filelen / sizeof (*in);
 	out = Hunk_AllocName (count * sizeof (*out), loadname);
@@ -471,13 +431,9 @@ static void CMod_LoadNodes (lump_t *l)
 		{
 			p = LittleShort (in->children[j]);
 			if (p >= 0)
-			{
 				out->children[j] = loadcmod->nodes + p;
-			}
 			else
-			{
 				out->children[j] = (mnode_t *)(loadcmod->leafs + (-1 - p));
-			}
 		}
 	}
 
@@ -498,9 +454,7 @@ static void CMod_LoadLeafs (lump_t *l)
 	in = (void *)(mod_base + l->fileofs);
 
 	if (l->filelen % sizeof (*in))
-	{
 		Sys_Error ("CMOD_LoadBmodel: funny lump size in %s", loadcmod->name);
-	}
 
 	count = l->filelen / sizeof (*in);
 	out = Hunk_AllocName (count * sizeof (*out), loadname);
@@ -525,20 +479,14 @@ static void CMod_LoadLeafs (lump_t *l)
 		out->efrags = NULL;
 
 		for (j = 0; j < NUM_AMBIENTS; j++)
-		{
 			out->ambient_sound_level[j] = in->ambient_level[j];
-		}
 
 		p = LittleLong (in->visofs);
 
 		if (p == -1)
-		{
 			out->compressed_vis = NULL;
-		}
 		else
-		{
 			out->compressed_vis = loadcmod->visdata + p;
-		}
 	}
 }
 
@@ -556,9 +504,7 @@ static void CMod_LoadClipnodes (lump_t *l)
 	in = (void *)(mod_base + l->fileofs);
 
 	if (l->filelen % sizeof (*in))
-	{
 		Sys_Error ("CMOD_LoadBmodel: funny lump size in %s", loadcmod->name);
-	}
 
 	count = l->filelen / sizeof (*in);
 	out = Hunk_AllocName (count * sizeof (*out), loadname);
@@ -626,13 +572,9 @@ static void CMod_MakeHull0 ()
 		{
 			child = in->children[j];
 			if (child->contents < 0)
-			{
 				out->children[j] = child->contents;
-			}
 			else
-			{
 				out->children[j] = child - loadcmod->nodes;
-			}
 		}
 	}
 }
@@ -653,9 +595,7 @@ static void CMod_LoadPlanes (lump_t *l)
 	in = (void *)(mod_base + l->fileofs);
 
 	if (l->filelen % sizeof (*in))
-	{
 		Sys_Error ("CMOD_LoadBmodel: funny lump size in %s", loadcmod->name);
-	}
 
 	count = l->filelen / sizeof (*in);
 	out = Hunk_AllocName (count * 2 * sizeof (*out), loadname);
@@ -670,9 +610,7 @@ static void CMod_LoadPlanes (lump_t *l)
 		{
 			out->normal[j] = LittleFloat (in->normal[j]);
 			if (out->normal[j] < 0)
-			{
 				bits |= 1 << j;
-			}
 		}
 
 		out->dist = LittleFloat (in->dist);
@@ -706,9 +644,7 @@ static void CMod_LoadBrushModel (cmodel_t *mod, void *buffer, bool world)
 	mod_base = (byte *)header;
 
 	for (i = 0; i < sizeof (dheader_t) / 4; i++)
-	{
 		((int32_t *)header)[i] = LittleLong (((int32_t *)header)[i]);
-	}
 
 	// checksum all of the map, except for entities
 	mod->checksum = 0;
@@ -717,16 +653,12 @@ static void CMod_LoadBrushModel (cmodel_t *mod, void *buffer, bool world)
 	for (i = 0; i < HEADER_LUMPS; i++)
 	{
 		if (i == LUMP_ENTITIES)
-		{
 			continue;
-		}
 
 		mod->checksum ^= COM_BlockChecksum (mod_base + header->lumps[i].fileofs, header->lumps[i].filelen);
 
 		if (i == LUMP_VISIBILITY || i == LUMP_LEAFS || i == LUMP_NODES)
-		{
 			continue;
-		}
 
 		mod->checksum2 ^= COM_BlockChecksum (mod_base + header->lumps[i].fileofs, header->lumps[i].filelen);
 	}
@@ -767,7 +699,5 @@ void CMod_Print ()
 
 	Con_Printf ("Cached cmodels:\n");
 	for (i = 0, mod = cmod_known; i < cmod_numknown; i++, mod++)
-	{
 		Con_Printf ("%u : %s\n", i, mod->name);
-	}
 }

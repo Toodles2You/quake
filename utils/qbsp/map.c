@@ -24,10 +24,8 @@ int FindMiptex (char *name)
 	int i;
 
 	for (i = 0; i < nummiptex; i++)
-	{
 		if (!strcmp (name, miptex[i]))
 			return i;
-	}
 	if (nummiptex == MAX_MAP_TEXINFO)
 		Error ("nummiptex == MAX_MAP_TEXINFO");
 	strcpy (miptex[i], name);
@@ -551,17 +549,13 @@ void FixUpWadNames (char *v)
 	{
 		next = strchr (token, ';');
 		if (next)
-		{
 			*next = '\0';
-		}
 
 		ExtractFileBase (token, wadname, true);
 		strcpy (v, wadname);
 
 		if (!next)
-		{
 			break;
-		}
 		strcat (v, ";");
 		v += strlen (wadname) + 1;
 		token = next + 1;
@@ -585,15 +579,11 @@ void WriteEntitiesToString (void)
 	{
 		path = ValueForKey (&entities[0], "wad");
 		if (!path || !path[0])
-		{
 			path = NULL;
-		}
 	}
 
 	if (path)
-	{
 		FixUpWadNames (path);
-	}
 
 	for (i = 0; i < num_entities; i++)
 	{

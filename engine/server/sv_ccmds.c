@@ -282,9 +282,7 @@ static void SV_Give_f ()
 
 	case 's':
 		if (ed_field (ammo_shells1))
-		{
 			ed_float (sv_player, ammo_shells1) = v;
-		}
 
 		ed_float (sv_player, ammo_shells) = v;
 		break;

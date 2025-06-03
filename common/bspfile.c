@@ -89,10 +89,8 @@ void SwapBSPFile (bool todisk)
 	// vertexes
 	//
 	for (i = 0; i < numvertexes; i++)
-	{
 		for (j = 0; j < 3; j++)
 			dvertexes[i].point[j] = LittleFloat (dvertexes[i].point[j]);
-	}
 
 	//
 	// planes
