@@ -224,7 +224,7 @@ static void CMod_LoadModel(cmodel_t *mod, bool crash, bool world)
         {
             Sys_Error("CMod_NumForName: %s not found", mod->name);
         }
-        return NULL;
+        return;
     }
 
     //
@@ -253,8 +253,6 @@ static void CMod_LoadModel(cmodel_t *mod, bool crash, bool world)
         CMod_LoadBrushModel(mod, buf, world);
         break;
     }
-
-    return mod;
 }
 
 /*
