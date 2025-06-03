@@ -230,7 +230,6 @@ static bool W_GetMapLumpInfo (char *name, wad_t **wad, lumpinfo_t **lump)
 			{
 				*wad = wad_p;
 				*lump = lump_p;
-				/* Con_DSafePrintf("W_GetLumpinfo: %s found in %s\n", clean, wad_p->name); */
 				return true;
 			}
 		}

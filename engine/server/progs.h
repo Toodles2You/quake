@@ -107,7 +107,7 @@ void PR_Init ();
 
 void PR_ExecuteProgram (progs_state_t *pr, func_t fnum);
 int PR_LoadProgs (progs_state_t *pr, char *filename, int version, int crc);
-void PR_BuildStructs (progs_state_t *pr, uint32_t *globalStruct, pr_field_t *globalFields, uint32_t *fieldStruct, pr_field_t *fields);
+void PR_BuildStructs (progs_state_t *pr, uint32_t *global_struct, pr_field_t *global_fields, uint32_t *field_struct, pr_field_t *fields);
 
 ddef_t *PR_GlobalAtOfs (progs_state_t *pr, int ofs);
 char *PR_GlobalString (progs_state_t *pr, int ofs);

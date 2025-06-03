@@ -279,7 +279,7 @@ void SV_Multicast (vec3_t origin, int to)
 	SZ_Clear (&sv.multicast);
 }
 
-/*  
+/*
 ==================
 SV_StartParticle
 
@@ -309,7 +309,7 @@ void SV_StartParticle (vec3_t org, vec3_t dir, int color, int count)
 	SV_Multicast (org, MULTICAST_PVS);
 }
 
-/*  
+/*
 ==================
 SV_StartSound
 
@@ -480,7 +480,7 @@ static void SV_WriteClientdataToMessage (client_t *client, sizebuf_t *msg)
 		ed_float (ent, dmg_save) = 0;
 	}
 
-	// Toodles FIXME: a fixangle might get lost in a dropped packet.  Oh well.
+	// FIXME: might get lost in a dropped packet
 	if (ed_float (ent, fixangle))
 	{
 		MSG_WriteByte (msg, svc_setangle);

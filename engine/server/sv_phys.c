@@ -894,7 +894,7 @@ void SV_Physics_Toss (edict_t *ent)
 	// stop if on ground
 	if (trace.plane.normal[2] > 0.7)
 	{
-		/* Slope bounce fix from Spike! */
+		// slope bounce fix from FTEQW
 		if (DotProduct (trace.plane.normal, ed_vector (ent, velocity)) < 60 ||
 			(ed_float (ent, movetype) != MOVETYPE_BOUNCE && ed_float (ent, movetype) != MOVETYPE_BOUNCEMISSILE))
 		{

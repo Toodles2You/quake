@@ -97,8 +97,6 @@ Host_Map_f
 handle a 
 map <servername>
 command from the console.  Active clients are kicked off.
-
-Toodles TODO: Warn server hosts that this kicks all clients.
 ======================
 */
 void Host_Map_f ()

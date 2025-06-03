@@ -456,7 +456,7 @@ void SV_SendCompatibilityMessages ()
 		ent = cl->edict;
 		punchangle = ed_vector (ent, punchangle);
 
-		/* Send the player view punch to the client. */
+		// send the player view punch to the client
 		if (ed_field (punchangle))
 		{
 			if (punchangle[PITCH] <= -4.0f)
@@ -467,7 +467,7 @@ void SV_SendCompatibilityMessages ()
 			punchangle[PITCH] = punchangle[YAW] = punchangle[ROLL] = 0.0f;
 		}
 
-		/* Send player muzzle flashes & unset the bit. */
+		// send player muzzle flashes and unset the bit
 		if ((int)ed_float (ent, effects) & EF_MUZZLEFLASH)
 		{
 			MSG_WriteByte (&sv.multicast, svc_muzzleflash);
@@ -490,7 +490,7 @@ void SV_CleanupEnts ()
 	int e;
 	edict_t *ent;
 
-	/* Clear non-player muzzle flashes. */
+	// clear non-player muzzle flashes
 	for (e = MAX_CLIENTS + 1, ent = EDICT_NUM (e); e < sv.num_edicts; e++, ent = NEXT_EDICT (ent))
 		ed_float (ent, effects) = (int)ed_float (ent, effects) & ~EF_MUZZLEFLASH;
 }

@@ -16,9 +16,9 @@ The game starts with a Cbuf_AddText ("exec quake.rc\n"); Cbuf_Execute ();
 
 typedef enum
 {
-	src_host = -1, /* Register as both a client & server command. */
-	src_client,	   /* Register as a client command. */
-	src_server,	   /* Register as a server command. */
+	src_host = -1, // register as both a client and server command
+	src_client,	   // register as a client command
+	src_server,	   // register as a server command
 } cmd_source_e;
 
 extern cmd_source_e cmd_source;

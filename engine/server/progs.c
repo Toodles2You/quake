@@ -338,50 +338,50 @@ int PR_LoadProgs (progs_state_t *pr, char *filename, int version, int crc)
 	return 0;
 }
 
-void PR_BuildStructs (progs_state_t *pr, uint32_t *globalStruct, pr_field_t *globalFields, uint32_t *fieldStruct, pr_field_t *fields)
+void PR_BuildStructs (progs_state_t *pr, uint32_t *global_struct, pr_field_t *global_fields, uint32_t *field_struct, pr_field_t *fields)
 {
 	int i;
 	ddef_t *def;
 
-	if (globalStruct)
+	if (global_struct)
 	{
-		/* Get the offsets of the global vars. */
-		for (i = 0; globalFields[i].name != NULL; i++)
+		// get the offsets of the global vars
+		for (i = 0; global_fields[i].name != NULL; i++)
 		{
-			def = PR_FindGlobal (pr, globalFields[i].name);
+			def = PR_FindGlobal (pr, global_fields[i].name);
 			if (!def)
 			{
-				globalStruct[i] = 0;
-				if (!globalFields[i].optional)
+				global_struct[i] = 0;
+				if (!global_fields[i].optional)
 				{
-					Host_Error ("PR_LoadProgs: progs.dat globaldefs missing %s\n", globalFields[i].name);
+					Host_Error ("PR_LoadProgs: progs.dat globaldefs missing %s\n", global_fields[i].name);
 					break;
 				}
-				Con_DPrintf ("PR_LoadProgs: progs.dat globaldefs does not define %s\n", globalFields[i].name);
+				Con_DPrintf ("PR_LoadProgs: progs.dat globaldefs does not define %s\n", global_fields[i].name);
 				continue;
 			}
 			if (def->type != ev_function)
 			{
-				globalStruct[i] = def->ofs;
+				global_struct[i] = def->ofs;
 			}
 			else
 			{
-				/* C code passes these to PR_ExecuteProgram directly. */
-				globalStruct[i] = *(int32_t *)(pr->globals + def->ofs);
+				// C code passes these to PR_ExecuteProgram directly
+				global_struct[i] = *(int32_t *)(pr->globals + def->ofs);
 			}
 		}
-		pr->global_struct = globalStruct;
+		pr->global_struct = global_struct;
 	}
 
-	if (fieldStruct)
+	if (field_struct)
 	{
-		/* Get the offsets of the entity vars. */
+		// get the offsets of the entity vars
 		for (i = 0; fields[i].name != NULL; i++)
 		{
 			def = PR_FindField (pr, fields[i].name);
 			if (!def)
 			{
-				fieldStruct[i] = 0;
+				field_struct[i] = 0;
 				if (!fields[i].optional)
 				{
 					Host_Error ("PR_LoadProgs: progs.dat fielddefs missing %s\n", fields[i].name);
@@ -390,9 +390,9 @@ void PR_BuildStructs (progs_state_t *pr, uint32_t *globalStruct, pr_field_t *glo
 				Con_DPrintf ("PR_LoadProgs: progs.dat fielddefs does not define %s\n", fields[i].name);
 				continue;
 			}
-			fieldStruct[i] = def->ofs;
+			field_struct[i] = def->ofs;
 		}
-		pr->field_struct = fieldStruct;
+		pr->field_struct = field_struct;
 	}
 }
 

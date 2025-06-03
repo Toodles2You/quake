@@ -560,19 +560,19 @@ bool Cmd_Exists (cmd_source_e src, char *cmd_name)
 	return false;
 }
 
-static void Cmd_GetBestCommand (cmd_source_e src, char *partial, int len, char **best, int *bestLen)
+static void Cmd_GetBestCommand (cmd_source_e src, char *partial, int len, char **best, int *bestlen)
 {
 	cmd_function_t *cmd;
-	int curLen;
+	int curlen;
 
 	for (cmd = cmd_functions[src]; cmd; cmd = cmd->next[src])
 	{
-		curLen = abs (strlen (cmd->name) - len);
+		curlen = abs (strlen (cmd->name) - len);
 
-		if (curLen < *bestLen && !strncmp (partial, cmd->name, len))
+		if (curlen < *bestlen && !strncmp (partial, cmd->name, len))
 		{
 			*best = cmd->name;
-			*bestLen = curLen;
+			*bestlen = curlen;
 		}
 	}
 }
@@ -586,7 +586,7 @@ char *Cmd_CompleteCommand (cmd_source_e src, char *partial)
 {
 	int len;
 	char *best = NULL;
-	int bestLen = 256;
+	int bestlen = 999;
 
 	len = strlen (partial);
 
@@ -594,14 +594,11 @@ char *Cmd_CompleteCommand (cmd_source_e src, char *partial)
 		return NULL;
 
 	// check functions
-	Cmd_GetBestCommand (src, partial, len, &best, &bestLen);
+	Cmd_GetBestCommand (src, partial, len, &best, &bestlen);
 
-	if (src == src_client)
-	{
-		/* Toodles: If running a local server, query server commands, too. */
-		if (Host_IsLocalGame ())
-			Cmd_GetBestCommand (src_server, partial, len, &best, &bestLen);
-	}
+	// local game queries server commands, too
+	if (src == src_client && Host_IsLocalGame ())
+		Cmd_GetBestCommand (src_server, partial, len, &best, &bestlen);
 
 	return best;
 }

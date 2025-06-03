@@ -158,7 +158,7 @@ bool SNDDMA_Init ()
 
 	int samples = (spec.samples * spec.channels) * 10;
 	int val;
-	/* Make it a power of two. */
+	// make it a power of two
 	if (samples & (samples - 1))
 	{
 		val = 1;

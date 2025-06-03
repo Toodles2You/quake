@@ -47,49 +47,49 @@ static int IN_TranslateKey (SDL_KeyboardEvent *k)
 	switch (k->keysym.sym)
 	{
 	case SDLK_KP_9:
-		key = K_PGUP; /* K_KP_PGUP */
+		key = K_PGUP;
 		break;
 	case SDLK_PAGEUP:
 		key = K_PGUP;
 		break;
 	case SDLK_KP_3:
-		key = K_PGDN; /* K_KP_PGDN */
+		key = K_PGDN;
 		break;
 	case SDLK_PAGEDOWN:
 		key = K_PGDN;
 		break;
 	case SDLK_KP_7:
-		key = K_HOME; /* K_KP_HOME */
+		key = K_HOME;
 		break;
 	case SDLK_HOME:
 		key = K_HOME;
 		break;
 	case SDLK_KP_1:
-		key = K_END; /* K_KP_END */
+		key = K_END;
 		break;
 	case SDLK_END:
 		key = K_END;
 		break;
 	case SDLK_KP_4:
-		key = K_LEFTARROW; /* K_KP_LEFTARROW */
+		key = K_LEFTARROW;
 		break;
 	case SDLK_LEFT:
 		key = K_LEFTARROW;
 		break;
 	case SDLK_KP_6:
-		key = K_RIGHTARROW; /* K_KP_RIGHTARROW */
+		key = K_RIGHTARROW;
 		break;
 	case SDLK_RIGHT:
 		key = K_RIGHTARROW;
 		break;
 	case SDLK_KP_2:
-		key = K_DOWNARROW; /* K_KP_DOWNARROW */
+		key = K_DOWNARROW;
 		break;
 	case SDLK_DOWN:
 		key = K_DOWNARROW;
 		break;
 	case SDLK_KP_8:
-		key = K_UPARROW; /* K_KP_UPARROW */
+		key = K_UPARROW;
 		break;
 	case SDLK_UP:
 		key = K_UPARROW;
@@ -98,7 +98,7 @@ static int IN_TranslateKey (SDL_KeyboardEvent *k)
 		key = K_ESCAPE;
 		break;
 	case SDLK_KP_ENTER:
-		key = K_ENTER; /* K_KP_ENTER */
+		key = K_ENTER;
 		break;
 	case SDLK_RETURN:
 		key = K_ENTER;
@@ -146,7 +146,7 @@ static int IN_TranslateKey (SDL_KeyboardEvent *k)
 		key = K_BACKSPACE;
 		break;
 	case SDLK_KP_DECIMAL:
-		key = K_DEL; /* K_KP_DEL */
+		key = K_DEL;
 		break;
 	case SDLK_DELETE:
 		key = K_DEL;
@@ -170,25 +170,25 @@ static int IN_TranslateKey (SDL_KeyboardEvent *k)
 		key = K_ALT;
 		break;
 	case SDLK_KP_5:
-		key = '5'; /* K_KP_5 */
+		key = '5';
 		break;
 	case SDLK_INSERT:
 		key = K_INS;
 		break;
 	case SDLK_KP_0:
-		key = K_INS; /* K_KP_INS */
+		key = K_INS;
 		break;
 	case SDLK_KP_MULTIPLY:
 		key = '*';
 		break;
 	case SDLK_KP_PLUS:
-		key = '+'; /* K_KP_PLUS */
+		key = '+';
 		break;
 	case SDLK_KP_MINUS:
-		key = '-'; /* K_KP_MINUS */
+		key = '-';
 		break;
 	case SDLK_KP_DIVIDE:
-		key = '/'; /* K_KP_SLASH */
+		key = '/';
 		break;
 	case SDLK_SPACE:
 		key = K_SPACE;
@@ -295,7 +295,7 @@ void Sys_SendKeyEvents ()
 
 	if (warp_mouse && window)
 	{
-		/* move the mouse to the window center again */
+		// move the mouse to the window center again
 		SDL_WarpMouseInWindow (window, vid.width / 2, vid.height / 2);
 	}
 }
@@ -320,7 +320,6 @@ void IN_Init ()
 static void IN_ActivateGrabs ()
 {
 	SDL_ShowCursor (SDL_DISABLE);
-	/* SDL_SetWindowMouseGrab(window, SDL_TRUE); */
 
 	if (m_rawinput.value && SDL_SetRelativeMouseMode (SDL_TRUE) == 0)
 	{
@@ -332,20 +331,16 @@ static void IN_ActivateGrabs ()
 		mouse_state &= ~MOUSE_RELATIVE;
 	}
 
-	/* SDL_SetWindowKeyboardGrab(window, SDL_TRUE); */
-
 	mouse_state |= MOUSE_ACTIVE;
 	mouse[0] = mouse[1] = 0;
 }
 
 static void IN_DeactivateGrabs ()
 {
-	/* SDL_SetWindowKeyboardGrab(window, SDL_FALSE); */
 
 	if (mouse_state & MOUSE_RELATIVE)
 		SDL_SetRelativeMouseMode (SDL_FALSE);
 
-	/* SDL_SetWindowMouseGrab(window, SDL_FALSE); */
 	SDL_ShowCursor (SDL_ENABLE);
 
 	mouse_state &= ~(MOUSE_ACTIVE | MOUSE_RELATIVE);

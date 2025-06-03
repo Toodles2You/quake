@@ -279,10 +279,8 @@ static void CMod_LoadVisibility (lump_t *l)
 /*
 ================
 CMod_CountEntities
-
-Does exactly what you think it does.
-Toodles TODO: This could save the tokens for later use in ED_LoadFromFile.
-================*/
+================
+*/
 static size_t CMod_CountEntities (char *data)
 {
 	size_t i = 0;
@@ -347,15 +345,15 @@ static void CMod_LoadSubmodels (lump_t *l)
 	{
 		if (i > 0)
 		{
-			/* Get the next cmodel_t to be filled. */
+			// get the next cmodel_t to be filled
 			sprintf (name, "*%i", i);
 			next = CMod_FindName (name, NULL);
 
-			/* Duplicate the basic information. */
+			// duplicate the basic information
 			*next = *out;
 			strcpy (next->name, name);
 
-			/* Switch it out. */
+			// switch it out
 			out = next;
 		}
 

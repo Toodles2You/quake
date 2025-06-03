@@ -31,7 +31,7 @@ typedef struct mnode_s
 	mplane_t *plane;
 	mnode_t *children[2];
 
-	/*! TODO: Client only. Dedicated server never needs these. */
+	// TODO: dedicated server never needs these
 	unsigned short firstsurface;
 	unsigned short numsurfaces;
 } mnode_t;
@@ -49,7 +49,7 @@ typedef struct mleaf_s
 	// leaf specific
 	byte *compressed_vis;
 
-	/*! TODO: Client only. Dedicated server never needs these. */
+	// TODO: dedicated server never needs these
 	efrag_t *efrags;
 
 	int firstmarksurface;

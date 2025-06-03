@@ -1050,9 +1050,7 @@ static vec2_t vec_resample[] = {
 ===============
 GL_ResampleAlphaTexture
 
-Toodles: Blends transparent pixels with neighboring opaque pixels.
-Prevents bleeding of the (usually bright blue) alpha color when mipmapping & filtering.
-It isn't efficient but, it works.
+Blends transparent pixels with neighboring opaque pixels to prevent bleeding when mipmapping and filtering.
 ===============
 */
 void GL_ResampleAlphaTexture (unsigned int *data, int width, int height)
@@ -1111,7 +1109,7 @@ GL_Upload8
 */
 void GL_Upload8 (int *gl_texturenum, int *gl_brightnum, byte *data, int width, int height, byte *pal, int bytes, int colors, bool mipmap, bool alpha)
 {
-	/* Toodles TODO: Find a better way to allocate memory. */
+	// TODO: Find a better way to allocate memory
 	unsigned trans[640 * 480 * 2];
 	int i;
 	bool noalpha;

@@ -70,19 +70,19 @@ char *Cvar_VariableString (cmd_source_e src, char *var_name)
 	return var->string;
 }
 
-static void Cvar_GetBestVariable (cmd_source_e src, char *partial, int len, char **best, int *bestLen)
+static void Cvar_GetBestVariable (cmd_source_e src, char *partial, int len, char **best, int *bestlen)
 {
 	cvar_t *cvar;
-	int curLen;
+	int curlen;
 
 	for (cvar = cvar_vars[src]; cvar; cvar = cvar->next[src])
 	{
-		curLen = abs (strlen (cvar->name) - len);
+		curlen = abs (strlen (cvar->name) - len);
 
-		if (curLen < *bestLen && !strncmp (partial, cvar->name, len))
+		if (curlen < *bestlen && !strncmp (partial, cvar->name, len))
 		{
 			*best = cvar->name;
-			*bestLen = curLen;
+			*bestlen = curlen;
 		}
 	}
 }
@@ -96,7 +96,7 @@ char *Cvar_CompleteVariable (cmd_source_e src, char *partial)
 {
 	int len;
 	char *best = NULL;
-	int bestLen = 256;
+	int bestlen = 999;
 
 	len = strlen (partial);
 
@@ -104,14 +104,11 @@ char *Cvar_CompleteVariable (cmd_source_e src, char *partial)
 		return NULL;
 
 	// check partial match
-	Cvar_GetBestVariable (src, partial, len, &best, &bestLen);
+	Cvar_GetBestVariable (src, partial, len, &best, &bestlen);
 
-	if (src == src_client)
-	{
-		/* Toodles: If running a local server, query server variables, too. */
-		if (Host_IsLocalGame ())
-			Cvar_GetBestVariable (src_server, partial, len, &best, &bestLen);
-	}
+	// local game queries server commands, too
+	if (src == src_client && Host_IsLocalGame ())
+		Cvar_GetBestVariable (src_server, partial, len, &best, &bestlen);
 
 	return best;
 }

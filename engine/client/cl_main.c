@@ -340,7 +340,7 @@ void CL_Disconnect ()
 		Netchan_Transmit (&cls.netchan, 6, final);
 		Netchan_Transmit (&cls.netchan, 6, final);
 		Netchan_Transmit (&cls.netchan, 6, final);
-		/* Toodles: Completely kill the connection to prevent unwanted packets. */
+		// completely kill the connection to prevent unwanted packets
 		memset (&cls.netchan, 0, sizeof (cls.netchan));
 
 		cls.state = ca_disconnected;

@@ -77,7 +77,7 @@ static void SV_SetMaster_f ()
 ============
 SV_Logfile_f
 
-Toodles FIXME:
+FIXME:
 ============
 */
 static void SV_Logfile_f () {}

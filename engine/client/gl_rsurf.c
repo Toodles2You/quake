@@ -716,7 +716,7 @@ void R_BlendLightmaps ()
 	if (!gl_texsort.value)
 		return;
 
-	/* Toodles: This ensures fence textures only have light rendered on solid pixels. */
+	// this ensures fence textures only have light rendered on solid pixels
 	glGetIntegerv (GL_DEPTH_FUNC, &depthfunc);
 	glDepthFunc (GL_EQUAL);
 	glDepthMask (0); // don't bother writing Z

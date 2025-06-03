@@ -915,7 +915,7 @@ void V_RenderView ()
 
 void V_ClampViewAngles ()
 {
-	/* Toodles: View pitch is inverted. */
+	// view pitch is inverted
 	if (cl.viewangles[PITCH] > cl_pitchmin.value)
 		cl.viewangles[PITCH] = cl_pitchmin.value;
 	else if (cl.viewangles[PITCH] < -cl_pitchmax.value)

@@ -1178,7 +1178,7 @@ void SV_ExecuteUserCommand (char *s)
 
 	if (!u->name)
 	{
-		/* Toodles: Forward to the server command buffer. */
+		// forward to the server command buffer
 		if (Host_IsLocalClient (host_client->userid))
 		{
 			SV_EndRedirect ();

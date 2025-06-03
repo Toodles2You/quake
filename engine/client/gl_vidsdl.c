@@ -61,8 +61,6 @@ static cvar_t vid_mode = {"vid_mode", "0"};
 
 void VID_Shutdown ()
 {
-	/* IN_DeactivateGrabs(); */
-
 	if (context)
 		SDL_GL_DeleteContext (context);
 
@@ -97,10 +95,7 @@ static void VID_InitSignals ()
 	signal (SIGTERM, signal_handler);
 }
 
-void VID_ShiftPalette (unsigned char *palette)
-{
-	/* VID_SetPalette(palette); */
-}
+void VID_ShiftPalette (unsigned char *palette) {}
 
 void VID_SetPalette (unsigned char *palette)
 {
@@ -306,7 +301,7 @@ static void VID_SetMode (int width, int height, bool fullscreen)
 
 	SDL_SetWindowFullscreen (window, 0);
 
-	/* Are we going fullscreen? If so, let's change video mode. */
+	// change video mode
 	if (fullscreen)
 	{
 		SDL_DisplayMode current;
@@ -336,7 +331,7 @@ static void VID_SetMode (int width, int height, bool fullscreen)
 			}
 		}
 
-		/* change to the mode */
+		// change to the mode
 		if (best_fit != -1)
 		{
 			vidmode_active = true;
@@ -368,7 +363,7 @@ static void VID_CheckParms (int *width, int *height, bool *fullscreen)
 
 	if ((i = COM_CheckParm ("-conwidth")) != 0)
 	{
-		/* Make it a multiple of eight. */
+		// make it a multiple of eight
 		vid.conwidth = atoi (com_argv[i + 1]) & 0xFFF8;
 		vid.conwidth = SDL_max (vid.conwidth, 320);
 	}
@@ -408,7 +403,7 @@ void VID_Init (unsigned char *palette)
 	SDL_GetVersion (&version);
 	Con_Printf ("Using SDL Version %d.%d.%d\n", version.major, version.minor, version.patch);
 
-	/* Set the window attributes. */
+	// set the window attributes
 	SDL_GL_ResetAttributes ();
 
 	if (SDL_GL_SetAttribute (SDL_GL_CONTEXT_MAJOR_VERSION, 1) < 0 || SDL_GL_SetAttribute (SDL_GL_CONTEXT_MINOR_VERSION, 1) < 0 ||
@@ -460,7 +455,7 @@ void VID_Init (unsigned char *palette)
 
 	Con_SafePrintf ("Video mode %dx%d initialized.\n", width, height);
 
-	/* Force a surface cache flush. */
+	// force a surface cache flush
 	vid.recalc_refdef = 1;
 
 	SDL_ShowWindow (window);

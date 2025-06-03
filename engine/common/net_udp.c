@@ -300,7 +300,7 @@ netadr_t NET_GetLocalAddress ()
 ====================
 NET_GetPublicAddress
 
-Toodles: Ping an API to get the host's public IP address.
+ping an api to get the host's public ip address
 ====================
 */
 char *NET_GetPublicAddress ()
@@ -310,7 +310,7 @@ char *NET_GetPublicAddress ()
 	if (net_public_adr[0] != '\0')
 		return net_public_adr;
 
-	/* Use our local IP address in case something goes wrong. */
+	// use our local IP address in case something goes wrong
 	strcpy (net_public_adr, NET_BaseAdrToString (net_local_adr));
 
 #ifdef PINGHOST
@@ -321,25 +321,25 @@ char *NET_GetPublicAddress ()
 	hint.ai_family = AF_UNSPEC;
 	hint.ai_socktype = SOCK_STREAM;
 
-	/* Get the address info. */
+	// get the address info
 	if (getaddrinfo (PINGHOST, "http", &hint, &info) == 0 && info)
 	{
 		struct addrinfo *i;
 		int remote = -1;
 
-		/* Find a socket we like. */
+		// find a socket we like
 		for (i = info; i; i = i->ai_next)
 		{
 			remote = socket (i->ai_family, i->ai_socktype, 0);
 
 			if (remote != -1)
 			{
-				/* Make sure it's blocking. */
+				// make sure it's blocking
 				int flags = fcntl (remote, F_GETFL, 0);
 				flags &= ~O_NONBLOCK;
 				fcntl (remote, F_SETFL, flags);
 
-				/* Establish the connection! */
+				// establish the connection!
 				if (connect (remote, i->ai_addr, i->ai_addrlen) == 0)
 					break;
 
@@ -355,12 +355,12 @@ char *NET_GetPublicAddress ()
 			char *request = "GET / HTTP/1.0\r\nHost: " PINGHOST "\r\nUser-Agent: Quake\r\n\r\n";
 			int len = strlen (request);
 
-			/* Send the HTTP request! */
+			// send the request
 			if (send (remote, request, len, 0) != len + 1)
 			{
 				char response[1024];
 
-				/* Recieve the HTTP response! */
+				// wait for the response
 				len = recv (remote, response, sizeof (response) - 1, 0);
 
 				if (len != -1)
@@ -368,10 +368,10 @@ char *NET_GetPublicAddress ()
 					response[len] = '\0';
 					char *str = response;
 
-					/* Ensure the response is OK & then jump to the end of the header. */
+					// ensure the response is ok and then jump to the end of the header
 					if ((str = strstr (str, "200 OK")) && (str = strstr (str, "\r\n\r\n")))
 					{
-						/* We got our public IP address! */
+						// we got our address!
 						strcpy (net_public_adr, str + 4);
 					}
 				}

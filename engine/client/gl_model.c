@@ -498,8 +498,6 @@ static float RadiusFromBounds (vec3_t mins, vec3_t maxs)
 /*
 =================
 Mod_LoadSubmodels
-
-Toodles FIXME: This isn't really necessary.
 =================
 */
 static void Mod_LoadSubmodels (model_t *mod, lump_t *l)
@@ -523,18 +521,18 @@ static void Mod_LoadSubmodels (model_t *mod, lump_t *l)
 	{
 		if (i > 0)
 		{
-			/* Get the next cmodel_t to be filled. */
+			// get the next cmodel_t to be filled
 			sprintf (name, "*%i", i);
 			next = Mod_FindName (name, NULL);
 
-			/* Duplicate the basic information. */
+			// duplicate the basic information
 			*next = *out;
 			strcpy (next->name, name);
 
 			next->data = Hunk_AllocName (sizeof (mbrush_t), loadname);
 			*(mbrush_t *)next->data = *(mbrush_t *)out->data;
 
-			/* Switch it out. */
+			// switch it out
 			out = next;
 			bout = out->data;
 		}

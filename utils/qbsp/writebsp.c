@@ -465,7 +465,7 @@ void WriteMiptex (void)
 	{
 		l->dataofs[i] = data - (byte *)l;
 		len = LoadLump (miptex[i], data);
-		/*! Toodles TODO: Find a cleaner way of doing this. */
+		// TODO: find a cleaner way of doing this
 		if (notex)
 		{
 			((miptex_t *)data)->offsets[0] = 0;
