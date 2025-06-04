@@ -759,7 +759,7 @@ static void CL_ParseStaticSound (void)
 	vol = MSG_ReadByte ();
 	atten = MSG_ReadByte ();
 
-	S_StaticSound (cl.sound_precache[sound_num], org, vol, atten);
+	S_StaticSound (cl.sound_precache[sound_num], org, vol / 255.0f, atten);
 }
 
 /*
@@ -799,7 +799,7 @@ static void CL_ParseStartSoundPacket (void)
 	if (ent > MIN_EDICTS)
 		Host_Error ("CL_ParseStartSoundPacket: ent = %i", ent);
 
-	S_StartSound (ent, channel, cl.sound_precache[sound_num], pos, volume / 255.0, attenuation);
+	S_StartSound (ent, channel, cl.sound_precache[sound_num], pos, volume / 255.0f, attenuation);
 }
 
 /*
@@ -1209,7 +1209,7 @@ void CL_ParseServerMessage (void)
 			i = 1;
 			if (cl.serverprotocol == PROTOCOL_NETQUAKE)
 				i = MSG_ReadByte ();
-			CDAudio_Play ((byte)cl.cdtrack, i);
+			Music_Play (cl.cdtrack, i);
 			break;
 
 		case svc_intermission:
@@ -1305,9 +1305,9 @@ void CL_ParseServerMessage (void)
 		case svc_setpause:
 			cl.paused = MSG_ReadByte ();
 			if (cl.paused)
-				CDAudio_Pause ();
+				Music_Pause ();
 			else
-				CDAudio_Resume ();
+				Music_Resume ();
 			break;
 		}
 	}

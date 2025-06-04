@@ -275,10 +275,10 @@ static void IN_HandleEvent (SDL_Event *event, bool *warp_mouse)
 			if (cls.state == ca_active && !cls.demoplayback && key_dest == key_game)
 				M_ToggleMenu_f ();
 
-			S_BlockSound ();
+			S_SetSoundPaused (true);
 			break;
 		case SDL_WINDOWEVENT_FOCUS_GAINED:
-			S_UnblockSound ();
+			S_SetSoundPaused (false);
 			break;
 		}
 	}

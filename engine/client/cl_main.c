@@ -281,7 +281,7 @@ void CL_ClearState (void)
 {
 	int i;
 
-	S_StopAllSounds (true);
+	S_StopAllSounds ();
 
 	if (!Host_IsLocalGame ())
 		Host_ClearMemory ();
@@ -322,8 +322,8 @@ void CL_Disconnect (void)
 	connect_time = -1;
 
 	// stop sounds (especially looping!)
-	S_StopAllSounds (true);
-	CDAudio_Stop ();
+	S_StopAllSounds ();
+	Music_Stop ();
 
 	// if running a local server, shut it down
 	if (cls.demoplayback)
@@ -630,7 +630,7 @@ static void CL_Changing_f (void)
 	if (cls.download) // don't change when downloading
 		return;
 
-	S_StopAllSounds (true);
+	S_StopAllSounds ();
 	cl.intermission = 0;
 	cls.state = ca_connected; // not active anymore, but not disconnected
 	Con_Printf ("\nChanging map...\n");
@@ -648,7 +648,7 @@ void CL_Reconnect_f (void)
 	if (cls.download) // don't change when downloading
 		return;
 
-	S_StopAllSounds (true);
+	S_StopAllSounds ();
 
 	if (cls.state == ca_connected)
 	{

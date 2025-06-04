@@ -948,10 +948,7 @@ static void Mod_LoadBrushModel (model_t *mod, void *buffer, bool world)
 	Mod_LoadMarksurfaces (&header->lumps[LUMP_MARKSURFACES]);
 	Mod_LoadSubmodels (mod, &header->lumps[LUMP_MODELS]);
 
-	if (mod_version == BSPQUAKE)
-		S_AmbientOn ();
-	else
-		S_AmbientOff ();
+	S_SetAmbientActive (mod_version == BSPQUAKE);
 }
 
 /*

@@ -513,9 +513,9 @@ void Host_Frame (double time)
 		CL_DecayLights ();
 	}
 	else
-		S_Update (vec3_origin, vec3_origin, vec3_origin, vec3_origin);
+		S_Update (vec3_origin, (vec3_t){1, 0, 0}, (vec3_t){0, -1, 0}, (vec3_t){0, 0, 1});
 
-	CDAudio_Update ();
+	Music_Update ();
 
 	if (host_speeds.value)
 	{
@@ -610,7 +610,7 @@ void Host_Init (quakeparms_t *parms)
 		SCR_Init ();
 		R_Init ();
 		S_Init ();
-		CDAudio_Init ();
+		Music_Init ();
 		Sbar_Init ();
 		CL_Init ();
 	}
@@ -664,7 +664,7 @@ void Host_Shutdown (void)
 
 	Host_WriteConfiguration ();
 
-	CDAudio_Shutdown ();
+	Music_Shutdown ();
 	NET_Shutdown ();
 	S_Shutdown ();
 	IN_Shutdown ();

@@ -7,6 +7,9 @@ INSTALL_DIR ?= /opt/$(ENGINE_NAME)
 SDL_LIBS ?= $(shell pkg-config --libs sdl2)
 SDL_CFLAGS ?= $(shell pkg-config --cflags sdl2)
 
+AL_LIBS ?= $(shell pkg-config --libs openal)
+AL_CFLAGS ?= $(shell pkg-config --cflags openal)
+
 ifdef VERBOSE
 Q =
 else
@@ -48,7 +51,9 @@ ENGINE_COMMON_OBJ = $(patsubst %.c, %.o, $(ENGINE_COMMON_SRC))
 # ==============================================================
 
 ENGINE_CLIENT_SRC = \
-	engine/client/cd_vorbis.c \
+	engine/client/al_sound.c \
+	engine/client/al_vorbis.c \
+	engine/client/al_wave.c \
 	engine/client/chase.c \
 	engine/client/cl_cam.c \
 	engine/client/cl_demo.c \
@@ -77,10 +82,6 @@ ENGINE_CLIENT_SRC = \
 	engine/client/part.c \
 	engine/client/sbar.c \
 	engine/client/skin.c \
-	engine/client/snd_dma.c \
-	engine/client/snd_mem.c \
-	engine/client/snd_mix.c \
-	engine/client/snd_sdl.c \
 	engine/client/stb_vorbis.c \
 	engine/client/view.c \
 	engine/client/wad.c \
@@ -121,7 +122,7 @@ ENGINE_OBJ = \
 REL_ENGINE_OBJ = $(addprefix $(REL_DIR)/, $(ENGINE_OBJ))
 DBG_ENGINE_OBJ = $(addprefix $(DBG_DIR)/, $(ENGINE_OBJ))
 
-ENGINE_LIBS = -lm -lGL -ldl $(SDL_LIBS)
+ENGINE_LIBS = -lm -lGL -ldl $(SDL_LIBS) $(AL_LIBS)
 
 ENGINE_CFLAGS = \
 	-ffast-math \
@@ -132,6 +133,7 @@ ENGINE_CFLAGS = \
 	-Iengine/client \
 	-Iengine/server \
 	$(SDL_CFLAGS) \
+	$(AL_LIBS) \
 
 REL_ENGINE_CFLAGS = \
 	-O6 \

@@ -83,7 +83,7 @@ static void Host_ChangingLevel (void)
 
 	if (cls.state != ca_dedicated)
 	{
-		S_StopAllSounds (true);
+		S_StopAllSounds ();
 		cl.intermission = 0;
 		cls.state = ca_connected; // not active anymore, but not disconnected
 		Con_Printf ("\nChanging map...\n");

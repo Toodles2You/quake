@@ -19,7 +19,7 @@
 #include "console.h"
 #include "view.h"
 #include "menu.h"
-#include "cdaudio.h"
+#include "music.h"
 #include "gl_model.h"
 #include "glquake.h"
 
