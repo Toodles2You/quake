@@ -20,84 +20,85 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "clientdef.h"
 
-char *svc_strings[] = {"svc_bad",
-					   "svc_nop",
-					   "svc_disconnect",
-					   "svc_updatestat",
-					   "svc_version",
-					   "svc_setview",
-					   "svc_sound",
-					   "svc_time",
-					   "svc_print",
-					   "svc_stufftext",
+static const char *const svc_strings[] = {
+	"svc_bad",
+	"svc_nop",
+	"svc_disconnect",
+	"svc_updatestat",
+	"svc_version",
+	"svc_setview",
+	"svc_sound",
+	"svc_time",
+	"svc_print",
+	"svc_stufftext",
 
-					   "svc_setangle",
+	"svc_setangle",
 
-					   "svc_serverdata",
-					   "svc_lightstyle",
-					   "svc_updatename",
-					   "svc_updatefrags",
-					   "svc_clientdata",
-					   "svc_stopsound",
-					   "svc_updatecolors",
-					   "svc_particle",
-					   "svc_damage",
+	"svc_serverdata",
+	"svc_lightstyle",
+	"svc_updatename",
+	"svc_updatefrags",
+	"svc_clientdata",
+	"svc_stopsound",
+	"svc_updatecolors",
+	"svc_particle",
+	"svc_damage",
 
-					   "svc_spawnstatic",
-					   "svc_spawnbinary",
-					   "svc_spawnbaseline",
+	"svc_spawnstatic",
+	"svc_spawnbinary",
+	"svc_spawnbaseline",
 
-					   "svc_temp_entity",
-					   "svc_setpause",
-					   "svc_signonnum",
-					   "svc_centerprint",
-					   "svc_killedmonster",
-					   "svc_foundsecret",
-					   "svc_spawnstaticsound",
-					   "svc_intermission",
-					   "svc_finale",
+	"svc_temp_entity",
+	"svc_setpause",
+	"svc_signonnum",
+	"svc_centerprint",
+	"svc_killedmonster",
+	"svc_foundsecret",
+	"svc_spawnstaticsound",
+	"svc_intermission",
+	"svc_finale",
 
-					   "svc_cdtrack",
-					   "svc_sellscreen",
+	"svc_cdtrack",
+	"svc_sellscreen",
 
-					   "svc_smallkick",
-					   "svc_bigkick",
+	"svc_smallkick",
+	"svc_bigkick",
 
-					   "svc_updateping",
-					   "svc_updateentertime",
+	"svc_updateping",
+	"svc_updateentertime",
 
-					   "svc_updatestatlong",
-					   "svc_muzzleflash",
-					   "svc_updateuserinfo",
-					   "svc_download",
-					   "svc_playerinfo",
-					   "svc_nails",
-					   "svc_choke",
-					   "svc_modellist",
-					   "svc_soundlist",
-					   "svc_packetentities",
-					   "svc_deltapacketentities",
-					   "svc_maxspeed",
-					   "svc_entgravity",
+	"svc_updatestatlong",
+	"svc_muzzleflash",
+	"svc_updateuserinfo",
+	"svc_download",
+	"svc_playerinfo",
+	"svc_nails",
+	"svc_choke",
+	"svc_modellist",
+	"svc_soundlist",
+	"svc_packetentities",
+	"svc_deltapacketentities",
+	"svc_maxspeed",
+	"svc_entgravity",
 
-					   "svc_setinfo",
-					   "svc_serverinfo",
-					   "svc_updatepl",
-					   "NEW PROTOCOL",
-					   "NEW PROTOCOL",
-					   "NEW PROTOCOL",
-					   "NEW PROTOCOL",
-					   "NEW PROTOCOL",
-					   "NEW PROTOCOL",
-					   "NEW PROTOCOL",
-					   "NEW PROTOCOL",
-					   "NEW PROTOCOL",
-					   "NEW PROTOCOL",
-					   "NEW PROTOCOL",
-					   "NEW PROTOCOL",
-					   "NEW PROTOCOL"};
+	"svc_setinfo",
+	"svc_serverinfo",
+	"svc_updatepl",
+	"NEW PROTOCOL",
+	"NEW PROTOCOL",
+	"NEW PROTOCOL",
+	"NEW PROTOCOL",
+	"NEW PROTOCOL",
+	"NEW PROTOCOL",
+	"NEW PROTOCOL",
+	"NEW PROTOCOL",
+	"NEW PROTOCOL",
+	"NEW PROTOCOL",
+	"NEW PROTOCOL",
+	"NEW PROTOCOL",
+	"NEW PROTOCOL",
+};
 
-int oldparsecountmod;
 int parsecountmod;
 double parsecounttime;
 
@@ -191,11 +192,6 @@ bool CL_CheckOrDownloadFile (char *filename)
 	return false;
 }
 
-/*
-=================
-Model_NextDownload
-=================
-*/
 static void Model_NextDownload (void)
 {
 	char *s;
@@ -247,11 +243,6 @@ static void Model_NextDownload (void)
 	MSG_WriteString (&cls.netchan.message, va (prespawn_name, cl.servercount, cl.cmodel_precache[1]->checksum2));
 }
 
-/*
-=================
-Sound_NextDownload
-=================
-*/
 static void Sound_NextDownload (void)
 {
 	char *s;
@@ -289,11 +280,6 @@ static void Sound_NextDownload (void)
 	MSG_WriteString (&cls.netchan.message, va (modellist_name, cl.servercount, 0));
 }
 
-/*
-======================
-CL_RequestNextDownload
-======================
-*/
 static void CL_RequestNextDownload (void)
 {
 	switch (cls.downloadtype)
@@ -490,13 +476,6 @@ void CL_StartUpload (byte *data, int size)
 	CL_NextUpload ();
 }
 
-bool CL_IsUploading (void)
-{
-	if (upload_data)
-		return true;
-	return false;
-}
-
 void CL_StopUpload (void)
 {
 	if (upload_data)
@@ -504,11 +483,6 @@ void CL_StopUpload (void)
 	upload_data = NULL;
 }
 
-/*
-==================
-CL_ParseServerData
-==================
-*/
 static void CL_ParseServerData (void)
 {
 	char *str;
@@ -553,10 +527,8 @@ static void CL_ParseServerData (void)
 		if ((f = fopen (fn, "r")) != NULL)
 		{
 			fclose (f);
-			Cbuf_AddText (src_client, "cl_warncmd 0\n");
 			Cbuf_AddText (src_client, "exec config.cfg\n");
 			Cbuf_AddText (src_client, "exec frontend.cfg\n");
-			Cbuf_AddText (src_client, "cl_warncmd 1\n");
 		}
 	}
 
@@ -598,11 +570,6 @@ static void CL_ParseServerData (void)
 	cls.state = ca_onserver;
 }
 
-/*
-==================
-CL_ParseSoundList
-==================
-*/
 static void CL_ParseSoundList (void)
 {
 	int numsounds;
@@ -640,11 +607,6 @@ static void CL_ParseSoundList (void)
 	Sound_NextDownload ();
 }
 
-/*
-==================
-CL_ParseModelList
-==================
-*/
 static void CL_ParseModelList (void)
 {
 	int nummodels;
@@ -687,11 +649,6 @@ static void CL_ParseModelList (void)
 	Model_NextDownload ();
 }
 
-/*
-==================
-CL_ParseBaseline
-==================
-*/
 static void CL_ParseBaseline (entity_state_t *es)
 {
 	int i;
@@ -741,11 +698,6 @@ static void CL_ParseStatic (void)
 	R_AddEfrags (ent);
 }
 
-/*
-===================
-CL_ParseStaticSound
-===================
-*/
 static void CL_ParseStaticSound (void)
 {
 	vec3_t org;
@@ -761,11 +713,6 @@ static void CL_ParseStaticSound (void)
 	S_StaticSound (cl.sound_precache[sound_num], org, vol / 255.0f, atten);
 }
 
-/*
-==================
-CL_ParseStartSoundPacket
-==================
-*/
 static void CL_ParseStartSoundPacket (void)
 {
 	vec3_t pos;
@@ -815,7 +762,6 @@ static void CL_ParseClientdata (void)
 	frame_t *frame;
 
 	// calculate simulated time of message
-	oldparsecountmod = parsecountmod;
 
 	i = cls.netchan.incoming_acknowledged;
 	cl.parsecount = i;
@@ -843,12 +789,7 @@ static void CL_ParseClientdata (void)
 	}
 }
 
-/*
-=====================
-CL_NewTranslation
-=====================
-*/
-void CL_NewTranslation (int slot)
+static void CL_NewTranslation (int slot)
 {
 	if (slot > MAX_CLIENTS)
 		Sys_Error ("CL_NewTranslation: slot > MAX_CLIENTS");
@@ -856,11 +797,6 @@ void CL_NewTranslation (int slot)
 	R_TranslatePlayerSkin (slot);
 }
 
-/*
-==============
-CL_ProcessUserInfo
-==============
-*/
 static void CL_ProcessUserInfo (int slot, player_info_t *player)
 {
 	strncpy (player->name, Info_ValueForKey (player->userinfo, "name"), sizeof (player->name) - 1);
@@ -881,11 +817,6 @@ static void CL_ProcessUserInfo (int slot, player_info_t *player)
 	CL_NewTranslation (slot);
 }
 
-/*
-==============
-CL_UpdateUserinfo
-==============
-*/
 static void CL_UpdateUserinfo (void)
 {
 	int slot;
@@ -902,11 +833,6 @@ static void CL_UpdateUserinfo (void)
 	CL_ProcessUserInfo (slot, player);
 }
 
-/*
-==============
-CL_SetInfo
-==============
-*/
 static void CL_SetInfo (void)
 {
 	int slot;
@@ -932,11 +858,6 @@ static void CL_SetInfo (void)
 	CL_ProcessUserInfo (slot, player);
 }
 
-/*
-==============
-CL_ServerInfo
-==============
-*/
 static void CL_ServerInfo (void)
 {
 	int slot;
@@ -954,11 +875,6 @@ static void CL_ServerInfo (void)
 	Info_SetValueForKey (cl.serverinfo, key, value, MAX_SERVERINFO_STRING, true);
 }
 
-/*
-=====================
-CL_SetStat
-=====================
-*/
 static void CL_SetStat (int stat, int value)
 {
 	int j;
@@ -978,11 +894,6 @@ static void CL_SetStat (int stat, int value)
 	cl.stats[stat] = value;
 }
 
-/*
-==============
-CL_MuzzleFlash
-==============
-*/
 static void CL_MuzzleFlash (void)
 {
 	vec3_t fv, rv, uv;
@@ -993,10 +904,6 @@ static void CL_MuzzleFlash (void)
 	i = MSG_ReadShort ();
 
 	if ((unsigned)(i - 1) >= MAX_CLIENTS)
-		return;
-
-	// don't draw our own muzzle flash in gl if flashblending
-	if (i - 1 == cl.playernum && gl_flashblend.value)
 		return;
 
 	pl = &cl.frames[parsecountmod].playerstate[i - 1];
@@ -1019,11 +926,6 @@ static void CL_MuzzleFlash (void)
 	if (cl_shownet.value == 2)                                                                                                                                 \
 		Con_Printf ("%3i:%s\n", msg_readcount - 1, x);
 
-/*
-=====================
-CL_ParseServerMessage
-=====================
-*/
 void CL_ParseServerMessage (void)
 {
 	int cmd;

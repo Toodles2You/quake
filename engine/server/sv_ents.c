@@ -298,7 +298,7 @@ static void SV_EmitPacketEntities (client_t *client, packet_entities_t *to, size
 
 		if (newnum < oldnum)
 		{ // this is a new entity, send it from the baseline
-			ent = EDICT_NUM (newnum);
+			ent = ED_GetNum (newnum);
 			//Con_Printf ("baseline %i\n", newnum);
 			SV_WriteDelta (&ent->baseline, &to->entities[newindex], msg, true);
 			newindex++;
@@ -317,11 +317,6 @@ static void SV_EmitPacketEntities (client_t *client, packet_entities_t *to, size
 	MSG_WriteShort (msg, 0); // end of packetentities
 }
 
-/*
-=============
-SV_WritePlayersToClient
-=============
-*/
 static void SV_WritePlayersToClient (client_t *client, edict_t *clent, byte *pvs, sizebuf_t *msg)
 {
 	int i, j;
@@ -436,11 +431,6 @@ static void SV_WritePlayersToClient (client_t *client, edict_t *clent, byte *pvs
 	}
 }
 
-/*
-=============
-SV_SendCompatibilityMessages
-=============
-*/
 void SV_SendCompatibilityMessages (void)
 {
 	int e;
@@ -471,7 +461,7 @@ void SV_SendCompatibilityMessages (void)
 		if ((int)ed_float (ent, effects) & EF_MUZZLEFLASH)
 		{
 			MSG_WriteByte (&sv.multicast, svc_muzzleflash);
-			MSG_WriteShort (&sv.multicast, NUM_FOR_EDICT (ent));
+			MSG_WriteShort (&sv.multicast, ED_ForNum (ent));
 
 			SV_Multicast (ed_vector (ent, origin), MULTICAST_PVS);
 
@@ -480,18 +470,13 @@ void SV_SendCompatibilityMessages (void)
 	}
 }
 
-/*
-=============
-SV_CleanupEnts
-=============
-*/
 void SV_CleanupEnts (void)
 {
 	int e;
 	edict_t *ent;
 
 	// clear non-player muzzle flashes
-	for (e = MAX_CLIENTS + 1, ent = EDICT_NUM (e); e < sv.num_edicts; e++, ent = NEXT_EDICT (ent))
+	for (e = MAX_CLIENTS + 1, ent = ED_GetNum (e); e < sv.num_edicts; e++, ent = NEXT_EDICT (ent))
 		ed_float (ent, effects) = (int)ed_float (ent, effects) & ~EF_MUZZLEFLASH;
 }
 
@@ -533,7 +518,7 @@ void SV_WriteEntitiesToClient (client_t *client, sizebuf_t *msg)
 
 	numnails = 0;
 
-	for (e = MAX_CLIENTS + 1, ent = EDICT_NUM (e); e < sv.num_edicts; e++, ent = NEXT_EDICT (ent))
+	for (e = MAX_CLIENTS + 1, ent = ED_GetNum (e); e < sv.num_edicts; e++, ent = NEXT_EDICT (ent))
 	{
 		// don't send if flagged for NODRAW and there are no lighting effects
 		if (ed_float (ent, effects) == EF_NODRAW)

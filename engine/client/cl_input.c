@@ -20,7 +20,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "clientdef.h"
 
-cvar_t cl_nodelta = {"cl_nodelta", "0"};
+static cvar_t cl_nodelta = {"cl_nodelta", "0"};
 
 /*
 ===============================================================================
@@ -43,11 +43,14 @@ state bit 2 is edge triggered on the down to up transition
 ===============================================================================
 */
 
-kbutton_t in_mlook, in_klook;
-kbutton_t in_left, in_right, in_forward, in_back;
-kbutton_t in_lookup, in_lookdown, in_moveleft, in_moveright;
-kbutton_t in_strafe, in_speed, in_use, in_jump, in_attack;
-kbutton_t in_up, in_down;
+kbutton_t in_mlook;
+kbutton_t in_strafe;
+
+static kbutton_t in_klook;
+static kbutton_t in_left, in_right, in_forward, in_back;
+static kbutton_t in_lookup, in_lookdown, in_moveleft, in_moveright;
+static kbutton_t in_speed, in_use, in_jump, in_attack;
+static kbutton_t in_up, in_down;
 
 static int in_impulse;
 
@@ -114,96 +117,119 @@ static void IN_KLookDown (void)
 {
 	KeyDown (&in_klook);
 }
+
 static void IN_KLookUp (void)
 {
 	KeyUp (&in_klook);
 }
+
 static void IN_MLookDown (void)
 {
 	KeyDown (&in_mlook);
 }
+
 static void IN_MLookUp (void)
 {
 	KeyUp (&in_mlook);
 	if (!(in_mlook.state & 1) && lookspring.value)
 		V_StartPitchDrift ();
 }
+
 static void IN_UpDown (void)
 {
 	KeyDown (&in_up);
 }
+
 static void IN_UpUp (void)
 {
 	KeyUp (&in_up);
 }
+
 static void IN_DownDown (void)
 {
 	KeyDown (&in_down);
 }
+
 static void IN_DownUp (void)
 {
 	KeyUp (&in_down);
 }
+
 static void IN_LeftDown (void)
 {
 	KeyDown (&in_left);
 }
+
 static void IN_LeftUp (void)
 {
 	KeyUp (&in_left);
 }
+
 static void IN_RightDown (void)
 {
 	KeyDown (&in_right);
 }
+
 static void IN_RightUp (void)
 {
 	KeyUp (&in_right);
 }
+
 static void IN_ForwardDown (void)
 {
 	KeyDown (&in_forward);
 }
+
 static void IN_ForwardUp (void)
 {
 	KeyUp (&in_forward);
 }
+
 static void IN_BackDown (void)
 {
 	KeyDown (&in_back);
 }
+
 static void IN_BackUp (void)
 {
 	KeyUp (&in_back);
 }
+
 static void IN_LookupDown (void)
 {
 	KeyDown (&in_lookup);
 }
+
 static void IN_LookupUp (void)
 {
 	KeyUp (&in_lookup);
 }
+
 static void IN_LookdownDown (void)
 {
 	KeyDown (&in_lookdown);
 }
+
 static void IN_LookdownUp (void)
 {
 	KeyUp (&in_lookdown);
 }
+
 static void IN_MoveleftDown (void)
 {
 	KeyDown (&in_moveleft);
 }
+
 static void IN_MoveleftUp (void)
 {
 	KeyUp (&in_moveleft);
 }
+
 static void IN_MoverightDown (void)
 {
 	KeyDown (&in_moveright);
 }
+
 static void IN_MoverightUp (void)
 {
 	KeyUp (&in_moveright);
@@ -213,14 +239,17 @@ static void IN_SpeedDown (void)
 {
 	KeyDown (&in_speed);
 }
+
 static void IN_SpeedUp (void)
 {
 	KeyUp (&in_speed);
 }
+
 static void IN_StrafeDown (void)
 {
 	KeyDown (&in_strafe);
 }
+
 static void IN_StrafeUp (void)
 {
 	KeyUp (&in_strafe);
@@ -230,6 +259,7 @@ static void IN_AttackDown (void)
 {
 	KeyDown (&in_attack);
 }
+
 static void IN_AttackUp (void)
 {
 	KeyUp (&in_attack);
@@ -239,14 +269,17 @@ static void IN_UseDown (void)
 {
 	KeyDown (&in_use);
 }
+
 static void IN_UseUp (void)
 {
 	KeyUp (&in_use);
 }
+
 static void IN_JumpDown (void)
 {
 	KeyDown (&in_jump);
 }
+
 static void IN_JumpUp (void)
 {
 	KeyUp (&in_jump);
@@ -412,11 +445,6 @@ static int MakeChar (int i)
 	return i;
 }
 
-/*
-==============
-CL_FinishMove
-==============
-*/
 static void CL_FinishMove (usercmd_t *cmd)
 {
 	int i;
@@ -461,11 +489,6 @@ static void CL_FinishMove (usercmd_t *cmd)
 		cmd->angles[i] = ((int)(cmd->angles[i] * 65536.0 / 360) & 65535) * (360.0 / 65536.0);
 }
 
-/*
-=================
-CL_SendCmd
-=================
-*/
 void CL_SendCmd (void)
 {
 	sizebuf_t buf;
@@ -557,11 +580,6 @@ void CL_SendCmd (void)
 	Netchan_Transmit (&cls.netchan, buf.cursize, buf.data);
 }
 
-/*
-============
-CL_InitInput
-============
-*/
 void CL_InitInput (void)
 {
 	Cmd_AddCommand (src_client, "+moveup", IN_UpDown);

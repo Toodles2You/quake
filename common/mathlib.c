@@ -23,8 +23,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 vec3_t vec3_origin = {0, 0, 0};
 int nanmask = 255 << 23;
 
-/*-----------------------------------------------------------------*/
-
 void ProjectPointOnPlane (vec3_t dst, const vec3_t p, const vec3_t normal)
 {
 	float d;
@@ -78,8 +76,6 @@ void PerpendicularVector (vec3_t dst, const vec3_t src)
 	*/
 	VectorNormalize (dst);
 }
-
-/*-----------------------------------------------------------------*/
 
 float anglemod (float a)
 {

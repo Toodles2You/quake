@@ -20,11 +20,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "clientdef.h"
 
-/*
-==================
-R_InitTextures
-==================
-*/
+int skytexturenum;
+
 void R_InitTextures (void)
 {
 	int x, y, m;
@@ -53,11 +50,12 @@ void R_InitTextures (void)
 	}
 }
 
-byte dottexture[8][8] = {
+static const byte dottexture[8][8] = {
 	{1, 1, 1, 1, 0, 0, 0, 0}, {1, 1, 1, 1, 0, 0, 0, 0}, {1, 1, 1, 1, 0, 0, 0, 0}, {1, 1, 1, 1, 0, 0, 0, 0},
 	{0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0}, {0, 0, 0, 0, 0, 0, 0, 0},
 };
-void R_InitParticleTexture (void)
+
+static void R_InitParticleTexture (void)
 {
 	int x, y;
 	byte data[8][8][4];
@@ -78,7 +76,7 @@ void R_InitParticleTexture (void)
 			data[y][x][3] = dottexture[x][y] * 255;
 		}
 	}
-	glTexImage2D (GL_TEXTURE_2D, 0, gl_alpha_format, 8, 8, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
+	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA, 8, 8, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
 
 	glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 
@@ -86,17 +84,9 @@ void R_InitParticleTexture (void)
 	glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
 }
 
-/*
-===============
-R_Init
-===============
-*/
 void R_Init (void)
 {
 	extern cvar_t gl_finish;
-
-	Cmd_AddCommand (src_client, "timerefresh", R_TimeRefresh_f);
-	Cmd_AddCommand (src_client, "pointfile", R_ReadPointFile_f);
 
 	Cvar_RegisterVariable (src_client, &r_norefresh);
 	Cvar_RegisterVariable (src_client, &r_lightmap);
@@ -118,19 +108,15 @@ void R_Init (void)
 	Cvar_RegisterVariable (src_client, &gl_texsort);
 
 	if (gl_mtexable)
-		Cvar_SetValue (src_client, "gl_texsort", 0.0);
+		Cvar_SetValue (src_client, "gl_texsort", 0);
 
-	Cvar_RegisterVariable (src_client, &gl_cull);
 	Cvar_RegisterVariable (src_client, &gl_smoothmodels);
 	Cvar_RegisterVariable (src_client, &gl_affinemodels);
 	Cvar_RegisterVariable (src_client, &gl_polyblend);
-	Cvar_RegisterVariable (src_client, &gl_flashblend);
 	Cvar_RegisterVariable (src_client, &gl_playermip);
 	Cvar_RegisterVariable (src_client, &gl_nocolors);
 	Cvar_RegisterVariable (src_client, &gl_keeptjunctions);
 	Cvar_RegisterVariable (src_client, &gl_partblend);
-
-	R_InitBubble ();
 
 	R_InitParticles ();
 	R_InitParticleTexture ();
@@ -260,7 +246,7 @@ void R_TranslatePlayerSkin (int playernum)
 			}
 		}
 
-		glTexImage2D (GL_TEXTURE_2D, 0, gl_solid_format, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
+		glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
 
 		glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 		glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_max);
@@ -268,11 +254,6 @@ void R_TranslatePlayerSkin (int playernum)
 	}
 }
 
-/*
-===============
-R_NewMap
-===============
-*/
 void R_NewMap (void)
 {
 	int i;
@@ -303,35 +284,4 @@ void R_NewMap (void)
 			skytexturenum = i;
 		BMODEL (cl.worldmodel)->textures[i]->texturechain = NULL;
 	}
-}
-
-/*
-====================
-R_TimeRefresh_f
-
-For program optimization
-====================
-*/
-void R_TimeRefresh_f (void)
-{
-	int i;
-	float start, stop, time;
-
-	glDrawBuffer (GL_FRONT);
-	glFinish ();
-
-	start = Sys_FloatTime ();
-	for (i = 0; i < 128; i++)
-	{
-		r_refdef.viewangles[1] = i / 128.0 * 360.0;
-		R_RenderView ();
-	}
-
-	glFinish ();
-	stop = Sys_FloatTime ();
-	time = stop - start;
-	Con_Printf ("%f seconds (%f fps)\n", time, 128 / time);
-
-	glDrawBuffer (GL_BACK);
-	GL_EndRendering ();
 }

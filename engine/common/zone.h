@@ -73,8 +73,6 @@ void Z_Free (void *ptr);
 void *Z_Malloc (size_t size); // returns 0 filled memory
 void *Z_TagMalloc (size_t size, size_t tag);
 
-void Z_CheckHeap (void);
-
 void *Hunk_Alloc (size_t size); // returns 0 filled memory
 void *Hunk_AllocName (size_t size, char *name);
 

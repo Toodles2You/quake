@@ -22,13 +22,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "clientdef.h"
 
 static cvar_t *cvar_vars[2];
-char *cvar_null_string = "";
+static char *const cvar_null_string = "";
 
-/*
-============
-Cvar_FindVar
-============
-*/
 cvar_t *Cvar_FindVar (cmd_source_e src, char *var_name)
 {
 	cvar_t *var;
@@ -40,11 +35,6 @@ cvar_t *Cvar_FindVar (cmd_source_e src, char *var_name)
 	return NULL;
 }
 
-/*
-============
-Cvar_VariableValue
-============
-*/
 float Cvar_VariableValue (cmd_source_e src, char *var_name)
 {
 	cvar_t *var;
@@ -55,11 +45,6 @@ float Cvar_VariableValue (cmd_source_e src, char *var_name)
 	return atof (var->string);
 }
 
-/*
-============
-Cvar_VariableString
-============
-*/
 char *Cvar_VariableString (cmd_source_e src, char *var_name)
 {
 	cvar_t *var;
@@ -87,11 +72,6 @@ static void Cvar_GetBestVariable (cmd_source_e src, char *partial, int len, char
 	}
 }
 
-/*
-============
-Cvar_CompleteVariable
-============
-*/
 char *Cvar_CompleteVariable (cmd_source_e src, char *partial)
 {
 	int len;
@@ -115,11 +95,6 @@ char *Cvar_CompleteVariable (cmd_source_e src, char *partial)
 
 void SV_SendServerInfoChange (char *key, char *value);
 
-/*
-============
-Cvar_Set
-============
-*/
 void Cvar_Set (cmd_source_e src, char *var_name, char *value)
 {
 	cvar_t *var;
@@ -160,11 +135,6 @@ void Cvar_Set (cmd_source_e src, char *var_name, char *value)
 		SV_BroadcastPrintf (PRINT_HIGH, "\"%s\" changed to \"%s\"\n", var->name, var->string);
 }
 
-/*
-============
-Cvar_SetValue
-============
-*/
 void Cvar_SetValue (cmd_source_e src, char *var_name, float value)
 {
 	char val[32];

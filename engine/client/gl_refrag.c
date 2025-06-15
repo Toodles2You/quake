@@ -20,10 +20,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "clientdef.h"
 
-mnode_t *r_pefragtopnode;
-
-//===========================================================================
-
 /*
 ===============================================================================
 
@@ -32,11 +28,10 @@ mnode_t *r_pefragtopnode;
 ===============================================================================
 */
 
-efrag_t **lastlink;
-
-vec3_t r_emins, r_emaxs;
-
-entity_t *r_addent;
+static mnode_t *r_pefragtopnode;
+static efrag_t **lastlink;
+static vec3_t r_emins, r_emaxs;
+static entity_t *r_addent;
 
 /*
 ================
@@ -79,12 +74,7 @@ void R_RemoveEfrags (entity_t *ent)
 	ent->efrag = NULL;
 }
 
-/*
-===================
-R_SplitEntityOnNode
-===================
-*/
-void R_SplitEntityOnNode (mnode_t *node)
+static void R_SplitEntityOnNode (mnode_t *node)
 {
 	efrag_t *ef;
 	mplane_t *splitplane;
@@ -148,11 +138,6 @@ void R_SplitEntityOnNode (mnode_t *node)
 		R_SplitEntityOnNode (node->children[1]);
 }
 
-/*
-===========
-R_AddEfrags
-===========
-*/
 void R_AddEfrags (entity_t *ent)
 {
 	model_t *entmodel;

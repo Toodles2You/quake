@@ -29,12 +29,6 @@ char localmodels[MAX_MODELS][5]; // inline model names for precache
 
 char localinfo[MAX_LOCALINFO_STRING + 1]; // local game info
 
-/*
-================
-SV_ModelIndex
-
-================
-*/
 int SV_ModelIndex (char *name)
 {
 	int i;
@@ -57,7 +51,7 @@ SV_FlushSignon
 Moves to the next signon buffer if needed
 ================
 */
-void SV_FlushSignon (void)
+static void SV_FlushSignon (void)
 {
 	if (sv.signon.cursize < sv.signon.maxsize - 512)
 		return;
@@ -80,7 +74,7 @@ to the clients -- only the fields that differ from the
 baseline will be transmitted
 ================
 */
-void SV_CreateBaseline (void)
+static void SV_CreateBaseline (void)
 {
 	int i;
 	edict_t *svent;
@@ -88,7 +82,7 @@ void SV_CreateBaseline (void)
 
 	for (entnum = 0; entnum < sv.num_edicts; entnum++)
 	{
-		svent = EDICT_NUM (entnum);
+		svent = ED_GetNum (entnum);
 		if (svent->free)
 			continue;
 		// create baselines for all player slots,
@@ -399,7 +393,7 @@ void SV_SpawnServer (char *server, char *startspot)
 	sv.num_edicts = MAX_CLIENTS + 1;
 	for (i = 0; i < MAX_CLIENTS; i++)
 	{
-		ent = EDICT_NUM (i + 1);
+		ent = ED_GetNum (i + 1);
 		svs.clients[i].edict = ent;
 		// ZOID - make sure we update frags right
 		svs.clients[i].old_frags = 0;
@@ -433,7 +427,7 @@ void SV_SpawnServer (char *server, char *startspot)
 	// map initialization
 	sv.state = ss_loading;
 
-	ent = EDICT_NUM (0);
+	ent = ED_GetNum (0);
 	ent->free = false;
 	ed_set_string (ent, model, sv.worldmodel->name);
 	ed_float (ent, modelindex) = 1; // world model

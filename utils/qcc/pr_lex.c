@@ -396,8 +396,7 @@ void PR_LexGrab (void)
 	else if (!strcmp (pr_token, "cd") || !strcmp (pr_token, "origin") || !strcmp (pr_token, "base") || !strcmp (pr_token, "flags") ||
 			 !strcmp (pr_token, "scale") || !strcmp (pr_token, "skin"))
 	{ // skip to end of line
-		while (PR_SimpleGetToken ())
-			;
+		while (PR_SimpleGetToken ());
 		PR_Lex ();
 	}
 	// look for a frame name macro

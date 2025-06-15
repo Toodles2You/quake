@@ -290,7 +290,6 @@ extern cvar_t cl_pitchspeed;
 extern cvar_t cl_anglespeedkey;
 
 extern cvar_t cl_shownet;
-extern cvar_t cl_nolerp;
 extern cvar_t cl_sbar;
 extern cvar_t cl_maxfps;
 extern cvar_t cl_showfps;
@@ -332,7 +331,6 @@ void Host_WriteConfiguration (void);
 void CL_Disconnect (void);
 void CL_Disconnect_f (void);
 void CL_NextDemo (void);
-void CL_Reconnect_f (void);
 
 void CL_CheckForResend (void);
 void CL_BeginServerConnect (void);
@@ -353,9 +351,8 @@ typedef struct
 	int state;	 // low bit is down state
 } kbutton_t;
 
-extern kbutton_t in_mlook, in_klook;
+extern kbutton_t in_mlook;
 extern kbutton_t in_strafe;
-extern kbutton_t in_speed;
 
 void CL_InitInput (void);
 void CL_SendCmd (void);
@@ -390,9 +387,7 @@ void CL_TimeDemo_f (void);
 extern int packet_latency[NET_TIMINGS];
 int CL_CalcNet (void);
 void CL_ParseServerMessage (void);
-void CL_NewTranslation (int slot);
 bool CL_CheckOrDownloadFile (char *filename);
-bool CL_IsUploading (void);
 void CL_NextUpload (void);
 void CL_StartUpload (byte *data, int size);
 void CL_StopUpload (void);
@@ -443,7 +438,6 @@ enum
 	CAM_TRACK,
 };
 
-extern int autocam;
 extern int spec_track; // player# of who we are tracking
 
 bool Cam_DrawViewModel (void);

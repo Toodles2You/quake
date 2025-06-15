@@ -49,7 +49,7 @@ typedef struct client_s
 	float maxspeed;	  // localized maxspeed
 	float entgravity; // localized ent gravity
 
-	edict_t *edict;	  // EDICT_NUM(clientnum+1)
+	edict_t *edict;	  // ED_GetNum(clientnum+1)
 	char name[32];	  // for printing to other people
 					  // extracted from userinfo
 	int messagelevel; // for filtering printed messages
@@ -352,9 +352,6 @@ void SV_MoveToGoal (void);
 
 void SV_SaveSpawnparms (void);
 
-void SV_Physics_Client (edict_t *ent);
-
-void SV_ExecuteUserCommand (char *s);
 void SV_InitOperatorCommands (void);
 
 void SV_SendServerinfo (client_t *client);
@@ -368,19 +365,14 @@ void Master_Shutdown (void);
 // sv_init.c
 //
 void SV_SpawnServer (char *server, char *startspot);
-void SV_FlushSignon (void);
 
 //
 // sv_phys.c
 //
 void SV_ProgStartFrame (void);
 void SV_Physics (void);
-void SV_CheckVelocity (edict_t *ent);
-void SV_AddGravity (edict_t *ent, float scale);
 bool SV_RunThink (edict_t *ent);
-void SV_Physics_Toss (edict_t *ent);
 void SV_RunNewmis (void);
-void SV_Impact (edict_t *e1, edict_t *e2);
 void SV_SetMoveVars (void);
 
 //
@@ -407,11 +399,6 @@ void SV_EndRedirect (void);
 void SV_ExecuteClientMessage (client_t *cl);
 void SV_UserInit (void);
 void SV_TogglePause (const char *msg);
-
-//
-// sv_ccmds.c
-//
-void SV_Status_f (void);
 
 //
 // sv_ents.c

@@ -21,21 +21,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "bothdef.h"
 
 void Draw_BeginDisc (void);
-void Draw_EndDisc (void);
 
 usercmd_t nullcmd; // guarenteed to be zero
-
-#define MAX_NUM_ARGVS 50
-#define NUM_SAFE_ARGVS 5
-
-static char *largv[MAX_NUM_ARGVS + NUM_SAFE_ARGVS + 1];
-static char *argvdummy = " ";
-
-static char *safeargvs[NUM_SAFE_ARGVS] = {
-	"-nolan", "-nosound", "-nocdaudio", "-nojoy", "-nomouse",
-};
-
-static void COM_InitFilesystem (void);
 
 char com_token[1024];
 int com_argc;
@@ -48,28 +35,46 @@ bool hipnotic;
 char gamedirfile[MAX_OSPATH];
 
 #ifdef QUAKE_REGISTERED
+
+bool static_registered; // only for startup check, then set
+
 // if a packfile directory differs from this, it is assumed to be hacked
 #define PAK0_COUNT 339
 #define PAK0_CRC 32981
 
 // this graphic needs to be in the pak file to use registered features
-static unsigned short pop[] = {0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x6600, 0x0000, 0x0000, 0x0000, 0x6600, 0x0000,
-							   0x0000, 0x0066, 0x0000, 0x0000, 0x0000, 0x0000, 0x0067, 0x0000, 0x0000, 0x6665, 0x0000, 0x0000, 0x0000, 0x0000, 0x0065, 0x6600,
-							   0x0063, 0x6561, 0x0000, 0x0000, 0x0000, 0x0000, 0x0061, 0x6563, 0x0064, 0x6561, 0x0000, 0x0000, 0x0000, 0x0000, 0x0061, 0x6564,
-							   0x0064, 0x6564, 0x0000, 0x6469, 0x6969, 0x6400, 0x0064, 0x6564, 0x0063, 0x6568, 0x6200, 0x0064, 0x6864, 0x0000, 0x6268, 0x6563,
-							   0x0000, 0x6567, 0x6963, 0x0064, 0x6764, 0x0063, 0x6967, 0x6500, 0x0000, 0x6266, 0x6769, 0x6a68, 0x6768, 0x6a69, 0x6766, 0x6200,
-							   0x0000, 0x0062, 0x6566, 0x6666, 0x6666, 0x6666, 0x6562, 0x0000, 0x0000, 0x0000, 0x0062, 0x6364, 0x6664, 0x6362, 0x0000, 0x0000,
-							   0x0000, 0x0000, 0x0000, 0x0062, 0x6662, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0061, 0x6661, 0x0000, 0x0000, 0x0000,
-							   0x0000, 0x0000, 0x0000, 0x0000, 0x6500, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x6400, 0x0000, 0x0000, 0x0000};
+static const unsigned short pop[] = {
+	0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x6600, 0x0000, 0x0000, 0x0000, 0x6600, 0x0000,
+	0x0000, 0x0066, 0x0000, 0x0000, 0x0000, 0x0000, 0x0067, 0x0000, 0x0000, 0x6665, 0x0000, 0x0000, 0x0000, 0x0000, 0x0065, 0x6600,
+	0x0063, 0x6561, 0x0000, 0x0000, 0x0000, 0x0000, 0x0061, 0x6563, 0x0064, 0x6561, 0x0000, 0x0000, 0x0000, 0x0000, 0x0061, 0x6564,
+	0x0064, 0x6564, 0x0000, 0x6469, 0x6969, 0x6400, 0x0064, 0x6564, 0x0063, 0x6568, 0x6200, 0x0064, 0x6864, 0x0000, 0x6268, 0x6563,
+	0x0000, 0x6567, 0x6963, 0x0064, 0x6764, 0x0063, 0x6967, 0x6500, 0x0000, 0x6266, 0x6769, 0x6a68, 0x6768, 0x6a69, 0x6766, 0x6200,
+	0x0000, 0x0062, 0x6566, 0x6666, 0x6666, 0x6666, 0x6562, 0x0000, 0x0000, 0x0000, 0x0062, 0x6364, 0x6664, 0x6362, 0x0000, 0x0000,
+	0x0000, 0x0000, 0x0000, 0x0062, 0x6662, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0061, 0x6661, 0x0000, 0x0000, 0x0000,
+	0x0000, 0x0000, 0x0000, 0x0000, 0x6500, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x0000, 0x6400, 0x0000, 0x0000, 0x0000,
+};
 
-bool static_registered; // only for startup check, then set
-cvar_t registered = {"registered", "0"};
+static cvar_t registered = {"registered", "0"};
 
 #else
 
-cvar_t registered = {"registered", "1"};
+static cvar_t registered = {"registered", "1"};
 
 #endif
+
+#define MAX_NUM_ARGVS 50
+#define NUM_SAFE_ARGVS 5
+
+static char *largv[MAX_NUM_ARGVS + NUM_SAFE_ARGVS + 1];
+static char *argvdummy = " ";
+
+static const char *const safeargvs[NUM_SAFE_ARGVS] = {
+	"-nolan",
+	"-nosound",
+	"-nocdaudio",
+	"-nojoy",
+	"-nomouse",
+};
 
 /*
 
@@ -113,6 +118,7 @@ void InsertLinkBefore (link_t *l, link_t *before)
 	l->prev->next = l;
 	l->next->prev = l;
 }
+
 void InsertLinkAfter (link_t *l, link_t *after)
 {
 	l->next = after->next;
@@ -176,7 +182,7 @@ int strcasecmp (char *s1, char *s2)
 ============================================================================
 */
 
-bool bigendien;
+static bool bigendien;
 
 int16_t (*BigShort) (int16_t l);
 int16_t (*LittleShort) (int16_t l);
@@ -185,7 +191,7 @@ int32_t (*LittleLong) (int32_t l);
 float (*BigFloat) (float l);
 float (*LittleFloat) (float l);
 
-int16_t ShortSwap (int16_t l)
+static int16_t ShortSwap (int16_t l)
 {
 	byte b1, b2;
 
@@ -195,12 +201,12 @@ int16_t ShortSwap (int16_t l)
 	return (b1 << 8) + b2;
 }
 
-int16_t ShortNoSwap (int16_t l)
+static int16_t ShortNoSwap (int16_t l)
 {
 	return l;
 }
 
-int32_t LongSwap (int32_t l)
+static int32_t LongSwap (int32_t l)
 {
 	byte b1, b2, b3, b4;
 
@@ -212,12 +218,12 @@ int32_t LongSwap (int32_t l)
 	return ((int32_t)b1 << 24) + ((int32_t)b2 << 16) + ((int32_t)b3 << 8) + b4;
 }
 
-int32_t LongNoSwap (int32_t l)
+static int32_t LongNoSwap (int32_t l)
 {
 	return l;
 }
 
-float FloatSwap (float f)
+static float FloatSwap (float f)
 {
 	union
 	{
@@ -233,7 +239,7 @@ float FloatSwap (float f)
 	return dat2.f;
 }
 
-float FloatNoSwap (float f)
+static float FloatNoSwap (float f)
 {
 	return f;
 }
@@ -365,7 +371,7 @@ void MSG_WriteDeltaUsercmd (sizebuf_t *buf, usercmd_t *from, usercmd_t *cmd)
 //
 int msg_readcount;
 bool msg_badread;
-int msg_socket;
+static int msg_socket;
 
 void MSG_BeginReading (int socket)
 {
@@ -570,9 +576,6 @@ void SZ_Alloc (sizebuf_t *buf, int startsize)
 
 void SZ_Free (sizebuf_t *buf)
 {
-	//      Z_Free (buf->data);
-	//      buf->data = NULL;
-	//      buf->maxsize = 0;
 	buf->cursize = 0;
 }
 
@@ -625,11 +628,6 @@ void SZ_Print (sizebuf_t *buf, char *data)
 
 //============================================================================
 
-/*
-============
-COM_SkipPath
-============
-*/
 char *COM_SkipPath (char *pathname)
 {
 	char *last;
@@ -644,11 +642,6 @@ char *COM_SkipPath (char *pathname)
 	return last;
 }
 
-/*
-============
-COM_StripExtension
-============
-*/
 void COM_StripExtension (char *in, char *out)
 {
 	while (*in && *in != '.')
@@ -656,11 +649,6 @@ void COM_StripExtension (char *in, char *out)
 	*out = 0;
 }
 
-/*
-============
-COM_FileExtension
-============
-*/
 char *COM_FileExtension (char *in)
 {
 	static char exten[8];
@@ -677,11 +665,6 @@ char *COM_FileExtension (char *in)
 	return exten;
 }
 
-/*
-============
-COM_FileBase
-============
-*/
 void COM_FileBase (char *in, char *out)
 {
 	char *s, *s2;
@@ -691,8 +674,7 @@ void COM_FileBase (char *in, char *out)
 	while (s != in && *s != '.')
 		s--;
 
-	for (s2 = s; *s2 && *s2 != '/'; s2--)
-		;
+	for (s2 = s; *s2 && *s2 != '/'; s2--);
 
 	if (s - s2 < 2)
 		strcpy (out, "?model?");
@@ -704,11 +686,6 @@ void COM_FileBase (char *in, char *out)
 	}
 }
 
-/*
-==================
-COM_DefaultExtension
-==================
-*/
 void COM_DefaultExtension (char *path, char *extension)
 {
 	char *src;
@@ -804,11 +781,6 @@ skipwhite:
 	return data;
 }
 
-/*
-===============
-COM_BeginReadPairs
-===============
-*/
 bool COM_BeginReadPairs (byte **data)
 {
 	*data = COM_Parse (*data);
@@ -822,11 +794,6 @@ bool COM_BeginReadPairs (byte **data)
 	return true;
 }
 
-/*
-===============
-COM_ReadPair
-===============
-*/
 bool COM_ReadPair (byte **data, char *key, char *value)
 {
 	*data = COM_Parse (*data);
@@ -923,13 +890,8 @@ static void COM_CheckRegistered (bool modified)
 }
 #endif
 
-void COM_Path_f (void);
+static void COM_Path_f (void);
 
-/*
-================
-COM_InitArgv
-================
-*/
 void COM_InitArgv (int argc, char **argv)
 {
 	bool safe;
@@ -977,23 +939,8 @@ void COM_InitArgv (int argc, char **argv)
 		standard_quake = false;
 }
 
-/*
-================
-COM_AddParm
+static void COM_InitFilesystem (void);
 
-Adds the given string at the end of the current argument list
-================
-*/
-void COM_AddParm (char *parm)
-{
-	largv[com_argc++] = parm;
-}
-
-/*
-================
-COM_Init
-================
-*/
 void COM_Init (char *basedir)
 {
 	byte swaptest[2] = {1, 0};
@@ -1093,9 +1040,10 @@ typedef struct
 
 #define MAX_FILES_IN_PACK 2048
 
-char com_cachedir[MAX_OSPATH];
 char com_gamedir[MAX_OSPATH];
-char com_basedir[MAX_OSPATH];
+
+static char com_cachedir[MAX_OSPATH];
+static char com_basedir[MAX_OSPATH];
 
 typedef struct searchpath_s
 {
@@ -1104,49 +1052,10 @@ typedef struct searchpath_s
 	struct searchpath_s *next;
 } searchpath_t;
 
-searchpath_t *com_searchpaths;
-searchpath_t *com_base_searchpaths; // without gamedirs
+static searchpath_t *com_searchpaths;
+static searchpath_t *com_base_searchpaths; // without gamedirs
 
-/*
-================
-COM_filelength
-================
-*/
-int COM_filelength (FILE *f)
-{
-	int pos;
-	int end;
-
-	pos = ftell (f);
-	fseek (f, 0, SEEK_END);
-	end = ftell (f);
-	fseek (f, pos, SEEK_SET);
-
-	return end;
-}
-
-int COM_FileOpenRead (char *path, FILE **hndl)
-{
-	FILE *f;
-
-	f = fopen (path, "rb");
-	if (!f)
-	{
-		*hndl = NULL;
-		return -1;
-	}
-	*hndl = f;
-
-	return COM_filelength (f);
-}
-
-/*
-============
-COM_Path_f
-
-============
-*/
-void COM_Path_f (void)
+static void COM_Path_f (void)
 {
 	searchpath_t *s;
 
@@ -1408,6 +1317,10 @@ void COM_CloseFile (int h)
 	Sys_FileClose (h);
 }
 
+static cache_user_t *loadcache;
+static byte *loadbuf;
+static size_t loadsize;
+
 /*
 ============
 COM_LoadFile
@@ -1416,11 +1329,6 @@ Filename are reletive to the quake directory.
 Allways appends a 0 byte.
 ============
 */
-
-cache_user_t *loadcache;
-byte *loadbuf;
-size_t loadsize;
-
 static byte *COM_LoadFile (char *path, int usehunk)
 {
 	int h;
@@ -1464,7 +1372,6 @@ static byte *COM_LoadFile (char *path, int usehunk)
 	Draw_BeginDisc ();
 	Sys_FileRead (h, buf, len);
 	COM_CloseFile (h);
-	Draw_EndDisc ();
 
 	return buf;
 }
@@ -1696,11 +1603,6 @@ void COM_Gamedir (char *dir)
 	}
 }
 
-/*
-================
-COM_InitFilesystem
-================
-*/
 static void COM_InitFilesystem (void)
 {
 	int i, j;
@@ -2078,7 +1980,7 @@ void Info_Print (char *s)
 	}
 }
 
-static byte chktbl[1024 + 4] = {
+static const byte chktbl[1024 + 4] = {
 	0x78, 0xd2, 0x94, 0xe3, 0x41, 0xec, 0xd6, 0xd5, 0xcb, 0xfc, 0xdb, 0x8a, 0x4b, 0xcc, 0x85, 0x01, 0x23, 0xd2, 0xe5, 0xf2, 0x29, 0xa7, 0x45, 0x94, 0x4a, 0x62,
 	0xe3, 0xa5, 0x6f, 0x3f, 0xe1, 0x7a, 0x64, 0xed, 0x5c, 0x99, 0x29, 0x87, 0xa8, 0x78, 0x59, 0x0d, 0xaa, 0x0f, 0x25, 0x0a, 0x5c, 0x58, 0xfb, 0x00, 0xa7, 0xa8,
 	0x8a, 0x1d, 0x86, 0x80, 0xc5, 0x1f, 0xd2, 0x28, 0x69, 0x71, 0x58, 0xc3, 0x51, 0x90, 0xe1, 0xf8, 0x6a, 0xf3, 0x8f, 0xb0, 0x68, 0xdf, 0x95, 0x40, 0x5c, 0xe4,
@@ -2101,7 +2003,8 @@ static byte chktbl[1024 + 4] = {
 	0xf0, 0xce, 0x4c, 0xbd, 0xc6, 0x04, 0x86, 0x70, 0xc6, 0x33, 0xc3, 0x15, 0x0f, 0x65, 0x19, 0xfd, 0xc2, 0xd3,
 
 	// map checksum goes here
-	0x00, 0x00, 0x00, 0x00};
+	0x00, 0x00, 0x00, 0x00,
+};
 
 /*
 ====================

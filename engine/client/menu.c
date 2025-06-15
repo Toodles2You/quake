@@ -51,60 +51,60 @@ enum
 } m_state;
 
 void M_Menu_Main_f (void);
-void M_Menu_SinglePlayer_f (void);
-void M_Menu_Load_f (void);
-void M_Menu_Save_f (void);
-void M_Menu_MultiPlayer_f (void);
-void M_Menu_Setup_f (void);
-void M_Menu_Options_f (void);
-void M_Menu_Keys_f (void);
-void M_Menu_Video_f (void);
-void M_Menu_Help_f (void);
-void M_Menu_Quit_f (void);
-void M_Menu_LanConfig_f (void);
-void M_Menu_GameOptions_f (void);
-void M_Menu_Search_f (void);
-void M_Menu_ServerList_f (void);
+static void M_Menu_SinglePlayer_f (void);
+static void M_Menu_Load_f (void);
+static void M_Menu_Save_f (void);
+static void M_Menu_MultiPlayer_f (void);
+static void M_Menu_Setup_f (void);
+static void M_Menu_Options_f (void);
+static void M_Menu_Keys_f (void);
+static void M_Menu_Video_f (void);
+static void M_Menu_Help_f (void);
+static void M_Menu_Quit_f (void);
+static void M_Menu_LanConfig_f (void);
+static void M_Menu_GameOptions_f (void);
+static void M_Menu_Search_f (void);
+static void M_Menu_ServerList_f (void);
 
-void M_Main_Draw (void);
-void M_SinglePlayer_Draw (void);
-void M_Load_Draw (void);
-void M_Save_Draw (void);
-void M_MultiPlayer_Draw (void);
-void M_Setup_Draw (void);
-void M_Options_Draw (void);
-void M_Keys_Draw (void);
-void M_Video_Draw (void);
-void M_Help_Draw (void);
-void M_Quit_Draw (void);
-void M_LanConfig_Draw (void);
-void M_GameOptions_Draw (void);
-void M_Search_Draw (void);
-void M_ServerList_Draw (void);
+static void M_Main_Draw (void);
+static void M_SinglePlayer_Draw (void);
+static void M_Load_Draw (void);
+static void M_Save_Draw (void);
+static void M_MultiPlayer_Draw (void);
+static void M_Setup_Draw (void);
+static void M_Options_Draw (void);
+static void M_Keys_Draw (void);
+static void M_Video_Draw (void);
+static void M_Help_Draw (void);
+static void M_Quit_Draw (void);
+static void M_LanConfig_Draw (void);
+static void M_GameOptions_Draw (void);
+static void M_Search_Draw (void);
+static void M_ServerList_Draw (void);
 
-void M_Main_Key (int key);
-void M_SinglePlayer_Key (int key);
-void M_Load_Key (int key);
-void M_Save_Key (int key);
-void M_MultiPlayer_Key (int key);
-void M_Setup_Key (int key);
-void M_Options_Key (int key);
-void M_Keys_Key (int key);
-void M_Video_Key (int key);
-void M_Help_Key (int key);
-void M_Quit_Key (int key);
-void M_LanConfig_Key (int key);
-void M_GameOptions_Key (int key);
-void M_Search_Key (int key);
-void M_ServerList_Key (int key);
+static void M_Main_Key (int key);
+static void M_SinglePlayer_Key (int key);
+static void M_Load_Key (int key);
+static void M_Save_Key (int key);
+static void M_MultiPlayer_Key (int key);
+static void M_Setup_Key (int key);
+static void M_Options_Key (int key);
+static void M_Keys_Key (int key);
+static void M_Video_Key (int key);
+static void M_Help_Key (int key);
+static void M_Quit_Key (int key);
+static void M_LanConfig_Key (int key);
+static void M_GameOptions_Key (int key);
+static void M_Search_Key (int key);
+static void M_ServerList_Key (int key);
 
-bool m_entersound; // play after drawing a frame, so caching
-				   // won't disrupt the sound
-bool m_recursiveDraw;
+static bool m_entersound; // play after drawing a frame, so caching
+						  // won't disrupt the sound
+static bool m_recursiveDraw;
 
-int m_return_state;
-bool m_return_onerror;
-char m_return_reason[32];
+static int m_return_state;
+static bool m_return_onerror;
+static char m_return_reason[32];
 
 #define StartingGame (m_multiplayer_cursor == 1)
 #define JoiningGame (m_multiplayer_cursor == 0)
@@ -116,12 +116,12 @@ M_DrawCharacter
 Draws one solid graphics character
 ================
 */
-void M_DrawCharacter (int cx, int line, int num)
+static void M_DrawCharacter (int cx, int line, int num)
 {
 	Draw_Character (cx + ((vid.width - 320) >> 1), line, num);
 }
 
-void M_Print (int cx, int cy, char *str)
+static void M_Print (int cx, int cy, char *str)
 {
 	while (*str)
 	{
@@ -131,7 +131,7 @@ void M_Print (int cx, int cy, char *str)
 	}
 }
 
-void M_PrintWhite (int cx, int cy, char *str)
+static void M_PrintWhite (int cx, int cy, char *str)
 {
 	while (*str)
 	{
@@ -141,20 +141,20 @@ void M_PrintWhite (int cx, int cy, char *str)
 	}
 }
 
-void M_DrawTransPic (int x, int y, qpic_t *pic)
+static void M_DrawTransPic (int x, int y, qpic_t *pic)
 {
 	Draw_TransPic (x + ((vid.width - 320) >> 1), y, pic);
 }
 
-void M_DrawPic (int x, int y, qpic_t *pic)
+static void M_DrawPic (int x, int y, qpic_t *pic)
 {
 	Draw_Pic (x + ((vid.width - 320) >> 1), y, pic);
 }
 
-byte identityTable[256];
-byte translationTable[256];
+static byte identityTable[256];
+static byte translationTable[256];
 
-void M_BuildTranslationTable (int top, int bottom)
+static void M_BuildTranslationTable (int top, int bottom)
 {
 	int j;
 	byte *dest, *source;
@@ -178,7 +178,7 @@ void M_BuildTranslationTable (int top, int bottom)
 			dest[BOTTOM_RANGE + j] = source[bottom + 15 - j];
 }
 
-void M_DrawTransPicTranslate (int x, int y, qpic_t *pic)
+static void M_DrawTransPicTranslate (int x, int y, qpic_t *pic)
 {
 	Draw_TransPicTranslate (x + ((vid.width - 320) >> 1), y, pic, translationTable);
 }
@@ -240,13 +240,8 @@ void M_DrawTextBox (int x, int y, int width, int lines)
 
 //=============================================================================
 
-int m_save_demonum;
+static int m_save_demonum;
 
-/*
-================
-M_ToggleMenu_f
-================
-*/
 void M_ToggleMenu_f (void)
 {
 	m_entersound = true;
@@ -271,7 +266,7 @@ void M_ToggleMenu_f (void)
 //=============================================================================
 /* MAIN MENU */
 
-int m_main_cursor;
+static int m_main_cursor;
 #define MAIN_ITEMS 5
 
 void M_Menu_Main_f (void)
@@ -286,7 +281,7 @@ void M_Menu_Main_f (void)
 	m_entersound = true;
 }
 
-void M_Main_Draw (void)
+static void M_Main_Draw (void)
 {
 	int f;
 	qpic_t *p;
@@ -301,7 +296,7 @@ void M_Main_Draw (void)
 	M_DrawTransPic (54, 32 + m_main_cursor * 20, Draw_CachePic (va ("gfx/menudot%i.lmp", f + 1)));
 }
 
-void M_Main_Key (int key)
+static void M_Main_Key (int key)
 {
 	switch (key)
 	{
@@ -356,17 +351,17 @@ void M_Main_Key (int key)
 //=============================================================================
 /* SINGLE PLAYER MENU */
 
-int m_singleplayer_cursor;
+static int m_singleplayer_cursor;
 #define SINGLEPLAYER_ITEMS 3
 
-void M_Menu_SinglePlayer_f (void)
+static void M_Menu_SinglePlayer_f (void)
 {
 	key_dest = key_menu;
 	m_state = m_singleplayer;
 	m_entersound = true;
 }
 
-void M_SinglePlayer_Draw (void)
+static void M_SinglePlayer_Draw (void)
 {
 	int f;
 	qpic_t *p;
@@ -381,7 +376,7 @@ void M_SinglePlayer_Draw (void)
 	M_DrawTransPic (54, 32 + m_singleplayer_cursor * 20, Draw_CachePic (va ("gfx/menudot%i.lmp", f + 1)));
 }
 
-void M_SinglePlayer_Key (int key)
+static void M_SinglePlayer_Key (int key)
 {
 	switch (key)
 	{
@@ -431,13 +426,13 @@ void M_SinglePlayer_Key (int key)
 //=============================================================================
 /* LOAD/SAVE MENU */
 
-int load_cursor; // 0 < load_cursor < MAX_SAVEGAMES
+static int load_cursor; // 0 < load_cursor < MAX_SAVEGAMES
 
 #define MAX_SAVEGAMES 12
-char m_filenames[MAX_SAVEGAMES][SAVEGAME_COMMENT_LENGTH + 1];
-int loadable[MAX_SAVEGAMES];
+static char m_filenames[MAX_SAVEGAMES][SAVEGAME_COMMENT_LENGTH + 1];
+static bool loadable[MAX_SAVEGAMES];
 
-void M_ScanSaves (void)
+static void M_ScanSaves (void)
 {
 	int i, j;
 	char name[MAX_OSPATH];
@@ -465,7 +460,7 @@ void M_ScanSaves (void)
 	}
 }
 
-void M_Menu_Load_f (void)
+static void M_Menu_Load_f (void)
 {
 	m_entersound = true;
 	m_state = m_load;
@@ -473,7 +468,7 @@ void M_Menu_Load_f (void)
 	M_ScanSaves ();
 }
 
-void M_Menu_Save_f (void)
+static void M_Menu_Save_f (void)
 {
 	if (cl.intermission)
 		return;
@@ -483,7 +478,7 @@ void M_Menu_Save_f (void)
 	M_ScanSaves ();
 }
 
-void M_Load_Draw (void)
+static void M_Load_Draw (void)
 {
 	int i;
 	qpic_t *p;
@@ -498,7 +493,7 @@ void M_Load_Draw (void)
 	M_DrawCharacter (8, 32 + load_cursor * 8, 12 + ((int)(realtime * 4) & 1));
 }
 
-void M_Save_Draw (void)
+static void M_Save_Draw (void)
 {
 	int i;
 	qpic_t *p;
@@ -513,7 +508,7 @@ void M_Save_Draw (void)
 	M_DrawCharacter (8, 32 + load_cursor * 8, 12 + ((int)(realtime * 4) & 1));
 }
 
-void M_Load_Key (int k)
+static void M_Load_Key (int k)
 {
 	switch (k)
 	{
@@ -554,7 +549,7 @@ void M_Load_Key (int k)
 	}
 }
 
-void M_Save_Key (int k)
+static void M_Save_Key (int k)
 {
 	switch (k)
 	{
@@ -589,17 +584,17 @@ void M_Save_Key (int k)
 //=============================================================================
 /* MULTIPLAYER MENU */
 
-int m_multiplayer_cursor;
+static int m_multiplayer_cursor;
 #define MULTIPLAYER_ITEMS 3
 
-void M_Menu_MultiPlayer_f (void)
+static void M_Menu_MultiPlayer_f (void)
 {
 	key_dest = key_menu;
 	m_state = m_multiplayer;
 	m_entersound = true;
 }
 
-void M_MultiPlayer_Draw (void)
+static void M_MultiPlayer_Draw (void)
 {
 	int f;
 	qpic_t *p;
@@ -612,13 +607,9 @@ void M_MultiPlayer_Draw (void)
 	f = (int)(host_time * 10) % 6;
 
 	M_DrawTransPic (54, 32 + m_multiplayer_cursor * 20, Draw_CachePic (va ("gfx/menudot%i.lmp", f + 1)));
-
-#if 0
-	M_PrintWhite ((320/2) - ((27*8)/2), 148, "No Communications Available");
-#endif
 }
 
-void M_MultiPlayer_Key (int key)
+static void M_MultiPlayer_Key (int key)
 {
 	switch (key)
 	{
@@ -664,19 +655,19 @@ extern cvar_t name;
 extern cvar_t topcolor;
 extern cvar_t bottomcolor;
 
-int setup_cursor = 4;
-int setup_cursor_table[] = {40, 56, 80, 104, 140};
+static int setup_cursor = 4;
+static const int setup_cursor_table[] = {40, 56, 80, 104, 140};
 
-char setup_hostname[16];
-char setup_myname[16];
-int setup_oldtop;
-int setup_oldbottom;
-int setup_top;
-int setup_bottom;
+static char setup_hostname[16];
+static char setup_myname[16];
+static int setup_oldtop;
+static int setup_oldbottom;
+static int setup_top;
+static int setup_bottom;
 
 #define NUM_SETUP_CMDS 5
 
-void M_Menu_Setup_f (void)
+static void M_Menu_Setup_f (void)
 {
 	key_dest = key_menu;
 	m_state = m_setup;
@@ -687,7 +678,7 @@ void M_Menu_Setup_f (void)
 	setup_bottom = setup_oldbottom = ((int)bottomcolor.value) & 15;
 }
 
-void M_Setup_Draw (void)
+static void M_Setup_Draw (void)
 {
 	qpic_t *p;
 
@@ -719,12 +710,11 @@ void M_Setup_Draw (void)
 
 	if (setup_cursor == 0)
 		M_DrawCharacter (168 + 8 * strlen (setup_hostname), setup_cursor_table[setup_cursor], 10 + ((int)(realtime * 4) & 1));
-
-	if (setup_cursor == 1)
+	else if (setup_cursor == 1)
 		M_DrawCharacter (168 + 8 * strlen (setup_myname), setup_cursor_table[setup_cursor], 10 + ((int)(realtime * 4) & 1));
 }
 
-void M_Setup_Key (int k)
+static void M_Setup_Key (int k)
 {
 	int l;
 
@@ -840,20 +830,20 @@ void M_Setup_Key (int k)
 
 #define SLIDER_RANGE 10
 
-int options_cursor;
+static int m_options_cursor;
 
-void M_Menu_Options_f (void)
+static void M_Menu_Options_f (void)
 {
 	key_dest = key_menu;
 	m_state = m_options;
 	m_entersound = true;
 }
 
-void M_AdjustSliders (int dir)
+static void M_AdjustSliders (int dir)
 {
 	S_LocalSound ("misc/menu3.wav");
 
-	switch (options_cursor)
+	switch (m_options_cursor)
 	{
 	case 3: // screen size
 		scr_viewsize.value += dir * 10;
@@ -927,7 +917,7 @@ void M_AdjustSliders (int dir)
 	}
 }
 
-void M_DrawSlider (int x, int y, float range)
+static void M_DrawSlider (int x, int y, float range)
 {
 	int i;
 
@@ -942,21 +932,15 @@ void M_DrawSlider (int x, int y, float range)
 	M_DrawCharacter (x + (SLIDER_RANGE - 1) * 8 * range, y, 131);
 }
 
-void M_DrawCheckbox (int x, int y, int on)
+static void M_DrawCheckbox (int x, int y, int on)
 {
-#if 0
-	if (on)
-		M_DrawCharacter (x, y, 131);
-	else
-		M_DrawCharacter (x, y, 129);
-#endif
 	if (on)
 		M_Print (x, y, "on");
 	else
 		M_Print (x, y, "off");
 }
 
-void M_Options_Draw (void)
+static void M_Options_Draw (void)
 {
 	float r;
 	qpic_t *p;
@@ -1008,10 +992,10 @@ void M_Options_Draw (void)
 		M_Print (16, 136, "         Video Options");
 
 	// cursor
-	M_DrawCharacter (200, 32 + options_cursor * 8, 12 + ((int)(realtime * 4) & 1));
+	M_DrawCharacter (200, 32 + m_options_cursor * 8, 12 + ((int)(realtime * 4) & 1));
 }
 
-void M_Options_Key (int k)
+static void M_Options_Key (int k)
 {
 	switch (k)
 	{
@@ -1021,7 +1005,7 @@ void M_Options_Key (int k)
 
 	case K_ENTER:
 		m_entersound = true;
-		switch (options_cursor)
+		switch (m_options_cursor)
 		{
 		case 0:
 			M_Menu_Keys_f ();
@@ -1044,16 +1028,16 @@ void M_Options_Key (int k)
 
 	case K_UPARROW:
 		S_LocalSound ("misc/menu1.wav");
-		options_cursor--;
-		if (options_cursor < 0)
-			options_cursor = OPTIONS_ITEMS - 1;
+		m_options_cursor--;
+		if (m_options_cursor < 0)
+			m_options_cursor = OPTIONS_ITEMS - 1;
 		break;
 
 	case K_DOWNARROW:
 		S_LocalSound ("misc/menu1.wav");
-		options_cursor++;
-		if (options_cursor >= OPTIONS_ITEMS)
-			options_cursor = 0;
+		m_options_cursor++;
+		if (m_options_cursor >= OPTIONS_ITEMS)
+			m_options_cursor = 0;
 		break;
 
 	case K_LEFTARROW:
@@ -1065,37 +1049,52 @@ void M_Options_Key (int k)
 		break;
 	}
 
-	if (options_cursor == 13 && vid_menudrawfn == NULL)
+	if (m_options_cursor == 13 && vid_menudrawfn == NULL)
 	{
 		if (k == K_UPARROW)
-			options_cursor = 12;
+			m_options_cursor = 12;
 		else
-			options_cursor = 0;
+			m_options_cursor = 0;
 	}
 }
 
 //=============================================================================
 /* KEYS MENU */
 
-char *bindnames[][2] = {{"+attack", "attack"},		{"impulse 10", "change weapon"}, {"+jump", "jump / swim up"}, {"+forward", "walk forward"},
-						{"+back", "backpedal"},		{"+left", "turn left"},			 {"+right", "turn right"},	  {"+speed", "run"},
-						{"+moveleft", "step left"}, {"+moveright", "step right"},	 {"+strafe", "sidestep"},	  {"+lookup", "look up"},
-						{"+lookdown", "look down"}, {"centerview", "center view"},	 {"+mlook", "mouse look"},	  {"+klook", "keyboard look"},
-						{"+moveup", "swim up"},		{"+movedown", "swim down"}};
+static const char *const bindnames[][2] = {
+	{"+attack", "attack"},
+	{"impulse 10", "change weapon"},
+	{"+jump", "jump / swim up"},
+	{"+forward", "walk forward"},
+	{"+back", "backpedal"},
+	{"+left", "turn left"},
+	{"+right", "turn right"},
+	{"+speed", "run"},
+	{"+moveleft", "step left"},
+	{"+moveright", "step right"},
+	{"+strafe", "sidestep"},
+	{"+lookup", "look up"},
+	{"+lookdown", "look down"},
+	{"centerview", "center view"},
+	{"+mlook", "mouse look"},
+	{"+klook", "keyboard look"},
+	{"+moveup", "swim up"},
+	{"+movedown", "swim down"},
+};
 
 #define NUMCOMMANDS (sizeof (bindnames) / sizeof (bindnames[0]))
 
-int keys_cursor;
-int bind_grab;
+static int m_keys_cursor;
+static int bind_grab;
 
-void M_Menu_Keys_f (void)
+static void M_Menu_Keys_f (void)
 {
 	key_dest = key_menu;
 	m_state = m_keys;
 	m_entersound = true;
 }
 
-void M_FindKeysForCommand (char *command, int *twokeys)
+static void M_FindKeysForCommand (char *command, int *twokeys)
 {
 	int count;
 	int j;
@@ -1121,7 +1120,7 @@ void M_FindKeysForCommand (char *command, int *twokeys)
 	}
 }
 
-void M_UnbindCommand (char *command)
+static void M_UnbindCommand (char *command)
 {
 	int j;
 	int l;
@@ -1139,7 +1138,7 @@ void M_UnbindCommand (char *command)
 	}
 }
 
-void M_Keys_Draw (void)
+static void M_Keys_Draw (void)
 {
 	int i;
 	int keys[2];
@@ -1182,12 +1181,12 @@ void M_Keys_Draw (void)
 	}
 
 	if (bind_grab)
-		M_DrawCharacter (130, 48 + keys_cursor * 8, '=');
+		M_DrawCharacter (130, 48 + m_keys_cursor * 8, '=');
 	else
-		M_DrawCharacter (130, 48 + keys_cursor * 8, 12 + ((int)(realtime * 4) & 1));
+		M_DrawCharacter (130, 48 + m_keys_cursor * 8, 12 + ((int)(realtime * 4) & 1));
 }
 
-void M_Keys_Key (int k)
+static void M_Keys_Key (int k)
 {
 	char cmd[80];
 	int keys[2];
@@ -1201,7 +1200,7 @@ void M_Keys_Key (int k)
 		}
 		else if (k != '`')
 		{
-			sprintf (cmd, "bind \"%s\" \"%s\"\n", Key_KeynumToString (k), bindnames[keys_cursor][0]);
+			sprintf (cmd, "bind \"%s\" \"%s\"\n", Key_KeynumToString (k), bindnames[m_keys_cursor][0]);
 			Cbuf_InsertText (src_client, cmd);
 		}
 
@@ -1218,31 +1217,31 @@ void M_Keys_Key (int k)
 	case K_LEFTARROW:
 	case K_UPARROW:
 		S_LocalSound ("misc/menu1.wav");
-		keys_cursor--;
-		if (keys_cursor < 0)
-			keys_cursor = NUMCOMMANDS - 1;
+		m_keys_cursor--;
+		if (m_keys_cursor < 0)
+			m_keys_cursor = NUMCOMMANDS - 1;
 		break;
 
 	case K_DOWNARROW:
 	case K_RIGHTARROW:
 		S_LocalSound ("misc/menu1.wav");
-		keys_cursor++;
-		if (keys_cursor >= NUMCOMMANDS)
-			keys_cursor = 0;
+		m_keys_cursor++;
+		if (m_keys_cursor >= NUMCOMMANDS)
+			m_keys_cursor = 0;
 		break;
 
 	case K_ENTER: // go into bind mode
-		M_FindKeysForCommand (bindnames[keys_cursor][0], keys);
+		M_FindKeysForCommand (bindnames[m_keys_cursor][0], keys);
 		S_LocalSound ("misc/menu2.wav");
 		if (keys[1] != -1)
-			M_UnbindCommand (bindnames[keys_cursor][0]);
+			M_UnbindCommand (bindnames[m_keys_cursor][0]);
 		bind_grab = true;
 		break;
 
 	case K_BACKSPACE: // delete bindings
 	case K_DEL:		  // delete bindings
 		S_LocalSound ("misc/menu2.wav");
-		M_UnbindCommand (bindnames[keys_cursor][0]);
+		M_UnbindCommand (bindnames[m_keys_cursor][0]);
 		break;
 	}
 }
@@ -1250,19 +1249,19 @@ void M_Keys_Key (int k)
 //=============================================================================
 /* VIDEO MENU */
 
-void M_Menu_Video_f (void)
+static void M_Menu_Video_f (void)
 {
 	key_dest = key_menu;
 	m_state = m_video;
 	m_entersound = true;
 }
 
-void M_Video_Draw (void)
+static void M_Video_Draw (void)
 {
 	(*vid_menudrawfn) ();
 }
 
-void M_Video_Key (int key)
+static void M_Video_Key (int key)
 {
 	(*vid_menukeyfn) (key);
 }
@@ -1270,10 +1269,10 @@ void M_Video_Key (int key)
 //=============================================================================
 /* HELP MENU */
 
-int help_page;
+static int help_page;
 #define NUM_HELP_PAGES 6
 
-void M_Menu_Help_f (void)
+static void M_Menu_Help_f (void)
 {
 	key_dest = key_menu;
 	m_state = m_help;
@@ -1281,12 +1280,12 @@ void M_Menu_Help_f (void)
 	help_page = 0;
 }
 
-void M_Help_Draw (void)
+static void M_Help_Draw (void)
 {
 	M_DrawPic (0, 0, Draw_CachePic (va ("gfx/help%i.lmp", help_page)));
 }
 
-void M_Help_Key (int key)
+static void M_Help_Key (int key)
 {
 	switch (key)
 	{
@@ -1313,12 +1312,11 @@ void M_Help_Key (int key)
 //=============================================================================
 /* QUIT MENU */
 
-int msgNumber;
-int m_quit_prevstate;
-bool wasInMenus;
+static int msgNumber;
+static int m_quit_prevstate;
+static bool wasInMenus;
 
-char *quitMessage[] = {
-	/* .........1.........2.... */
+static const char *const quitMessage[] = {
 	"  Are you gonna quit    ", "  this game just like   ", "   everything else?     ", "                        ",
 
 	" Milord, methinks that  ", "   thou art a lowly     ", " quitter. Is this true? ", "                        ",
@@ -1329,16 +1327,18 @@ char *quitMessage[] = {
 
 	" Press Y to quit like a ", "   big loser in life.   ", "  Press N to stay proud ", "    and successful!     ",
 
-	"   If you press Y to    ", "  quit, I will summon   ", " Cthulhu all over your  ", "      hard drive!       ",
+	"   If you press Y to    ", "  quit, I will summon   ", " Cthulhu all over your  ", "       computer!        ",
 
 	"  Um, Asmodeus dislikes ", " his children trying to ", " quit. Press Y to return", "   to your Tinkertoys.  ",
 
 	"  If you quit now, I'll ", "  throw a blanket-party ", "   for you next time!   ", "                        ",
 
 	"                        ", "        Whatever.       ", "                        ", "                        ",
+
+	"                        ", "   I really thought     ", "   we had something.    ", "                        ",
 };
 
-void M_Menu_Quit_f (void)
+static void M_Menu_Quit_f (void)
 {
 	if (m_state == m_quit)
 		return;
@@ -1350,7 +1350,7 @@ void M_Menu_Quit_f (void)
 	msgNumber = rand () % (lengthof (quitMessage) / 4);
 }
 
-void M_Quit_Key (int key)
+static void M_Quit_Key (int key)
 {
 	switch (key)
 	{
@@ -1380,7 +1380,7 @@ void M_Quit_Key (int key)
 	}
 }
 
-void M_Quit_Draw (void)
+static void M_Quit_Draw (void)
 {
 	if (wasInMenus)
 	{
@@ -1400,17 +1400,16 @@ void M_Quit_Draw (void)
 //=============================================================================
 /* LAN CONFIG MENU */
 
-int lanConfig_cursor = -1;
-int lanConfig_cursor_table[] = {52, 72, 92, 124};
+static int lanConfig_cursor = -1;
+static const int lanConfig_cursor_table[] = {52, 72, 92, 124};
 #define NUM_LANCONFIG_CMDS 4
 
-int lanConfig_port;
-char lanConfig_portname[6];
-char lanConfig_joinname[22];
+static int lanConfig_port;
+static char lanConfig_portname[6];
+static char lanConfig_joinname[22];
+static byte lanConfig_showAddress;
 
-byte lanConfig_showAddress = 0;
-
-void M_Menu_LanConfig_f (void)
+static void M_Menu_LanConfig_f (void)
 {
 	key_dest = key_menu;
 	m_state = m_lanconfig;
@@ -1435,7 +1434,7 @@ void M_Menu_LanConfig_f (void)
 	m_return_reason[0] = 0;
 }
 
-void M_LanConfig_Draw (void)
+static void M_LanConfig_Draw (void)
 {
 	qpic_t *p;
 	int basex;
@@ -1493,7 +1492,7 @@ void M_LanConfig_Draw (void)
 		M_PrintWhite (basex, 148, m_return_reason);
 }
 
-void M_LanConfig_Key (int key)
+static void M_LanConfig_Key (int key)
 {
 	int l;
 
@@ -1633,52 +1632,54 @@ typedef struct
 	char *description;
 } level_t;
 
-level_t levels[] = {{"start", "Entrance"}, // 0
+static level_t const levels[] = {
+	{"start", "Entrance"}, // 0
 
-					{"e1m1", "Slipgate Complex"}, // 1
-					{"e1m2", "Castle of the Damned"},
-					{"e1m3", "The Necropolis"},
-					{"e1m4", "The Grisly Grotto"},
-					{"e1m5", "Gloom Keep"},
-					{"e1m6", "The Door To Chthon"},
-					{"e1m7", "The House of Chthon"},
-					{"e1m8", "Ziggurat Vertigo"},
+	{"e1m1", "Slipgate Complex"}, // 1
+	{"e1m2", "Castle of the Damned"},
+	{"e1m3", "The Necropolis"},
+	{"e1m4", "The Grisly Grotto"},
+	{"e1m5", "Gloom Keep"},
+	{"e1m6", "The Door To Chthon"},
+	{"e1m7", "The House of Chthon"},
+	{"e1m8", "Ziggurat Vertigo"},
 
-					{"e2m1", "The Installation"}, // 9
-					{"e2m2", "Ogre Citadel"},
-					{"e2m3", "Crypt of Decay"},
-					{"e2m4", "The Ebon Fortress"},
-					{"e2m5", "The Wizard's Manse"},
-					{"e2m6", "The Dismal Oubliette"},
-					{"e2m7", "Underearth"},
+	{"e2m1", "The Installation"}, // 9
+	{"e2m2", "Ogre Citadel"},
+	{"e2m3", "Crypt of Decay"},
+	{"e2m4", "The Ebon Fortress"},
+	{"e2m5", "The Wizard's Manse"},
+	{"e2m6", "The Dismal Oubliette"},
+	{"e2m7", "Underearth"},
 
-					{"e3m1", "Termination Central"}, // 16
-					{"e3m2", "The Vaults of Zin"},
-					{"e3m3", "The Tomb of Terror"},
-					{"e3m4", "Satan's Dark Delight"},
-					{"e3m5", "Wind Tunnels"},
-					{"e3m6", "Chambers of Torment"},
-					{"e3m7", "The Haunted Halls"},
+	{"e3m1", "Termination Central"}, // 16
+	{"e3m2", "The Vaults of Zin"},
+	{"e3m3", "The Tomb of Terror"},
+	{"e3m4", "Satan's Dark Delight"},
+	{"e3m5", "Wind Tunnels"},
+	{"e3m6", "Chambers of Torment"},
+	{"e3m7", "The Haunted Halls"},
 
-					{"e4m1", "The Sewage System"}, // 23
-					{"e4m2", "The Tower of Despair"},
-					{"e4m3", "The Elder God Shrine"},
-					{"e4m4", "The Palace of Hate"},
-					{"e4m5", "Hell's Atrium"},
-					{"e4m6", "The Pain Maze"},
-					{"e4m7", "Azure Agony"},
-					{"e4m8", "The Nameless City"},
+	{"e4m1", "The Sewage System"}, // 23
+	{"e4m2", "The Tower of Despair"},
+	{"e4m3", "The Elder God Shrine"},
+	{"e4m4", "The Palace of Hate"},
+	{"e4m5", "Hell's Atrium"},
+	{"e4m6", "The Pain Maze"},
+	{"e4m7", "Azure Agony"},
+	{"e4m8", "The Nameless City"},
 
-					{"end", "Shub-Niggurath's Pit"}, // 31
+	{"end", "Shub-Niggurath's Pit"}, // 31
 
-					{"dm1", "Place of Two Deaths"}, // 32
-					{"dm2", "Claustrophobopolis"},
-					{"dm3", "The Abandoned Base"},
-					{"dm4", "The Bad Place"},
-					{"dm5", "The Cistern"},
-					{"dm6", "The Dark Zone"}};
+	{"dm1", "Place of Two Deaths"}, // 32
+	{"dm2", "Claustrophobopolis"},
+	{"dm3", "The Abandoned Base"},
+	{"dm4", "The Bad Place"},
+	{"dm5", "The Cistern"},
+	{"dm6", "The Dark Zone"},
+};
 
-level_t hipnoticlevels[] = {
+static const level_t hipnoticlevels[] = {
 	{"start", "Command HQ"}, // 0
 
 	{"hip1m1", "The Pumping Station"}, // 1
@@ -1704,11 +1705,25 @@ level_t hipnoticlevels[] = {
 	{"hipdm1", "The Edge of Oblivion"} // 17
 };
 
-level_t roguelevels[] = {{"start", "Split Decision"},	{"r1m1", "Deviant's Domain"}, {"r1m2", "Dread Portal"},		 {"r1m3", "Judgement Call"},
-						 {"r1m4", "Cave of Death"},		{"r1m5", "Towers of Wrath"},  {"r1m6", "Temple of Pain"},	 {"r1m7", "Tomb of the Overlord"},
-						 {"r2m1", "Tempus Fugit"},		{"r2m2", "Elemental Fury I"}, {"r2m3", "Elemental Fury II"}, {"r2m4", "Curse of Osiris"},
-						 {"r2m5", "Wizard's Keep"},		{"r2m6", "Blood Sacrifice"},  {"r2m7", "Last Bastion"},		 {"r2m8", "Source of Evil"},
-						 {"ctf1", "Division of Change"}};
+static const level_t roguelevels[] = {
+	{"start", "Split Decision"},
+	{"r1m1", "Deviant's Domain"},
+	{"r1m2", "Dread Portal"},
+	{"r1m3", "Judgement Call"},
+	{"r1m4", "Cave of Death"},
+	{"r1m5", "Towers of Wrath"},
+	{"r1m6", "Temple of Pain"},
+	{"r1m7", "Tomb of the Overlord"},
+	{"r2m1", "Tempus Fugit"},
+	{"r2m2", "Elemental Fury I"},
+	{"r2m3", "Elemental Fury II"},
+	{"r2m4", "Curse of Osiris"},
+	{"r2m5", "Wizard's Keep"},
+	{"r2m6", "Blood Sacrifice"},
+	{"r2m7", "Last Bastion"},
+	{"r2m8", "Source of Evil"},
+	{"ctf1", "Division of Change"},
+};
 
 typedef struct
 {
@@ -1717,19 +1732,37 @@ typedef struct
 	int levels;
 } episode_t;
 
-episode_t episodes[] = {{"Welcome to Quake", 0, 1}, {"Doomed Dimension", 1, 8}, {"Realm of Black Magic", 9, 7}, {"Netherworld", 16, 7},
-						{"The Elder World", 23, 8}, {"Final Level", 31, 1},		{"Deathmatch Arena", 32, 6}};
+static const episode_t episodes[] = {
+	{"Welcome to Quake", 0, 1},
+	{"Doomed Dimension", 1, 8},
+	{"Realm of Black Magic", 9, 7},
+	{"Netherworld", 16, 7},
+	{"The Elder World", 23, 8},
+	{"Final Level", 31, 1},
+	{"Deathmatch Arena", 32, 6},
+};
 
-episode_t hipnoticepisodes[] = {{"Scourge of Armagon", 0, 1}, {"Fortress of the Dead", 1, 5}, {"Dominion of Darkness", 6, 6},
-								{"The Rift", 12, 4},		  {"Final Level", 16, 1},		  {"Deathmatch Arena", 17, 1}};
+static const episode_t hipnoticepisodes[] = {
+	{"Scourge of Armagon", 0, 1},
+	{"Fortress of the Dead", 1, 5},
+	{"Dominion of Darkness", 6, 6},
+	{"The Rift", 12, 4},
+	{"Final Level", 16, 1},
+	{"Deathmatch Arena", 17, 1},
+};
 
-episode_t rogueepisodes[] = {{"Introduction", 0, 1}, {"Hell's Fortress", 1, 7}, {"Corridors of Time", 8, 8}, {"Deathmatch Arena", 16, 1}};
+static const episode_t rogueepisodes[] = {
+	{"Introduction", 0, 1},
+	{"Hell's Fortress", 1, 7},
+	{"Corridors of Time", 8, 8},
+	{"Deathmatch Arena", 16, 1},
+};
 
-int startepisode;
-int startlevel;
-int maxplayers;
+static int startepisode;
+static int startlevel;
+static int maxplayers;
 
-void M_Menu_GameOptions_f (void)
+static void M_Menu_GameOptions_f (void)
 {
 	key_dest = key_menu;
 	m_state = m_gameoptions;
@@ -1740,11 +1773,11 @@ void M_Menu_GameOptions_f (void)
 		maxplayers = MAX_CLIENTS;
 }
 
-int gameoptions_cursor_table[] = {40, 56, 64, 72, 80, 88, 96, 112, 120};
+static const int gameoptions_cursor_table[] = {40, 56, 64, 72, 80, 88, 96, 112, 120};
 #define NUM_GAMEOPTIONS 9
-int gameoptions_cursor;
+static int gameoptions_cursor;
 
-void M_GameOptions_Draw (void)
+static void M_GameOptions_Draw (void)
 {
 	qpic_t *p;
 	int x;
@@ -1866,7 +1899,7 @@ void M_GameOptions_Draw (void)
 	M_DrawCharacter (144, gameoptions_cursor_table[gameoptions_cursor], 12 + ((int)(realtime * 4) & 1));
 }
 
-void M_NetStart_Change (int dir)
+static void M_NetStart_Change (int dir)
 {
 	int count;
 
@@ -1961,7 +1994,7 @@ void M_NetStart_Change (int dir)
 	}
 }
 
-void M_GameOptions_Key (int key)
+static void M_GameOptions_Key (int key)
 {
 	switch (key)
 	{

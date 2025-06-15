@@ -204,11 +204,6 @@ byte *Skin_Cache (skin_t *skin)
 	return out;
 }
 
-/*
-=================
-Skin_NextDownload
-=================
-*/
 void Skin_NextDownload (void)
 {
 	player_info_t *sc;

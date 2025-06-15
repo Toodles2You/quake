@@ -21,6 +21,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "clientdef.h"
 #include "serverdef.h"
 
+cmd_source_e cmd_source;
+
 #define MAX_ALIAS_NAME 32
 
 typedef struct cmdalias_s
@@ -33,10 +35,6 @@ typedef struct cmdalias_s
 static cmdalias_t *cmd_alias;
 
 static bool cmd_wait[2];
-
-cvar_t cl_warncmd = {"cl_warncmd", "0"};
-
-cmd_source_e cmd_source;
 
 //=============================================================================
 
@@ -65,11 +63,6 @@ static void Cmd_Wait_f (void)
 static sizebuf_t cmd_text[2];
 static byte cmd_text_buf[2][8192];
 
-/*
-============
-Cbuf_Init
-============
-*/
 void Cbuf_Init (void)
 {
 	cmd_text[src_client].data = cmd_text_buf[src_client];
@@ -138,11 +131,6 @@ void Cbuf_InsertText (cmd_source_e src, char *text)
 	}
 }
 
-/*
-============
-Cbuf_Execute
-============
-*/
 void Cbuf_Execute (cmd_source_e src)
 {
 	int i;
@@ -212,7 +200,7 @@ quake +prog jctest.qp +cmd amlev1
 quake -nosound +cmd amlev1
 ===============
 */
-void Cmd_StuffCmds_f (void)
+static void Cmd_StuffCmds_f (void)
 {
 	int i, j;
 	int s;
@@ -256,8 +244,7 @@ void Cmd_StuffCmds_f (void)
 		{
 			i++;
 
-			for (j = i; (text[j] != '+') && (text[j] != '-') && (text[j] != 0); j++)
-				;
+			for (j = i; (text[j] != '+') && (text[j] != '-') && (text[j] != 0); j++);
 
 			c = text[j];
 			text[j] = 0;
@@ -276,11 +263,6 @@ void Cmd_StuffCmds_f (void)
 	Z_Free (build);
 }
 
-/*
-===============
-Cmd_Exec_f
-===============
-*/
 static void Cmd_Exec_f (void)
 {
 	char *f;
@@ -299,7 +281,7 @@ static void Cmd_Exec_f (void)
 		Con_Printf ("couldn't exec %s\n", Cmd_Argv (1));
 		return;
 	}
-	if (!Cvar_Command (cmd_source) && (cl_warncmd.value || developer.value))
+	if (!Cvar_Command (cmd_source) && developer.value)
 		Con_Printf ("execing %s\n", Cmd_Argv (1));
 
 	Cbuf_InsertText (cmd_source, f);
@@ -322,14 +304,6 @@ static void Cmd_Echo_f (void)
 	Con_Printf ("\n");
 }
 
-/*
-===============
-Cmd_Alias_f
-
-Creates a new command that executes a command string (possibly ; seperated)
-===============
-*/
-
 char *CopyString (char *in)
 {
 	char *out;
@@ -339,6 +313,13 @@ char *CopyString (char *in)
 	return out;
 }
 
+/*
+===============
+Cmd_Alias_f
+
+Creates a new command that executes a command string (possibly ; seperated)
+===============
+*/
 static void Cmd_Alias_f (void)
 {
 	cmdalias_t *a;
@@ -417,21 +398,11 @@ static char *cmd_args[2] = {NULL, NULL};
 
 static cmd_function_t *cmd_functions[2]; // possible commands to execute
 
-/*
-============
-Cmd_Argc
-============
-*/
 int Cmd_Argc (void)
 {
 	return cmd_argc[cmd_source];
 }
 
-/*
-============
-Cmd_Argv
-============
-*/
 char *Cmd_Argv (int arg)
 {
 	if (arg >= cmd_argc[cmd_source])
@@ -439,11 +410,6 @@ char *Cmd_Argv (int arg)
 	return cmd_argv[cmd_source][arg];
 }
 
-/*
-============
-Cmd_Args
-============
-*/
 char *Cmd_Args (void)
 {
 	if (!cmd_args[cmd_source])
@@ -501,11 +467,6 @@ void Cmd_TokenizeString (cmd_source_e src, char *text)
 	}
 }
 
-/*
-============
-Cmd_AddCommand
-============
-*/
 void Cmd_AddCommand (cmd_source_e src, char *cmd_name, xcommand_t function)
 {
 	cmd_function_t *cmd;
@@ -544,11 +505,6 @@ void Cmd_AddCommand (cmd_source_e src, char *cmd_name, xcommand_t function)
 	cmd_functions[src] = cmd;
 }
 
-/*
-============
-Cmd_Exists
-============
-*/
 bool Cmd_Exists (cmd_source_e src, char *cmd_name)
 {
 	cmd_function_t *cmd;
@@ -577,11 +533,6 @@ static void Cmd_GetBestCommand (cmd_source_e src, char *partial, int len, char *
 	}
 }
 
-/*
-============
-Cmd_CompleteCommand
-============
-*/
 char *Cmd_CompleteCommand (cmd_source_e src, char *partial)
 {
 	int len;
@@ -698,33 +649,6 @@ void Cmd_ExecuteString (cmd_source_e src, char *text)
 		Con_Printf ("Unknown command \"%s\"\n", Cmd_Argv (0));
 }
 
-/*
-================
-Cmd_CheckParm
-
-Returns the position (1 to argc-1) in the command's argument list
-where the given parameter apears, or 0 if not present
-================
-*/
-int Cmd_CheckParm (char *parm)
-{
-	int i;
-
-	if (!parm)
-		Sys_Error ("Cmd_CheckParm: NULL");
-
-	for (i = 1; i < Cmd_Argc (); i++)
-		if (!strcasecmp (parm, Cmd_Argv (i)))
-			return i;
-
-	return 0;
-}
-
-/*
-============
-Cmd_Init
-============
-*/
 void Cmd_Init (void)
 {
 	//

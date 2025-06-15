@@ -20,10 +20,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "clientdef.h"
 
-cvar_t cl_nopred = {"cl_nopred", "0"};
-cvar_t cl_pushlatency = {"pushlatency", "-999"};
-
-extern frame_t *view_frame;
+static cvar_t cl_nopred = {"cl_nopred", "0"};
+static cvar_t cl_pushlatency = {"pushlatency", "-999"};
 
 /*
 =================
@@ -34,7 +32,7 @@ try nudging slightly on all axis to
 allow for the cut precision of the net coordinates
 =================
 */
-void CL_NudgePosition (void)
+static void CL_NudgePosition (void)
 {
 	vec3_t base;
 	int x, y;
@@ -56,11 +54,6 @@ void CL_NudgePosition (void)
 	Con_DPrintf ("CL_NudgePosition: stuck\n");
 }
 
-/*
-==============
-CL_PredictUsercmd
-==============
-*/
 void CL_PredictUsercmd (player_state_t *from, player_state_t *to, usercmd_t *u, bool spectator)
 {
 	// split up very long moves
@@ -102,11 +95,6 @@ void CL_PredictUsercmd (player_state_t *from, player_state_t *to, usercmd_t *u, 
 	to->weaponframe = from->weaponframe;
 }
 
-/*
-==============
-CL_PredictMove
-==============
-*/
 void CL_PredictMove (void)
 {
 	int i;
@@ -199,11 +187,6 @@ void CL_PredictMove (void)
 	}
 }
 
-/*
-==============
-CL_InitPrediction
-==============
-*/
 void CL_InitPrediction (void)
 {
 	Cvar_RegisterVariable (src_client, &cl_pushlatency);

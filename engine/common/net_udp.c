@@ -31,22 +31,22 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <errno.h>
 #include <fcntl.h>
 
-static netadr_t net_local_adr;
-static char net_public_adr[24];
-
 netadr_t net_from;
 sizebuf_t net_message[NUM_SOCKETS];
 int net_socket[NUM_SOCKETS];
 
+static netadr_t net_local_adr;
+static char net_public_adr[24];
+
 #define MAX_UDP_PACKET 8192
 static byte net_message_buffer[NUM_SOCKETS][MAX_UDP_PACKET];
 
-int gethostname (char *, int);
-int close (int);
+// int gethostname (char *, int);
+// int close (int);
 
 //=============================================================================
 
-void NetadrToSockadr (netadr_t *a, struct sockaddr_in *s)
+static void NetadrToSockadr (netadr_t *a, struct sockaddr_in *s)
 {
 	memset (s, 0, sizeof (*s));
 	s->sin_family = AF_INET;
@@ -55,7 +55,7 @@ void NetadrToSockadr (netadr_t *a, struct sockaddr_in *s)
 	s->sin_port = a->port;
 }
 
-void SockadrToNetadr (struct sockaddr_in *s, netadr_t *a)
+static void SockadrToNetadr (struct sockaddr_in *s, netadr_t *a)
 {
 	*(int32_t *)&a->ip = *(int32_t *)&s->sin_addr;
 	a->port = s->sin_port;
@@ -221,7 +221,7 @@ void NET_SendPacket (netsocket_e sock, int length, void *data, netadr_t to)
 
 //=============================================================================
 
-int UDP_OpenSocket (int port)
+static int UDP_OpenSocket (int port)
 {
 	int newsocket;
 	struct sockaddr_in address;
@@ -258,11 +258,6 @@ int UDP_OpenSocket (int port)
 	return newsocket;
 }
 
-/*
-====================
-NET_GetLocalAddress
-====================
-*/
 netadr_t NET_GetLocalAddress (void)
 {
 	char buff[MAXHOSTNAMELEN];
@@ -387,11 +382,6 @@ char *NET_GetPublicAddress (void)
 	return net_public_adr;
 }
 
-/*
-====================
-NET_Close
-====================
-*/
 void NET_Close (netsocket_e sock)
 {
 	if (net_socket[sock])
@@ -401,11 +391,6 @@ void NET_Close (netsocket_e sock)
 	}
 }
 
-/*
-====================
-NET_Open
-====================
-*/
 void NET_Open (netsocket_e sock, int port)
 {
 	NET_Close (sock);
@@ -416,11 +401,6 @@ void NET_Open (netsocket_e sock, int port)
 	net_socket[sock] = UDP_OpenSocket (port);
 }
 
-/*
-====================
-NET_Init
-====================
-*/
 void NET_Init (void)
 {
 	//
@@ -440,11 +420,6 @@ void NET_Init (void)
 	Con_Printf ("UDP Initialized\n");
 }
 
-/*
-====================
-NET_Shutdown
-====================
-*/
 void NET_Shutdown (void)
 {
 	NET_Close (SERVER);

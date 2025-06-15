@@ -25,7 +25,6 @@ extern cvar_t rcon_address;
 extern cvar_t password;
 extern cvar_t spectator_password;
 extern cvar_t sys_ticrate;
-extern cvar_t sys_nostdout;
 extern cvar_t developer;
 
 extern bool host_initialized; // true if into command execution
@@ -36,7 +35,6 @@ extern double realtime;		// not bounded in any way, changed at
 							// start of every frame, never reset
 
 void Host_ClearMemory (void);
-void Host_ServerFrame (double time);
 void Host_InitCommands (void);
 void Host_Init (quakeparms_t *parms);
 void Host_Shutdown (void);

@@ -24,11 +24,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <fcntl.h>
 #include "clientdef.h"
 
-void SV_FlushRedirect (void);
-
-int con_linewidth;
-
-float con_cursorspeed = 4;
+#define CON_CURSORSPEED 4.0f
 
 #define CON_TEXTSIZE 16384
 
@@ -37,18 +33,6 @@ bool con_forcedup; // because no entities to refresh
 int con_totallines; // total lines in console scrollback
 int con_backscroll; // lines up from bottom to display
 int con_current;	// where next message will be printed
-int con_x;			// offset in current line for next print
-char *con_text = 0;
-
-cvar_t con_notifytime = {"con_notifytime", "3"}; //seconds
-
-#define NUM_CON_TIMES 4
-float con_times[NUM_CON_TIMES]; // realtime time the line was generated
-								// for transparent notify lines
-
-int con_vislines;
-
-bool con_debuglog;
 
 #define MAXCMDLINE 256
 extern char key_lines[32][MAXCMDLINE];
@@ -59,13 +43,24 @@ bool con_initialized;
 
 int con_notifylines; // scan lines to clear for notify lines
 
+void SV_FlushRedirect (void);
+
 void M_Menu_Main_f (void);
 
-/*
-================
-Con_ToggleConsole_f
-================
-*/
+static int con_linewidth;
+
+static int con_x; // offset in current line for next print
+static char *con_text = 0;
+
+static cvar_t con_notifytime = {"con_notifytime", "3"}; //seconds
+
+#define NUM_CON_TIMES 4
+static float con_times[NUM_CON_TIMES]; // realtime time the line was generated for transparent notify lines
+
+static int con_vislines;
+
+static bool con_debuglog;
+
 void Con_ToggleConsole_f (void)
 {
 	if (key_dest == key_console)
@@ -88,22 +83,12 @@ void Con_ToggleConsole_f (void)
 	memset (con_times, 0, sizeof (con_times));
 }
 
-/*
-================
-Con_Clear_f
-================
-*/
-void Con_Clear_f (void)
+static void Con_Clear_f (void)
 {
 	if (con_text)
 		memset (con_text, ' ', CON_TEXTSIZE);
 }
 
-/*
-================
-Con_ClearNotify
-================
-*/
 void Con_ClearNotify (void)
 {
 	int i;
@@ -112,25 +97,15 @@ void Con_ClearNotify (void)
 		con_times[i] = 0;
 }
 
-/*
-================
-Con_MessageMode_f
-================
-*/
 extern bool team_message;
 
-void Con_MessageMode_f (void)
+static void Con_MessageMode_f (void)
 {
 	key_dest = key_message;
 	team_message = false;
 }
 
-/*
-================
-Con_MessageMode2_f
-================
-*/
-void Con_MessageMode2_f (void)
+static void Con_MessageMode2_f (void)
 {
 	key_dest = key_message;
 	team_message = true;
@@ -190,11 +165,6 @@ void Con_CheckResize (void)
 	con_current = con_totallines - 1;
 }
 
-/*
-================
-Con_Init
-================
-*/
 void Con_Init (void)
 {
 #define MAXGAMEDIRLEN 1000
@@ -231,12 +201,7 @@ void Con_Init (void)
 	con_initialized = true;
 }
 
-/*
-===============
-Con_Linefeed
-===============
-*/
-void Con_Linefeed (void)
+static void Con_Linefeed (void)
 {
 	con_x = 0;
 	con_current++;
@@ -325,12 +290,7 @@ void Con_Print (char *txt)
 	}
 }
 
-/*
-================
-Con_DebugLog
-================
-*/
-void Con_DebugLog (char *file, char *fmt, ...)
+static void Con_DebugLog (char *file, char *fmt, ...)
 {
 	va_list argptr;
 	static char data[1024];
@@ -490,7 +450,7 @@ Con_DrawInput
 The input line scrolls horizontally if typing goes beyond the right edge
 ================
 */
-void Con_DrawInput (void)
+static void Con_DrawInput (void)
 {
 	int i;
 	char *text;
@@ -501,7 +461,7 @@ void Con_DrawInput (void)
 	text = key_lines[edit_line];
 
 	// add the cursor frame
-	text[key_linepos] = 10 + ((int)(realtime * con_cursorspeed) & 1);
+	text[key_linepos] = 10 + ((int)(realtime * CON_CURSORSPEED) & 1);
 
 	// fill out remainder with spaces
 	for (i = key_linepos + 1; i < con_linewidth; i++)
@@ -567,7 +527,7 @@ void Con_DrawNotify (void)
 			Draw_Character ((x + 5) << 3, v, chat_buffer[x]);
 			x++;
 		}
-		Draw_Character ((x + 5) << 3, v, 10 + ((int)(realtime * con_cursorspeed) & 1));
+		Draw_Character ((x + 5) << 3, v, 10 + ((int)(realtime * CON_CURSORSPEED) & 1));
 		v += 8;
 	}
 
@@ -616,38 +576,4 @@ void Con_DrawConsole (int lines, bool drawinput)
 	// draw the input prompt, user text, and cursor if desired
 	if (drawinput)
 		Con_DrawInput ();
-}
-
-/*
-==================
-Con_NotifyBox
-==================
-*/
-void Con_NotifyBox (char *text)
-{
-	double t1, t2;
-
-	// during startup for sound / cd warnings
-	Con_Printf ("\n\n\35\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\37\n");
-
-	Con_Printf (text);
-
-	Con_Printf ("Press a key.\n");
-	Con_Printf ("\35\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\37\n");
-
-	key_count = -2; // wait for a key down and up
-	key_dest = key_console;
-
-	do
-	{
-		t1 = Sys_FloatTime ();
-		SCR_UpdateScreen ();
-		Sys_SendKeyEvents ();
-		t2 = Sys_FloatTime ();
-		realtime += t2 - t1; // make the cursor blink
-	} while (key_count < 0);
-
-	Con_Printf ("\n");
-	key_dest = key_game;
-	realtime = 0; // put the cursor back to invisible
 }

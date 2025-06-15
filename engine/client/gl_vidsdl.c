@@ -27,26 +27,21 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <SDL2/SDL.h>
 
 int texture_extension_number = 1;
-float gldepthmin, gldepthmax;
-
-const char *gl_vendor;
-const char *gl_renderer;
-const char *gl_version;
-const char *gl_extensions;
 
 SDL_Window *window = NULL;
 
-bool isPermedia = false;
 bool gl_mtexable = false;
 
 unsigned d_8to24table[256];
 
-cvar_t gl_ztrick = {"gl_ztrick", "1"};
+static const char *gl_vendor;
+static const char *gl_renderer;
+static const char *gl_version;
+static const char *gl_extensions;
 
 static SDL_GLContext context = NULL;
 
 static int scr_width, scr_height;
-static float vid_gamma = 1.0f;
 
 void VID_Shutdown (void)
 {
@@ -83,7 +78,7 @@ static void VID_InitSignals (void)
 	signal (SIGTERM, signal_handler);
 }
 
-void VID_SetPalette (unsigned char *palette)
+static void VID_SetPalette (unsigned char *palette)
 {
 	byte *pal;
 	unsigned r, g, b;
@@ -141,24 +136,19 @@ static void GL_CheckMultiTextureExtensions (void)
 	}
 }
 
-/*
-===============
-GL_Init
-===============
-*/
-void GL_Init (void)
+static void GL_Init (void)
 {
 	gl_vendor = glGetString (GL_VENDOR);
 	Con_Printf ("GL_VENDOR: %s\n", gl_vendor);
 	gl_renderer = glGetString (GL_RENDERER);
 	Con_Printf ("GL_RENDERER: %s\n", gl_renderer);
-
 	gl_version = glGetString (GL_VERSION);
 	Con_Printf ("GL_VERSION: %s\n", gl_version);
 	gl_extensions = glGetString (GL_EXTENSIONS);
-	// Con_Printf ("GL_EXTENSIONS: %s\n", gl_extensions);
-
-	//	Con_Printf ("%s %s\n", gl_renderer, gl_version);
+	if (strlen (gl_extensions) > 2048)
+		Con_Printf ("GL_EXTENSIONS: A LOT\n");
+	else
+		Con_Printf ("GL_EXTENSIONS: %s\n", gl_extensions);
 
 	GL_CheckMultiTextureExtensions ();
 
@@ -179,7 +169,6 @@ void GL_Init (void)
 
 	glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
 
-	//	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
 
 	glEnable (GL_STENCIL_TEST);
@@ -190,22 +179,11 @@ void GL_Init (void)
 	glStencilMask (0);
 }
 
-/*
-=================
-GL_BeginRendering
-
-=================
-*/
 void GL_BeginRendering (int *x, int *y, int *width, int *height)
 {
 	*x = *y = 0;
 	*width = scr_width;
 	*height = scr_height;
-
-	//    if (!wglMakeCurrent( maindc, baseRC ))
-	//		Sys_Error ("wglMakeCurrent failed");
-
-	//	glViewport (*x, *y, *width, *height);
 }
 
 void GL_EndRendering (void)
@@ -220,8 +198,11 @@ static void VID_CheckGamma (unsigned char *pal)
 	unsigned char palette[768];
 	int i;
 
+	float vid_gamma;
 	if ((i = COM_CheckParm ("-gamma")))
 		vid_gamma = atof (com_argv[i + 1]);
+	else
+		vid_gamma = 1;
 
 	for (i = 0; i < 768; i++)
 	{
@@ -328,6 +309,8 @@ static void VID_CheckParms (int *width, int *height, bool *fullscreen)
 
 void VID_Init (char *palette)
 {
+	extern cvar_t gl_ztrick;
+
 	Cvar_RegisterVariable (src_client, &gl_ztrick);
 
 	byte *host_basepal = (byte *)COM_LoadHunkFile (palette);

@@ -30,7 +30,7 @@ typedef struct
 	vec3_t start, end;
 } beam_t;
 
-beam_t cl_beams[MAX_BEAMS];
+static beam_t cl_beams[MAX_BEAMS];
 
 #define MAX_EXPLOSIONS 8
 
@@ -41,21 +41,16 @@ typedef struct
 	model_t *model;
 } explosion_t;
 
-explosion_t cl_explosions[MAX_EXPLOSIONS];
+static explosion_t cl_explosions[MAX_EXPLOSIONS];
 
-sfx_t *cl_sfx_wizhit;
-sfx_t *cl_sfx_knighthit;
-sfx_t *cl_sfx_tink1;
-sfx_t *cl_sfx_ric1;
-sfx_t *cl_sfx_ric2;
-sfx_t *cl_sfx_ric3;
-sfx_t *cl_sfx_r_exp3;
+static sfx_t *cl_sfx_wizhit;
+static sfx_t *cl_sfx_knighthit;
+static sfx_t *cl_sfx_tink1;
+static sfx_t *cl_sfx_ric1;
+static sfx_t *cl_sfx_ric2;
+static sfx_t *cl_sfx_ric3;
+static sfx_t *cl_sfx_r_exp3;
 
-/*
-=================
-CL_ParseTEnts
-=================
-*/
 void CL_InitTEnts (void)
 {
 	cl_sfx_wizhit = S_PrecacheSound ("wizard/hit.wav");
@@ -67,22 +62,12 @@ void CL_InitTEnts (void)
 	cl_sfx_r_exp3 = S_PrecacheSound ("weapons/r_exp3.wav");
 }
 
-/*
-=================
-CL_ClearTEnts
-=================
-*/
 void CL_ClearTEnts (void)
 {
 	memset (&cl_beams, 0, sizeof (cl_beams));
 	memset (&cl_explosions, 0, sizeof (cl_explosions));
 }
 
-/*
-=================
-CL_AllocExplosion
-=================
-*/
 static explosion_t *CL_AllocExplosion (void)
 {
 	int i;
@@ -105,11 +90,6 @@ static explosion_t *CL_AllocExplosion (void)
 	return &cl_explosions[index];
 }
 
-/*
-=================
-CL_ParseBeam
-=================
-*/
 static void CL_ParseBeam (model_t *m)
 {
 	int ent;
@@ -155,11 +135,6 @@ static void CL_ParseBeam (model_t *m)
 	Con_Printf ("beam list overflow!\n");
 }
 
-/*
-=================
-CL_ParseTEnt
-=================
-*/
 void CL_ParseTEnt (void)
 {
 	int type;
@@ -351,11 +326,6 @@ void CL_ParseTEnt (void)
 	}
 }
 
-/*
-=================
-CL_NewTempEntity
-=================
-*/
 entity_t *CL_NewTempEntity (void)
 {
 	entity_t *ent;
@@ -371,11 +341,6 @@ entity_t *CL_NewTempEntity (void)
 	return ent;
 }
 
-/*
-=================
-CL_UpdateBeams
-=================
-*/
 static void CL_UpdateBeams (void)
 {
 	int i;
@@ -440,11 +405,6 @@ static void CL_UpdateBeams (void)
 	}
 }
 
-/*
-=================
-CL_UpdateExplosions
-=================
-*/
 static void CL_UpdateExplosions (void)
 {
 	int i;
@@ -472,11 +432,6 @@ static void CL_UpdateExplosions (void)
 	}
 }
 
-/*
-=================
-CL_UpdateTEnts
-=================
-*/
 void CL_UpdateTEnts (void)
 {
 	CL_UpdateBeams ();

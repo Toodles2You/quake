@@ -139,8 +139,8 @@ void ED_LoadFromFile (char *data);
 
 void ED_Init (void);
 
-edict_t *EDICT_NUM (int n);
-int NUM_FOR_EDICT (edict_t *e);
+edict_t *ED_GetNum (int n);
+int ED_ForNum (edict_t *e);
 
 #define NEXT_EDICT(e) ((edict_t *)((byte *)e + sv.pr.edict_size))
 
@@ -164,7 +164,7 @@ int NUM_FOR_EDICT (edict_t *e);
 #define pr_set_string(_PR, _OFS, _STR) (pr_global (_PR, string_t, _OFS) = PR_SetString (_PR, _STR))
 
 #define pr_get_edict(_PR, _OFS) ((edict_t *)((byte *)sv.edicts + pr_global (_PR, int32_t, _OFS)))
-#define pr_get_edict_num(_PR, _OFS) NUM_FOR_EDICT (pr_get_edict (_PR, _OFS))
+#define pr_get_edict_num(_PR, _OFS) ED_ForNum (pr_get_edict (_PR, _OFS))
 
 #define pr_field(_FIELD) (sv.pr.global_struct[pr_##_FIELD] != 0)
 
@@ -191,14 +191,6 @@ void ED_PrintEdicts (void);
 void ED_PrintNum (int ent);
 
 eval_t *GetEdictFieldValue (edict_t *ed, char *field);
-
-//
-// PR STrings stuff
-//
-#define MAX_PRSTR 1024
-
-extern char *pr_strtbl[MAX_PRSTR];
-extern int num_prstr;
 
 char *PR_GetString (progs_state_t *pr, int num);
 int PR_SetString (progs_state_t *pr, char *s);

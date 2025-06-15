@@ -70,7 +70,7 @@ To keep everything totally uniform, bounding boxes are turned into small
 BSP trees instead of being compared directly.
 ===================
 */
-hull_t *PM_HullForBox (vec3_t mins, vec3_t maxs)
+static hull_t *PM_HullForBox (vec3_t mins, vec3_t maxs)
 {
 	box_planes[0].dist = maxs[0];
 	box_planes[1].dist = mins[0];
@@ -82,12 +82,6 @@ hull_t *PM_HullForBox (vec3_t mins, vec3_t maxs)
 	return &box_hull;
 }
 
-/*
-==================
-PM_HullPointContents
-
-==================
-*/
 int PM_HullPointContents (hull_t *hull, int num, vec3_t p)
 {
 	float d;
@@ -115,12 +109,6 @@ int PM_HullPointContents (hull_t *hull, int num, vec3_t p)
 	return num;
 }
 
-/*
-==================
-PM_PointContents
-
-==================
-*/
 int PM_PointContents (vec3_t p)
 {
 	float d;
@@ -163,15 +151,9 @@ LINE TESTING IN HULLS
 */
 
 // 1/32 epsilon to keep floating point happy
-#define DIST_EPSILON (0.03125)
+#define DIST_EPSILON 0.03125f
 
-/*
-==================
-PM_RecursiveHullCheck
-
-==================
-*/
-bool PM_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, vec3_t p1, vec3_t p2, pmtrace_t *trace)
+static bool PM_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, vec3_t p1, vec3_t p2, pmtrace_t *trace)
 {
 	dclipnode_t *node;
 	mplane_t *plane;
@@ -218,17 +200,10 @@ bool PM_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, vec3_t 
 		t2 = DotProduct (plane->normal, p2) - plane->dist;
 	}
 
-#if 1
 	if (t1 >= 0 && t2 >= 0)
 		return PM_RecursiveHullCheck (hull, node->children[0], p1f, p2f, p1, p2, trace);
 	if (t1 < 0 && t2 < 0)
 		return PM_RecursiveHullCheck (hull, node->children[1], p1f, p2f, p1, p2, trace);
-#else
-	if ((t1 >= DIST_EPSILON && t2 >= DIST_EPSILON) || (t2 > t1 && t1 >= 0))
-		return PM_RecursiveHullCheck (hull, node->children[0], p1f, p2f, p1, p2, trace);
-	if ((t1 <= -DIST_EPSILON && t2 <= -DIST_EPSILON) || (t2 < t1 && t1 <= 0))
-		return PM_RecursiveHullCheck (hull, node->children[1], p1f, p2f, p1, p2, trace);
-#endif
 
 	// put the crosspoint DIST_EPSILON pixels on the near side
 	if (t1 < 0)
@@ -249,14 +224,6 @@ bool PM_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, vec3_t 
 	// move up to the node
 	if (!PM_RecursiveHullCheck (hull, node->children[side], p1f, midf, p1, mid, trace))
 		return false;
-
-#ifdef PARANOID
-	if (PM_HullPointContents (pm_hullmodel, mid, node->children[side]) == CONTENTS_SOLID)
-	{
-		Con_Printf ("mid PointInHullSolid\n");
-		return false;
-	}
-#endif
 
 	if (PM_HullPointContents (hull, node->children[side ^ 1], mid) != CONTENTS_SOLID)
 		// go past the node
@@ -336,11 +303,6 @@ bool PM_TestPlayerPosition (vec3_t pos)
 	return true;
 }
 
-/*
-================
-PM_PlayerMove
-================
-*/
 pmtrace_t PM_PlayerMove (vec3_t start, vec3_t end)
 {
 	pmtrace_t trace, total;

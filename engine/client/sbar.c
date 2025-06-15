@@ -20,56 +20,41 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "clientdef.h"
 
-#define sb_deathmatch 0
+int sb_lines; // scan lines to draw
 
 static bool sb_updated; // if >= vid.numpages, no update needed
 
 #define sb_minus 10 // num frame for '-' stats digit
+static qpic_t *sb_nums[2][11];
+static qpic_t *sb_colon, *sb_slash;
+static qpic_t *sb_ibar;
+static qpic_t *sb_sbar;
+static qpic_t *sb_scorebar;
 
-qpic_t *sb_nums[2][11];
-qpic_t *sb_colon, *sb_slash;
-qpic_t *sb_ibar;
-qpic_t *sb_sbar;
-qpic_t *sb_scorebar;
+static qpic_t *sb_weapons[7][8]; // 0 is active, 1 is owned, 2-5 are flashes
+static qpic_t *sb_ammo[4];
+static qpic_t *sb_sigil[4];
+static qpic_t *sb_armor[3];
+static qpic_t *sb_items[32];
 
-qpic_t *sb_weapons[7][8]; // 0 is active, 1 is owned, 2-5 are flashes
-qpic_t *sb_ammo[4];
-qpic_t *sb_sigil[4];
-qpic_t *sb_armor[3];
-qpic_t *sb_items[32];
+static qpic_t *sb_faces[7][2]; // 0 is gibbed, 1 is dead, 2-6 are alive
+							   // 0 is static, 1 is temporary animation
+static qpic_t *sb_face_invis;
+static qpic_t *sb_face_quad;
+static qpic_t *sb_face_invuln;
+static qpic_t *sb_face_invis_invuln;
 
-qpic_t *sb_faces[7][2]; // 0 is gibbed, 1 is dead, 2-6 are alive
-						// 0 is static, 1 is temporary animation
-qpic_t *sb_face_invis;
-qpic_t *sb_face_quad;
-qpic_t *sb_face_invuln;
-qpic_t *sb_face_invis_invuln;
+static bool sb_showscores;
 
-bool sb_showscores;
+static qpic_t *rsb_invbar[2];
+static qpic_t *rsb_weapons[5];
+static qpic_t *rsb_items[2];
+static qpic_t *rsb_ammo[3];
 
-int sb_lines; // scan lines to draw
+static qpic_t *hsb_weapons[7][5]; // 0 is active, 1 is owned, 2-5 are flashes
+static int hsb_weapon_bits[4] = {HIT_LASER_CANNON_BIT, HIT_MJOLNIR_BIT, 4, HIT_PROXIMITY_GUN_BIT};
+static qpic_t *hsb_items[2];
 
-qpic_t *rsb_invbar[2];
-qpic_t *rsb_weapons[5];
-qpic_t *rsb_items[2];
-qpic_t *rsb_ammo[3];
-qpic_t *rsb_teambord;
-
-qpic_t *hsb_weapons[7][5]; // 0 is active, 1 is owned, 2-5 are flashes
-int hipweapons[4] = {HIT_LASER_CANNON_BIT, HIT_MJOLNIR_BIT, 4, HIT_PROXIMITY_GUN_BIT};
-qpic_t *hsb_items[2];
-
-static void Sbar_MiniDeathmatchOverlay (void);
-static void Sbar_DeathmatchOverlay (void);
-void M_DrawPic (int x, int y, qpic_t *pic);
-
-/*
-===============
-Sbar_ShowScores_f
-
-Tab key down
-===============
-*/
 static void Sbar_ShowScores_f (void)
 {
 	if (sb_showscores)
@@ -78,34 +63,17 @@ static void Sbar_ShowScores_f (void)
 	sb_updated = false;
 }
 
-/*
-===============
-Sbar_DontShowScores_f
-
-Tab key up
-===============
-*/
 static void Sbar_DontShowScores_f (void)
 {
 	sb_showscores = false;
 	sb_updated = false;
 }
 
-/*
-===============
-Sbar_Changed
-===============
-*/
 void Sbar_Changed (void)
 {
 	sb_updated = false; // update next frame
 }
 
-/*
-===============
-Sbar_Init
-===============
-*/
 void Sbar_Init (void)
 {
 	int i;
@@ -234,8 +202,6 @@ void Sbar_Init (void)
 		rsb_items[0] = Draw_PicFromWad ("r_shield1");
 		rsb_items[1] = Draw_PicFromWad ("r_agrav1");
 
-		rsb_teambord = Draw_PicFromWad ("r_teambord");
-
 		rsb_ammo[0] = Draw_PicFromWad ("r_ammolava");
 		rsb_ammo[1] = Draw_PicFromWad ("r_ammomulti");
 		rsb_ammo[2] = Draw_PicFromWad ("r_ammoplasma");
@@ -246,30 +212,14 @@ void Sbar_Init (void)
 
 // drawing routines are relative to the status bar location
 
-/*
-=============
-Sbar_DrawPic
-=============
-*/
 static void Sbar_DrawPic (int x, int y, qpic_t *pic)
 {
-	if (sb_deathmatch)
-		Draw_Pic (x /* + ((vid.width - 320)>>1)*/, y + (vid.height - SBAR_HEIGHT), pic);
-	else
-		Draw_Pic (x + ((vid.width - 320) >> 1), y + (vid.height - SBAR_HEIGHT), pic);
+	Draw_Pic (x + ((vid.width - 320) >> 1), y + (vid.height - SBAR_HEIGHT), pic);
 }
 
-/*
-=============
-Sbar_DrawTransPic
-=============
-*/
 static void Sbar_DrawTransPic (int x, int y, qpic_t *pic)
 {
-	if (sb_deathmatch)
-		Draw_TransPic (x /*+ ((vid.width - 320)>>1)*/, y + (vid.height - SBAR_HEIGHT), pic);
-	else
-		Draw_TransPic (x + ((vid.width - 320) >> 1), y + (vid.height - SBAR_HEIGHT), pic);
+	Draw_TransPic (x + ((vid.width - 320) >> 1), y + (vid.height - SBAR_HEIGHT), pic);
 }
 
 /*
@@ -281,30 +231,14 @@ Draws one solid graphics character
 */
 static void Sbar_DrawCharacter (int x, int y, int num)
 {
-	if (sb_deathmatch)
-		Draw_Character (x /*+ ((vid.width - 320)>>1) */ + 4, y + vid.height - SBAR_HEIGHT, num);
-	else
-		Draw_Character (x + ((vid.width - 320) >> 1) + 4, y + vid.height - SBAR_HEIGHT, num);
+	Draw_Character (x + ((vid.width - 320) >> 1) + 4, y + vid.height - SBAR_HEIGHT, num);
 }
 
-/*
-================
-Sbar_DrawString
-================
-*/
 static void Sbar_DrawString (int x, int y, char *str)
 {
-	if (sb_deathmatch)
-		Draw_String (x /*+ ((vid.width - 320)>>1)*/, y + vid.height - SBAR_HEIGHT, str);
-	else
-		Draw_String (x + ((vid.width - 320) >> 1), y + vid.height - SBAR_HEIGHT, str);
+	Draw_String (x + ((vid.width - 320) >> 1), y + vid.height - SBAR_HEIGHT, str);
 }
 
-/*
-=============
-Sbar_itoa
-=============
-*/
 static int Sbar_itoa (int num, char *buf)
 {
 	char *str;
@@ -319,8 +253,7 @@ static int Sbar_itoa (int num, char *buf)
 		num = -num;
 	}
 
-	for (pow10 = 10; num >= pow10; pow10 *= 10)
-		;
+	for (pow10 = 10; num >= pow10; pow10 *= 10);
 
 	do
 	{
@@ -335,11 +268,6 @@ static int Sbar_itoa (int num, char *buf)
 	return str - buf;
 }
 
-/*
-=============
-Sbar_DrawNum
-=============
-*/
 static void Sbar_DrawNum (int x, int y, int num, int digits, int color)
 {
 	char str[12];
@@ -368,23 +296,6 @@ static void Sbar_DrawNum (int x, int y, int num, int digits, int color)
 
 //=============================================================================
 
-static int Sbar_ColorForMap (int m)
-{
-	return m < 128 ? m + 8 : m + 8;
-}
-
-/*
-===============
-Sbar_UpdateScoreboard
-===============
-*/
-static void Sbar_UpdateScoreboard (void) {}
-
-/*
-===============
-Sbar_SoloScoreboard
-===============
-*/
 static void Sbar_SoloScoreboard (void)
 {
 	char str[80];
@@ -410,71 +321,14 @@ static void Sbar_SoloScoreboard (void)
 	Sbar_DrawString (232 - l * 4, 12, cl.levelname);
 }
 
-/*
-===============
-Sbar_DrawScoreboard
-===============
-*/
-void Sbar_DrawScoreboard (void)
+static void Sbar_DrawScoreboard (void)
 {
 	Sbar_SoloScoreboard ();
-	if (sb_deathmatch)
-		Sbar_DeathmatchOverlay ();
-#if 0
-	int		i, j, c;
-	int		x, y;
-	int		l;
-	int		top, bottom;
-	scoreboard_t	*s;
-
-	if (!sb_deathmatch)
-	{
-		Sbar_SoloScoreboard ();
-		return;
-	}
-
-	Sbar_UpdateScoreboard ();
-
-	l = scoreboardlines <= 6 ? scoreboardlines : 6;
-
-	for (i=0 ; i<l ; i++)
-	{
-		x = 20*(i&1);
-		y = i/2 * 8;
-
-		s = &cl.scores[fragsort[i]];
-		if (!s->name[0])
-			continue;
-
-	// draw background
-		top = s->colors & 0xf0;
-		bottom = (s->colors & 15)<<4;
-		top = Sbar_ColorForMap (top);
-		bottom = Sbar_ColorForMap (bottom);
-
-		Draw_Fill ( x*8+10 + ((vid.width - 320)>>1), y + vid.height - SBAR_HEIGHT, 28, 4, top);
-		Draw_Fill ( x*8+10 + ((vid.width - 320)>>1), y+4 + vid.height - SBAR_HEIGHT, 28, 4, bottom);
-
-	// draw text
-		for (j=0 ; j<20 ; j++)
-		{
-			c = scoreboardtext[i][j];
-			if (c == 0 || c == ' ')
-				continue;
-			Sbar_DrawCharacter ( (x+j)*8, y, c);
-		}
-	}
-#endif
 }
 
 //=============================================================================
 
-/*
-===============
-Sbar_DrawInventory
-===============
-*/
-void Sbar_DrawInventory (void)
+static void Sbar_DrawInventory (void)
 {
 	int i;
 	char num[6];
@@ -523,15 +377,15 @@ void Sbar_DrawInventory (void)
 		int grenadeflashing = 0;
 		for (i = 0; i < 4; i++)
 		{
-			if (cl.stats[STAT_ITEMS] & (1 << hipweapons[i]))
+			if (cl.stats[STAT_ITEMS] & (1 << hsb_weapon_bits[i]))
 			{
-				time = cl.item_gettime[hipweapons[i]];
+				time = cl.item_gettime[hsb_weapon_bits[i]];
 				flashon = (int)((cl.time - time) * 10);
 				if (flashon < 0)
 					flashon = 0;
 				if (flashon >= 10)
 				{
-					if (cl.stats[STAT_ACTIVEWEAPON] == (1 << hipweapons[i]))
+					if (cl.stats[STAT_ACTIVEWEAPON] == (1 << hsb_weapon_bits[i]))
 						flashon = 1;
 					else
 						flashon = 0;
@@ -667,65 +521,9 @@ void Sbar_DrawInventory (void)
 
 //=============================================================================
 
-/*
-===============
-Sbar_DrawFace
-===============
-*/
-void Sbar_DrawFace (void)
+static void Sbar_DrawFace (void)
 {
 	int f, anim;
-
-#if 0
-	if (rogue &&
-        (cl.maxclients != 1) &&
-        (teamplay.value>3) &&
-        (teamplay.value<7))
-	{
-		int				top, bottom;
-		int				xofs;
-		char			num[12];
-		scoreboard_t	*s;
-		
-		s = &cl.scores[cl.viewentity - 1];
-		// draw background
-		top = s->colors & 0xf0;
-		bottom = (s->colors & 15)<<4;
-		top = Sbar_ColorForMap (top);
-		bottom = Sbar_ColorForMap (bottom);
-
-		if (sb_deathmatch)
-			xofs = 113;
-		else
-			xofs = ((vid.width - 320)>>1) + 113;
-
-		Sbar_DrawPic (112, 0, rsb_teambord);
-		Draw_Fill (xofs, vid.height-SBAR_HEIGHT+3, 22, 9, top);
-		Draw_Fill (xofs, vid.height-SBAR_HEIGHT+12, 22, 9, bottom);
-
-		// draw number
-		f = s->frags;
-		sprintf (num, "%3i",f);
-
-		if (top==8)
-		{
-			if (num[0] != ' ')
-				Sbar_DrawCharacter(109, 3, 18 + num[0] - '0');
-			if (num[1] != ' ')
-				Sbar_DrawCharacter(116, 3, 18 + num[1] - '0');
-			if (num[2] != ' ')
-				Sbar_DrawCharacter(123, 3, 18 + num[2] - '0');
-		}
-		else
-		{
-			Sbar_DrawCharacter ( 109, 3, num[0]);
-			Sbar_DrawCharacter ( 116, 3, num[1]);
-			Sbar_DrawCharacter ( 123, 3, num[2]);
-		}
-		
-		return;
-	}
-#endif
 
 	if ((cl.stats[STAT_ITEMS] & (IT_INVISIBILITY | IT_INVULNERABILITY)) == (IT_INVISIBILITY | IT_INVULNERABILITY))
 	{
@@ -763,11 +561,6 @@ void Sbar_DrawFace (void)
 	Sbar_DrawPic (112, 0, sb_faces[f][anim]);
 }
 
-/*
-===============
-Sbar_Draw
-===============
-*/
 void Sbar_Draw (void)
 {
 	if (scr_con_current == vid.height)
@@ -870,23 +663,11 @@ void Sbar_Draw (void)
 
 		Sbar_DrawNum (248, 0, cl.stats[STAT_AMMO], 3, cl.stats[STAT_AMMO] <= 10);
 	}
-
-	if (vid.width > 320)
-	{
-		if (sb_deathmatch)
-			Sbar_MiniDeathmatchOverlay ();
-	}
 }
 
 //=============================================================================
 
-/*
-==================
-Sbar_IntermissionNumber
-
-==================
-*/
-void Sbar_IntermissionNumber (int x, int y, int num, int digits, int color)
+static void Sbar_IntermissionNumber (int x, int y, int num, int digits, int color)
 {
 	char str[12];
 	char *ptr;
@@ -912,39 +693,11 @@ void Sbar_IntermissionNumber (int x, int y, int num, int digits, int color)
 	}
 }
 
-/*
-==================
-Sbar_DeathmatchOverlay
-
-==================
-*/
-static void Sbar_DeathmatchOverlay (void) {}
-
-/*
-==================
-Sbar_MiniDeathmatchOverlay
-
-==================
-*/
-static void Sbar_MiniDeathmatchOverlay (void) {}
-
-/*
-==================
-Sbar_IntermissionOverlay
-
-==================
-*/
 void Sbar_IntermissionOverlay (void)
 {
 	qpic_t *pic;
 	int dig;
 	int num;
-
-	if (sb_deathmatch)
-	{
-		Sbar_DeathmatchOverlay ();
-		return;
-	}
 
 	pic = Draw_CachePic ("gfx/complete.lmp");
 	Draw_Pic (64, 24, pic);
@@ -969,12 +722,6 @@ void Sbar_IntermissionOverlay (void)
 	Sbar_IntermissionNumber (240, 144, cl.stats[STAT_TOTALMONSTERS], 3, 0);
 }
 
-/*
-==================
-Sbar_FinaleOverlay
-
-==================
-*/
 void Sbar_FinaleOverlay (void)
 {
 	qpic_t *pic;

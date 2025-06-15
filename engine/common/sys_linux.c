@@ -41,65 +41,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "clientdef.h"
 #include "serverdef.h"
 
-int nostdout = 0;
-
-char *basedir = ".";
-char *cachedir = "/tmp";
-
-cvar_t sys_linerefresh = {"sys_linerefresh", "0"}; // set for entity display
+static bool nostdout;
 
 // =======================================================================
 // General routines
 // =======================================================================
-
-void Sys_DebugNumber (int y, int val) {}
-
-/*
-void Sys_Printf (char *fmt, ...)
-{
-	va_list		argptr;
-	char		text[1024];
-	
-	va_start (argptr,fmt);
-	vsprintf (text,fmt,argptr);
-	va_end (argptr);
-	fprintf(stderr, "%s", text);
-	
-	Con_Print (text);
-}
-
-void Sys_Printf (char *fmt, ...)
-{
-
-    va_list     argptr;
-    char        text[1024], *t_p;
-    int         l, r;
-
-	if (nostdout)
-		return;
-
-    va_start (argptr,fmt);
-    vsprintf (text,fmt,argptr);
-    va_end (argptr);
-
-    l = strlen(text);
-    t_p = text;
-
-// make sure everything goes through, even though we are non-blocking
-    while (l)
-    {
-        r = write (1, text, l);
-        if (r != l)
-            sleep (0);
-        if (r > 0)
-        {
-            t_p += r;
-            l -= r;
-        }
-    }
-
-}
-*/
 
 void Sys_Printf (char *fmt, ...)
 {
@@ -303,21 +249,6 @@ void Sys_Sleep (int msec)
 	nanosleep (&ts, NULL);
 }
 
-static volatile int oktogo;
-
-void alarm_handler (int x)
-{
-	oktogo = 1;
-}
-
-void Sys_LineRefresh (void) {}
-
-void floating_point_exception_handler (int whatever)
-{
-	//	Sys_Warn("floating point exception\n");
-	signal (SIGFPE, floating_point_exception_handler);
-}
-
 char *Sys_ConsoleInput (void)
 {
 	static char text[256];
@@ -346,14 +277,10 @@ char *Sys_ConsoleInput (void)
 
 int main (int c, char **v)
 {
-
 	double time, oldtime, newtime;
 	quakeparms_t parms;
 	int j;
 
-	//	static char cwd[1024];
-
-	//	signal(SIGFPE, floating_point_exception_handler);
 	signal (SIGFPE, SIG_IGN);
 
 	memset (&parms, 0, sizeof (parms));
@@ -369,9 +296,7 @@ int main (int c, char **v)
 		parms.memsize = (int)(atof (com_argv[j + 1]) * 1024 * 1024);
 	parms.membase = malloc (parms.memsize);
 
-	parms.basedir = basedir;
-	// caching is disabled by default, use -cachedir to enable
-	//	parms.cachedir = cachedir;
+	parms.basedir = ".";
 
 	fcntl (0, F_SETFL, fcntl (0, F_GETFL, 0) | FNDELAY);
 
@@ -423,9 +348,5 @@ int main (int c, char **v)
 			oldtime += time;
 
 		Host_Frame (time);
-
-		// graphic debugging aids
-		if (sys_linerefresh.value)
-			Sys_LineRefresh ();
 	}
 }

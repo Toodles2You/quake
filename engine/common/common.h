@@ -66,8 +66,6 @@ void InsertLinkAfter (link_t *l, link_t *after);
 
 //============================================================================
 
-extern bool bigendien;
-
 extern int16_t (*BigShort) (int16_t l);
 extern int16_t (*LittleShort) (int16_t l);
 extern int32_t (*BigLong) (int32_t l);
@@ -128,7 +126,6 @@ extern int com_argc;
 extern char **com_argv;
 
 int COM_CheckParm (char *parm);
-void COM_AddParm (char *parm);
 
 void COM_Init (char *path);
 void COM_InitArgv (int argc, char **argv);

@@ -45,11 +45,6 @@ redirect_t sv_redirected;
 
 extern cvar_t sv_phs;
 
-/*
-==================
-SV_FlushRedirect
-==================
-*/
 void SV_FlushRedirect (void)
 {
 	char send[8000 + 6];
@@ -354,7 +349,7 @@ void SV_StartSound (edict_t *entity, int channel, char *sample, int volume, floa
 		return;
 	}
 
-	ent = NUM_FOR_EDICT (entity);
+	ent = ED_ForNum (entity);
 
 	if ((channel & 8) || !sv_phs.value) // no PHS flag
 	{
@@ -439,12 +434,6 @@ void SV_FindModelNumbers (void)
 	}
 }
 
-/*
-==================
-SV_WriteClientdataToMessage
-
-==================
-*/
 static void SV_WriteClientdataToMessage (client_t *client, sizebuf_t *msg)
 {
 	int i;
@@ -547,11 +536,6 @@ static void SV_UpdateClientStats (client_t *client)
 		}
 }
 
-/*
-=======================
-SV_SendClientDatagram
-=======================
-*/
 static bool SV_SendClientDatagram (client_t *client)
 {
 	byte buf[MAX_DATAGRAM];
@@ -595,11 +579,6 @@ static bool SV_SendClientDatagram (client_t *client)
 	return true;
 }
 
-/*
-=======================
-SV_UpdateToReliableMessages
-=======================
-*/
 static void SV_UpdateToReliableMessages (void)
 {
 	int i, j;
@@ -670,11 +649,6 @@ static void SV_UpdateToReliableMessages (void)
 	SZ_Clear (&sv.datagram);
 }
 
-/*
-=======================
-SV_SendClientMessages
-=======================
-*/
 void SV_SendClientMessages (void)
 {
 	int i, j;

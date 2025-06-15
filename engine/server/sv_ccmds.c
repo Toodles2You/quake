@@ -20,11 +20,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "serverdef.h"
 
-bool sv_allow_cheats;
+static bool sv_allow_cheats;
 
 int fp_messages = 4, fp_persecond = 4, fp_secondsdead = 10;
 char fp_msg[255] = {0};
-extern cvar_t cl_warncmd;
 extern redirect_t sv_redirected;
 extern netadr_t master_adr[MAX_MASTERS];
 
@@ -73,20 +72,8 @@ static void SV_SetMaster_f (void)
 	svs.last_heartbeat = -99999;
 }
 
-/*
-============
-SV_Logfile_f
-
-FIXME:
-============
-*/
 static void SV_Logfile_f (void) {}
 
-/*
-============
-SV_Fraglogfile_f
-============
-*/
 static void SV_Fraglogfile_f (void)
 {
 	char name[MAX_OSPATH];
@@ -223,11 +210,6 @@ static void SV_Noclip_f (void)
 	}
 }
 
-/*
-==================
-SV_Give_f
-==================
-*/
 static void SV_Give_f (void)
 {
 	char *t;
@@ -391,12 +373,7 @@ static void SV_Kick_f (void)
 	Con_Printf ("Couldn't find user number %i\n", uid);
 }
 
-/*
-================
-SV_Status_f
-================
-*/
-void SV_Status_f (void)
+static void SV_Status_f (void)
 {
 	int i, j, l;
 	client_t *cl;
@@ -412,13 +389,12 @@ void SV_Status_f (void)
 	Con_Printf ("net address      : %s\n", NET_AdrToString (NET_GetLocalAddress ()));
 	Con_Printf ("cpu utilization  : %3i%%\n", (int)cpu);
 	Con_Printf ("avg response time: %i ms\n", (int)avg);
-	Con_Printf ("packets/frame    : %5.2f (%d)\n", pak, num_prstr);
+	Con_Printf ("packets/frame    : %5.2f\n", pak);
 
 	// min fps lat drp
 	if (sv_redirected != RD_NONE)
 	{
 		// most remote clients are 40 columns
-		//           0123456789012345678901234567890123456789
 		Con_Printf ("name               userid frags\n");
 		Con_Printf ("  address          rate ping drop\n");
 		Con_Printf ("  ---------------- ---- ---- -----\n");
@@ -492,11 +468,6 @@ void SV_Status_f (void)
 	Con_Printf ("\n");
 }
 
-/*
-==================
-SV_ConSay_f
-==================
-*/
 static void SV_ConSay_f (void)
 {
 	client_t *client;
@@ -526,11 +497,6 @@ static void SV_ConSay_f (void)
 	}
 }
 
-/*
-==================
-SV_Heartbeat_f
-==================
-*/
 static void SV_Heartbeat_f (void)
 {
 	svs.last_heartbeat = -9999;
@@ -546,6 +512,8 @@ void SV_SendServerInfoChange (char *key, char *value)
 	MSG_WriteString (&sv.reliable_datagram, value);
 }
 
+char *CopyString (char *s);
+
 /*
 ===========
 SV_Serverinfo_f
@@ -553,7 +521,6 @@ SV_Serverinfo_f
   Examine or change the serverinfo string
 ===========
 */
-char *CopyString (char *s);
 static void SV_Serverinfo_f (void)
 {
 	cvar_t *var;
@@ -597,7 +564,6 @@ SV_Localinfo_f
   Examine or change the serverinfo string
 ===========
 */
-char *CopyString (char *s);
 static void SV_Localinfo_f (void)
 {
 	if (Cmd_Argc () == 1)
@@ -749,9 +715,9 @@ SV_Gamedir_f
 Sets the gamedir and path to a different directory.
 ================
 */
-extern char gamedirfile[];
 static void SV_Gamedir_f (void)
 {
+	extern char gamedirfile[];
 	char *dir;
 
 	if (Cmd_Argc () == 1)
@@ -778,11 +744,6 @@ static void SV_Gamedir_f (void)
 	Info_SetValueForStarKey (svs.info, "*gamedir", dir, MAX_SERVERINFO_STRING, sv_highchars.value);
 }
 
-/*
-==================
-SV_InitOperatorCommands
-==================
-*/
 void SV_InitOperatorCommands (void)
 {
 	if (COM_CheckParm ("-cheats"))
@@ -812,6 +773,4 @@ void SV_InitOperatorCommands (void)
 	Cmd_AddCommand (src_server, "sv_gamedir", SV_Gamedir);
 	Cmd_AddCommand (src_server, "floodprot", SV_Floodprot_f);
 	Cmd_AddCommand (src_server, "floodprotmsg", SV_Floodprotmsg_f);
-
-	cl_warncmd.value = 1;
 }

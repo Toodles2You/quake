@@ -25,9 +25,7 @@ extern cvar_t qport;
 // we need to declare some mouse variables here, because the menu system
 // references them even when on a unix system.
 
-cvar_t cl_timeout = {"cl_timeout", "60"};
 cvar_t cl_shownet = {"cl_shownet", "0"}; // can be 0, 1, or 2
-cvar_t cl_nolerp = {"cl_nolerp", "0"};
 cvar_t cl_sbar = {"cl_sbar", "1", CVAR_ARCHIVE};
 cvar_t cl_maxfps = {"cl_maxfps", "72"};
 cvar_t cl_showfps = {"cl_showfps", "0"};
@@ -41,9 +39,7 @@ cvar_t m_yaw = {"m_yaw", "0.022", CVAR_ARCHIVE};
 cvar_t m_forward = {"m_forward", "1", CVAR_ARCHIVE};
 cvar_t m_side = {"m_side", "0.8", CVAR_ARCHIVE};
 
-cvar_t entlatency = {"entlatency", "20"};
 cvar_t cl_predict_players = {"cl_predict_players", "1"};
-cvar_t cl_predict_players2 = {"cl_predict_players2", "1"};
 cvar_t cl_solid_players = {"cl_solid_players", "1"};
 
 //
@@ -71,10 +67,6 @@ int cl_numvisedicts, cl_oldnumvisedicts;
 entity_t *cl_visedicts, *cl_oldvisedicts;
 entity_t cl_visedicts_list[2][MAX_VISEDICTS];
 
-static double connect_time = -1; // for connection retransmits
-
-float server_version = 0; // version of server we connected to
-
 char emodel_name[] = {'e' ^ 0xff, 'm' ^ 0xff, 'o' ^ 0xff, 'd' ^ 0xff, 'e' ^ 0xff, 'l' ^ 0xff, 0};
 char pmodel_name[] = {'p' ^ 0xff, 'm' ^ 0xff, 'o' ^ 0xff, 'd' ^ 0xff, 'e' ^ 0xff, 'l' ^ 0xff, 0};
 char prespawn_name[] = {'p' ^ 0xff, 'r' ^ 0xff, 'e' ^ 0xff, 's' ^ 0xff, 'p' ^ 0xff, 'a' ^ 0xff, 'w' ^ 0xff, 'n' ^ 0xff, ' ' ^ 0xff,
@@ -83,6 +75,10 @@ char modellist_name[] = {'m' ^ 0xff, 'o' ^ 0xff, 'd' ^ 0xff, 'e' ^ 0xff, 'l' ^ 0
 						 't' ^ 0xff, ' ' ^ 0xff, '%' ^ 0xff, 'i' ^ 0xff, ' ' ^ 0xff, '%' ^ 0xff, 'i' ^ 0xff, 0};
 char soundlist_name[] = {'s' ^ 0xff, 'o' ^ 0xff, 'u' ^ 0xff, 'n' ^ 0xff, 'd' ^ 0xff, 'l' ^ 0xff, 'i' ^ 0xff, 's' ^ 0xff,
 						 't' ^ 0xff, ' ' ^ 0xff, '%' ^ 0xff, 'i' ^ 0xff, ' ' ^ 0xff, '%' ^ 0xff, 'i' ^ 0xff, 0};
+
+static cvar_t cl_timeout = {"cl_timeout", "60"};
+
+static double connect_time = -1; // for connection retransmits
 
 /*
 =======================
@@ -191,12 +187,6 @@ void CL_BeginServerConnect (void)
 	CL_CheckForResend ();
 }
 
-/*
-================
-CL_Connect_f
-
-================
-*/
 static void CL_Connect_f (void)
 {
 	char *server;
@@ -271,12 +261,6 @@ static void CL_Rcon_f (void)
 	NET_SendPacket (CLIENT, strlen (message) + 1, message, to);
 }
 
-/*
-=====================
-CL_ClearState
-
-=====================
-*/
 void CL_ClearState (void)
 {
 	int i;
@@ -429,7 +413,7 @@ static void CL_Users_f (void)
 	Con_Printf ("%i total users\n", c);
 }
 
-void CL_Color_f (void)
+static void CL_Color_f (void)
 {
 	// just for quake compatability...
 	int top, bottom;
@@ -487,11 +471,7 @@ static void CL_FullServerinfo_f (void)
 	{
 		v = atof (p);
 		if (v)
-		{
-			if (!server_version)
-				Con_Printf ("Version %1.2f Server\n", v);
-			server_version = v;
-		}
+			Con_Printf ("Version %1.2f Server\n", v);
 	}
 }
 
@@ -554,7 +534,7 @@ CL_SetInfo_f
 Allow clients to change userinfo
 ==================
 */
-void CL_SetInfo_f (void)
+static void CL_SetInfo_f (void)
 {
 	if (Cmd_Argc () == 1)
 	{
@@ -583,7 +563,7 @@ packet <destination> <contents>
 Contents allows \n escape character
 ====================
 */
-void CL_Packet_f (void) {}
+static void CL_Packet_f (void) {}
 
 /*
 =====================
@@ -643,7 +623,7 @@ CL_Reconnect_f
 The server is changing levels
 =================
 */
-void CL_Reconnect_f (void)
+static void CL_Reconnect_f (void)
 {
 	if (cls.download) // don't change when downloading
 		return;
@@ -810,11 +790,6 @@ void CL_ReadPackets (void)
 
 //=============================================================================
 
-/*
-=====================
-CL_Download_f
-=====================
-*/
 static void CL_Download_f (void)
 {
 	char *p, *q;
@@ -870,11 +845,6 @@ static void CL_FixupModelNames (void)
 	simple_crypt (soundlist_name, sizeof (soundlist_name) - 1);
 }
 
-/*
-=================
-CL_Init
-=================
-*/
 void CL_Init (void)
 {
 	extern cvar_t baseskin;
@@ -908,7 +878,6 @@ void CL_Init (void)
 	Cvar_RegisterVariable (src_client, &cl_pitchspeed);
 	Cvar_RegisterVariable (src_client, &cl_anglespeedkey);
 	Cvar_RegisterVariable (src_client, &cl_shownet);
-	Cvar_RegisterVariable (src_client, &cl_nolerp);
 	Cvar_RegisterVariable (src_client, &cl_sbar);
 	Cvar_RegisterVariable (src_client, &cl_maxfps);
 	Cvar_RegisterVariable (src_client, &cl_showfps);
@@ -922,8 +891,6 @@ void CL_Init (void)
 	Cvar_RegisterVariable (src_client, &m_forward);
 	Cvar_RegisterVariable (src_client, &m_side);
 
-	Cvar_RegisterVariable (src_client, &entlatency);
-	Cvar_RegisterVariable (src_client, &cl_predict_players2);
 	Cvar_RegisterVariable (src_client, &cl_predict_players);
 	Cvar_RegisterVariable (src_client, &cl_solid_players);
 

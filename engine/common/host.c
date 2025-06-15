@@ -80,7 +80,6 @@ cvar_t coop = {"coop", "0"};			 // 0 or 1
 
 cvar_t pausable = {"pausable", "1"};
 
-extern cvar_t cl_warncmd;
 extern cvar_t maxclients;
 
 extern int cl_framecount;
@@ -152,16 +151,9 @@ void Host_Error (char *error, ...)
 	longjmp (host_abortserver, 1);
 }
 
-/*
-=======================
-Host_InitLocal
-======================
-*/
-void Host_InitLocal (void)
+static void Host_InitLocal (void)
 {
 	Host_InitCommands ();
-
-	Cvar_RegisterVariable (src_client, &cl_warncmd);
 
 	Cvar_RegisterVariable (src_host, &rcon_password);
 	Cvar_RegisterVariable (src_client, &rcon_address);
@@ -309,7 +301,7 @@ Host_FilterTime
 Returns false if the time is too short to run a frame
 ===================
 */
-bool Host_FilterTime (double time)
+static void Host_FilterTime (double time)
 {
 	realtime += time;
 
@@ -328,8 +320,6 @@ bool Host_FilterTime (double time)
 
 	if (host_timescale.value > 0.01)
 		host_frametime *= host_timescale.value;
-
-	return true;
 }
 
 /*
@@ -339,7 +329,7 @@ Host_GetConsoleCommands
 Add them exactly as if they had been typed at the console
 ===================
 */
-void Host_GetConsoleCommands (void)
+static void Host_GetConsoleCommands (void)
 {
 	char *cmd;
 
@@ -352,13 +342,7 @@ void Host_GetConsoleCommands (void)
 	}
 }
 
-/*
-==================
-Host_ServerFrame
-
-==================
-*/
-void Host_ServerFrame (double time)
+static void Host_ServerFrame (double time)
 {
 	static double start, end;
 
@@ -418,8 +402,7 @@ void Host_Frame (double time)
 	rand ();
 
 	// decide the simulation time
-	if (!Host_FilterTime (time))
-		return; // don't run too fast, or packets will flood out
+	Host_FilterTime (time);
 
 	// get new key events
 	Sys_SendKeyEvents ();
@@ -546,11 +529,6 @@ static void Host_InitNet (void)
 	NET_Open (CLIENT, qport.value);
 }
 
-/*
-====================
-Host_Init
-====================
-*/
 void Host_Init (quakeparms_t *parms)
 {
 	int minimum_memory = MINIMUM_MEMORY;
@@ -581,11 +559,10 @@ void Host_Init (quakeparms_t *parms)
 	PR_Init ();
 	ED_Init ();
 	CMod_Init ();
-	Mod_Init ();
 	Host_InitNet ();
 	SV_Init ();
 
-	Con_Printf ("Build: "__TIME__" "__DATE__"\n");
+	Con_Printf ("Build: " __TIME__ " " __DATE__ "\n");
 	Con_Printf ("%4.1f megabyte heap\n", (float)parms->memsize / (1024 * 1024));
 
 	R_InitTextures (); // needed even for dedicated servers
@@ -613,11 +590,6 @@ void Host_Init (quakeparms_t *parms)
 	Sys_Printf ("========Quake Initialized=========\n");
 }
 
-/*
-===============
-Host_InitServer
-===============
-*/
 void Host_InitServer (void)
 {
 	int port = PORT_SERVER;

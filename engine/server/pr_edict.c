@@ -31,9 +31,7 @@ static const int pr_type_size[ev_types] = {
 	sizeof (void *) / sizeof (uint32_t),	// ev_pointer
 };
 
-bool ED_ParseEpair (void *base, ddef_t *key, char *s);
-
-cvar_t nomonsters = {"nomonsters", "0"};
+static bool ED_ParseEpair (void *base, ddef_t *key, char *s);
 
 #define MAX_FIELD_LEN 64
 #define GEFV_CACHESIZE 2
@@ -77,7 +75,7 @@ edict_t *ED_Alloc (void)
 
 	for (i = MAX_CLIENTS + 1; i < sv.num_edicts; i++)
 	{
-		e = EDICT_NUM (i);
+		e = ED_GetNum (i);
 		// the first couple seconds of server time can involve a lot of
 		// freeing and allocating, so relax the replacement policy
 		if (e->free && (e->freetime < 2 || sv.time - e->freetime > 0.5))
@@ -91,7 +89,7 @@ edict_t *ED_Alloc (void)
 		Sys_Error ("ED_Alloc: no free edicts");
 
 	sv.num_edicts++;
-	e = EDICT_NUM (i);
+	e = ED_GetNum (i);
 	ED_ClearEdict (e);
 
 	return e;
@@ -177,7 +175,7 @@ void ED_Print (edict_t *ed)
 		return;
 	}
 
-	Con_Printf ("\nEDICT %i:\n", NUM_FOR_EDICT (ed));
+	Con_Printf ("\nEDICT %i:\n", ED_ForNum (ed));
 	for (i = 1; i < sv.pr.progs->numfielddefs; i++)
 	{
 		d = &sv.pr.fielddefs[i];
@@ -254,7 +252,7 @@ void ED_Write (FILE *f, edict_t *ed)
 
 void ED_PrintNum (int ent)
 {
-	ED_Print (EDICT_NUM (ent));
+	ED_Print (ED_GetNum (ent));
 }
 
 /*
@@ -280,7 +278,7 @@ ED_PrintEdict_f
 For debugging, prints a single edicy
 =============
 */
-void ED_PrintEdict_f (void)
+static void ED_PrintEdict_f (void)
 {
 	int i;
 
@@ -295,12 +293,12 @@ void ED_PrintEdict_f (void)
 
 /*
 =============
-ED_Count
+ED_Count_f
 
 For debugging
 =============
 */
-void ED_Count (void)
+static void ED_Count_f (void)
 {
 	int i;
 	edict_t *ent;
@@ -309,7 +307,7 @@ void ED_Count (void)
 	active = models = solid = step = 0;
 	for (i = 0; i < sv.num_edicts; i++)
 	{
-		ent = EDICT_NUM (i);
+		ent = ED_GetNum (i);
 		if (ent->free)
 			continue;
 		active++;
@@ -337,11 +335,6 @@ FIXME: need to tag constants, doesn't really work
 ==============================================================================
 */
 
-/*
-=============
-ED_WriteGlobals
-=============
-*/
 void ED_WriteGlobals (FILE *f)
 {
 	ddef_t *def;
@@ -368,11 +361,6 @@ void ED_WriteGlobals (FILE *f)
 	fprintf (f, "}\n");
 }
 
-/*
-=============
-ED_ParseGlobals
-=============
-*/
 void ED_ParseGlobals (char *data)
 {
 	char keyname[64];
@@ -411,11 +399,6 @@ void ED_ParseGlobals (char *data)
 
 //============================================================================
 
-/*
-=============
-ED_NewString
-=============
-*/
 char *ED_NewString (char *string)
 {
 	char *new, *new_p;
@@ -450,7 +433,7 @@ Can parse either fields or globals
 returns false if error
 =============
 */
-bool ED_ParseEpair (void *base, ddef_t *key, char *s)
+static bool ED_ParseEpair (void *base, ddef_t *key, char *s)
 {
 	int i;
 	char string[128];
@@ -486,7 +469,7 @@ bool ED_ParseEpair (void *base, ddef_t *key, char *s)
 		break;
 
 	case ev_entity:
-		*(int32_t *)d = EDICT_TO_PROG (EDICT_NUM (atoi (s)));
+		*(int32_t *)d = EDICT_TO_PROG (ED_GetNum (atoi (s)));
 		break;
 
 	case ev_field:
@@ -644,7 +627,7 @@ void ED_LoadFromFile (char *data)
 			Sys_Error ("ED_LoadFromFile: found %s when expecting {", com_token);
 
 		if (!ent)
-			ent = EDICT_NUM (0);
+			ent = ED_GetNum (0);
 		else
 			ent = ED_Alloc ();
 		data = ED_ParseEdict (data, ent);
@@ -684,7 +667,7 @@ void ED_LoadFromFile (char *data)
 
 		if (!func)
 		{
-			Con_Printf ("No spawn function for EDICT %i: \"%s\"\n", NUM_FOR_EDICT (ent), ed_get_string (ent, classname));
+			Con_Printf ("No spawn function for EDICT %i: \"%s\"\n", ED_ForNum (ent), ed_get_string (ent, classname));
 			ED_Free (ent);
 			continue;
 		}
@@ -700,18 +683,17 @@ void ED_Init (void)
 {
 	Cmd_AddCommand (src_server, "edict", ED_PrintEdict_f);
 	Cmd_AddCommand (src_server, "edicts", ED_PrintEdicts);
-	Cmd_AddCommand (src_server, "edictcount", ED_Count);
-	Cvar_RegisterVariable (src_server, &nomonsters);
+	Cmd_AddCommand (src_server, "edictcount", ED_Count_f);
 }
 
-edict_t *EDICT_NUM (int n)
+edict_t *ED_GetNum (int n)
 {
 	if (n < 0 || n >= sv.max_edicts)
 		Sys_Error ("EDICT_NUM: bad number %i", n);
 	return (edict_t *)((byte *)sv.edicts + (n)*sv.pr.edict_size);
 }
 
-int NUM_FOR_EDICT (edict_t *e)
+int ED_ForNum (edict_t *e)
 {
 	int b;
 

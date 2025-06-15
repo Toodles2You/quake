@@ -20,52 +20,42 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "clientdef.h"
 
-int skytexturenum;
-
-#ifndef GL_RGBA4
-#define GL_RGBA4 0
-#endif
-
 int lightmap_bytes; // 1, 2, or 4
 int d_lightmap_bytes;
 
-int lightmap_textures;
+static int gl_lightmap_format = GL_RGBA;
 
-unsigned blocklights[18 * 18 * 3];
+static int lightmap_textures;
+
+static unsigned blocklights[18 * 18 * 3];
 
 #define BLOCK_WIDTH 128
 #define BLOCK_HEIGHT 128
 
 #define MAX_LIGHTMAPS 64
-int active_lightmaps;
 
 typedef struct glRect_s
 {
 	unsigned char l, t, w, h;
 } glRect_t;
 
-glpoly_t *lightmap_polys[MAX_LIGHTMAPS];
-bool lightmap_modified[MAX_LIGHTMAPS];
-glRect_t lightmap_rectchange[MAX_LIGHTMAPS];
+static glpoly_t *lightmap_polys[MAX_LIGHTMAPS];
+static bool lightmap_modified[MAX_LIGHTMAPS];
+static glRect_t lightmap_rectchange[MAX_LIGHTMAPS];
 
-int allocated[MAX_LIGHTMAPS][BLOCK_WIDTH];
+static int allocated[MAX_LIGHTMAPS][BLOCK_WIDTH];
 
 // the lightmap texture data needs to be kept in
 // main memory so texsubimage can update properly
-byte lightmaps[4 * MAX_LIGHTMAPS * BLOCK_WIDTH * BLOCK_HEIGHT];
+static byte lightmaps[4 * MAX_LIGHTMAPS * BLOCK_WIDTH * BLOCK_HEIGHT];
 
 // For gl_texsort 0
-msurface_t *skychain = NULL;
-msurface_t *waterchain = NULL;
+static msurface_t *skychain = NULL;
+static msurface_t *waterchain = NULL;
 
-void R_RenderDynamicLightmaps (msurface_t *fa);
+static void R_RenderDynamicLightmaps (msurface_t *);
 
-/*
-===============
-R_AddDynamicLights
-===============
-*/
-void R_AddDynamicLights (msurface_t *surf)
+static void R_AddDynamicLights (msurface_t *surf)
 {
 	int lnum;
 	int sd, td;
@@ -131,7 +121,7 @@ R_BuildLightMap
 Combine and scale multiple lightmaps into the 8.8 format in blocklights
 ===============
 */
-void R_BuildLightMap (msurface_t *surf, byte *dest, int stride)
+static void R_BuildLightMap (msurface_t *surf, byte *dest, int stride)
 {
 	int smax, tmax;
 	int t;
@@ -268,7 +258,7 @@ R_TextureAnimation
 Returns the proper texture for a given time and base texture
 ===============
 */
-texture_t *R_TextureAnimation (texture_t *base)
+static texture_t *R_TextureAnimation (texture_t *base)
 {
 	int reletive;
 	int count;
@@ -309,15 +299,15 @@ extern int solidskytexture;
 extern int alphaskytexture;
 extern float speedscale; // for top sky and bottom sky
 
-void DrawGLWaterPoly (glpoly_t *p);
-void DrawGLWaterPolyLightmap (glpoly_t *p);
+static void DrawGLWaterPoly (glpoly_t *);
+static void DrawGLWaterPolyLightmap (glpoly_t *);
 
 lpMTexFUNC qglMTexCoord2fSGIS = NULL;
 lpSelTexFUNC qglSelectTextureSGIS = NULL;
 
 bool mtexenabled = false;
 
-void GL_SelectTexture (GLenum target);
+void GL_SelectTexture (GLenum);
 
 void GL_DisableMultitexture (void)
 {
@@ -339,7 +329,6 @@ void GL_EnableMultitexture (void)
 	}
 }
 
-#if 0
 /*
 ================
 R_DrawSequentialPoly
@@ -348,104 +337,7 @@ Systems that have fast state and texture changes can
 just do everything as it passes with no need to sort
 ================
 */
-void R_DrawSequentialPoly (msurface_t *s)
-{
-	glpoly_t	*p;
-	float		*v;
-	int			i;
-	texture_t	*t;
-
-	//
-	// normal lightmaped poly
-	//
-	if (! (s->flags & (SURF_DRAWSKY|SURF_DRAWTURB|SURF_UNDERWATER) ) )
-	{
-		p = s->polys;
-
-		t = R_TextureAnimation (s->texinfo->texture);
-		GL_Bind (t->gl_texturenum);
-		glBegin (GL_POLYGON);
-		v = p->verts[0];
-		for (i=0 ; i<p->numverts ; i++, v+= VERTEXSIZE)
-		{
-			glTexCoord2f (v[3], v[4]);
-			glVertex3fv (v);
-		}
-		glEnd ();
-
-		GL_Bind (lightmap_textures + s->lightmaptexturenum);
-		glEnable (GL_BLEND);
-		glBegin (GL_POLYGON);
-		v = p->verts[0];
-		for (i=0 ; i<p->numverts ; i++, v+= VERTEXSIZE)
-		{
-			glTexCoord2f (v[5], v[6]);
-			glVertex3fv (v);
-		}
-		glEnd ();
-
-		glDisable (GL_BLEND);
-
-		return;
-	}
-
-	//
-	// subdivided water surface warp
-	//
-	if (s->flags & SURF_DRAWTURB)
-	{
-		GL_Bind (s->texinfo->texture->gl_texturenum);
-		EmitWaterPolys (s);
-		return;
-	}
-
-	//
-	// subdivided sky warp
-	//
-	if (s->flags & SURF_DRAWSKY)
-	{
-		GL_Bind (solidskytexture);
-		speedscale = cl.time*8;
-		speedscale -= (int)speedscale;
-
-		EmitSkyPolys (s);
-
-		glEnable (GL_BLEND);
-		glBlendFunc (GL_SRC_ALPHA, GL_ONE_MINUS_SRC_ALPHA);
-		GL_Bind (alphaskytexture);
-		speedscale = cl.time*16;
-		speedscale -= (int)speedscale;
-		EmitSkyPolys (s);
-		if (gl_lightmap_format == GL_LUMINANCE)
-			glBlendFunc (GL_ZERO, GL_ONE_MINUS_SRC_COLOR);
-
-		glDisable (GL_BLEND);
-	}
-
-	//
-	// underwater warped with lightmap
-	//
-	p = s->polys;
-
-	t = R_TextureAnimation (s->texinfo->texture);
-	GL_Bind (t->gl_texturenum);
-	DrawGLWaterPoly (p);
-
-	GL_Bind (lightmap_textures + s->lightmaptexturenum);
-	glEnable (GL_BLEND);
-	DrawGLWaterPolyLightmap (p);
-	glDisable (GL_BLEND);
-}
-#else
-/*
-================
-R_DrawSequentialPoly
-
-Systems that have fast state and texture changes can
-just do everything as it passes with no need to sort
-================
-*/
-void R_DrawSequentialPoly (msurface_t *s)
+static void R_DrawSequentialPoly (msurface_t *s)
 {
 	glpoly_t *p;
 	float *v;
@@ -619,7 +511,6 @@ void R_DrawSequentialPoly (msurface_t *s)
 		glDisable (GL_BLEND);
 	}
 }
-#endif
 
 /*
 ================
@@ -628,7 +519,7 @@ DrawGLWaterPoly
 Warp the vertex coordinates
 ================
 */
-void DrawGLWaterPoly (glpoly_t *p)
+static void DrawGLWaterPoly (glpoly_t *p)
 {
 	int i;
 	float *v;
@@ -653,7 +544,7 @@ void DrawGLWaterPoly (glpoly_t *p)
 	glEnd ();
 }
 
-void DrawGLWaterPolyLightmap (glpoly_t *p)
+static void DrawGLWaterPolyLightmap (glpoly_t *p)
 {
 	int i;
 	float *v;
@@ -678,12 +569,7 @@ void DrawGLWaterPolyLightmap (glpoly_t *p)
 	glEnd ();
 }
 
-/*
-================
-DrawGLPoly
-================
-*/
-void DrawGLPoly (glpoly_t *p)
+static void DrawGLPoly (glpoly_t *p)
 {
 	int i;
 	float *v;
@@ -698,12 +584,7 @@ void DrawGLPoly (glpoly_t *p)
 	glEnd ();
 }
 
-/*
-================
-R_BlendLightmaps
-================
-*/
-void R_BlendLightmaps (void)
+static void R_BlendLightmaps (void)
 {
 	int i, j;
 	glpoly_t *p;
@@ -795,12 +676,7 @@ void R_BlendLightmaps (void)
 	glDepthFunc (depthfunc);
 }
 
-/*
-================
-R_RenderBrushPoly
-================
-*/
-void R_RenderBrushPoly (msurface_t *fa)
+static void R_RenderBrushPoly (msurface_t *fa)
 {
 	texture_t *t;
 	byte *base;
@@ -903,13 +779,7 @@ void R_RenderBrushPoly (msurface_t *fa)
 	}
 }
 
-/*
-================
-R_RenderDynamicLightmaps
-Multitexture
-================
-*/
-void R_RenderDynamicLightmaps (msurface_t *fa)
+static void R_RenderDynamicLightmaps (msurface_t *fa)
 {
 	byte *base;
 	int maps;
@@ -962,61 +832,6 @@ void R_RenderDynamicLightmaps (msurface_t *fa)
 	}
 }
 
-#if 0
-/*
-================
-R_DrawWaterSurfaces
-================
-*/
-void R_DrawWaterSurfaces (void)
-{
-	int			i;
-	msurface_t	*s;
-	texture_t	*t;
-
-	if (r_wateralpha.value == 1.0)
-		return;
-
-	//
-	// go back to the world matrix
-	//
-    glLoadMatrixf (r_world_matrix);
-
-	glEnable (GL_BLEND);
-	glColor4f (1,1,1,r_wateralpha.value);
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-
-	for (i=0 ; i<cl.worldmodel->numtextures ; i++)
-	{
-		t = cl.worldmodel->textures[i];
-		if (!t)
-			continue;
-		s = t->texturechain;
-		if (!s)
-			continue;
-		if ( !(s->flags & SURF_DRAWTURB) )
-			continue;
-
-		// set modulate mode explicitly
-		GL_Bind (t->gl_texturenum);
-
-		for ( ; s ; s=s->texturechain)
-			R_RenderBrushPoly (s);
-
-		t->texturechain = NULL;
-	}
-
-	glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-
-	glColor4f (1,1,1,1);
-	glDisable (GL_BLEND);
-}
-#else
-/*
-================
-R_DrawWaterSurfaces
-================
-*/
 void R_DrawWaterSurfaces (void)
 {
 	int i;
@@ -1086,15 +901,9 @@ void R_DrawWaterSurfaces (void)
 	}
 }
 
-#endif
-
-/*
-================
-DrawTextureChains
-================
-*/
-void DrawTextureChains (void)
+static void DrawTextureChains (void)
 {
+	extern int skytexturenum;
 	int i;
 	msurface_t *s;
 	texture_t *t;
@@ -1134,11 +943,6 @@ void DrawTextureChains (void)
 	}
 }
 
-/*
-=================
-R_DrawBrushModel
-=================
-*/
 void R_DrawBrushModel (entity_t *e)
 {
 	int i, k;
@@ -1195,7 +999,7 @@ void R_DrawBrushModel (entity_t *e)
 
 	// calculate dynamic lighting for bmodel if it's not an
 	// instanced model
-	if (BMODEL (clmodel)->firstmodelsurface != 0 && gl_flashblend.value == 0)
+	if (BMODEL (clmodel)->firstmodelsurface != 0)
 	{
 		for (k = 0; k < MAX_DLIGHTS; k++)
 		{
@@ -1251,12 +1055,7 @@ void R_DrawBrushModel (entity_t *e)
 =============================================================
 */
 
-/*
-================
-R_RecursiveWorldNode
-================
-*/
-void R_RecursiveWorldNode (msurface_t **surfs, mnode_t *node)
+static void R_RecursiveWorldNode (msurface_t **surfs, mnode_t *node)
 {
 	int c, side;
 	mplane_t *plane;
@@ -1373,11 +1172,6 @@ void R_RecursiveWorldNode (msurface_t **surfs, mnode_t *node)
 	R_RecursiveWorldNode (surfs, node->children[!side]);
 }
 
-/*
-=============
-R_DrawWorld
-=============
-*/
 void R_DrawWorld (void)
 {
 	entity_t ent;
@@ -1407,11 +1201,6 @@ void R_DrawWorld (void)
 	R_DrawSkyBox ();
 }
 
-/*
-===============
-R_MarkLeaves
-===============
-*/
 void R_MarkLeaves (void)
 {
 	byte *vis;
@@ -1458,7 +1247,7 @@ void R_MarkLeaves (void)
 */
 
 // returns a texture number and the position inside it
-int AllocBlock (int w, int h, int *x, int *y)
+static int AllocBlock (int w, int h, int *x, int *y)
 {
 	int i, j;
 	int best, best2;
@@ -1498,17 +1287,10 @@ int AllocBlock (int w, int h, int *x, int *y)
 	Sys_Error ("AllocBlock: full");
 }
 
-mvertex_t *r_pcurrentvertbase;
-model_t *currentmodel;
+static mvertex_t *r_pcurrentvertbase;
+static model_t *currentmodel;
 
-int nColinElim;
-
-/*
-================
-BuildSurfaceDisplayList
-================
-*/
-void BuildSurfaceDisplayList (msurface_t *fa)
+static void BuildSurfaceDisplayList (msurface_t *fa)
 {
 	int i, lindex, lnumverts;
 	medge_t *pedges, *r_pedge;
@@ -1603,7 +1385,6 @@ void BuildSurfaceDisplayList (msurface_t *fa)
 						poly->verts[j - 1][k] = poly->verts[j][k];
 				}
 				--lnumverts;
-				++nColinElim;
 				// retry next vertex next time, which is now current vertex
 				--i;
 			}
@@ -1612,12 +1393,7 @@ void BuildSurfaceDisplayList (msurface_t *fa)
 	poly->numverts = lnumverts;
 }
 
-/*
-========================
-GL_CreateSurfaceLightmap
-========================
-*/
-void GL_CreateSurfaceLightmap (msurface_t *surf)
+static void GL_CreateSurfaceLightmap (msurface_t *surf)
 {
 	int smax, tmax;
 	byte *base;

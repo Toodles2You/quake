@@ -74,16 +74,11 @@ to the new value before sending out any replies.
 */
 
 int net_drop;
-cvar_t showpackets = {"showpackets", "0"};
-cvar_t showdrop = {"showdrop", "0"};
 cvar_t qport = {"qport", "0"};
 
-/*
-===============
-Netchan_Init
+static cvar_t showpackets = {"showpackets", "0"};
+static cvar_t showdrop = {"showdrop", "0"};
 
-===============
-*/
 void Netchan_Init (void)
 {
 	int port;
@@ -108,7 +103,7 @@ Netchan_OutOfBand
 Sends an out-of-band datagram
 ================
 */
-void Netchan_OutOfBand (netsocket_e sock, netadr_t adr, int length, byte *data)
+static void Netchan_OutOfBand (netsocket_e sock, netadr_t adr, int length, byte *data)
 {
 	sizebuf_t send;
 	byte send_buf[MAX_MSGLEN + PACKET_HEADER];
@@ -172,6 +167,8 @@ void Netchan_Setup (netchan_t *chan, netadr_t adr, netsocket_e sock, int qport)
 	chan->rate = 1.0 / 2500;
 }
 
+#define MAX_BACKUP 200
+
 /*
 ===============
 Netchan_CanPacket
@@ -179,7 +176,6 @@ Netchan_CanPacket
 Returns true if the bandwidth choke isn't active
 ================
 */
-#define MAX_BACKUP 200
 bool Netchan_CanPacket (netchan_t *chan)
 {
 	if (chan->cleartime < realtime + MAX_BACKUP * chan->rate)

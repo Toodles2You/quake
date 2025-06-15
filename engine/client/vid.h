@@ -29,9 +29,6 @@ extern unsigned d_8to24table[256];
 extern void (*vid_menudrawfn) ();
 extern void (*vid_menukeyfn) (int key);
 
-void VID_SetPalette (unsigned char *palette);
-// called at startup and after any gamma correction
-
 void VID_Init (char *palette);
 // Called at startup to set up translation tables, takes 256 8 bit RGB values
 // the palette data will go away after the call, so it must be copied off if

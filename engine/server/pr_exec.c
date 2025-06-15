@@ -20,6 +20,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "serverdef.h"
 
+bool pr_trace;
+
 typedef struct
 {
 	int s;
@@ -27,62 +29,58 @@ typedef struct
 } prstack_t;
 
 #define MAX_STACK_DEPTH 32
-prstack_t pr_stack[MAX_STACK_DEPTH];
-int pr_depth;
+static prstack_t pr_stack[MAX_STACK_DEPTH];
+static int pr_depth;
 
 #define LOCALSTACK_SIZE 2048
-int localstack[LOCALSTACK_SIZE];
-int localstack_used;
+static int localstack[LOCALSTACK_SIZE];
+static int localstack_used;
 
-bool pr_trace;
+// i dunno what clang format was cooking with this one
+static const char *const pr_opnames[] = {
+	"DONE",
 
-char *pr_opnames[] = {"DONE",
+	"MUL_F", "MUL_V", "MUL_FV", "MUL_VF",
 
-					  "MUL_F",	  "MUL_V",	  "MUL_FV",	  "MUL_VF",
+	"DIV",
 
-					  "DIV",
+	"ADD_F", "ADD_V",
 
-					  "ADD_F",	  "ADD_V",
+	"SUB_F", "SUB_V",
 
-					  "SUB_F",	  "SUB_V",
+	"EQ_F", "EQ_V", "EQ_S", "EQ_E", "EQ_FNC",
 
-					  "EQ_F",	  "EQ_V",	  "EQ_S",	  "EQ_E",		"EQ_FNC",
+	"NE_F", "NE_V", "NE_S", "NE_E", "NE_FNC",
 
-					  "NE_F",	  "NE_V",	  "NE_S",	  "NE_E",		"NE_FNC",
+	"LE", "GE", "LT", "GT",
 
-					  "LE",		  "GE",		  "LT",		  "GT",
+	"INDIRECT", "INDIRECT", "INDIRECT", "INDIRECT", "INDIRECT", "INDIRECT",
 
-					  "INDIRECT", "INDIRECT", "INDIRECT", "INDIRECT",	"INDIRECT",	  "INDIRECT",
+	"ADDRESS",
 
-					  "ADDRESS",
+	"STORE_F", "STORE_V", "STORE_S", "STORE_ENT", "STORE_FLD", "STORE_FNC",
 
-					  "STORE_F",  "STORE_V",  "STORE_S",  "STORE_ENT",	"STORE_FLD",  "STORE_FNC",
+	"STOREP_F", "STOREP_V", "STOREP_S", "STOREP_ENT", "STOREP_FLD", "STOREP_FNC",
 
-					  "STOREP_F", "STOREP_V", "STOREP_S", "STOREP_ENT", "STOREP_FLD", "STOREP_FNC",
+	"RETURN",
 
-					  "RETURN",
+	"NOT_F", "NOT_V", "NOT_S", "NOT_ENT", "NOT_FNC",
 
-					  "NOT_F",	  "NOT_V",	  "NOT_S",	  "NOT_ENT",	"NOT_FNC",
+	"IF", "IFNOT",
 
-					  "IF",		  "IFNOT",
+	"CALL0", "CALL1", "CALL2", "CALL3", "CALL4", "CALL5", "CALL6", "CALL7", "CALL8",
 
-					  "CALL0",	  "CALL1",	  "CALL2",	  "CALL3",		"CALL4",	  "CALL5",		"CALL6", "CALL7", "CALL8",
+	"STATE",
 
-					  "STATE",
+	"GOTO",
 
-					  "GOTO",
+	"AND", "OR",
 
-					  "AND",	  "OR",
-
-					  "BITAND",	  "BITOR"};
+	"BITAND", "BITOR",
+};
 
 //=============================================================================
 
-/*
-=================
-PR_PrintStatement
-=================
-*/
 static void PR_PrintStatement (progs_state_t *pr, dstatement_t *s)
 {
 	int i;
@@ -118,11 +116,6 @@ static void PR_PrintStatement (progs_state_t *pr, dstatement_t *s)
 	Con_Printf ("\n");
 }
 
-/*
-============
-PR_StackTrace
-============
-*/
 static void PR_StackTrace (progs_state_t *pr)
 {
 	dfunction_t *f;
@@ -146,12 +139,6 @@ static void PR_StackTrace (progs_state_t *pr)
 	}
 }
 
-/*
-============
-PR_Profile_f
-
-============
-*/
 void PR_Profile_f (void)
 {
 	dfunction_t *f, *best;
@@ -258,11 +245,6 @@ static int PR_EnterFunction (progs_state_t *pr, dfunction_t *f)
 	return f->first_statement - 1; // offset the s++
 }
 
-/*
-====================
-PR_LeaveFunction
-====================
-*/
 static int PR_LeaveFunction (progs_state_t *pr)
 {
 	int i, c;
@@ -285,11 +267,6 @@ static int PR_LeaveFunction (progs_state_t *pr)
 	return pr_stack[pr_depth].s;
 }
 
-/*
-====================
-PR_ExecuteProgram
-====================
-*/
 void PR_ExecuteProgram (progs_state_t *pr, func_t fnum)
 {
 	eval_t *a, *b, *c;
@@ -575,16 +552,14 @@ void PR_ExecuteProgram (progs_state_t *pr, func_t fnum)
 	}
 }
 
-/*----------------------*/
-
-char *pr_strtbl[MAX_PRSTR];
-int num_prstr;
+#define MAX_PRSTR 1024
+static char *pr_strtbl[MAX_PRSTR];
+static int num_prstr;
 
 char *PR_GetString (progs_state_t *pr, int num)
 {
 	if (num < 0)
 	{
-		//Con_DPrintf("GET:%d == %s\n", num, pr_strtbl[-num]);
 		return pr_strtbl[-num];
 	}
 	return pr->strings + num;
@@ -605,7 +580,6 @@ int PR_SetString (progs_state_t *pr, char *s)
 			Sys_Error ("MAX_PRSTR");
 		num_prstr++;
 		pr_strtbl[num_prstr] = s;
-		//Con_DPrintf("SET:%d == %s\n", -num_prstr, s);
 		return -num_prstr;
 	}
 	return (int)(s - pr->strings);

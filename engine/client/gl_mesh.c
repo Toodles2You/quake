@@ -28,30 +28,25 @@ ALIAS MODEL DISPLAY LIST GENERATION
 =================================================================
 */
 
-char used[8192];
+static char used[8192];
 
 // the command list holds counts and s/t values that are valid for
 // every frame
-int32_t commands[8192];
-uint32_t numcommands;
+static int32_t commands[8192];
+static uint32_t numcommands;
 
 // all frames will have their vertexes rearranged and expanded
 // so they are in the order expected by the command list
-int32_t vertexorder[8192];
-uint32_t numorder;
+static int32_t vertexorder[8192];
+static uint32_t numorder;
 
-int allverts, alltris;
+static int allverts, alltris;
 
-int stripverts[128];
-int striptris[128];
-int stripcount;
+static int stripverts[128];
+static int striptris[128];
+static int stripcount;
 
-/*
-================
-StripLength
-================
-*/
-int StripLength (int starttri, int startv)
+static int StripLength (int starttri, int startv)
 {
 	int m1, m2;
 	int j;
@@ -115,12 +110,7 @@ done:
 	return stripcount;
 }
 
-/*
-===========
-FanLength
-===========
-*/
-int FanLength (int starttri, int startv)
+static int FanLength (int starttri, int startv)
 {
 	int m1, m2;
 	int j;
@@ -189,7 +179,7 @@ Generate a list of trifans or strips
 for the model, which holds for all frames
 ================
 */
-void BuildTris (void)
+static void BuildTris (void)
 {
 	int i, j, k;
 	int startv;
@@ -269,11 +259,6 @@ void BuildTris (void)
 	alltris += pheader->numtris;
 }
 
-/*
-================
-GL_MakeAliasModelDisplayLists
-================
-*/
 void GL_MakeAliasModelDisplayLists (model_t *m, aliashdr_t *hdr)
 {
 	int i, j;

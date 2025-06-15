@@ -25,11 +25,11 @@ edict_t *sv_player;
 
 usercmd_t cmd;
 
-cvar_t sv_rollspeed = {"sv_rollspeed", "200"};
-cvar_t sv_rollangle = {"sv_rollangle", "2.0"};
-cvar_t sv_spectalk = {"sv_spectalk", "1"};
+static cvar_t sv_rollspeed = {"sv_rollspeed", "200"};
+static cvar_t sv_rollangle = {"sv_rollangle", "2.0"};
+static cvar_t sv_spectalk = {"sv_spectalk", "1"};
 
-cvar_t sv_mapcheck = {"sv_mapcheck", "1"};
+static cvar_t sv_mapcheck = {"sv_mapcheck", "1"};
 
 extern vec3_t player_mins;
 
@@ -86,7 +86,7 @@ static void SV_New_f (void)
 	MSG_WriteLong (&host_client->netchan.message, svs.spawncount);
 	MSG_WriteString (&host_client->netchan.message, gamedirfile);
 
-	playernum = NUM_FOR_EDICT (host_client->edict) - 1;
+	playernum = ED_ForNum (host_client->edict) - 1;
 	if (host_client->spectator)
 		playernum |= 128;
 	MSG_WriteByte (&host_client->netchan.message, playernum);
@@ -117,11 +117,6 @@ static void SV_New_f (void)
 	MSG_WriteString (&host_client->netchan.message, va ("fullserverinfo \"%s\"\n", svs.info));
 }
 
-/*
-==================
-SV_Soundlist_f
-==================
-*/
 static void SV_Soundlist_f (void)
 {
 	char **s;
@@ -166,11 +161,6 @@ static void SV_Soundlist_f (void)
 		MSG_WriteByte (&host_client->netchan.message, 0);
 }
 
-/*
-==================
-SV_Modellist_f
-==================
-*/
 static void SV_Modellist_f (void)
 {
 	char **s;
@@ -214,11 +204,6 @@ static void SV_Modellist_f (void)
 		MSG_WriteByte (&host_client->netchan.message, 0);
 }
 
-/*
-==================
-SV_PreSpawn_f
-==================
-*/
 static void SV_PreSpawn_f (void)
 {
 	unsigned buf;
@@ -285,11 +270,6 @@ static void SV_PreSpawn_f (void)
 	}
 }
 
-/*
-==================
-SV_Spawn_f
-==================
-*/
 static void SV_Spawn_f (void)
 {
 	int i;
@@ -368,7 +348,7 @@ static void SV_Spawn_f (void)
 			ed_float (ent, maxspeed) = sv_maxspeed.value;
 	}
 
-	ed_float (ent, colormap) = NUM_FOR_EDICT (ent);
+	ed_float (ent, colormap) = ED_ForNum (ent);
 	ed_set_string (ent, netname, host_client->name);
 
 	//
@@ -398,11 +378,6 @@ static void SV_Spawn_f (void)
 	ClientReliableWrite_String (host_client, "skins\n");
 }
 
-/*
-==================
-SV_SpawnSpectator
-==================
-*/
 static void SV_SpawnSpectator (void)
 {
 	int i;
@@ -415,7 +390,7 @@ static void SV_SpawnSpectator (void)
 	// search for an info_playerstart to spawn the spectator at
 	for (i = MAX_CLIENTS - 1; i < sv.num_edicts; i++)
 	{
-		e = EDICT_NUM (i);
+		e = ED_GetNum (i);
 		if (!strcmp (ed_get_string (e, classname), "info_player_start"))
 		{
 			VectorCopy (ed_vector (e, origin), ed_vector (sv_player, origin));
@@ -424,11 +399,6 @@ static void SV_SpawnSpectator (void)
 	}
 }
 
-/*
-==================
-SV_Begin_f
-==================
-*/
 static void SV_Begin_f (void)
 {
 	unsigned pmodel = 0, emodel = 0;
@@ -507,29 +477,10 @@ static void SV_Begin_f (void)
 		ClientReliableWrite_Byte (host_client, sv.paused);
 		SV_ClientPrintf (host_client, PRINT_HIGH, "Server is paused.\n");
 	}
-
-#if 0
-//
-// send a fixangle over the reliable channel to make sure it gets there
-// Never send a roll angle, because savegames can catch the server
-// in a state where it is expecting the client to correct the angle
-// and it won't happen if the game was just loaded, so you wind up
-// with a permanent head tilt
-	ent = EDICT_NUM( 1 + (host_client - svs.clients) );
-	MSG_WriteByte (&host_client->netchan.message, svc_setangle);
-	for (i=0 ; i < 2 ; i++)
-		MSG_WriteAngle (&host_client->netchan.message, ent->v.angles[i] );
-	MSG_WriteAngle (&host_client->netchan.message, 0 );
-#endif
 }
 
 //=============================================================================
 
-/*
-==================
-SV_NextDownload_f
-==================
-*/
 static void SV_NextDownload_f (void)
 {
 	byte buffer[1024];
@@ -579,11 +530,6 @@ static void OutofBandPrintf (netadr_t where, char *fmt, ...)
 	NET_SendPacket (SERVER, strlen (send) + 1, send, where);
 }
 
-/*
-==================
-SV_NextUpload
-==================
-*/
 static void SV_NextUpload (void)
 {
 	byte buffer[1024];
@@ -654,11 +600,6 @@ static void SV_NextUpload (void)
 	}
 }
 
-/*
-==================
-SV_BeginDownload_f
-==================
-*/
 static void SV_BeginDownload_f (void)
 {
 	char *name;
@@ -735,11 +676,6 @@ static void SV_BeginDownload_f (void)
 
 //=============================================================================
 
-/*
-==================
-SV_Say
-==================
-*/
 static void SV_Say (bool team)
 {
 	client_t *client;
@@ -829,20 +765,11 @@ static void SV_Say (bool team)
 	}
 }
 
-/*
-==================
-SV_Say_f
-==================
-*/
 static void SV_Say_f (void)
 {
 	SV_Say (false);
 }
-/*
-==================
-SV_Say_Team_f
-==================
-*/
+
 static void SV_Say_Team_f (void)
 {
 	SV_Say (true);
@@ -877,11 +804,6 @@ static void SV_Pings_f (void)
 	}
 }
 
-/*
-==================
-SV_Kill_f
-==================
-*/
 static void SV_Kill_f (void)
 {
 	if (ed_float (sv_player, health) <= 0)
@@ -895,11 +817,6 @@ static void SV_Kill_f (void)
 	sv_pr_execute (ClientKill);
 }
 
-/*
-==================
-SV_TogglePause
-==================
-*/
 void SV_TogglePause (const char *msg)
 {
 	int i;
@@ -920,11 +837,6 @@ void SV_TogglePause (const char *msg)
 	}
 }
 
-/*
-==================
-SV_Pause_f
-==================
-*/
 static void SV_Pause_f (void)
 {
 	int i;
@@ -985,8 +897,8 @@ static void SV_PTrack_f (void)
 	{
 		// turn off tracking
 		host_client->spec_track = 0;
-		ent = EDICT_NUM (host_client - svs.clients + 1);
-		tent = EDICT_NUM (0);
+		ent = ED_GetNum (host_client - svs.clients + 1);
+		tent = ED_GetNum (0);
 		ed_int (ent, goalentity) = EDICT_TO_PROG (tent);
 		return;
 	}
@@ -996,15 +908,15 @@ static void SV_PTrack_f (void)
 	{
 		SV_ClientPrintf (host_client, PRINT_HIGH, "Invalid client to track\n");
 		host_client->spec_track = 0;
-		ent = EDICT_NUM (host_client - svs.clients + 1);
-		tent = EDICT_NUM (0);
+		ent = ED_GetNum (host_client - svs.clients + 1);
+		tent = ED_GetNum (0);
 		ed_int (ent, goalentity) = EDICT_TO_PROG (tent);
 		return;
 	}
 	host_client->spec_track = i + 1; // now tracking
 
-	ent = EDICT_NUM (host_client - svs.clients + 1);
-	tent = EDICT_NUM (i + 1);
+	ent = ED_GetNum (host_client - svs.clients + 1);
+	tent = ED_GetNum (i + 1);
 	ed_int (ent, goalentity) = EDICT_TO_PROG (tent);
 }
 
@@ -1123,42 +1035,39 @@ typedef struct
 	void (*func) ();
 } ucmd_t;
 
-ucmd_t ucmds[] = {{"new", SV_New_f},
-				  {"modellist", SV_Modellist_f},
-				  {"soundlist", SV_Soundlist_f},
-				  {"prespawn", SV_PreSpawn_f},
-				  {"spawn", SV_Spawn_f},
-				  {"begin", SV_Begin_f},
+static const ucmd_t ucmds[] = {
+	{"new", SV_New_f},
+	{"modellist", SV_Modellist_f},
+	{"soundlist", SV_Soundlist_f},
+	{"prespawn", SV_PreSpawn_f},
+	{"spawn", SV_Spawn_f},
+	{"begin", SV_Begin_f},
 
-				  {"drop", SV_Drop_f},
-				  {"pings", SV_Pings_f},
+	{"drop", SV_Drop_f},
+	{"pings", SV_Pings_f},
 
-				  // issued by hand at client consoles
-				  {"rate", SV_Rate_f},
-				  {"kill", SV_Kill_f},
-				  {"pause", SV_Pause_f},
-				  {"msg", SV_Msg_f},
+	// issued by hand at client consoles
+	{"rate", SV_Rate_f},
+	{"kill", SV_Kill_f},
+	{"pause", SV_Pause_f},
+	{"msg", SV_Msg_f},
 
-				  {"say", SV_Say_f},
-				  {"say_team", SV_Say_Team_f},
+	{"say", SV_Say_f},
+	{"say_team", SV_Say_Team_f},
 
-				  {"setinfo", SV_SetInfo_f},
+	{"setinfo", SV_SetInfo_f},
 
-				  {"serverinfo", SV_ShowServerinfo_f},
+	{"serverinfo", SV_ShowServerinfo_f},
 
-				  {"download", SV_BeginDownload_f},
-				  {"nextdl", SV_NextDownload_f},
+	{"download", SV_BeginDownload_f},
+	{"nextdl", SV_NextDownload_f},
 
-				  {"ptrack", SV_PTrack_f}, //ZOID - used with autocam
+	{"ptrack", SV_PTrack_f}, //ZOID - used with autocam
 
-				  {NULL, NULL}};
+	{NULL, NULL},
+};
 
-/*
-==================
-SV_ExecuteUserCommand
-==================
-*/
-void SV_ExecuteUserCommand (char *s)
+static void SV_ExecuteUserCommand (char *s)
 {
 	ucmd_t *u;
 
@@ -1235,12 +1144,6 @@ static float SV_CalcRoll (vec3_t angles, vec3_t velocity)
 
 static vec3_t pmove_mins, pmove_maxs;
 
-/*
-====================
-AddLinksToPmove
-
-====================
-*/
 static void AddLinksToPmove (areanode_t *node)
 {
 	link_t *l, *next;
@@ -1275,7 +1178,7 @@ static void AddLinksToPmove (areanode_t *node)
 			pmove.numphysent++;
 
 			VectorCopy (ed_vector (check, origin), pe->origin);
-			pe->info = NUM_FOR_EDICT (check);
+			pe->info = ED_ForNum (check);
 			if (ed_float (check, solid) == SOLID_BSP)
 				pe->model = sv.models[(int)ed_float (check, modelindex)];
 			else
@@ -1363,11 +1266,6 @@ static void SV_PreRunCmd (void)
 	memset (playertouch, 0, sizeof (playertouch));
 }
 
-/*
-===========
-SV_RunCmd
-===========
-*/
 static void SV_RunCmd (usercmd_t *ucmd)
 {
 	edict_t *ent;
@@ -1460,26 +1358,9 @@ static void SV_RunCmd (usercmd_t *ucmd)
 		pmove_mins[i] = pmove.origin[i] - 256;
 		pmove_maxs[i] = pmove.origin[i] + 256;
 	}
-#if 1
 	AddLinksToPmove (sv_areanodes);
-#else
-	AddAllEntsToPmove ();
-#endif
 
-#if 0
-{
-	int before, after;
-
-before = PM_TestPlayerPosition (pmove.origin);
 	PlayerMove ();
-after = PM_TestPlayerPosition (pmove.origin);
-
-if (sv_player->v.health > 0 && before && !after )
-	Con_Printf ("player %s got stuck in playermove!!!!\n", host_client->name);
-}
-#else
-	PlayerMove ();
-#endif
 
 	host_client->oldbuttons = pmove.oldbuttons;
 
@@ -1490,7 +1371,7 @@ if (sv_player->v.health > 0 && before && !after )
 	if (onground != -1)
 	{
 		ed_float (sv_player, flags) = (int)ed_float (sv_player, flags) | FL_ONGROUND;
-		ed_int (sv_player, groundentity) = EDICT_TO_PROG (EDICT_NUM (pmove.physents[onground].info));
+		ed_int (sv_player, groundentity) = EDICT_TO_PROG (ED_GetNum (pmove.physents[onground].info));
 	}
 	else
 	{
@@ -1500,13 +1381,7 @@ if (sv_player->v.health > 0 && before && !after )
 	for (i = 0; i < 3; i++)
 		playerOrigin[i] = pmove.origin[i] - (playerMins[i] - player_mins[i]);
 
-#if 0
-	// truncate velocity the same way the net protocol will
-	for (i=0 ; i<3 ; i++)
-		sv_player->v.velocity[i] = (int)pmove.velocity[i];
-#else
 	VectorCopy (pmove.velocity, playerVelocity);
-#endif
 
 	VectorCopy (pmove.angles, playerVangle);
 
@@ -1519,7 +1394,7 @@ if (sv_player->v.health > 0 && before && !after )
 		for (i = 0; i < pmove.numtouch; i++)
 		{
 			n = pmove.physents[pmove.touchindex[i]].info;
-			ent = EDICT_NUM (n);
+			ent = ED_GetNum (n);
 			if (!ed_int (ent, touch) || (playertouch[n / 8] & (1 << (n % 8))))
 				continue;
 
@@ -1707,11 +1582,6 @@ void SV_ExecuteClientMessage (client_t *cl)
 	}
 }
 
-/*
-==============
-SV_UserInit
-==============
-*/
 void SV_UserInit (void)
 {
 	Cvar_RegisterVariable (src_server, &sv_rollspeed);

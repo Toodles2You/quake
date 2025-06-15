@@ -23,7 +23,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "clientdef.h"
 
 extern cvar_t cl_predict_players;
-extern cvar_t cl_predict_players2;
 extern cvar_t cl_solid_players;
 
 static struct predicted_player
@@ -35,12 +34,6 @@ static struct predicted_player
 
 //============================================================
 
-/*
-===============
-CL_AllocDlight
-
-===============
-*/
 dlight_t *CL_AllocDlight (int key)
 {
 	int i;
@@ -79,11 +72,6 @@ dlight_t *CL_AllocDlight (int key)
 	return dl;
 }
 
-/*
-===============
-CL_NewDlight
-===============
-*/
 static void CL_NewDlight (int key, float x, float y, float z, float radius, float time, int type)
 {
 	dlight_t *dl;
@@ -124,12 +112,6 @@ static void CL_NewDlight (int key, float x, float y, float z, float radius, floa
 	}
 }
 
-/*
-===============
-CL_DecayLights
-
-===============
-*/
 void CL_DecayLights (void)
 {
 	int i;
@@ -162,7 +144,6 @@ CL_ParseDelta
 Can go from either a baseline or a previous packet_entity
 ==================
 */
-int bitcounts[32]; /// just for protocol profiling
 static void CL_ParseDelta (entity_state_t *from, entity_state_t *to, int bits)
 {
 	int i;
@@ -178,11 +159,6 @@ static void CL_ParseDelta (entity_state_t *from, entity_state_t *to, int bits)
 		i = MSG_ReadByte ();
 		bits |= i;
 	}
-
-	// count the bits for net profiling
-	for (i = 0; i < 16; i++)
-		if (bits & (1 << i))
-			bitcounts[i]++;
 
 	to->flags = bits;
 
@@ -225,11 +201,6 @@ static void CL_ParseDelta (entity_state_t *from, entity_state_t *to, int bits)
 	}
 }
 
-/*
-=================
-FlushEntityPacket
-=================
-*/
 static void FlushEntityPacket (void)
 {
 	int word;
@@ -402,12 +373,6 @@ void CL_ParsePacketEntities (bool delta)
 	newp->num_entities = newindex;
 }
 
-/*
-===============
-CL_LinkPacketEntities
-
-===============
-*/
 static void CL_LinkPacketEntities (void)
 {
 	entity_t *ent;
@@ -561,8 +526,8 @@ typedef struct
 } projectile_t;
 
 #define MAX_PROJECTILES 32
-projectile_t cl_projectiles[MAX_PROJECTILES];
-int cl_num_projectiles;
+static projectile_t cl_projectiles[MAX_PROJECTILES];
+static int cl_num_projectiles;
 
 extern int cl_spikeindex;
 
@@ -605,12 +570,6 @@ void CL_ParseProjectiles (void)
 	}
 }
 
-/*
-=============
-CL_LinkProjectiles
-
-=============
-*/
 static void CL_LinkProjectiles (void)
 {
 	int i;
@@ -641,16 +600,11 @@ static void CL_LinkProjectiles (void)
 //========================================
 
 extern int cl_spikeindex, cl_playerindex, cl_flagindex;
+extern int parsecountmod;
+extern double parsecounttime;
 
 entity_t *CL_NewTempEntity (void);
 
-/*
-===================
-CL_ParsePlayerinfo
-===================
-*/
-extern int parsecountmod;
-extern double parsecounttime;
 void CL_ParsePlayerinfo (void)
 {
 	int msec;
@@ -830,19 +784,16 @@ static void CL_LinkPlayers (void)
 			continue; // not present this frame
 
 		// spawn light flashes, even ones coming from invisible objects
-		if (!gl_flashblend.value || j != cl.playernum)
-		{
-			if ((state->effects & (EF_BLUE | EF_RED)) == (EF_BLUE | EF_RED))
-				CL_NewDlight (j, state->origin[0], state->origin[1], state->origin[2], 200 + (rand () & 31), 0.1, 3);
-			else if (state->effects & EF_BLUE)
-				CL_NewDlight (j, state->origin[0], state->origin[1], state->origin[2], 200 + (rand () & 31), 0.1, 1);
-			else if (state->effects & EF_RED)
-				CL_NewDlight (j, state->origin[0], state->origin[1], state->origin[2], 200 + (rand () & 31), 0.1, 2);
-			else if (state->effects & EF_BRIGHTLIGHT)
-				CL_NewDlight (j, state->origin[0], state->origin[1], state->origin[2] + 16, 400 + (rand () & 31), 0.1, 0);
-			else if (state->effects & EF_DIMLIGHT)
-				CL_NewDlight (j, state->origin[0], state->origin[1], state->origin[2], 200 + (rand () & 31), 0.1, 0);
-		}
+		if ((state->effects & (EF_BLUE | EF_RED)) == (EF_BLUE | EF_RED))
+			CL_NewDlight (j, state->origin[0], state->origin[1], state->origin[2], 200 + (rand () & 31), 0.1, 3);
+		else if (state->effects & EF_BLUE)
+			CL_NewDlight (j, state->origin[0], state->origin[1], state->origin[2], 200 + (rand () & 31), 0.1, 1);
+		else if (state->effects & EF_RED)
+			CL_NewDlight (j, state->origin[0], state->origin[1], state->origin[2], 200 + (rand () & 31), 0.1, 2);
+		else if (state->effects & EF_BRIGHTLIGHT)
+			CL_NewDlight (j, state->origin[0], state->origin[1], state->origin[2] + 16, 400 + (rand () & 31), 0.1, 0);
+		else if (state->effects & EF_DIMLIGHT)
+			CL_NewDlight (j, state->origin[0], state->origin[1], state->origin[2], 200 + (rand () & 31), 0.1, 0);
 
 		// the player object never gets added
 		if (j == cl.playernum)
@@ -880,7 +831,7 @@ static void CL_LinkPlayers (void)
 
 		// only predict half the move to minimize overruns
 		msec = 500 * (playertime - state->state_time);
-		if (msec <= 0 || (!cl_predict_players.value && !cl_predict_players2.value))
+		if (msec <= 0 || !cl_predict_players.value)
 		{
 			VectorCopy (state->origin, ent->origin);
 			//Con_DPrintf ("nopredict\n");
@@ -999,7 +950,7 @@ void CL_SetUpPlayerPrediction (bool dopred)
 		{
 			// only predict half the move to minimize overruns
 			msec = 500 * (playertime - state->state_time);
-			if (msec <= 0 || (!cl_predict_players.value && !cl_predict_players2.value) || !dopred)
+			if (msec <= 0 || !cl_predict_players.value || !dopred)
 			{
 				VectorCopy (state->origin, pplayer->origin);
 				//Con_DPrintf ("nopredict\n");

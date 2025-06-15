@@ -42,21 +42,11 @@ static byte cmod_novis[MAX_MAP_LEAFS / 8];
 static cmodel_t cmod_known[MAX_MODELS];
 static int cmod_numknown;
 
-/*
-===============
-CMod_Init
-===============
-*/
 void CMod_Init (void)
 {
 	memset (cmod_novis, 255, sizeof (cmod_novis));
 }
 
-/*
-===============
-CMod_PointInLeaf
-===============
-*/
 mleaf_t *CMod_PointInLeaf (vec3_t p, cmodel_t *model)
 {
 	mnode_t *node;
@@ -79,11 +69,6 @@ mleaf_t *CMod_PointInLeaf (vec3_t p, cmodel_t *model)
 	return NULL; // never reached
 }
 
-/*
-===================
-CMod_DecompressVis
-===================
-*/
 static byte *CMod_DecompressVis (byte *in, cmodel_t *model)
 {
 	static byte decompressed[MAX_MAP_LEAFS / 8];
@@ -131,11 +116,6 @@ byte *CMod_LeafPVS (mleaf_t *leaf, cmodel_t *model)
 	return CMod_DecompressVis (leaf->compressed_vis, model);
 }
 
-/*
-===================
-CMod_ClearAll
-===================
-*/
 void CMod_ClearAll (void)
 {
 	int i;
@@ -147,11 +127,6 @@ void CMod_ClearAll (void)
 	cmod_numknown = 0;
 }
 
-/*
-==================
-CMod_FindName
-==================
-*/
 static cmodel_t *CMod_FindName (char *name, bool *load)
 {
 	int i;
@@ -260,11 +235,6 @@ cmodel_t *CMod_ForName (char *name, bool crash, bool world)
 static byte *mod_base;
 static int mod_version;
 
-/*
-=================
-CMod_LoadVisibility
-=================
-*/
 static void CMod_LoadVisibility (lump_t *l)
 {
 	if (!l->filelen)
@@ -276,11 +246,6 @@ static void CMod_LoadVisibility (lump_t *l)
 	memcpy (loadcmod->visdata, mod_base + l->fileofs, l->filelen);
 }
 
-/*
-================
-CMod_CountEntities
-================
-*/
 static size_t CMod_CountEntities (char *data)
 {
 	size_t i = 0;
@@ -304,11 +269,6 @@ static size_t CMod_CountEntities (char *data)
 	return i;
 }
 
-/*
-=================
-CMod_LoadEntities
-=================
-*/
 static void CMod_LoadEntities (lump_t *l)
 {
 	if (!l->filelen)
@@ -319,11 +279,6 @@ static void CMod_LoadEntities (lump_t *l)
 	loadcmod->numentities = CMod_CountEntities (loadcmod->entities);
 }
 
-/*
-=================
-CMod_LoadSubmodels
-=================
-*/
 static void CMod_LoadSubmodels (lump_t *l)
 {
 	dmodel_t *in;
@@ -375,11 +330,6 @@ static void CMod_LoadSubmodels (lump_t *l)
 	}
 }
 
-/*
-=================
-CMod_SetParent
-=================
-*/
 static void CMod_SetParent (mnode_t *node, mnode_t *parent)
 {
 	node->parent = parent;
@@ -389,11 +339,6 @@ static void CMod_SetParent (mnode_t *node, mnode_t *parent)
 	CMod_SetParent (node->children[1], node);
 }
 
-/*
-=================
-CMod_LoadNodes
-=================
-*/
 static void CMod_LoadNodes (lump_t *l)
 {
 	int i, j, count, p;
@@ -438,11 +383,6 @@ static void CMod_LoadNodes (lump_t *l)
 	CMod_SetParent (loadcmod->nodes, NULL); // sets nodes and leafs
 }
 
-/*
-=================
-CMod_LoadLeafs
-=================
-*/
 static void CMod_LoadLeafs (lump_t *l)
 {
 	dleaf_t *in;
@@ -488,11 +428,6 @@ static void CMod_LoadLeafs (lump_t *l)
 	}
 }
 
-/*
-=================
-CMod_LoadClipnodes
-=================
-*/
 static void CMod_LoadClipnodes (lump_t *l)
 {
 	dclipnode_t *in, *out;
@@ -577,11 +512,6 @@ static void CMod_MakeHull0 (void)
 	}
 }
 
-/*
-=================
-CMod_LoadPlanes
-=================
-*/
 static void CMod_LoadPlanes (lump_t *l)
 {
 	int i, j;
@@ -617,11 +547,6 @@ static void CMod_LoadPlanes (lump_t *l)
 	}
 }
 
-/*
-=================
-CMod_LoadBrushModel
-=================
-*/
 static void CMod_LoadBrushModel (cmodel_t *mod, void *buffer, bool world)
 {
 	int i;
@@ -685,11 +610,6 @@ static void CMod_LoadBrushModel (cmodel_t *mod, void *buffer, bool world)
 
 //=============================================================================
 
-/*
-================
-CMod_Print
-================
-*/
 void CMod_Print (void)
 {
 	int i;

@@ -29,52 +29,40 @@ when crossing a water boudnary.
 
 */
 
-cvar_t scr_ofsx = {"scr_ofsx", "0"};
-cvar_t scr_ofsy = {"scr_ofsy", "0"};
-cvar_t scr_ofsz = {"scr_ofsz", "0"};
-
-cvar_t cl_rollspeed = {"cl_rollspeed", "200"};
-cvar_t cl_rollangle = {"cl_rollangle", "2.0"};
-
-cvar_t cl_bob = {"cl_bob", "0.02"};
-cvar_t cl_bobcycle = {"cl_bobcycle", "0.6"};
-cvar_t cl_bobup = {"cl_bobup", "0.5"};
-
 cvar_t cl_pitchmax = {"cl_pitchmax", "70"};
 cvar_t cl_pitchmin = {"cl_pitchmin", "80"};
 
-cvar_t v_kicktime = {"v_kicktime", "0.5"};
-cvar_t v_kickroll = {"v_kickroll", "0.6"};
-cvar_t v_kickpitch = {"v_kickpitch", "0.6"};
-
-cvar_t v_iyaw_cycle = {"v_iyaw_cycle", "2"};
-cvar_t v_iroll_cycle = {"v_iroll_cycle", "0.5"};
-cvar_t v_ipitch_cycle = {"v_ipitch_cycle", "1"};
-cvar_t v_iyaw_level = {"v_iyaw_level", "0.3"};
-cvar_t v_iroll_level = {"v_iroll_level", "0.1"};
-cvar_t v_ipitch_level = {"v_ipitch_level", "0.3"};
-
-cvar_t v_idlescale = {"v_idlescale", "0"};
-
 cvar_t crosshair = {"crosshair", "0", CVAR_ARCHIVE};
 
-cvar_t gl_cshiftpercent = {"gl_cshiftpercent", "100"};
+static cvar_t cl_rollspeed = {"cl_rollspeed", "200"};
+static cvar_t cl_rollangle = {"cl_rollangle", "2.0"};
 
-cvar_t v_contentblend = {"v_contentblend", "1"};
+static cvar_t cl_bob = {"cl_bob", "0.02"};
+static cvar_t cl_bobcycle = {"cl_bobcycle", "0.6"};
+static cvar_t cl_bobup = {"cl_bobup", "0.5"};
 
-float v_dmg_time, v_dmg_roll, v_dmg_pitch;
+static cvar_t v_kicktime = {"v_kicktime", "0.5"};
+static cvar_t v_kickroll = {"v_kickroll", "0.6"};
+static cvar_t v_kickpitch = {"v_kickpitch", "0.6"};
 
-extern int in_forward, in_forward2, in_back;
+static cvar_t v_iyaw_cycle = {"v_iyaw_cycle", "2"};
+static cvar_t v_iroll_cycle = {"v_iroll_cycle", "0.5"};
+static cvar_t v_ipitch_cycle = {"v_ipitch_cycle", "1"};
+static cvar_t v_iyaw_level = {"v_iyaw_level", "0.3"};
+static cvar_t v_iroll_level = {"v_iroll_level", "0.1"};
+static cvar_t v_ipitch_level = {"v_ipitch_level", "0.3"};
 
-frame_t *view_frame;
-player_state_t *view_message;
+static cvar_t v_idlescale = {"v_idlescale", "0"};
 
-/*
-===============
-V_CalcRoll
+static cvar_t gl_cshiftpercent = {"gl_cshiftpercent", "100"};
 
-===============
-*/
+static cvar_t v_contentblend = {"v_contentblend", "1"};
+
+static float v_dmg_time, v_dmg_roll, v_dmg_pitch;
+
+static frame_t *view_frame;
+static player_state_t *view_message;
+
 float V_CalcRoll (vec3_t angles, vec3_t velocity)
 {
 	vec3_t forward, right, up;
@@ -97,13 +85,7 @@ float V_CalcRoll (vec3_t angles, vec3_t velocity)
 	return side * sign;
 }
 
-/*
-===============
-V_CalcBob
-
-===============
-*/
-float V_CalcBob (void)
+static float V_CalcBob (void)
 {
 	static double bobtime;
 	static float bob;
@@ -137,15 +119,13 @@ float V_CalcBob (void)
 
 //=============================================================================
 
-cvar_t v_centermove = {"v_centermove", "0.15", false};
-cvar_t v_centerspeed = {"v_centerspeed", "500"};
+static cvar_t v_centermove = {"v_centermove", "0.15", false};
+static cvar_t v_centerspeed = {"v_centerspeed", "500"};
 
 void V_StartPitchDrift (void)
 {
-#if 1
 	if (cl.laststop == cl.time)
 		return; // something else is keeping it from drifting
-#endif
 	if (cl.nodrift || !cl.pitchvel)
 	{
 		cl.pitchvel = v_centerspeed.value;
@@ -174,7 +154,7 @@ Drifting is enabled when the center view key is hit, mlook is released and
 lookspring is non 0, or when 
 ===============
 */
-void V_DriftPitch (void)
+static void V_DriftPitch (void)
 {
 	float delta, move;
 
@@ -239,21 +219,16 @@ void V_DriftPitch (void)
 ============================================================================== 
 */
 
-cshift_t cshift_empty = {{130, 80, 50}, 0};
-cshift_t cshift_water = {{130, 80, 50}, 128};
-cshift_t cshift_slime = {{0, 25, 5}, 150};
-cshift_t cshift_lava = {{255, 80, 0}, 150};
+static cshift_t cshift_empty = {{130, 80, 50}, 0};
+static cshift_t cshift_water = {{130, 80, 50}, 128};
+static cshift_t cshift_slime = {{0, 25, 5}, 150};
+static cshift_t cshift_lava = {{255, 80, 0}, 150};
 
 cvar_t v_gamma = {"gamma", "1", true};
 
 float v_blend[4]; // rgba 0.0 - 1.0
 
-/*
-=================
-V_CheckGamma
-=================
-*/
-bool V_CheckGamma (void)
+static bool V_CheckGamma (void)
 {
 	static float oldgammavalue;
 
@@ -266,11 +241,6 @@ bool V_CheckGamma (void)
 	return true;
 }
 
-/*
-===============
-V_ParseDamage
-===============
-*/
 void V_ParseDamage (void)
 {
 	int armor, blood;
@@ -333,12 +303,7 @@ void V_ParseDamage (void)
 	v_dmg_time = v_kicktime.value;
 }
 
-/*
-==================
-V_cshift_f
-==================
-*/
-void V_cshift_f (void)
+static void V_cshift_f (void)
 {
 	cshift_empty.destcolor[0] = atoi (Cmd_Argv (1));
 	cshift_empty.destcolor[1] = atoi (Cmd_Argv (2));
@@ -353,7 +318,7 @@ V_BonusFlash_f
 When you run over an item, the server sends this command
 ==================
 */
-void V_BonusFlash_f (void)
+static void V_BonusFlash_f (void)
 {
 	cl.cshifts[CSHIFT_BONUS].destcolor[0] = 215;
 	cl.cshifts[CSHIFT_BONUS].destcolor[1] = 186;
@@ -393,12 +358,7 @@ void V_SetContentsColor (int contents)
 	}
 }
 
-/*
-=============
-V_CalcPowerupCshift
-=============
-*/
-void V_CalcPowerupCshift (void)
+static void V_CalcPowerupCshift (void)
 {
 	if (cl.stats[STAT_ITEMS] & IT_QUAD)
 	{
@@ -432,11 +392,6 @@ void V_CalcPowerupCshift (void)
 		cl.cshifts[CSHIFT_POWERUP].percent = 0;
 }
 
-/*
-=============
-V_CalcBlend
-=============
-*/
 void V_CalcBlend (void)
 {
 	float r, g, b, a, a2;
@@ -475,11 +430,6 @@ void V_CalcBlend (void)
 		v_blend[3] = 0;
 }
 
-/*
-=============
-V_UpdatePalette
-=============
-*/
 void V_UpdatePalette (void)
 {
 	int i, j;
@@ -534,7 +484,7 @@ void V_UpdatePalette (void)
 ============================================================================== 
 */
 
-float angledelta (float a)
+static float angledelta (float a)
 {
 	a = anglemod (a);
 	if (a > 180)
@@ -542,12 +492,7 @@ float angledelta (float a)
 	return a;
 }
 
-/*
-==================
-CalcGunAngle
-==================
-*/
-void CalcGunAngle (void)
+static void CalcGunAngle (void)
 {
 	float yaw, pitch, move;
 	static float oldyaw = 0;
@@ -596,12 +541,7 @@ void CalcGunAngle (void)
 	cl.viewent.angles[PITCH] = -(r_refdef.viewangles[PITCH] + pitch);
 }
 
-/*
-==============
-V_BoundOffsets
-==============
-*/
-void V_BoundOffsets (void)
+static void V_BoundOffsets (void)
 {
 	// absolutely bound refresh reletive to entity clipping hull
 	// so the view can never be inside a solid wall
@@ -627,7 +567,7 @@ V_AddIdle
 Idle swaying
 ==============
 */
-void V_AddIdle (void)
+static void V_AddIdle (void)
 {
 	r_refdef.viewangles[ROLL] += v_idlescale.value * sin (cl.time * v_iroll_cycle.value) * v_iroll_level.value;
 	r_refdef.viewangles[PITCH] += v_idlescale.value * sin (cl.time * v_ipitch_cycle.value) * v_ipitch_level.value;
@@ -645,7 +585,7 @@ V_CalcViewRoll
 Roll is induced by movement and damage
 ==============
 */
-void V_CalcViewRoll (void)
+static void V_CalcViewRoll (void)
 {
 	float side;
 
@@ -660,13 +600,7 @@ void V_CalcViewRoll (void)
 	}
 }
 
-/*
-==================
-V_CalcIntermissionRefdef
-
-==================
-*/
-void V_CalcIntermissionRefdef (void)
+static void V_CalcIntermissionRefdef (void)
 {
 	entity_t *view;
 	float old;
@@ -685,13 +619,7 @@ void V_CalcIntermissionRefdef (void)
 	v_idlescale.value = old;
 }
 
-/*
-==================
-V_CalcRefdef
-
-==================
-*/
-void V_CalcRefdef (void)
+static void V_CalcRefdef (void)
 {
 	entity_t *view;
 	int i;
@@ -790,11 +718,6 @@ void V_CalcRefdef (void)
 		oldz = cl.simorg[2];
 }
 
-/*
-=============
-V_DropPunchAngle
-=============
-*/
 static void V_DropPunchAngle (void)
 {
 	if (!cl.punchangle)
@@ -817,8 +740,6 @@ The player's clipping box goes from (-16 -16 -24) to (16 16 32) from
 the entity origin, so any view position inside that will be valid
 ==================
 */
-extern vrect_t scr_vrect;
-
 void V_RenderView (void)
 {
 	cl.simangles[ROLL] = 0;
@@ -851,11 +772,6 @@ void V_ClampViewAngles (void)
 
 //============================================================================
 
-/*
-=============
-V_Init
-=============
-*/
 void V_Init (void)
 {
 	Cmd_AddCommand (src_client, "v_cshift", V_cshift_f);

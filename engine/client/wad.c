@@ -35,7 +35,7 @@ Space padding is so names can be printed nicely in tables.
 Can safely be performed in place.
 ==================
 */
-void W_CleanupName (char *in, char *out)
+static void W_CleanupName (char *in, char *out)
 {
 	int i;
 	int c;
@@ -55,11 +55,6 @@ void W_CleanupName (char *in, char *out)
 		out[i] = 0;
 }
 
-/*
-====================
-W_LoadWadFile
-====================
-*/
 void W_LoadWadFile (char *filename)
 {
 	lumpinfo_t *lump_p;
@@ -91,11 +86,6 @@ void W_LoadWadFile (char *filename)
 	}
 }
 
-/*
-=============
-W_GetLumpinfo
-=============
-*/
 lumpinfo_t *W_GetLumpinfo (char *name)
 {
 	int i;
@@ -146,11 +136,6 @@ typedef struct wad_s
 
 static wad_t *wad_head = NULL;
 
-/*
-====================
-W_LoadMapWadFile
-====================
-*/
 void W_LoadMapWadFile (char *filename)
 {
 	lumpinfo_t *lump_p;
@@ -265,11 +250,6 @@ bool W_LoadMapMiptexData (void *dst)
 	return result;
 }
 
-/*
-====================
-W_FreeMapWadFiles
-====================
-*/
 void W_FreeMapWadFiles (void)
 {
 	wad_t *wad = wad_head;

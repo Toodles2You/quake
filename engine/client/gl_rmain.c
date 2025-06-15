@@ -22,7 +22,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 entity_t r_worldentity;
 
-vec3_t modelorg, r_entorigin;
+vec3_t modelorg;
 entity_t *currententity;
 
 int r_visframecount; // bumped when going to a new PVS
@@ -33,8 +33,6 @@ mplane_t frustum[4];
 int c_brush_polys, c_alias_polys;
 
 int currenttexture = -1; // to avoid unnecessary texture sets
-
-int cnttextures[2] = {-1, -1}; // cached
 
 int particletexture; // little dot for particles
 int playertextures;	 // up to MAX_CLIENTS color translated skins
@@ -48,7 +46,6 @@ vec3_t vright;
 vec3_t r_origin;
 
 float r_world_matrix[16];
-float r_base_world_matrix[16];
 
 //
 // screen size info
@@ -60,9 +57,6 @@ mleaf_t *r_viewleaf, *r_oldviewleaf;
 texture_t *r_notexture_mip;
 
 int d_lightstylevalue[256]; // 8.8 fraction of base light value
-
-void R_MarkLeaves (void);
-void R_SetupGL (float fov_x, float fov_y, vrect_t *vrect);
 
 cvar_t r_norefresh = {"r_norefresh", "0"};
 cvar_t r_drawentities = {"r_drawentities", "1"};
@@ -81,18 +75,17 @@ cvar_t r_wireframe = {"r_wireframe", "0"};
 
 cvar_t gl_finish = {"gl_finish", "0"};
 cvar_t gl_clear = {"gl_clear", "0"};
-cvar_t gl_cull = {"gl_cull", "1"};
 cvar_t gl_texsort = {"gl_texsort", "1"};
 cvar_t gl_smoothmodels = {"gl_smoothmodels", "1"};
 cvar_t gl_affinemodels = {"gl_affinemodels", "0"};
 cvar_t gl_polyblend = {"gl_polyblend", "1"};
-cvar_t gl_flashblend = {"gl_flashblend", "0"};
 cvar_t gl_playermip = {"gl_playermip", "0"};
 cvar_t gl_nocolors = {"gl_nocolors", "0"};
 cvar_t gl_keeptjunctions = {"gl_keeptjunctions", "1"};
 cvar_t gl_partblend = {"gl_partblend", "0"};
+cvar_t gl_ztrick = {"gl_ztrick", "1"};
 
-extern cvar_t gl_ztrick;
+static float gldepthmin, gldepthmax;
 
 /*
 =================
@@ -103,9 +96,7 @@ Returns true if the box is completely outside the frustom
 */
 bool R_CullBox (vec3_t mins, vec3_t maxs)
 {
-	int i;
-
-	for (i = 0; i < 4; i++)
+	for (int i = 0; i < 4; i++)
 		if (BoxOnPlaneSide (mins, maxs, &frustum[i]) == 2)
 			return true;
 	return false;
@@ -114,7 +105,6 @@ bool R_CullBox (vec3_t mins, vec3_t maxs)
 void R_RotateForEntity (entity_t *e)
 {
 	glTranslatef (e->origin[0], e->origin[1], e->origin[2]);
-
 	glRotatef (e->angles[1], 0, 0, 1);
 	glRotatef (-e->angles[0], 0, 1, 0);
 	glRotatef (e->angles[2], 1, 0, 0);
@@ -128,12 +118,7 @@ void R_RotateForEntity (entity_t *e)
 =============================================================
 */
 
-/*
-================
-R_GetSpriteFrame
-================
-*/
-mspriteframe_t *R_GetSpriteFrame (entity_t *currententity)
+static mspriteframe_t *R_GetSpriteFrame (entity_t *currententity)
 {
 	msprite_t *psprite;
 	mspritegroup_t *pspritegroup;
@@ -177,13 +162,7 @@ mspriteframe_t *R_GetSpriteFrame (entity_t *currententity)
 	return pspriteframe;
 }
 
-/*
-=================
-R_DrawSpriteModel
-
-=================
-*/
-void R_DrawSpriteModel (entity_t *e)
+static void R_DrawSpriteModel (entity_t *e)
 {
 	vec3_t point;
 	mspriteframe_t *frame;
@@ -250,30 +229,19 @@ void R_DrawSpriteModel (entity_t *e)
 =============================================================
 */
 
-#define NUMVERTEXNORMALS 162
-
-float r_avertexnormals[NUMVERTEXNORMALS][3] = {
-#include "anorms.h"
-};
-
-vec3_t shadevector;
-vec3_t shadelight;
+static vec3_t shadevector;
+static vec3_t shadelight;
 
 // precalculated dot products for quantized angles
 #define SHADEDOT_QUANT 16
 
-float r_avertexnormal_dots[SHADEDOT_QUANT][256] = {
+static float r_avertexnormal_dots[SHADEDOT_QUANT][256] = {
 #include "anorm_dots.h"
 };
 
-float *shadedots = r_avertexnormal_dots[0];
+static float *shadedots = r_avertexnormal_dots[0];
 
-/*
-=============
-GL_DrawAliasFrame
-=============
-*/
-void GL_DrawAliasFrame (aliashdr_t *paliashdr, int posenum, bool shade, float alpha)
+static void GL_DrawAliasFrame (aliashdr_t *paliashdr, int posenum, bool shade, float alpha)
 {
 	float l[4];
 	trivertx_t *verts;
@@ -325,13 +293,7 @@ void GL_DrawAliasFrame (aliashdr_t *paliashdr, int posenum, bool shade, float al
 	}
 }
 
-/*
-=================
-R_SetupAliasFrame
-
-=================
-*/
-void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr, bool shade, float alpha)
+static void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr, bool shade, float alpha)
 {
 	int pose, numposes;
 	float interval;
@@ -354,13 +316,7 @@ void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr, bool shade, float alph
 	GL_DrawAliasFrame (paliashdr, pose, shade, alpha);
 }
 
-/*
-=================
-R_DrawAliasModel
-
-=================
-*/
-void R_DrawAliasModel (entity_t *e)
+static void R_DrawAliasModel (entity_t *e)
 {
 	int i;
 	int lnum;
@@ -380,8 +336,7 @@ void R_DrawAliasModel (entity_t *e)
 	if (R_CullBox (mins, maxs))
 		return;
 
-	VectorCopy (currententity->origin, r_entorigin);
-	VectorSubtract (r_origin, r_entorigin, modelorg);
+	VectorSubtract (r_origin, currententity->origin, modelorg);
 
 	//
 	// get lighting information
@@ -515,12 +470,7 @@ void R_DrawAliasModel (entity_t *e)
 
 //==================================================================================
 
-/*
-=============
-R_DrawEntitiesOnList
-=============
-*/
-void R_DrawEntitiesOnList (void)
+static void R_DrawEntitiesOnList (void)
 {
 	int i;
 
@@ -560,12 +510,9 @@ void R_DrawEntitiesOnList (void)
 	}
 }
 
-/*
-=============
-R_DrawViewModel
-=============
-*/
-void R_DrawViewModel (void)
+static void R_SetupGL (float, float, vrect_t *);
+
+static void R_DrawViewModel (void)
 {
 	if (!r_drawviewmodel.value)
 		return;
@@ -591,12 +538,7 @@ void R_DrawViewModel (void)
 	glDepthRange (gldepthmin, gldepthmax);
 }
 
-/*
-============
-R_PolyBlend
-============
-*/
-void R_PolyBlend (void)
+static void R_PolyBlend (void)
 {
 	if (!gl_polyblend.value)
 		return;
@@ -630,7 +572,7 @@ void R_PolyBlend (void)
 	glEnable (GL_ALPHA_TEST);
 }
 
-int SignbitsForPlane (mplane_t *out)
+static int SignbitsForPlane (mplane_t *out)
 {
 	int bits, j;
 
@@ -653,7 +595,7 @@ assumes side and forward are perpendicular, and normalized
 to turn away from side, use a negative angle
 ===============
 */
-void TurnVector (vec3_t out, const vec3_t forward, const vec3_t side, float angle)
+static void TurnVector (vec3_t out, const vec3_t forward, const vec3_t side, float angle)
 {
 	float scale_forward, scale_side;
 
@@ -665,12 +607,7 @@ void TurnVector (vec3_t out, const vec3_t forward, const vec3_t side, float angl
 	out[2] = scale_forward * forward[2] + scale_side * side[2];
 }
 
-/*
-===============
-R_SetFrustum -- johnfitz -- rewritten
-===============
-*/
-void R_SetFrustum (void)
+static void R_SetFrustum (void)
 {
 	int i;
 
@@ -687,12 +624,7 @@ void R_SetFrustum (void)
 	}
 }
 
-/*
-===============
-R_SetupFrame
-===============
-*/
-void R_SetupFrame (void)
+static void R_SetupFrame (void)
 {
 	R_AnimateLight ();
 
@@ -714,22 +646,14 @@ void R_SetupFrame (void)
 	c_alias_polys = 0;
 }
 
-void R_SetPerspective (GLdouble fovx, GLdouble fovy, GLdouble zNear, GLdouble zFar)
+static void R_SetPerspective (GLdouble fovx, GLdouble fovy, GLdouble zNear, GLdouble zFar)
 {
-	GLdouble xmax, ymax;
-
-	xmax = zNear * tan (fovx * M_PI / 360.0);
-	ymax = zNear * tan (fovy * M_PI / 360.0);
-
+	GLdouble xmax = zNear * tan (fovx * M_PI / 360.0);
+	GLdouble ymax = zNear * tan (fovy * M_PI / 360.0);
 	glFrustum (-xmax, xmax, -ymax, ymax, zNear, zFar);
 }
 
-/*
-=============
-R_SetupGL
-=============
-*/
-void R_SetupGL (float fov_x, float fov_y, vrect_t *vrect)
+static void R_SetupGL (float fov_x, float fov_y, vrect_t *vrect)
 {
 	extern int glwidth, glheight;
 	int x, x2, y2, y, w, h;
@@ -778,15 +702,13 @@ void R_SetupGL (float fov_x, float fov_y, vrect_t *vrect)
 	//
 	// set drawing parms
 	//
-	if (gl_cull.value)
-		glEnable (GL_CULL_FACE);
-	else
-		glDisable (GL_CULL_FACE);
-
+	glEnable (GL_CULL_FACE);
 	glDisable (GL_BLEND);
 	glDisable (GL_ALPHA_TEST);
 	glEnable (GL_DEPTH_TEST);
 }
+
+void R_MarkLeaves (void);
 
 /*
 ================
@@ -795,7 +717,7 @@ R_RenderScene
 r_refdef must be set before the first call
 ================
 */
-void R_RenderScene (void)
+static void R_RenderScene (void)
 {
 	R_SetupFrame ();
 
@@ -811,17 +733,10 @@ void R_RenderScene (void)
 
 	GL_DisableMultitexture ();
 
-	R_RenderDlights ();
-
 	R_DrawParticles ();
 }
 
-/*
-=============
-R_Clear
-=============
-*/
-void R_Clear (void)
+static void R_Clear (void)
 {
 	if (r_wireframe.value)
 	{
@@ -900,14 +815,6 @@ void R_RenderView (void)
 
 	// render normal view
 
-	/***** Experimental silly looking fog ******
-****** Use r_fullbright if you enable ******
-	glFogi(GL_FOG_MODE, GL_LINEAR);
-	glFogfv(GL_FOG_COLOR, colors);
-	glFogf(GL_FOG_END, 512.0);
-	glEnable(GL_FOG);
-********************************************/
-
 	if (!(cl.stats[STAT_ITEMS] & IT_INVISIBILITY))
 	{
 		cl.viewent.alpha = 0;
@@ -923,15 +830,10 @@ void R_RenderView (void)
 		R_DrawViewModel ();
 	}
 
-	//  More fog right here :)
-	//	glDisable(GL_FOG);
-	//  End of all fog code...
-
 	R_PolyBlend ();
 
 	if (r_speeds.value)
 	{
-		//		glFinish ();
 		time2 = Sys_FloatTime ();
 		Con_Printf ("%3i ms  %4i wpoly %4i epoly\n", (int)((time2 - time1) * 1000), c_brush_polys, c_alias_polys);
 	}

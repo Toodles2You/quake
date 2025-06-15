@@ -70,42 +70,44 @@ console is:
 
 */
 
+extern cvar_t crosshair;
+
 int glx, gly, glwidth, glheight;
 
 float scr_con_current;
 float scr_conlines; // lines of console to display
 
-float oldscreensize, oldfov, oldvmfov, olddrawvm, oldsbar;
 cvar_t scr_viewsize = {"viewsize", "100", CVAR_ARCHIVE};
-cvar_t scr_fov = {"fov", "90"}; // 10 - 170
-cvar_t scr_viewmodelfov = {"viewmodel_fov", "90"};
-cvar_t scr_conspeed = {"scr_conspeed", "300"};
-cvar_t scr_centertime = {"scr_centertime", "2"};
-cvar_t scr_showturtle = {"showturtle", "0"};
-cvar_t scr_showpause = {"showpause", "1"};
-cvar_t scr_printspeed = {"scr_printspeed", "8"};
-cvar_t gl_triplebuffer = {"gl_triplebuffer", "1", CVAR_ARCHIVE};
 
-extern cvar_t crosshair;
-
-bool scr_initialized; // ready to draw
-
-qpic_t *scr_ram;
-qpic_t *scr_net;
-qpic_t *scr_turtle;
-
-int clearconsole;
 int clearnotify;
 
 viddef_t vid; // global video state
 
-vrect_t scr_vrect;
-
 bool scr_disabled_for_loading;
-bool scr_drawloading;
-float scr_disabled_time;
 
-void SCR_ScreenShot_f (void);
+static float oldscreensize, oldfov, oldvmfov, olddrawvm, oldsbar;
+static cvar_t scr_fov = {"fov", "90"}; // 10 - 170
+static cvar_t scr_viewmodelfov = {"viewmodel_fov", "90"};
+static cvar_t scr_conspeed = {"scr_conspeed", "300"};
+static cvar_t scr_centertime = {"scr_centertime", "2"};
+static cvar_t scr_showturtle = {"showturtle", "0"};
+static cvar_t scr_showpause = {"showpause", "1"};
+static cvar_t scr_printspeed = {"scr_printspeed", "8"};
+
+static bool scr_initialized; // ready to draw
+
+static qpic_t *scr_ram;
+static qpic_t *scr_net;
+static qpic_t *scr_turtle;
+
+static int clearconsole;
+
+static vrect_t scr_vrect;
+
+static bool scr_drawloading;
+static float scr_disabled_time;
+
+static void SCR_ScreenShot_f (void);
 
 /*
 ===============================================================================
@@ -115,12 +117,12 @@ CENTER PRINTING
 ===============================================================================
 */
 
-char scr_centerstring[1024];
-float scr_centertime_start; // for slow victory printing
-float scr_centertime_off;
-int scr_center_lines;
-int scr_erase_lines;
-int scr_erase_center;
+static char scr_centerstring[1024];
+static float scr_centertime_start; // for slow victory printing
+static float scr_centertime_off;
+static int scr_center_lines;
+static int scr_erase_lines;
+static int scr_erase_center;
 
 /*
 ==============
@@ -146,7 +148,7 @@ void SCR_CenterPrint (char *str)
 	}
 }
 
-void SCR_DrawCenterString (void)
+static void SCR_DrawCenterString (void)
 {
 	char *start;
 	int l;
@@ -193,7 +195,7 @@ void SCR_DrawCenterString (void)
 	} while (1);
 }
 
-void SCR_CheckDrawCenterString (void)
+static void SCR_CheckDrawCenterString (void)
 {
 	if (scr_center_lines > scr_erase_lines)
 		scr_erase_lines = scr_center_lines;
@@ -217,7 +219,7 @@ Adapt a 4:3 horizontal FOV to the current screen size using the "Hor+" scaling:
 2.0 * atan(width / height * 3.0 / 4.0 * tan(fov_x / 2.0))
 ====================
 */
-float AdaptFovx (float fov_x, float width, float height)
+static float AdaptFovx (float fov_x, float width, float height)
 {
 	float a, x;
 
@@ -231,12 +233,7 @@ float AdaptFovx (float fov_x, float width, float height)
 	return a;
 }
 
-/*
-====================
-CalcFovy
-====================
-*/
-float CalcFovy (float fov_x, float width, float height)
+static float CalcFovy (float fov_x, float width, float height)
 {
 	float a, x;
 
@@ -356,27 +353,13 @@ static void SCR_CalcRefdef (void)
 	r_refdef.vm_fov_y = CalcFovy (r_refdef.vm_fov_x, r_refdef.vrect.width, r_refdef.vrect.height);
 }
 
-/*
-=================
-SCR_SizeUp_f
-
-Keybinding command
-=================
-*/
-void SCR_SizeUp_f (void)
+static void SCR_SizeUp_f (void)
 {
 	Cvar_SetValue (src_client, "viewsize", scr_viewsize.value + 10);
 	vid.recalc_refdef = true;
 }
 
-/*
-=================
-SCR_SizeDown_f
-
-Keybinding command
-=================
-*/
-void SCR_SizeDown_f (void)
+static void SCR_SizeDown_f (void)
 {
 	Cvar_SetValue (src_client, "viewsize", scr_viewsize.value - 10);
 	vid.recalc_refdef = true;
@@ -384,14 +367,8 @@ void SCR_SizeDown_f (void)
 
 //============================================================================
 
-/*
-==================
-SCR_Init
-==================
-*/
 void SCR_Init (void)
 {
-
 	Cvar_RegisterVariable (src_client, &scr_fov);
 	Cvar_RegisterVariable (src_client, &scr_viewmodelfov);
 	Cvar_RegisterVariable (src_client, &scr_viewsize);
@@ -400,7 +377,6 @@ void SCR_Init (void)
 	Cvar_RegisterVariable (src_client, &scr_showpause);
 	Cvar_RegisterVariable (src_client, &scr_centertime);
 	Cvar_RegisterVariable (src_client, &scr_printspeed);
-	Cvar_RegisterVariable (src_client, &gl_triplebuffer);
 
 	//
 	// register our commands
@@ -416,12 +392,7 @@ void SCR_Init (void)
 	scr_initialized = true;
 }
 
-/*
-==============
-SCR_DrawTurtle
-==============
-*/
-void SCR_DrawTurtle (void)
+static void SCR_DrawTurtle (void)
 {
 	static int count;
 
@@ -443,12 +414,7 @@ void SCR_DrawTurtle (void)
 
 int cl_framecount;
 
-/*
-==============
-SCR_DrawFPS
-==============
-*/
-void SCR_DrawFPS (void)
+static void SCR_DrawFPS (void)
 {
 	static double lastframetime;
 	static int lastframecount;
@@ -473,12 +439,7 @@ void SCR_DrawFPS (void)
 	Draw_String (x, y, st);
 }
 
-/*
-==============
-DrawPause
-==============
-*/
-void SCR_DrawPause (void)
+static void SCR_DrawPause (void)
 {
 	qpic_t *pic;
 
@@ -492,12 +453,7 @@ void SCR_DrawPause (void)
 	Draw_Pic ((vid.width - pic->width) / 2, (vid.height - 48 - pic->height) / 2, pic);
 }
 
-/*
-==============
-SCR_DrawLoading
-==============
-*/
-void SCR_DrawLoading (void)
+static void SCR_DrawLoading (void)
 {
 	qpic_t *pic;
 
@@ -510,12 +466,7 @@ void SCR_DrawLoading (void)
 
 //=============================================================================
 
-/*
-==================
-SCR_SetUpToDrawConsole
-==================
-*/
-void SCR_SetUpToDrawConsole (void)
+static void SCR_SetUpToDrawConsole (void)
 {
 	Con_CheckResize ();
 
@@ -556,12 +507,7 @@ void SCR_SetUpToDrawConsole (void)
 		con_notifylines = 0;
 }
 
-/*
-==================
-SCR_DrawConsole
-==================
-*/
-void SCR_DrawConsole (void)
+static void SCR_DrawConsole (void)
 {
 	if (scr_con_current)
 	{
@@ -592,12 +538,7 @@ typedef struct _TargaHeader
 	byte pixel_size, attributes;
 } TargaHeader;
 
-/* 
-================== 
-SCR_ScreenShot_f
-================== 
-*/
-void SCR_ScreenShot_f (void)
+static void SCR_ScreenShot_f (void)
 {
 	byte *buffer;
 	char pcxname[80];
@@ -649,12 +590,6 @@ void SCR_ScreenShot_f (void)
 
 //=============================================================================
 
-/*
-===============
-SCR_BeginLoadingPlaque
-
-================
-*/
 void SCR_BeginLoadingPlaque (void)
 {
 	S_StopAllSounds ();
@@ -676,12 +611,6 @@ void SCR_BeginLoadingPlaque (void)
 	scr_disabled_time = realtime;
 }
 
-/*
-===============
-SCR_EndLoadingPlaque
-
-================
-*/
 void SCR_EndLoadingPlaque (void)
 {
 	scr_disabled_for_loading = false;
@@ -690,10 +619,10 @@ void SCR_EndLoadingPlaque (void)
 
 //=============================================================================
 
-char *scr_notifystring;
-bool scr_drawdialog;
+static char *scr_notifystring;
+static bool scr_drawdialog;
 
-void SCR_DrawNotifyString (void)
+static void SCR_DrawNotifyString (void)
 {
 	char *start;
 	int l;
@@ -777,7 +706,7 @@ void SCR_BringDownConsole (void)
 	cl.cshifts[0].percent = 0; // no area contents palette on next frame
 }
 
-void SCR_TileClear (void)
+static void SCR_TileClear (void)
 {
 	if (r_refdef.vrect.x > 0)
 	{

@@ -20,29 +20,18 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "clientdef.h"
 
-#define MAX_PARTICLES                                                                                                                                          \
-	2048 // default max # of particles at one                                                                                                                  \
-		 //  time
-#define ABSOLUTE_MIN_PARTICLES                                                                                                                                 \
-	512 // no fewer than this no matter what's                                                                                                                 \
-		//  on the command line
+#define MAX_PARTICLES 2048 // default max # of particles at one time
+#define ABSOLUTE_MIN_PARTICLES 512 // no fewer than this no matter what's on the command line
 
-int ramp1[8] = {0x6f, 0x6d, 0x6b, 0x69, 0x67, 0x65, 0x63, 0x61};
-int ramp2[8] = {0x6f, 0x6e, 0x6d, 0x6c, 0x6b, 0x6a, 0x68, 0x66};
-int ramp3[8] = {0x6d, 0x6b, 6, 5, 4, 3};
+static const int ramp1[8] = {0x6f, 0x6d, 0x6b, 0x69, 0x67, 0x65, 0x63, 0x61};
+static const int ramp2[8] = {0x6f, 0x6e, 0x6d, 0x6c, 0x6b, 0x6a, 0x68, 0x66};
+static const int ramp3[8] = {0x6d, 0x6b, 6, 5, 4, 3};
 
-particle_t *active_particles, *free_particles;
+static particle_t *active_particles, *free_particles;
 
-particle_t *particles;
-int r_numparticles;
+static particle_t *particles;
+static int r_numparticles;
 
-vec3_t r_pright, r_pup, r_ppn;
-
-/*
-===============
-R_InitParticles
-===============
-*/
 void R_InitParticles (void)
 {
 	int i;
@@ -63,70 +52,6 @@ void R_InitParticles (void)
 	particles = (particle_t *)Hunk_AllocName (r_numparticles * sizeof (particle_t), "particles");
 }
 
-/*
-===============
-R_EntityParticles
-===============
-*/
-
-#define NUMVERTEXNORMALS 162
-extern float r_avertexnormals[NUMVERTEXNORMALS][3];
-vec3_t avelocities[NUMVERTEXNORMALS];
-float beamlength = 16;
-vec3_t avelocity = {23, 7, 3};
-float partstep = 0.01;
-float timescale = 0.01;
-
-void R_EntityParticles (entity_t *ent)
-{
-	int i;
-	particle_t *p;
-	float angle;
-	float sp, sy, cp, cy;
-	vec3_t forward;
-	float dist;
-
-	dist = 64;
-
-	if (!avelocities[0][0])
-		for (i = 0; i < NUMVERTEXNORMALS * 3; i++)
-			avelocities[0][i] = (rand () & 255) * 0.01;
-
-	for (i = 0; i < NUMVERTEXNORMALS; i++)
-	{
-		angle = cl.time * avelocities[i][0];
-		sy = sin (angle);
-		cy = cos (angle);
-		angle = cl.time * avelocities[i][1];
-		sp = sin (angle);
-		cp = cos (angle);
-
-		forward[0] = cp * cy;
-		forward[1] = cp * sy;
-		forward[2] = -sp;
-
-		if (!free_particles)
-			return;
-		p = free_particles;
-		free_particles = p->next;
-		p->next = active_particles;
-		active_particles = p;
-
-		p->die = cl.time + 0.01;
-		p->color = 0x6f;
-		p->type = pt_explode;
-
-		p->org[0] = ent->origin[0] + r_avertexnormals[i][0] * dist + forward[0] * beamlength;
-		p->org[1] = ent->origin[1] + r_avertexnormals[i][1] * dist + forward[1] * beamlength;
-		p->org[2] = ent->origin[2] + r_avertexnormals[i][2] * dist + forward[2] * beamlength;
-	}
-}
-
-/*
-===============
-R_ClearParticles
-===============
-*/
 void R_ClearParticles (void)
 {
 	int i;
@@ -137,56 +62,6 @@ void R_ClearParticles (void)
 	for (i = 0; i < r_numparticles; i++)
 		particles[i].next = &particles[i + 1];
 	particles[r_numparticles - 1].next = NULL;
-}
-
-void R_ReadPointFile_f (void)
-{
-#if 0
-	FILE	*f;
-	vec3_t	org;
-	int		r;
-	int		c;
-	particle_t	*p;
-	char	name[MAX_OSPATH];
-	
-	sprintf (name,"maps/%s.pts", sv.name);
-
-	COM_FOpenFile (name, &f);
-	if (!f)
-	{
-		Con_Printf ("couldn't open %s\n", name);
-		return;
-	}
-	
-	Con_Printf ("Reading %s...\n", name);
-	c = 0;
-	for ( ;; )
-	{
-		r = fscanf (f,"%f %f %f\n", &org[0], &org[1], &org[2]);
-		if (r != 3)
-			break;
-		c++;
-		
-		if (!free_particles)
-		{
-			Con_Printf ("Not enough free particles\n");
-			break;
-		}
-		p = free_particles;
-		free_particles = p->next;
-		p->next = active_particles;
-		active_particles = p;
-		
-		p->die = 99999;
-		p->color = (-c)&15;
-		p->type = pt_static;
-		VectorCopy (vec3_origin, p->vel);
-		VectorCopy (org, p->org);
-	}
-
-	fclose (f);
-	Con_Printf ("%i points read\n", c);
-#endif
 }
 
 /*
@@ -216,12 +91,6 @@ void R_ParseParticleEffect (void)
 	R_RunParticleEffect (org, dir, color, count);
 }
 
-/*
-===============
-R_ParticleExplosion
-
-===============
-*/
 void R_ParticleExplosion (vec3_t org)
 {
 	int i, j;
@@ -260,12 +129,6 @@ void R_ParticleExplosion (vec3_t org)
 	}
 }
 
-/*
-===============
-R_ParticleExplosion2
-
-===============
-*/
 void R_ParticleExplosion2 (vec3_t org, int colorStart, int colorLength)
 {
 	int i, j;
@@ -294,12 +157,6 @@ void R_ParticleExplosion2 (vec3_t org, int colorStart, int colorLength)
 	}
 }
 
-/*
-===============
-R_BlobExplosion
-
-===============
-*/
 void R_BlobExplosion (vec3_t org)
 {
 	int i, j;
@@ -339,12 +196,6 @@ void R_BlobExplosion (vec3_t org)
 	}
 }
 
-/*
-===============
-R_RunParticleEffect
-
-===============
-*/
 void R_RunParticleEffect (vec3_t org, vec3_t dir, int color, int count)
 {
 	int i, j;
@@ -397,12 +248,6 @@ void R_RunParticleEffect (vec3_t org, vec3_t dir, int color, int count)
 	}
 }
 
-/*
-===============
-R_LavaSplash
-
-===============
-*/
 void R_LavaSplash (vec3_t org)
 {
 	int i, j, k;
@@ -439,12 +284,6 @@ void R_LavaSplash (vec3_t org)
 			}
 }
 
-/*
-===============
-R_TeleportSplash
-
-===============
-*/
 void R_TeleportSplash (vec3_t org)
 {
 	int i, j, k;
@@ -584,12 +423,7 @@ void R_RocketTrail (vec3_t start, vec3_t end, int type)
 	}
 }
 
-/*
-===============
-R_DrawParticles
-===============
-*/
-extern cvar_t sv_gravity;
+extern cvar_t sv_gravity; // FIXME: use movevars
 
 void R_DrawParticles (void)
 {
@@ -660,7 +494,6 @@ void R_DrawParticles (void)
 		else
 			scale = 1 + scale * 0.004;
 
-#if 1
 		unsigned char *at;
 		unsigned char theAlpha;
 
@@ -672,9 +505,6 @@ void R_DrawParticles (void)
 			theAlpha = 255;
 
 		glColor4ub (*at, *(at + 1), *(at + 2), theAlpha);
-#else
-		glColor3ubv ((byte *)&d_8to24table[(int)p->color]);
-#endif
 
 		glTexCoord2f (0, 0);
 		glVertex3fv (p->org);

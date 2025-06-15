@@ -20,19 +20,15 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "clientdef.h"
 
-extern int skytexturenum;
-
 int solidskytexture;
 int alphaskytexture;
 float speedscale; // for top sky and bottom sky
 
-msurface_t *warpface;
-
-extern cvar_t gl_subdivide_size;
+static msurface_t *warpface;
 
 static bool skyanimated;
 
-void BoundPoly (int numverts, float *verts, vec3_t mins, vec3_t maxs)
+static void BoundPoly (int numverts, float *verts, vec3_t mins, vec3_t maxs)
 {
 	int i, j;
 	float *v;
@@ -50,7 +46,7 @@ void BoundPoly (int numverts, float *verts, vec3_t mins, vec3_t maxs)
 		}
 }
 
-void SubdividePolygon (int numverts, float *verts)
+static void SubdividePolygon (int numverts, float *verts)
 {
 	int i, j, k;
 	vec3_t mins, maxs;
@@ -70,8 +66,8 @@ void SubdividePolygon (int numverts, float *verts)
 
 	for (i = 0; i < 3; i++)
 	{
-		m = (mins[i] + maxs[i]) * 0.5;
-		m = gl_subdivide_size.value * floor (m / gl_subdivide_size.value + 0.5);
+		m = (mins[i] + maxs[i]) * 0.5f;
+		m = 128.0f * floor (m / 128.0f + 0.5f);
 		if (maxs[i] - m < 8)
 			continue;
 		if (m - mins[i] < 8)
@@ -174,7 +170,7 @@ void GL_SubdivideSurface (mbrush_t *model, msurface_t *fa)
 //=========================================================
 
 // speed up sin calculations - Ed
-float turbsin[] = {
+static const float turbsin[] = {
 #include "warp_sin.h"
 };
 #define TURBSCALE (256.0 / (2 * M_PI))
@@ -214,11 +210,6 @@ void EmitWaterPolys (msurface_t *fa)
 	}
 }
 
-/*
-=============
-EmitSkyPolys
-=============
-*/
 void EmitSkyPolys (msurface_t *fa)
 {
 	glpoly_t *p;
@@ -282,12 +273,7 @@ void EmitBothSkyLayers (msurface_t *fa)
 	glDisable (GL_BLEND);
 }
 
-/*
-=================
-R_DrawAnimatedSkyChain
-=================
-*/
-void R_DrawAnimatedSkyChain (msurface_t *s)
+static void R_DrawAnimatedSkyChain (msurface_t *s)
 {
 	msurface_t *fa;
 
@@ -339,9 +325,9 @@ typedef struct _TargaHeader
 	byte pixel_size, attributes;
 } TargaHeader;
 
-TargaHeader targa_header;
+static TargaHeader targa_header;
 
-int fgetLittleShort (FILE *f)
+static int fgetLittleShort (FILE *f)
 {
 	byte b1, b2;
 
@@ -351,7 +337,7 @@ int fgetLittleShort (FILE *f)
 	return (short)(b1 + b2 * 256);
 }
 
-int fgetLittleLong (FILE *f)
+static int fgetLittleLong (FILE *f)
 {
 	byte b1, b2, b3, b4;
 
@@ -363,12 +349,7 @@ int fgetLittleLong (FILE *f)
 	return b1 + (b2 << 8) + (b3 << 16) + (b4 << 24);
 }
 
-/*
-=============
-LoadTGA
-=============
-*/
-bool LoadTGA (FILE *fin, byte *targa_rgba)
+static bool LoadTGA (FILE *fin, byte *targa_rgba)
 {
 	int columns, rows;
 	byte *pixbuf;
@@ -533,12 +514,8 @@ bool LoadTGA (FILE *fin, byte *targa_rgba)
 	return true;
 }
 
-/*
-==================
-R_LoadSkys
-==================
-*/
-char *suf[6] = {"rt", "bk", "lf", "ft", "up", "dn"};
+static const char *const suf[6] = {"rt", "bk", "lf", "ft", "up", "dn"};
+
 void R_LoadSkys (const char *skyname)
 {
 	int i;
@@ -561,7 +538,7 @@ void R_LoadSkys (const char *skyname)
 			continue;
 		}
 
-		glTexImage2D (GL_TEXTURE_2D, 0, gl_solid_format, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, targa_rgba);
+		glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA, 256, 256, 0, GL_RGBA, GL_UNSIGNED_BYTE, targa_rgba);
 
 		glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_max);
 		glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
@@ -570,24 +547,20 @@ void R_LoadSkys (const char *skyname)
 	Hunk_FreeToLowMark (mark);
 }
 
-vec3_t skyclip[6] = {{1, 1, 0}, {1, -1, 0}, {0, -1, 1}, {0, 1, 1}, {1, 0, 1}, {-1, 0, 1}};
-int c_sky;
+static const vec3_t skyclip[6] = {{1, 1, 0}, {1, -1, 0}, {0, -1, 1}, {0, 1, 1}, {1, 0, 1}, {-1, 0, 1}};
 
 // 1 = s, 2 = t, 3 = 2048
-int st_to_vec[6][3] = {
+static const int st_to_vec[6][3] = {
 	{3, -1, 2},	 {-3, 1, 2},
 
 	{1, 3, 2},	 {-1, -3, 2},
 
 	{-2, -1, 3}, // 0 degrees yaw, look straight up
 	{2, -1, -3}	 // look straight down
-
-	//	{-1,2,3},
-	//	{1,2,-3}
 };
 
 // s = [0]/[2], t = [1]/[2]
-int vec_to_st[6][3] = {
+static const int vec_to_st[6][3] = {
 	{-2, 3, 1},
 	{2, 3, -1},
 
@@ -596,14 +569,11 @@ int vec_to_st[6][3] = {
 
 	{-2, -1, 3},
 	{-2, 1, -3}
-
-	//	{-1,2,3},
-	//	{1,2,-3}
 };
 
-float skymins[2][6], skymaxs[2][6];
+static float skymins[2][6], skymaxs[2][6];
 
-void DrawSkyPolygon (int nump, vec3_t vecs)
+static void DrawSkyPolygon (int nump, vec3_t vecs)
 {
 	int i, j;
 	vec3_t v, av;
@@ -611,17 +581,6 @@ void DrawSkyPolygon (int nump, vec3_t vecs)
 	int axis;
 	float *vp;
 
-	c_sky++;
-#if 0
-glBegin (GL_POLYGON);
-for (i=0 ; i<nump ; i++, vecs+=3)
-{
-	VectorAdd(vecs, r_origin, v);
-	glVertex3fv (v);
-}
-glEnd();
-return;
-#endif
 	// decide which face it maps to
 	VectorCopy (vec3_origin, v);
 	for (i = 0, vp = vecs; i < nump; i++, vp += 3)
@@ -683,7 +642,7 @@ return;
 }
 
 #define MAX_CLIP_VERTS 64
-void ClipSkyPolygon (int nump, vec3_t vecs, int stage)
+static void ClipSkyPolygon (int nump, vec3_t vecs, int stage)
 {
 	float *norm;
 	float *v;
@@ -774,11 +733,6 @@ void ClipSkyPolygon (int nump, vec3_t vecs, int stage)
 	ClipSkyPolygon (newc[1], newv[1][0], stage + 1);
 }
 
-/*
-=================
-R_DrawSkyChain
-=================
-*/
 void R_DrawSkyChain (msurface_t *s)
 {
 	if (skyanimated)
@@ -793,8 +747,6 @@ void R_DrawSkyChain (msurface_t *s)
 	vec3_t verts[MAX_CLIP_VERTS];
 	glpoly_t *p;
 
-	c_sky = 0;
-
 	// calculate vertex values for sky box
 
 	for (fa = s; fa; fa = fa->texturechain)
@@ -808,11 +760,6 @@ void R_DrawSkyChain (msurface_t *s)
 	}
 }
 
-/*
-==============
-R_ClearSkyBox
-==============
-*/
 void R_ClearSkyBox (void)
 {
 	int i;
@@ -824,7 +771,7 @@ void R_ClearSkyBox (void)
 	}
 }
 
-void MakeSkyVec (float s, float t, int axis)
+static void MakeSkyVec (float s, float t, int axis)
 {
 	vec3_t v, b;
 	int j, k;
@@ -862,12 +809,8 @@ void MakeSkyVec (float s, float t, int axis)
 	glVertex3fv (v);
 }
 
-/*
-==============
-R_DrawSkyBox
-==============
-*/
-int skytexorder[6] = {0, 2, 1, 3, 4, 5};
+static const int skytexorder[6] = {0, 2, 1, 3, 4, 5};
+
 void R_DrawSkyBox (void)
 {
 	if (skyanimated)
@@ -875,24 +818,13 @@ void R_DrawSkyBox (void)
 
 	int i;
 
-#if 0
-glEnable (GL_BLEND);
-glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-glColor4f (1,1,1,0.5);
-glDisable (GL_DEPTH_TEST);
-#endif
 	for (i = 0; i < 6; i++)
 	{
 		if (skymins[0][i] >= skymaxs[0][i] || skymins[1][i] >= skymaxs[1][i])
 			continue;
 
 		GL_Bind (SKY_TEX + skytexorder[i]);
-#if 0
-skymins[0][i] = -1;
-skymins[1][i] = -1;
-skymaxs[0][i] = 1;
-skymaxs[1][i] = 1;
-#endif
+
 		glBegin (GL_QUADS);
 		MakeSkyVec (skymins[0][i], skymins[1][i], i);
 		MakeSkyVec (skymins[0][i], skymaxs[1][i], i);
@@ -900,12 +832,6 @@ skymaxs[1][i] = 1;
 		MakeSkyVec (skymaxs[0][i], skymins[1][i], i);
 		glEnd ();
 	}
-#if 0
-glDisable (GL_BLEND);
-glTexEnvf(GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_REPLACE);
-glColor4f (1,1,1,0.5);
-glEnable (GL_DEPTH_TEST);
-#endif
 }
 
 //===============================================================
@@ -953,7 +879,7 @@ void R_InitSky (texture_t *mt)
 	if (!solidskytexture)
 		solidskytexture = texture_extension_number++;
 	GL_Bind (solidskytexture);
-	glTexImage2D (GL_TEXTURE_2D, 0, gl_solid_format, 128, 128, 0, GL_RGBA, GL_UNSIGNED_BYTE, trans);
+	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA, 128, 128, 0, GL_RGBA, GL_UNSIGNED_BYTE, trans);
 	glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_max);
 	glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
 
@@ -970,7 +896,7 @@ void R_InitSky (texture_t *mt)
 	if (!alphaskytexture)
 		alphaskytexture = texture_extension_number++;
 	GL_Bind (alphaskytexture);
-	glTexImage2D (GL_TEXTURE_2D, 0, gl_alpha_format, 128, 128, 0, GL_RGBA, GL_UNSIGNED_BYTE, trans);
+	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA, 128, 128, 0, GL_RGBA, GL_UNSIGNED_BYTE, trans);
 	glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_max);
 	glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
 }

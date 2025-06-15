@@ -17,11 +17,8 @@ void Con_Printf (char *fmt, ...);
 void Con_DPrintf (char *fmt, ...);
 void Con_SafePrintf (char *fmt, ...);
 void Con_DSafePrintf (char *fmt, ...);
-void Con_Clear_f (void);
 void Con_DrawNotify (void);
 void Con_ClearNotify (void);
 void Con_ToggleConsole_f (void);
-
-void Con_NotifyBox (char *text); // during startup for sound / cd warnings
 
 #endif /* !_CONSOLE_H */

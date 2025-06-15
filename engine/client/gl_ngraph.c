@@ -60,11 +60,6 @@ static void R_LineGraph (int x, int h)
 		ngraph_texels[NET_GRAPHHEIGHT - i - 1][x] = (byte)0xff;
 }
 
-/*
-==============
-R_NetGraph
-==============
-*/
 void R_NetGraph (void)
 {
 	int a, x, i, y;
@@ -97,7 +92,7 @@ void R_NetGraph (void)
 
 	GL_Bind (netgraphtexture);
 
-	glTexImage2D (GL_TEXTURE_2D, 0, gl_alpha_format, NET_TIMINGS, NET_GRAPHHEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, ngraph_pixels);
+	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA, NET_TIMINGS, NET_GRAPHHEIGHT, 0, GL_RGBA, GL_UNSIGNED_BYTE, ngraph_pixels);
 
 	glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
 	glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, GL_LINEAR);

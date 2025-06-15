@@ -28,31 +28,25 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "clientdef.h"
 
-#define PM_SPECTATORMAXSPEED 500
-#define PM_STOPSPEED 100
-#define PM_MAXSPEED 320
 #define BUTTON_JUMP 2
 #define BUTTON_ATTACK 1
-#define MAX_ANGLE_TURN 10
+
+int spec_track = 0; // player# of who we are tracking
 
 static vec3_t desired_position; // where the camera wants to be
 static bool locked = false;
 static int oldbuttons;
 
 // track high fragger
-cvar_t cl_hightrack = {"cl_hightrack", "0"};
+static cvar_t cl_hightrack = {"cl_hightrack", "0"};
 
-cvar_t cl_chasecam = {"cl_chasecam", "0"};
+static cvar_t cl_chasecam = {"cl_chasecam", "0"};
 
-//cvar_t cl_camera_maxpitch = {"cl_camera_maxpitch", "10" };
-//cvar_t cl_camera_maxyaw = {"cl_camera_maxyaw", "30" };
+static bool cam_forceview;
+static vec3_t cam_viewangles;
+static double cam_lastviewtime;
 
-bool cam_forceview;
-vec3_t cam_viewangles;
-double cam_lastviewtime;
-
-int spec_track = 0; // player# of who we are tracking
-int autocam = CAM_NONE;
+static int autocam = CAM_NONE;
 
 static void vectoangles (vec3_t vec, vec3_t ang)
 {

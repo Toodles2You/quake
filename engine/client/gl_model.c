@@ -36,23 +36,6 @@ static void Mod_LoadAliasModel (model_t *mod, void *buffer);
 static model_t mod_known[MAX_MODELS];
 static int mod_numknown;
 
-cvar_t gl_subdivide_size = {"gl_subdivide_size", "128", CVAR_ARCHIVE};
-
-/*
-===============
-Mod_Init
-===============
-*/
-void Mod_Init (void)
-{
-	Cvar_RegisterVariable (src_client, &gl_subdivide_size);
-}
-
-/*
-===================
-Mod_ClearAll
-===================
-*/
 void Mod_ClearAll (void)
 {
 	int i;
@@ -64,12 +47,6 @@ void Mod_ClearAll (void)
 	mod_numknown = 0;
 }
 
-/*
-==================
-Mod_FindName
-
-==================
-*/
 static model_t *Mod_FindName (char *name, bool *load)
 {
 	int i;
@@ -264,11 +241,6 @@ static texture_t *Mod_LoadMiptex (miptex_t *mt)
 
 #define ANIM_CYCLE 2
 
-/*
-=================
-Mod_LoadTextures
-=================
-*/
 static void Mod_LoadTextures (lump_t *l)
 {
 	int i, j, num, max, altmax;
@@ -400,11 +372,6 @@ static void Mod_LoadTextures (lump_t *l)
 	W_FreeMapWadFiles ();
 }
 
-/*
-=================
-Mod_LoadLighting
-=================
-*/
 static void Mod_LoadLighting (lump_t *l)
 {
 	if (!l->filelen)
@@ -466,11 +433,6 @@ static void Mod_ReadWorldPairs (byte *data)
 	Cvar_SetValue (src_client, "r_zmax", zmax);
 }
 
-/*
-=================
-Mod_LoadEntities
-=================
-*/
 static void Mod_LoadEntities (lump_t *l)
 {
 	if (!l->filelen)
@@ -479,11 +441,6 @@ static void Mod_LoadEntities (lump_t *l)
 	Mod_ReadWorldPairs (mod_base + l->fileofs);
 }
 
-/*
-=================
-RadiusFromBounds
-=================
-*/
 static float RadiusFromBounds (vec3_t mins, vec3_t maxs)
 {
 	int i;
@@ -495,11 +452,6 @@ static float RadiusFromBounds (vec3_t mins, vec3_t maxs)
 	return Length (corner);
 }
 
-/*
-=================
-Mod_LoadSubmodels
-=================
-*/
 static void Mod_LoadSubmodels (model_t *mod, lump_t *l)
 {
 	dmodel_t *in;
@@ -550,11 +502,6 @@ static void Mod_LoadSubmodels (model_t *mod, lump_t *l)
 	}
 }
 
-/*
-=================
-Mod_LoadVertexes
-=================
-*/
 static void Mod_LoadVertexes (lump_t *l)
 {
 	dvertex_t *in;
@@ -580,11 +527,6 @@ static void Mod_LoadVertexes (lump_t *l)
 	}
 }
 
-/*
-=================
-Mod_LoadEdges
-=================
-*/
 static void Mod_LoadEdges (lump_t *l)
 {
 	dedge_t *in;
@@ -609,11 +551,6 @@ static void Mod_LoadEdges (lump_t *l)
 	}
 }
 
-/*
-=================
-Mod_LoadTexinfo
-=================
-*/
 static void Mod_LoadTexinfo (lump_t *l)
 {
 	texinfo_t *in;
@@ -709,11 +646,6 @@ static void CalcSurfaceExtents (msurface_t *s)
 	}
 }
 
-/*
-=================
-Mod_LoadFaces
-=================
-*/
 static void Mod_LoadFaces (lump_t *l)
 {
 	dface_t *in;
@@ -795,11 +727,6 @@ static void Mod_LoadFaces (lump_t *l)
 	}
 }
 
-/*
-=================
-Mod_LoadMarksurfaces
-=================
-*/
 static void Mod_LoadMarksurfaces (lump_t *l)
 {
 	int i, j, count;
@@ -826,11 +753,6 @@ static void Mod_LoadMarksurfaces (lump_t *l)
 	}
 }
 
-/*
-=================
-Mod_LoadSurfedges
-=================
-*/
 static void Mod_LoadSurfedges (lump_t *l)
 {
 	int i, count;
@@ -851,11 +773,6 @@ static void Mod_LoadSurfedges (lump_t *l)
 		out[i] = LittleLong (in[i]);
 }
 
-/*
-=================
-Mod_LoadPlanes
-=================
-*/
 static void Mod_LoadPlanes (lump_t *l)
 {
 	int i, j;
@@ -891,11 +808,6 @@ static void Mod_LoadPlanes (lump_t *l)
 	}
 }
 
-/*
-=================
-Mod_LoadBrushModel
-=================
-*/
 static void Mod_LoadBrushModel (model_t *mod, void *buffer, bool world)
 {
 	int i;
@@ -971,11 +883,6 @@ int posenum;
 
 byte player_8bit_texels[320 * 200];
 
-/*
-=================
-Mod_LoadAliasFrame
-=================
-*/
 static void *Mod_LoadAliasFrame (void *pin, maliasframedesc_t *frame)
 {
 	trivertx_t *pinframe;
@@ -1006,11 +913,6 @@ static void *Mod_LoadAliasFrame (void *pin, maliasframedesc_t *frame)
 	return (void *)pinframe;
 }
 
-/*
-=================
-Mod_LoadAliasGroup
-=================
-*/
 static void *Mod_LoadAliasGroup (void *pin, maliasframedesc_t *frame)
 {
 	daliasgroup_t *pingroup;
@@ -1132,11 +1034,6 @@ static void Mod_FloodFillSkin (byte *skin, int skinwidth, int skinheight)
 	}
 }
 
-/*
-===============
-Mod_LoadAllSkins
-===============
-*/
 static void *Mod_LoadAllSkins (model_t *mod, int numskins, daliasskintype_t *pskintype)
 {
 	int i, j, k;
@@ -1221,11 +1118,6 @@ static void *Mod_LoadAllSkins (model_t *mod, int numskins, daliasskintype_t *psk
 
 //=========================================================================
 
-/*
-=================
-Mod_LoadAliasModel
-=================
-*/
 static void Mod_LoadAliasModel (model_t *mod, void *buffer)
 {
 	int i, j;
@@ -1357,11 +1249,6 @@ static void Mod_LoadAliasModel (model_t *mod, void *buffer)
 
 //=============================================================================
 
-/*
-=================
-Mod_LoadSpriteFrame
-=================
-*/
 static void *Mod_LoadSpriteFrame (model_t *mod, void *pin, mspriteframe_t **ppframe, int framenum)
 {
 	dspriteframe_t *pinframe;
@@ -1398,11 +1285,6 @@ static void *Mod_LoadSpriteFrame (model_t *mod, void *pin, mspriteframe_t **ppfr
 	return (void *)((byte *)pinframe + sizeof (dspriteframe_t) + size);
 }
 
-/*
-=================
-Mod_LoadSpriteGroup
-=================
-*/
 static void *Mod_LoadSpriteGroup (model_t *mod, void *pin, mspriteframe_t **ppframe, int framenum)
 {
 	dspritegroup_t *pingroup;
@@ -1446,11 +1328,6 @@ static void *Mod_LoadSpriteGroup (model_t *mod, void *pin, mspriteframe_t **ppfr
 	return ptemp;
 }
 
-/*
-=================
-Mod_LoadSpriteModel
-=================
-*/
 static void Mod_LoadSpriteModel (model_t *mod, void *buffer)
 {
 	int i;
@@ -1515,11 +1392,6 @@ static void Mod_LoadSpriteModel (model_t *mod, void *buffer)
 
 //=============================================================================
 
-/*
-================
-Mod_Print
-================
-*/
 void Mod_Print (void)
 {
 	int i;

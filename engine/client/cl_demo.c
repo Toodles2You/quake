@@ -425,8 +425,6 @@ void CL_Record_f (void)
 	Con_Printf ("recording to %s.\n", name);
 	cls.demorecording = true;
 
-	/*-------------------------------------------------*/
-
 	// serverdata
 	// send the info about the new client to all connected clients
 	memset (&buf, 0, sizeof (buf));

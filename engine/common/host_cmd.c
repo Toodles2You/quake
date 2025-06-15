@@ -29,11 +29,6 @@ int current_skill;
 
 void Mod_Print (void);
 
-/*
-==================
-Host_Quit_f
-==================
-*/
 void Host_Quit_f (void)
 {
 	CL_Disconnect ();
@@ -99,7 +94,7 @@ map <servername>
 command from the console.  Active clients are kicked off.
 ======================
 */
-void Host_Map_f (void)
+static void Host_Map_f (void)
 {
 	char level[MAX_QPATH];
 
@@ -134,7 +129,7 @@ Host_Changelevel_f
 Goes to a new map, taking all clients along
 ==================
 */
-void Host_Changelevel_f (void)
+static void Host_Changelevel_f (void)
 {
 	char level[MAX_QPATH];
 	char _startspot[MAX_QPATH];
@@ -172,7 +167,7 @@ Host_Restart_f
 Restarts the current server for a dead player
 ==================
 */
-void Host_Restart_f (void)
+static void Host_Restart_f (void)
 {
 	char mapname[MAX_QPATH];
 	char startspot[MAX_QPATH];
@@ -221,7 +216,7 @@ Host_SavegameComment
 Writes a SAVEGAME_COMMENT_LENGTH character comment describing the current 
 ===============
 */
-void Host_SavegameComment (char *text)
+static void Host_SavegameComment (char *text)
 {
 	int i;
 	char kills[20];
@@ -238,12 +233,7 @@ void Host_SavegameComment (char *text)
 	text[SAVEGAME_COMMENT_LENGTH] = '\0';
 }
 
-/*
-===============
-Host_Savegame_f
-===============
-*/
-void Host_Savegame_f (void)
+static void Host_Savegame_f (void)
 {
 	char name[256];
 	FILE *f;
@@ -322,19 +312,14 @@ void Host_Savegame_f (void)
 	ED_WriteGlobals (f);
 	for (i = 0; i < sv.num_edicts; i++)
 	{
-		ED_Write (f, EDICT_NUM (i));
+		ED_Write (f, ED_GetNum (i));
 		fflush (f);
 	}
 	fclose (f);
 	Con_Printf ("done.\n");
 }
 
-/*
-===============
-Host_Loadgame_f
-===============
-*/
-void Host_Loadgame_f (void)
+static void Host_Loadgame_f (void)
 {
 	char name[MAX_OSPATH];
 	FILE *f;
@@ -449,7 +434,7 @@ void Host_Loadgame_f (void)
 		else
 		{ // parse an edict
 
-			ent = EDICT_NUM (entnum);
+			ent = ED_GetNum (entnum);
 			ED_ClearEdict (ent);
 			ED_ParseEdict (start, ent);
 
@@ -474,7 +459,7 @@ void Host_Loadgame_f (void)
 		Cmd_ExecuteString (src_client, "connect localhost");
 }
 
-void SaveGamestate (void)
+static void SaveGamestate (void)
 {
 	char name[256];
 	FILE *f;
@@ -513,7 +498,7 @@ void SaveGamestate (void)
 
 	for (i = MAX_CLIENTS + 1; i < sv.num_edicts; i++)
 	{
-		ent = EDICT_NUM (i);
+		ent = ED_GetNum (i);
 		if ((int)ed_float (ent, flags) & FL_ARCHIVE_OVERRIDE)
 			continue;
 		fprintf (f, "%i\n", i);
@@ -524,7 +509,7 @@ void SaveGamestate (void)
 	Con_Printf ("done.\n");
 }
 
-int LoadGamestate (char *level, char *startspot)
+static int LoadGamestate (char *level, char *startspot)
 {
 	char name[MAX_OSPATH];
 	FILE *f;
@@ -607,7 +592,7 @@ int LoadGamestate (char *level, char *startspot)
 
 		// parse an edict
 
-		ent = EDICT_NUM (entnum);
+		ent = ED_GetNum (entnum);
 		ED_ClearEdict (ent);
 		ED_ParseEdict (start, ent);
 
@@ -628,7 +613,7 @@ int LoadGamestate (char *level, char *startspot)
 }
 
 // changing levels within a unit
-void Host_Changelevel2_f (void)
+static void Host_Changelevel2_f (void)
 {
 	char level[MAX_QPATH];
 	char _startspot[MAX_QPATH];
@@ -666,12 +651,10 @@ void Host_Changelevel2_f (void)
 
 //============================================================================
 
-void Host_Version_f (void)
+static void Host_Version_f (void)
 {
 	Con_Printf ("Version " QUAKE_VERSION "\n");
-	Con_Printf ("Build: "__TIME__
-				" "__DATE__
-				"\n");
+	Con_Printf ("Build: " __TIME__ " " __DATE__ "\n");
 }
 
 //===========================================================================
@@ -684,12 +667,7 @@ DEMO LOOP CONTROL
 ===============================================================================
 */
 
-/*
-==================
-Host_Startdemos_f
-==================
-*/
-void Host_Startdemos_f (void)
+static void Host_Startdemos_f (void)
 {
 	int i, c;
 
@@ -727,7 +705,7 @@ Host_Demos_f
 Return to looping demos
 ==================
 */
-void Host_Demos_f (void)
+static void Host_Demos_f (void)
 {
 	if (cls.state == ca_dedicated)
 		return;
@@ -744,7 +722,7 @@ Host_Stopdemo_f
 Return to looping demos
 ==================
 */
-void Host_Stopdemo_f (void)
+static void Host_Stopdemo_f (void)
 {
 	if (cls.state == ca_dedicated)
 		return;
@@ -756,11 +734,6 @@ void Host_Stopdemo_f (void)
 
 //=============================================================================
 
-/*
-==================
-Host_InitCommands
-==================
-*/
 void Host_InitCommands (void)
 {
 	Cmd_AddCommand (src_host, "quit", Host_Quit_f);

@@ -39,8 +39,6 @@ typedef struct
 	edict_t *passedict;
 } moveclip_t;
 
-int SV_HullPointContents (hull_t *hull, int num, vec3_t p);
-
 /*
 ===============================================================================
 
@@ -61,7 +59,7 @@ Set up the planes and clipnodes so that the six floats of a bounding box
 can just be stored out and get a proper hull_t structure.
 ===================
 */
-void SV_InitBoxHull (void)
+static void SV_InitBoxHull (void)
 {
 	int i;
 	int side;
@@ -96,7 +94,7 @@ To keep everything totally uniform, bounding boxes are turned into small
 BSP trees instead of being compared directly.
 ===================
 */
-hull_t *SV_HullForBox (vec3_t mins, vec3_t maxs)
+static hull_t *SV_HullForBox (vec3_t mins, vec3_t maxs)
 {
 	box_planes[0].dist = maxs[0];
 	box_planes[1].dist = mins[0];
@@ -118,7 +116,7 @@ Offset is filled in to contain the adjustment that must be added to the
 testing object's origin to get a point to use with the returned hull.
 ================
 */
-hull_t *SV_HullForEntity (edict_t *ent, vec3_t mins, vec3_t maxs, vec3_t offset)
+static hull_t *SV_HullForEntity (edict_t *ent, vec3_t mins, vec3_t maxs, vec3_t offset)
 {
 	cmodel_t *model;
 	vec3_t size;
@@ -172,13 +170,7 @@ ENTITY AREA CHECKING
 areanode_t sv_areanodes[AREA_NODES];
 static int sv_numareanodes;
 
-/*
-===============
-SV_CreateAreaNode
-
-===============
-*/
-areanode_t *SV_CreateAreaNode (int depth, vec3_t mins, vec3_t maxs)
+static areanode_t *SV_CreateAreaNode (int depth, vec3_t mins, vec3_t maxs)
 {
 	areanode_t *anode;
 	vec3_t size;
@@ -217,12 +209,6 @@ areanode_t *SV_CreateAreaNode (int depth, vec3_t mins, vec3_t maxs)
 	return anode;
 }
 
-/*
-===============
-SV_ClearWorld
-
-===============
-*/
 void SV_ClearWorld (void)
 {
 	SV_InitBoxHull ();
@@ -232,12 +218,6 @@ void SV_ClearWorld (void)
 	SV_CreateAreaNode (0, sv.worldmodel->mins, sv.worldmodel->maxs);
 }
 
-/*
-===============
-SV_UnlinkEdict
-
-===============
-*/
 void SV_UnlinkEdict (edict_t *ent)
 {
 	if (!ent->area.prev)
@@ -246,12 +226,7 @@ void SV_UnlinkEdict (edict_t *ent)
 	ent->area.prev = ent->area.next = NULL;
 }
 
-/*
-====================
-SV_TouchLinks
-====================
-*/
-void SV_TouchLinks (edict_t *ent, areanode_t *node)
+static void SV_TouchLinks (edict_t *ent, areanode_t *node)
 {
 	link_t *l, *next;
 	edict_t *touch;
@@ -292,13 +267,7 @@ void SV_TouchLinks (edict_t *ent, areanode_t *node)
 		SV_TouchLinks (ent, node->children[1]);
 }
 
-/*
-===============
-SV_FindTouchedLeafs
-
-===============
-*/
-void SV_FindTouchedLeafs (edict_t *ent, mnode_t *node)
+static void SV_FindTouchedLeafs (edict_t *ent, mnode_t *node)
 {
 	mplane_t *splitplane;
 	mleaf_t *leaf;
@@ -336,12 +305,6 @@ void SV_FindTouchedLeafs (edict_t *ent, mnode_t *node)
 		SV_FindTouchedLeafs (ent, node->children[1]);
 }
 
-/*
-===============
-SV_LinkEdict
-
-===============
-*/
 void SV_LinkEdict (edict_t *ent, bool touch_triggers)
 {
 	areanode_t *node;
@@ -448,13 +411,7 @@ POINT TESTING IN HULLS
 ===============================================================================
 */
 
-/*
-==================
-SV_HullPointContents
-
-==================
-*/
-int SV_HullPointContents (hull_t *hull, int num, vec3_t p)
+static int SV_HullPointContents (hull_t *hull, int num, vec3_t p)
 {
 	float d;
 	dclipnode_t *node;
@@ -481,12 +438,6 @@ int SV_HullPointContents (hull_t *hull, int num, vec3_t p)
 	return num;
 }
 
-/*
-==================
-SV_PointContents
-
-==================
-*/
 int SV_PointContents (vec3_t p)
 {
 	int cont;
@@ -532,15 +483,9 @@ LINE TESTING IN HULLS
 */
 
 // 1/32 epsilon to keep floating point happy
-#define DIST_EPSILON (0.03125)
+#define DIST_EPSILON 0.03125f
 
-/*
-==================
-SV_RecursiveHullCheck
-
-==================
-*/
-bool SV_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, vec3_t p1, vec3_t p2, trace_t *trace)
+static bool SV_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, vec3_t p1, vec3_t p2, trace_t *trace)
 {
 	dclipnode_t *node;
 	mplane_t *plane;
@@ -587,17 +532,10 @@ bool SV_RecursiveHullCheck (hull_t *hull, int num, float p1f, float p2f, vec3_t 
 		t2 = DotProduct (plane->normal, p2) - plane->dist;
 	}
 
-#if 1
 	if (t1 >= 0 && t2 >= 0)
 		return SV_RecursiveHullCheck (hull, node->children[0], p1f, p2f, p1, p2, trace);
 	if (t1 < 0 && t2 < 0)
 		return SV_RecursiveHullCheck (hull, node->children[1], p1f, p2f, p1, p2, trace);
-#else
-	if ((t1 >= DIST_EPSILON && t2 >= DIST_EPSILON) || (t2 > t1 && t1 >= 0))
-		return SV_RecursiveHullCheck (hull, node->children[0], p1f, p2f, p1, p2, trace);
-	if ((t1 <= -DIST_EPSILON && t2 <= -DIST_EPSILON) || (t2 < t1 && t1 <= 0))
-		return SV_RecursiveHullCheck (hull, node->children[1], p1f, p2f, p1, p2, trace);
-#endif
 
 	// put the crosspoint DIST_EPSILON pixels on the near side
 	if (t1 < 0)
@@ -669,7 +607,7 @@ Handles selection or creation of a clipping hull, and offseting (and
 eventually rotation) of the end points
 ==================
 */
-trace_t SV_ClipMoveToEntity (edict_t *ent, vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end)
+static trace_t SV_ClipMoveToEntity (edict_t *ent, vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end)
 {
 	trace_t trace;
 	vec3_t offset;
@@ -754,7 +692,7 @@ SV_ClipToLinks
 Mins and maxs enclose the entire area swept by the move
 ====================
 */
-void SV_ClipToLinks (areanode_t *node, moveclip_t *clip)
+static void SV_ClipToLinks (areanode_t *node, moveclip_t *clip)
 {
 	link_t *l, *next;
 	edict_t *touch;
@@ -823,18 +761,8 @@ void SV_ClipToLinks (areanode_t *node, moveclip_t *clip)
 		SV_ClipToLinks (node->children[1], clip);
 }
 
-/*
-==================
-SV_MoveBounds
-==================
-*/
-void SV_MoveBounds (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, vec3_t boxmins, vec3_t boxmaxs)
+static void SV_MoveBounds (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, vec3_t boxmins, vec3_t boxmaxs)
 {
-#if 0
-// debug to test against everything
-boxmins[0] = boxmins[1] = boxmins[2] = -9999;
-boxmaxs[0] = boxmaxs[1] = boxmaxs[2] = 9999;
-#else
 	int i;
 
 	for (i = 0; i < 3; i++)
@@ -850,14 +778,8 @@ boxmaxs[0] = boxmaxs[1] = boxmaxs[2] = 9999;
 			boxmaxs[i] = start[i] + maxs[i] + 1;
 		}
 	}
-#endif
 }
 
-/*
-==================
-SV_Move
-==================
-*/
 trace_t SV_Move (vec3_t start, vec3_t mins, vec3_t maxs, vec3_t end, int type, edict_t *passedict)
 {
 	moveclip_t clip;

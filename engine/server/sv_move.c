@@ -28,11 +28,8 @@ SV_CheckBottom
 
 Returns false if any part of the bottom of the entity is off an edge that
 is not a staircase.
-
 =============
 */
-int c_yes, c_no;
-
 bool SV_CheckBottom (edict_t *ent)
 {
 	vec3_t mins, maxs, start, stop;
@@ -56,11 +53,9 @@ bool SV_CheckBottom (edict_t *ent)
 				goto realcheck;
 		}
 
-	c_yes++;
 	return true; // we got out easy
 
 realcheck:
-	c_no++;
 	//
 	// check it for real...
 	//
@@ -91,7 +86,6 @@ realcheck:
 				return false;
 		}
 
-	c_yes++;
 	return true;
 }
 
@@ -226,7 +220,7 @@ facing it.
 
 ======================
 */
-bool SV_StepDirection (edict_t *ent, float yaw, float dist)
+static bool SV_StepDirection (edict_t *ent, float yaw, float dist)
 {
 	vec3_t move, oldorigin;
 	float delta;
@@ -254,27 +248,14 @@ bool SV_StepDirection (edict_t *ent, float yaw, float dist)
 	return false;
 }
 
-/*
-======================
-SV_FixCheckBottom
-
-======================
-*/
-void SV_FixCheckBottom (edict_t *ent)
+static void SV_FixCheckBottom (edict_t *ent)
 {
-	//	Con_Printf ("SV_FixCheckBottom\n");
-
 	ed_float (ent, flags) = (int)ed_float (ent, flags) | FL_PARTIALGROUND;
 }
 
-/*
-================
-SV_NewChaseDir
-
-================
-*/
 #define DI_NODIR -1
-void SV_NewChaseDir (edict_t *actor, edict_t *enemy, float dist)
+
+static void SV_NewChaseDir (edict_t *actor, edict_t *enemy, float dist)
 {
 	float deltax, deltay;
 	float d[3];
@@ -354,13 +335,7 @@ void SV_NewChaseDir (edict_t *actor, edict_t *enemy, float dist)
 		SV_FixCheckBottom (actor);
 }
 
-/*
-======================
-SV_CloseEnough
-
-======================
-*/
-bool SV_CloseEnough (edict_t *ent, edict_t *goal, float dist)
+static bool SV_CloseEnough (edict_t *ent, edict_t *goal, float dist)
 {
 	int i;
 
@@ -374,12 +349,6 @@ bool SV_CloseEnough (edict_t *ent, edict_t *goal, float dist)
 	return true;
 }
 
-/*
-======================
-SV_MoveToGoal
-
-======================
-*/
 void SV_MoveToGoal (void)
 {
 	edict_t *ent, *goal;

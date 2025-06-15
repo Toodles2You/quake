@@ -28,22 +28,13 @@ int onground;
 int waterlevel;
 int watertype;
 
-float frametime;
+static float frametime;
 
-vec3_t forward, right, up;
+static vec3_t forward, right, up;
 
+// FIXME: Use BSP sizes
 vec3_t player_mins = {-16, -16, -24};
 vec3_t player_maxs = {16, 16, 32};
-
-// #define	PM_GRAVITY			800
-// #define	PM_STOPSPEED		100
-// #define	PM_MAXSPEED			320
-// #define	PM_SPECTATORMAXSPEED	500
-// #define	PM_ACCELERATE		10
-// #define	PM_AIRACCELERATE	0.7
-// #define	PM_WATERACCELERATE	10
-// #define	PM_FRICTION			6
-// #define	PM_WATERFRICTION	1
 
 void PM_InitBoxHull (void);
 
@@ -56,6 +47,8 @@ void Pmove_Init (void)
 
 #define BUTTON_JUMP 2
 
+#define STOP_EPSILON 0.1
+
 /*
 ==================
 PM_ClipVelocity
@@ -64,9 +57,7 @@ Slide off of the impacting object
 returns the blocked flags (1 = floor, 2 = step / wall)
 ==================
 */
-#define STOP_EPSILON 0.1
-
-int PM_ClipVelocity (vec3_t in, vec3_t normal, vec3_t out, float overbounce)
+static int PM_ClipVelocity (vec3_t in, vec3_t normal, vec3_t out, float overbounce)
 {
 	float backoff;
 	float change;
@@ -91,6 +82,8 @@ int PM_ClipVelocity (vec3_t in, vec3_t normal, vec3_t out, float overbounce)
 	return blocked;
 }
 
+#define MAX_CLIP_PLANES 5
+
 /*
 ============
 PM_FlyMove
@@ -98,9 +91,7 @@ PM_FlyMove
 The basic solid body movement clip that slides along multiple planes
 ============
 */
-#define MAX_CLIP_PLANES 5
-
-int PM_FlyMove (void)
+static int PM_FlyMove (void)
 {
 	int bumpcount, numbumps;
 	vec3_t dir;
@@ -189,7 +180,6 @@ int PM_FlyMove (void)
 		{ // go along the crease
 			if (numplanes != 2)
 			{
-				//				Con_Printf ("clip velocity, numplanes == %i\n",numplanes);
 				VectorCopy (vec3_origin, pmove.velocity);
 				break;
 			}
@@ -221,7 +211,7 @@ PM_GroundMove
 Player is on ground, with no upwards velocity
 =============
 */
-void PM_GroundMove (void)
+static void PM_GroundMove (void)
 {
 	vec3_t start, dest;
 	pmtrace_t trace;
@@ -303,7 +293,7 @@ PM_Friction
 Handles both ground friction and water friction
 ==================
 */
-void PM_Friction (void)
+static void PM_Friction (void)
 {
 	float *vel;
 	float speed, newspeed, control;
@@ -362,12 +352,7 @@ void PM_Friction (void)
 	vel[2] = vel[2] * newspeed;
 }
 
-/*
-==============
-PM_Accelerate
-==============
-*/
-void PM_Accelerate (vec3_t wishdir, float wishspeed, float accel)
+static void PM_Accelerate (vec3_t wishdir, float wishspeed, float accel)
 {
 	int i;
 	float addspeed, accelspeed, currentspeed;
@@ -389,7 +374,7 @@ void PM_Accelerate (vec3_t wishdir, float wishspeed, float accel)
 		pmove.velocity[i] += accelspeed * wishdir[i];
 }
 
-void PM_AirAccelerate (vec3_t wishdir, float wishspeed, float accel)
+static void PM_AirAccelerate (vec3_t wishdir, float wishspeed, float accel)
 {
 	int i;
 	float addspeed, accelspeed, currentspeed, wishspd = wishspeed;
@@ -413,13 +398,7 @@ void PM_AirAccelerate (vec3_t wishdir, float wishspeed, float accel)
 		pmove.velocity[i] += accelspeed * wishdir[i];
 }
 
-/*
-===================
-PM_WaterMove
-
-===================
-*/
-void PM_WaterMove (void)
+static void PM_WaterMove (void)
 {
 	int i;
 	vec3_t wishvel;
@@ -452,8 +431,6 @@ void PM_WaterMove (void)
 	//
 	// water acceleration
 	//
-	//	if (pmove.waterjumptime)
-	//		Con_Printf ("wm->%f, %f, %f\n", pmove.velocity[0], pmove.velocity[1], pmove.velocity[2]);
 	PM_Accelerate (wishdir, wishspeed, movevars.wateraccelerate);
 
 	// assume it is a stair or a slope, so press down from stepheight above
@@ -468,17 +445,9 @@ void PM_WaterMove (void)
 	}
 
 	PM_FlyMove ();
-	//	if (pmove.waterjumptime)
-	//		Con_Printf ("<-wm%f, %f, %f\n", pmove.velocity[0], pmove.velocity[1], pmove.velocity[2]);
 }
 
-/*
-===================
-PM_AirMove
-
-===================
-*/
-void PM_AirMove (void)
+static void PM_AirMove (void)
 {
 	int i;
 	vec3_t wishvel;
@@ -510,9 +479,6 @@ void PM_AirMove (void)
 		wishspeed = movevars.maxspeed;
 	}
 
-	//	if (pmove.waterjumptime)
-	//		Con_Printf ("am->%f, %f, %f\n", pmove.velocity[0], pmove.velocity[1], pmove.velocity[2]);
-
 	if (onground != -1)
 	{
 		pmove.velocity[2] = 0;
@@ -529,23 +495,9 @@ void PM_AirMove (void)
 
 		PM_FlyMove ();
 	}
-
-	//Con_Printf("airmove:vec: %4.2f %4.2f %4.2f\n",
-	//			pmove.velocity[0],
-	//			pmove.velocity[1],
-	//			pmove.velocity[2]);
-	//
-
-	//	if (pmove.waterjumptime)
-	//		Con_Printf ("<-am%f, %f, %f\n", pmove.velocity[0], pmove.velocity[1], pmove.velocity[2]);
 }
 
-/*
-=============
-PM_CatagorizePosition
-=============
-*/
-void PM_CatagorizePosition (void)
+static void PM_CatagorizePosition (void)
 {
 	vec3_t point;
 	int cont;
@@ -610,12 +562,7 @@ void PM_CatagorizePosition (void)
 	}
 }
 
-/*
-=============
-JumpButton
-=============
-*/
-void JumpButton (void)
+static void JumpButton (void)
 {
 	if (pmove.dead)
 	{
@@ -656,12 +603,7 @@ void JumpButton (void)
 	pmove.oldbuttons |= BUTTON_JUMP; // don't jump again until released
 }
 
-/*
-=============
-CheckWaterJump
-=============
-*/
-void CheckWaterJump (void)
+static void CheckWaterJump (void)
 {
 	vec3_t spot;
 	int cont;
@@ -705,7 +647,7 @@ try nudging slightly on all axis to
 allow for the cut precision of the net coordinates
 =================
 */
-void NudgePosition (void)
+static void NudgePosition (void)
 {
 	vec3_t base;
 	int x, y, z;
@@ -716,12 +658,6 @@ void NudgePosition (void)
 
 	for (i = 0; i < 3; i++)
 		pmove.origin[i] = ((int)(pmove.origin[i] * 8)) * 0.125;
-	//	pmove.origin[2] += 0.124;
-
-	//	if (pmove.dead)
-	//		return;		// might be a squished point, so don'y bother
-	//	if (PM_TestPlayerPosition (pmove.origin) )
-	//		return;
 
 	for (z = 0; z <= 2; z++)
 	{
@@ -738,15 +674,9 @@ void NudgePosition (void)
 		}
 	}
 	VectorCopy (base, pmove.origin);
-	//	Con_DPrintf ("NudgePosition: stuck\n");
 }
 
-/*
-===============
-SpectatorMove
-===============
-*/
-void SpectatorMove (void)
+static void SpectatorMove (void)
 {
 	float speed, drop, friction, control, newspeed, accel;
 	float currentspeed, addspeed, accelspeed;
@@ -755,9 +685,6 @@ void SpectatorMove (void)
 	float fmove, smove;
 	vec3_t wishdir;
 	float wishspeed;
-#ifndef SERVERONLY
-	extern float server_version; // version of server we connected to
-#endif
 
 	// friction
 
