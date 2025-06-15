@@ -25,7 +25,6 @@ typedef struct entity_s
 	struct model_s *model;	 // NULL = no model
 	struct cmodel_s *cmodel; // NULL = no model
 	int frame;
-	byte *colormap;
 	int skinnum; // for Alias models
 	float alpha;
 

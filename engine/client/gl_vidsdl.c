@@ -26,12 +26,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <GL/glx.h>
 #include <SDL2/SDL.h>
 
-enum
-{
-	WARP_WIDTH = 320,
-	WARP_HEIGHT = 200,
-};
-
 int texture_extension_number = 1;
 float gldepthmin, gldepthmax;
 
@@ -45,19 +39,14 @@ SDL_Window *window = NULL;
 bool isPermedia = false;
 bool gl_mtexable = false;
 
-unsigned short d_8to16table[256];
 unsigned d_8to24table[256];
-unsigned char d_15to8table[65536];
 
 cvar_t gl_ztrick = {"gl_ztrick", "1"};
 
 static SDL_GLContext context = NULL;
 
-static bool vidmode_active = false;
 static int scr_width, scr_height;
-static float vid_gamma = 1.0;
-
-static cvar_t vid_mode = {"vid_mode", "0"};
+static float vid_gamma = 1.0f;
 
 void VID_Shutdown (void)
 {
@@ -67,7 +56,6 @@ void VID_Shutdown (void)
 	if (window)
 		SDL_DestroyWindow (window);
 
-	vidmode_active = false;
 	context = NULL;
 	window = NULL;
 
@@ -94,8 +82,6 @@ static void VID_InitSignals (void)
 	signal (SIGSEGV, signal_handler);
 	signal (SIGTERM, signal_handler);
 }
-
-void VID_ShiftPalette (unsigned char *palette) {}
 
 void VID_SetPalette (unsigned char *palette)
 {
@@ -124,33 +110,6 @@ void VID_SetPalette (unsigned char *palette)
 		*table++ = v;
 	}
 	d_8to24table[255] &= 0xffffff; // 255 is transparent
-
-	for (i = 0; i < (1 << 15); i++)
-	{
-		/* Maps
-        000000000000000
-        000000000011111 = Red  = 0x1F
-        000001111100000 = Blue = 0x03E0
-        111110000000000 = Grn  = 0x7C00
-        */
-		r = ((i & 0x1F) << 3) + 4;
-		g = ((i & 0x03E0) >> 2) + 4;
-		b = ((i & 0x7C00) >> 7) + 4;
-		pal = (unsigned char *)d_8to24table;
-		for (v = 0, k = 0, bestdist = 10000 * 10000; v < 256; v++, pal += 4)
-		{
-			r1 = (int)r - (int)pal[0];
-			g1 = (int)g - (int)pal[1];
-			b1 = (int)b - (int)pal[2];
-			dist = (r1 * r1) + (g1 * g1) + (b1 * b1);
-			if (dist < bestdist)
-			{
-				k = v;
-				bestdist = dist;
-			}
-		}
-		d_15to8table[i] = k;
-	}
 }
 
 static void GL_CheckMultiTextureExtensions (void)
@@ -280,7 +239,6 @@ static void VID_CheckGamma (unsigned char *pal)
 
 static void VID_SetMode (int width, int height, bool fullscreen)
 {
-	vidmode_active = false;
 	int display = SDL_GetWindowDisplayIndex (window);
 
 	if (display < 0)
@@ -326,10 +284,7 @@ static void VID_SetMode (int width, int height, bool fullscreen)
 
 		// change to the mode
 		if (best_fit != -1)
-		{
-			vidmode_active = true;
 			SDL_SetWindowFullscreen (window, SDL_WINDOW_FULLSCREEN);
-		}
 	}
 
 	SDL_SetWindowDisplayMode (window, &vidmode);
@@ -371,19 +326,16 @@ static void VID_CheckParms (int *width, int *height, bool *fullscreen)
 		vid.conheight = vid.conwidth * (*height) / (*width);
 }
 
-void VID_Init (unsigned char *palette)
+void VID_Init (char *palette)
 {
-	int width, height;
-	bool fullscreen;
-
-	Cvar_RegisterVariable (src_client, &vid_mode);
 	Cvar_RegisterVariable (src_client, &gl_ztrick);
 
-	vid.maxwarpwidth = WARP_WIDTH;
-	vid.maxwarpheight = WARP_HEIGHT;
-	vid.colormap = host_colormap;
-	vid.fullbright = 256 - LittleLong (*((int32_t *)vid.colormap + 2048));
+	byte *host_basepal = (byte *)COM_LoadHunkFile (palette);
+	if (!host_basepal)
+		Sys_Error ("Couldn't load %s", palette);
 
+	int width, height;
+	bool fullscreen;
 	VID_CheckParms (&width, &height, &fullscreen);
 
 	if (SDL_Init (SDL_INIT_VIDEO) < 0)
@@ -396,11 +348,9 @@ void VID_Init (unsigned char *palette)
 	// set the window attributes
 	SDL_GL_ResetAttributes ();
 
-	if (SDL_GL_SetAttribute (SDL_GL_CONTEXT_MAJOR_VERSION, 1) < 0 || SDL_GL_SetAttribute (SDL_GL_CONTEXT_MINOR_VERSION, 1) < 0 ||
-		SDL_GL_SetAttribute (SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY) < 0 || SDL_GL_SetAttribute (SDL_GL_RED_SIZE, 1) < 0 ||
-		SDL_GL_SetAttribute (SDL_GL_GREEN_SIZE, 1) < 0 || SDL_GL_SetAttribute (SDL_GL_BLUE_SIZE, 1) < 0 || SDL_GL_SetAttribute (SDL_GL_ALPHA_SIZE, 1) < 0 ||
-		SDL_GL_SetAttribute (SDL_GL_DOUBLEBUFFER, SDL_TRUE) < 0 || SDL_GL_SetAttribute (SDL_GL_DEPTH_SIZE, 1) < 0 ||
-		SDL_GL_SetAttribute (SDL_GL_STENCIL_SIZE, 1) < 0)
+	if (SDL_GL_SetAttribute (SDL_GL_CONTEXT_MAJOR_VERSION, 3) < 0 ||
+		SDL_GL_SetAttribute (SDL_GL_CONTEXT_MINOR_VERSION, 0) < 0 ||
+		SDL_GL_SetAttribute (SDL_GL_CONTEXT_PROFILE_MASK, SDL_GL_CONTEXT_PROFILE_COMPATIBILITY) < 0)
 	{
 		Sys_Error ("Error couldn't set window attributes: %s\n", SDL_GetError ());
 	}
@@ -422,8 +372,7 @@ void VID_Init (unsigned char *palette)
 
 	vid.height = vid.conheight = SDL_min (vid.conheight, height);
 	vid.width = vid.conwidth = SDL_min (vid.conwidth, width);
-	vid.aspect = ((float)vid.height / (float)vid.width) * (320.0 / 240.0);
-	vid.numpages = 2;
+	vid.aspect = ((float)vid.height / (float)vid.width) * (320.0f / 240.0f);
 
 	VID_InitSignals ();
 
@@ -433,13 +382,13 @@ void VID_Init (unsigned char *palette)
 	sprintf (gldir, "%s/glquake", com_gamedir);
 	Sys_mkdir (gldir);
 
-	VID_CheckGamma (palette);
-	VID_SetPalette (palette);
+	VID_CheckGamma (host_basepal);
+	VID_SetPalette (host_basepal);
 
 	Con_SafePrintf ("Video mode %dx%d initialized.\n", width, height);
 
 	// force a surface cache flush
-	vid.recalc_refdef = 1;
+	vid.recalc_refdef = true;
 
 	SDL_ShowWindow (window);
 }

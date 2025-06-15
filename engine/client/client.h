@@ -58,7 +58,6 @@ typedef struct player_info_s
 	int _bottomcolor;
 
 	int spectator;
-	byte translations[VID_GRADES * 256];
 	skin_t *skin;
 } player_info_t;
 

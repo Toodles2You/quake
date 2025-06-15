@@ -2208,21 +2208,13 @@ void M_Draw (void)
 
 	if (!m_recursiveDraw)
 	{
-		scr_copyeverything = 1;
-
 		if (scr_con_current)
-		{
 			Draw_ConsoleBackground (vid.height);
-		}
 		else
 			Draw_FadeScreen ();
-
-		scr_fullupdate = 0;
 	}
 	else
-	{
 		m_recursiveDraw = false;
-	}
 
 	switch (m_state)
 	{

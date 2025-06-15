@@ -48,9 +48,6 @@ client_t *host_client; // current client
 
 jmp_buf host_abortserver;
 
-byte *host_basepal;
-byte *host_colormap;
-
 cvar_t rcon_password = {"rcon_password", ""};
 cvar_t rcon_address = {"rcon_address", ""};
 
@@ -588,24 +585,15 @@ void Host_Init (quakeparms_t *parms)
 	Host_InitNet ();
 	SV_Init ();
 
-	Con_Printf ("Build: "__TIME__
-				" "__DATE__
-				"\n");
-	Con_Printf ("%4.1f megabyte heap\n", parms->memsize / (1024 * 1024.0));
+	Con_Printf ("Build: "__TIME__" "__DATE__"\n");
+	Con_Printf ("%4.1f megabyte heap\n", (float)parms->memsize / (1024 * 1024));
 
 	R_InitTextures (); // needed even for dedicated servers
 
 	if (cls.state != ca_dedicated)
 	{
-		host_basepal = (byte *)COM_LoadHunkFile ("gfx/palette.lmp");
-		if (!host_basepal)
-			Sys_Error ("Couldn't load gfx/palette.lmp");
-		host_colormap = (byte *)COM_LoadHunkFile ("gfx/colormap.lmp");
-		if (!host_colormap)
-			Sys_Error ("Couldn't load gfx/colormap.lmp");
-
 		IN_Init ();
-		VID_Init (host_basepal);
+		VID_Init ("gfx/palette.lmp");
 		Draw_Init ();
 		SCR_Init ();
 		R_Init ();

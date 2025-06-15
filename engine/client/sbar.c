@@ -22,9 +22,10 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #define sb_deathmatch 0
 
-int sb_updates; // if >= vid.numpages, no update needed
+static bool sb_updated; // if >= vid.numpages, no update needed
 
-#define STAT_MINUS 10 // num frame for '-' stats digit
+#define sb_minus 10 // num frame for '-' stats digit
+
 qpic_t *sb_nums[2][11];
 qpic_t *sb_colon, *sb_slash;
 qpic_t *sb_ibar;
@@ -74,7 +75,7 @@ static void Sbar_ShowScores_f (void)
 	if (sb_showscores)
 		return;
 	sb_showscores = true;
-	sb_updates = 0;
+	sb_updated = false;
 }
 
 /*
@@ -87,7 +88,7 @@ Tab key up
 static void Sbar_DontShowScores_f (void)
 {
 	sb_showscores = false;
-	sb_updates = 0;
+	sb_updated = false;
 }
 
 /*
@@ -97,7 +98,7 @@ Sbar_Changed
 */
 void Sbar_Changed (void)
 {
-	sb_updates = 0; // update next frame
+	sb_updated = false; // update next frame
 }
 
 /*
@@ -355,7 +356,7 @@ static void Sbar_DrawNum (int x, int y, int num, int digits, int color)
 	while (*ptr)
 	{
 		if (*ptr == '-')
-			frame = STAT_MINUS;
+			frame = sb_minus;
 		else
 			frame = *ptr - '0';
 
@@ -512,7 +513,7 @@ void Sbar_DrawInventory (void)
 			Sbar_DrawPic (i * 24, -16, sb_weapons[flashon][i]);
 
 			if (flashon > 1)
-				sb_updates = 0; // force update to remove flash
+				sb_updated = false; // force update to remove flash
 		}
 	}
 
@@ -565,7 +566,7 @@ void Sbar_DrawInventory (void)
 				else
 					Sbar_DrawPic (176 + (i * 24), -16, hsb_weapons[flashon][i]);
 				if (flashon > 1)
-					sb_updates = 0; // force update to remove flash
+					sb_updated = false; // force update to remove flash
 			}
 		}
 	}
@@ -601,11 +602,11 @@ void Sbar_DrawInventory (void)
 			time = cl.item_gettime[17 + i];
 			if (time && time > cl.time - 2 && flashon)
 				// flash frame
-				sb_updates = 0;
+				sb_updated = false;
 			else if (!hipnotic || (i > 1))
 				Sbar_DrawPic (192 + i * 16, -16, sb_items[i]);
 			if (time && time > cl.time - 2)
-				sb_updates = 0;
+				sb_updated = false;
 		}
 	// hipnotic items
 	if (hipnotic)
@@ -616,11 +617,11 @@ void Sbar_DrawInventory (void)
 				time = cl.item_gettime[24 + i];
 				if (time && time > cl.time - 2 && flashon)
 					// flash frame
-					sb_updates = 0;
+					sb_updated = false;
 				else
 					Sbar_DrawPic (288 + i * 16, -16, hsb_items[i]);
 				if (time && time > cl.time - 2)
-					sb_updates = 0;
+					sb_updated = false;
 			}
 	}
 
@@ -635,12 +636,12 @@ void Sbar_DrawInventory (void)
 
 				if (time && time > cl.time - 2 && flashon)
 					// flash frame
-					sb_updates = 0;
+					sb_updated = false;
 				else
 					Sbar_DrawPic (288 + i * 16, -16, rsb_items[i]);
 
 				if (time && time > cl.time - 2)
-					sb_updates = 0;
+					sb_updated = false;
 			}
 		}
 	}
@@ -654,11 +655,11 @@ void Sbar_DrawInventory (void)
 				time = cl.item_gettime[28 + i];
 				if (time && time > cl.time - 2 && flashon)
 					// flash frame
-					sb_updates = 0;
+					sb_updated = false;
 				else
 					Sbar_DrawPic (320 - 32 + i * 8, -16, sb_sigil[i]);
 				if (time && time > cl.time - 2)
-					sb_updates = 0;
+					sb_updated = false;
 			}
 		}
 	}
@@ -755,7 +756,7 @@ void Sbar_DrawFace (void)
 	if (cl.time <= cl.faceanimtime)
 	{
 		anim = 1;
-		sb_updates = 0; // make sure the anim gets drawn over
+		sb_updated = false; // make sure the anim gets drawn over
 	}
 	else
 		anim = 0;
@@ -772,12 +773,10 @@ void Sbar_Draw (void)
 	if (scr_con_current == vid.height)
 		return; // console is full screen
 
-	if (sb_updates >= vid.numpages)
+	if (sb_updated)
 		return;
 
-	scr_copyeverything = 1;
-
-	sb_updates++;
+	sb_updated = true;
 
 	if (sb_lines && (cl_sbar.value != 1 || scr_viewsize.value < 100) && vid.width > 320)
 		Draw_TileClear (0, vid.height - sb_lines, vid.width, sb_lines);
@@ -789,7 +788,7 @@ void Sbar_Draw (void)
 	{
 		Sbar_DrawPic (0, 0, sb_scorebar);
 		Sbar_DrawScoreboard ();
-		sb_updates = 0;
+		sb_updated = false;
 	}
 	else if (sb_lines)
 	{
@@ -903,7 +902,7 @@ void Sbar_IntermissionNumber (int x, int y, int num, int digits, int color)
 	while (*ptr)
 	{
 		if (*ptr == '-')
-			frame = STAT_MINUS;
+			frame = sb_minus;
 		else
 			frame = *ptr - '0';
 
@@ -940,9 +939,6 @@ void Sbar_IntermissionOverlay (void)
 	qpic_t *pic;
 	int dig;
 	int num;
-
-	scr_copyeverything = 1;
-	scr_fullupdate = 0;
 
 	if (sb_deathmatch)
 	{
@@ -982,8 +978,6 @@ Sbar_FinaleOverlay
 void Sbar_FinaleOverlay (void)
 {
 	qpic_t *pic;
-
-	scr_copyeverything = 1;
 
 	pic = Draw_CachePic ("gfx/finale.lmp");
 	Draw_TransPic ((vid.width - pic->width) / 2, 16, pic);

@@ -20,8 +20,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "clientdef.h"
 
-extern unsigned char d_15to8table[65536];
-
 cvar_t gl_nobind = {"gl_nobind", "0"};
 cvar_t gl_max_size = {"gl_max_size", "1024"};
 cvar_t gl_picmip = {"gl_picmip", "0"};
@@ -729,7 +727,7 @@ Fills a box of pixels with a single color
 void Draw_Fill (int x, int y, int w, int h, int c)
 {
 	glDisable (GL_TEXTURE_2D);
-	glColor3f (host_basepal[c * 3] / 255.0, host_basepal[c * 3 + 1] / 255.0, host_basepal[c * 3 + 2] / 255.0);
+	glColor3f (d_8to24table[c * 3] / 255.0, d_8to24table[c * 3 + 1] / 255.0, d_8to24table[c * 3 + 2] / 255.0);
 
 	glBegin (GL_QUADS);
 
@@ -898,43 +896,6 @@ void GL_MipMap (byte *in, int width, int height)
 			out[1] = (in[1] + in[5] + in[width + 1] + in[width + 5]) >> 2;
 			out[2] = (in[2] + in[6] + in[width + 2] + in[width + 6]) >> 2;
 			out[3] = (in[3] + in[7] + in[width + 3] + in[width + 7]) >> 2;
-		}
-	}
-}
-
-/*
-================
-GL_MipMap8Bit
-
-Mipping for 8 bit textures
-================
-*/
-void GL_MipMap8Bit (byte *in, int width, int height)
-{
-	int i, j;
-	unsigned short r, g, b;
-	byte *out, *at1, *at2, *at3, *at4;
-
-	//	width <<=2;
-	height >>= 1;
-	out = in;
-	for (i = 0; i < height; i++, in += width)
-	{
-		for (j = 0; j < width; j += 2, out += 1, in += 2)
-		{
-			at1 = (byte *)(d_8to24table + in[0]);
-			at2 = (byte *)(d_8to24table + in[1]);
-			at3 = (byte *)(d_8to24table + in[width + 0]);
-			at4 = (byte *)(d_8to24table + in[width + 1]);
-
-			r = (at1[0] + at2[0] + at3[0] + at4[0]);
-			r >>= 5;
-			g = (at1[1] + at2[1] + at3[1] + at4[1]);
-			g >>= 5;
-			b = (at1[2] + at2[2] + at3[2] + at4[2]);
-			b >>= 5;
-
-			out[0] = d_15to8table[(r << 0) + (g << 5) + (b << 10)];
 		}
 	}
 }

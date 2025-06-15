@@ -29,9 +29,6 @@ when crossing a water boudnary.
 
 */
 
-cvar_t lcd_x = {"lcd_x", "0"};
-cvar_t lcd_yaw = {"lcd_yaw", "0"};
-
 cvar_t scr_ofsx = {"scr_ofsx", "0"};
 cvar_t scr_ofsy = {"scr_ofsy", "0"};
 cvar_t scr_ofsz = {"scr_ofsz", "0"};
@@ -249,32 +246,7 @@ cshift_t cshift_lava = {{255, 80, 0}, 150};
 
 cvar_t v_gamma = {"gamma", "1", true};
 
-byte gammatable[256]; // palette is sent through this
-
-byte ramps[3][256];
 float v_blend[4]; // rgba 0.0 - 1.0
-
-void BuildGammaTable (float g)
-{
-	int i, inf;
-
-	if (g == 1.0)
-	{
-		for (i = 0; i < 256; i++)
-			gammatable[i] = i;
-		return;
-	}
-
-	for (i = 0; i < 256; i++)
-	{
-		inf = 255 * pow ((i + 0.5) / 255.5, g) + 0.5;
-		if (inf < 0)
-			inf = 0;
-		if (inf > 255)
-			inf = 255;
-		gammatable[i] = inf;
-	}
-}
 
 /*
 =================
@@ -289,8 +261,7 @@ bool V_CheckGamma (void)
 		return false;
 	oldgammavalue = v_gamma.value;
 
-	BuildGammaTable (v_gamma.value);
-	vid.recalc_refdef = 1; // force a surface cache flush
+	vid.recalc_refdef = true; // force a surface cache flush
 
 	return true;
 }
@@ -553,47 +524,6 @@ void V_UpdatePalette (void)
 		return;
 
 	V_CalcBlend ();
-
-	a = v_blend[3];
-	r = 255 * v_blend[0] * a;
-	g = 255 * v_blend[1] * a;
-	b = 255 * v_blend[2] * a;
-
-	a = 1 - a;
-	for (i = 0; i < 256; i++)
-	{
-		ir = i * a + r;
-		ig = i * a + g;
-		ib = i * a + b;
-		if (ir > 255)
-			ir = 255;
-		if (ig > 255)
-			ig = 255;
-		if (ib > 255)
-			ib = 255;
-
-		ramps[0][i] = gammatable[ir];
-		ramps[1][i] = gammatable[ig];
-		ramps[2][i] = gammatable[ib];
-	}
-
-	basepal = host_basepal;
-	newpal = pal;
-
-	for (i = 0; i < 256; i++)
-	{
-		ir = basepal[0];
-		ig = basepal[1];
-		ib = basepal[2];
-		basepal += 3;
-
-		newpal[0] = ramps[0][ir];
-		newpal[1] = ramps[1][ig];
-		newpal[2] = ramps[2][ib];
-		newpal += 3;
-	}
-
-	VID_ShiftPalette (pal);
 }
 
 /* 
@@ -837,7 +767,6 @@ void V_CalcRefdef (void)
 	else
 		view->model = cl.model_precache[cl.stats[STAT_WEAPON]];
 	view->frame = view_message->weaponframe;
-	view->colormap = vid.colormap;
 
 	// set up the refresh position
 	r_refdef.viewangles[PITCH] += cl.punchangle;
@@ -868,16 +797,16 @@ V_DropPunchAngle
 */
 static void V_DropPunchAngle (void)
 {
-	if (cl.punchangle != 0.0f)
-	{
-		int sign = signbit (cl.punchangle);
-		int s = sign ? -10 : 10;
+	if (!cl.punchangle)
+		return;
 
-		cl.punchangle -= s * host_frametime;
+	int sign = signbit (cl.punchangle);
+	int s = sign ? -10 : 10;
 
-		if (sign != signbit (cl.punchangle))
-			cl.punchangle = 0.0f;
-	}
+	cl.punchangle -= s * host_frametime;
+
+	if (sign != signbit (cl.punchangle))
+		cl.punchangle = 0;
 }
 
 /*
@@ -892,9 +821,7 @@ extern vrect_t scr_vrect;
 
 void V_RenderView (void)
 {
-	//	if (cl.simangles[ROLL])
-	//		Sys_Error ("cl.simangles[ROLL]");	// DEBUG
-	cl.simangles[ROLL] = 0; // FIXME @@@
+	cl.simangles[ROLL] = 0;
 
 	if (cls.state != ca_active)
 		return;
@@ -964,6 +891,5 @@ void V_Init (void)
 	Cvar_RegisterVariable (src_client, &v_kickroll);
 	Cvar_RegisterVariable (src_client, &v_kickpitch);
 
-	BuildGammaTable (1.0); // no gamma yet
 	Cvar_RegisterVariable (src_client, &v_gamma);
 }

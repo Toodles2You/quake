@@ -72,10 +72,6 @@ console is:
 
 int glx, gly, glwidth, glheight;
 
-// only the refresh window will be updated unless these variables are flagged
-int scr_copytop;
-int scr_copyeverything;
-
 float scr_con_current;
 float scr_conlines; // lines of console to display
 
@@ -98,8 +94,6 @@ qpic_t *scr_ram;
 qpic_t *scr_net;
 qpic_t *scr_turtle;
 
-int scr_fullupdate;
-
 int clearconsole;
 int clearnotify;
 
@@ -110,8 +104,6 @@ vrect_t scr_vrect;
 bool scr_disabled_for_loading;
 bool scr_drawloading;
 float scr_disabled_time;
-
-bool block_drawing;
 
 void SCR_ScreenShot_f (void);
 
@@ -203,7 +195,6 @@ void SCR_DrawCenterString (void)
 
 void SCR_CheckDrawCenterString (void)
 {
-	scr_copytop = 1;
 	if (scr_center_lines > scr_erase_lines)
 		scr_erase_lines = scr_center_lines;
 
@@ -297,8 +288,7 @@ static void SCR_CalcRefdef (void)
 	float size;
 	bool full = false;
 
-	scr_fullupdate = 0; // force a background redraw
-	vid.recalc_refdef = 0;
+	vid.recalc_refdef = false;
 
 	// force the status bar to redraw
 	Sbar_Changed ();
@@ -376,7 +366,7 @@ Keybinding command
 void SCR_SizeUp_f (void)
 {
 	Cvar_SetValue (src_client, "viewsize", scr_viewsize.value + 10);
-	vid.recalc_refdef = 1;
+	vid.recalc_refdef = true;
 }
 
 /*
@@ -389,7 +379,7 @@ Keybinding command
 void SCR_SizeDown_f (void)
 {
 	Cvar_SetValue (src_client, "viewsize", scr_viewsize.value - 10);
-	vid.recalc_refdef = 1;
+	vid.recalc_refdef = true;
 }
 
 //============================================================================
@@ -560,14 +550,9 @@ void SCR_SetUpToDrawConsole (void)
 			scr_con_current = scr_conlines;
 	}
 
-	if (clearconsole++ < vid.numpages)
-	{
+	if (clearconsole++ < 2)
 		Sbar_Changed ();
-	}
-	else if (clearnotify++ < vid.numpages)
-	{
-	}
-	else
+	else if (clearnotify++ >= 2)
 		con_notifylines = 0;
 }
 
@@ -580,7 +565,6 @@ void SCR_DrawConsole (void)
 {
 	if (scr_con_current)
 	{
-		scr_copyeverything = 1;
 		Con_DrawConsole (scr_con_current, true);
 		clearconsole = 0;
 	}
@@ -684,14 +668,12 @@ void SCR_BeginLoadingPlaque (void)
 	scr_con_current = 0;
 
 	scr_drawloading = true;
-	scr_fullupdate = 0;
 	Sbar_Changed ();
 	SCR_UpdateScreen ();
 	scr_drawloading = false;
 
 	scr_disabled_for_loading = true;
 	scr_disabled_time = realtime;
-	scr_fullupdate = 0;
 }
 
 /*
@@ -703,7 +685,6 @@ SCR_EndLoadingPlaque
 void SCR_EndLoadingPlaque (void)
 {
 	scr_disabled_for_loading = false;
-	scr_fullupdate = 0;
 	Con_ClearNotify ();
 }
 
@@ -760,7 +741,6 @@ int SCR_ModalMessage (char *text)
 	scr_notifystring = text;
 
 	// draw a fresh screen
-	scr_fullupdate = 0;
 	scr_drawdialog = true;
 	SCR_UpdateScreen ();
 	scr_drawdialog = false;
@@ -771,7 +751,6 @@ int SCR_ModalMessage (char *text)
 		Sys_SendKeyEvents ();
 	} while (key_lastpress != 'y' && key_lastpress != 'n' && key_lastpress != K_ESCAPE);
 
-	scr_fullupdate = 0;
 	SCR_UpdateScreen ();
 
 	return key_lastpress == 'y';
@@ -796,7 +775,6 @@ void SCR_BringDownConsole (void)
 		SCR_UpdateScreen ();
 
 	cl.cshifts[0].percent = 0; // no area contents palette on next frame
-	VID_SetPalette (host_basepal);
 }
 
 void SCR_TileClear (void)
@@ -831,14 +809,6 @@ needs almost the entire 256k of stack space!
 */
 void SCR_UpdateScreen (void)
 {
-	if (block_drawing)
-		return;
-
-	vid.numpages = 2 + gl_triplebuffer.value;
-
-	scr_copytop = 0;
-	scr_copyeverything = 0;
-
 	if (scr_disabled_for_loading)
 	{
 		if (realtime - scr_disabled_time > 60)
@@ -916,7 +886,6 @@ void SCR_UpdateScreen (void)
 		Sbar_Draw ();
 		Draw_FadeScreen ();
 		SCR_DrawNotifyString ();
-		scr_copyeverything = true;
 	}
 	else if (scr_drawloading)
 	{

@@ -462,16 +462,10 @@ static void CL_LinkPacketEntities (void)
 		ent->cmodel = cl.cmodel_precache[s1->modelindex];
 
 		// set colormap
-		if (s1->colormap && (s1->colormap < MAX_CLIENTS) && !strcmp (ent->model->name, "progs/player.mdl"))
-		{
-			ent->colormap = cl.players[s1->colormap - 1].translations;
+		if (s1->colormap && s1->colormap < MAX_CLIENTS && !strcmp (ent->model->name, "progs/player.mdl"))
 			ent->scoreboard = &cl.players[s1->colormap - 1];
-		}
 		else
-		{
-			ent->colormap = vid.colormap;
 			ent->scoreboard = NULL;
-		}
 
 		// set skin
 		ent->skinnum = s1->skinnum;
@@ -638,7 +632,6 @@ static void CL_LinkProjectiles (void)
 		ent->cmodel = cl.cmodel_precache[pr->modelindex];
 		ent->skinnum = 0;
 		ent->frame = 0;
-		ent->colormap = vid.colormap;
 		ent->scoreboard = NULL;
 		VectorCopy (pr->origin, ent->origin);
 		VectorCopy (pr->angles, ent->angles);
@@ -872,7 +865,6 @@ static void CL_LinkPlayers (void)
 		ent->cmodel = cl.cmodel_precache[state->modelindex];
 		ent->skinnum = state->skinnum;
 		ent->frame = state->frame;
-		ent->colormap = info->translations;
 		if (state->modelindex == cl_playerindex)
 			ent->scoreboard = info; // use custom skin
 		else
