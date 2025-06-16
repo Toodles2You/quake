@@ -121,7 +121,7 @@ static void M_DrawCharacter (int cx, int line, int num)
 	Draw_Character (cx + ((vid.width - 320) >> 1), line, num);
 }
 
-static void M_Print (int cx, int cy, char *str)
+static void M_Print (int cx, int cy, const char *str)
 {
 	while (*str)
 	{
@@ -1078,7 +1078,7 @@ static void M_Menu_Keys_f (void)
 	m_entersound = true;
 }
 
-static void M_FindKeysForCommand (char *command, int *twokeys)
+static void M_FindKeysForCommand (const char *command, int *twokeys)
 {
 	int count;
 	int j;
@@ -1104,7 +1104,7 @@ static void M_FindKeysForCommand (char *command, int *twokeys)
 	}
 }
 
-static void M_UnbindCommand (char *command)
+static void M_UnbindCommand (const char *command)
 {
 	int j;
 	int l;

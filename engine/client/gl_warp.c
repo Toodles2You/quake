@@ -642,7 +642,7 @@ static void DrawSkyPolygon (int nump, vec3_t vecs)
 #define MAX_CLIP_VERTS 64
 static void ClipSkyPolygon (int nump, vec3_t vecs, int stage)
 {
-	float *norm;
+	const float *norm;
 	float *v;
 	bool front, back;
 	float d, e;

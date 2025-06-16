@@ -68,7 +68,7 @@ static cvar_t registered = {"registered", "1"};
 static char *largv[MAX_NUM_ARGVS + NUM_SAFE_ARGVS + 1];
 static char *argvdummy = " ";
 
-static const char *const safeargvs[NUM_SAFE_ARGVS] = {
+static char *const safeargvs[NUM_SAFE_ARGVS] = {
 	"-nolan",
 	"-nosound",
 	"-nocdaudio",
@@ -2010,7 +2010,7 @@ For proxy protecting
 byte COM_BlockSequenceCRCByte (byte *base, int length, int sequence)
 {
 	unsigned short crc;
-	byte *p;
+	const byte *p;
 	byte chkb[60 + 4];
 
 	p = chktbl + (sequence % (sizeof (chktbl) - 8));

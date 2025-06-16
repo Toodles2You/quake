@@ -335,7 +335,7 @@ the K_* names are matched up.
 */
 static int Key_StringToKeynum (char *str)
 {
-	keyname_t *kn;
+	const keyname_t *kn;
 
 	if (!str || !str[0])
 		return -1;
@@ -359,7 +359,7 @@ FIXME: handle quote special (general escape sequence?)
 */
 char *Key_KeynumToString (int keynum)
 {
-	keyname_t *kn;
+	const keyname_t *kn;
 	static char tinystr[2];
 
 	if (keynum == -1)

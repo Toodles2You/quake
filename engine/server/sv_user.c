@@ -1063,7 +1063,7 @@ static const ucmd_t ucmds[] = {
 
 static void SV_ExecuteUserCommand (char *s)
 {
-	ucmd_t *u;
+	const ucmd_t *u;
 
 	Cmd_TokenizeString (src_server, s);
 	sv_player = host_client->edict;
