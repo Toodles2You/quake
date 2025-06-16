@@ -199,7 +199,7 @@ static int PM_FlyMove (void)
 		}
 	}
 
-	if (pmove.waterjumptime)
+	if (pmove.waterjumptime > 0)
 		VectorCopy (primal_velocity, pmove.velocity);
 	return blocked;
 }
@@ -302,7 +302,7 @@ static void PM_Friction (void)
 	vec3_t start, stop;
 	pmtrace_t trace;
 
-	if (pmove.waterjumptime)
+	if (pmove.waterjumptime > 0)
 		return;
 
 	vel = pmove.velocity;
@@ -359,7 +359,7 @@ static void PM_Accelerate (vec3_t wishdir, float wishspeed, float accel)
 
 	if (pmove.dead)
 		return;
-	if (pmove.waterjumptime)
+	if (pmove.waterjumptime > 0)
 		return;
 
 	currentspeed = DotProduct (pmove.velocity, wishdir);
@@ -381,7 +381,7 @@ static void PM_AirAccelerate (vec3_t wishdir, float wishspeed, float accel)
 
 	if (pmove.dead)
 		return;
-	if (pmove.waterjumptime)
+	if (pmove.waterjumptime > 0)
 		return;
 
 	if (wishspd > 30)
@@ -570,7 +570,7 @@ static void JumpButton (void)
 		return;
 	}
 
-	if (pmove.waterjumptime)
+	if (pmove.waterjumptime > 0)
 	{
 		pmove.waterjumptime -= frametime;
 		if (pmove.waterjumptime < 0)
@@ -609,7 +609,7 @@ static void CheckWaterJump (void)
 	int cont;
 	vec3_t flatforward;
 
-	if (pmove.waterjumptime)
+	if (pmove.waterjumptime > 0)
 		return;
 
 	// ZOID, don't hop out if we just jumped in
@@ -779,23 +779,41 @@ void PlayerMove (void)
 	// set onground, watertype, and waterlevel
 	PM_CatagorizePosition ();
 
-	if (waterlevel == 2)
-		CheckWaterJump ();
-
-	if (pmove.velocity[2] < 0)
-		pmove.waterjumptime = 0;
-
-	if (pmove.cmd.buttons & BUTTON_JUMP)
-		JumpButton ();
+	if (pmove.protocol == PROTOCOL_NETQUAKE)
+	{
+		// TODO: emulate server jumping for client prediction
+		if (pmove.waterjumptime > 0)
+			PM_FlyMove ();
+		else
+		{
+			PM_Friction ();
+	
+			if (waterlevel >= 2)
+				PM_WaterMove ();
+			else
+				PM_AirMove ();
+		}
+	}
 	else
-		pmove.oldbuttons &= ~BUTTON_JUMP;
+	{
+		if (waterlevel == 2)
+			CheckWaterJump ();
 
-	PM_Friction ();
+		if (pmove.velocity[2] < 0)
+			pmove.waterjumptime = 0;
 
-	if (waterlevel >= 2)
-		PM_WaterMove ();
-	else
-		PM_AirMove ();
+		if (pmove.cmd.buttons & BUTTON_JUMP)
+			JumpButton ();
+		else
+			pmove.oldbuttons &= ~BUTTON_JUMP;
+
+		PM_Friction ();
+
+		if (waterlevel >= 2)
+			PM_WaterMove ();
+		else
+			PM_AirMove ();
+	}
 
 	// set onground, watertype, and waterlevel for final spot
 	PM_CatagorizePosition ();

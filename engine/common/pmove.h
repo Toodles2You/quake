@@ -30,6 +30,7 @@ typedef struct
 
 typedef struct
 {
+	int protocol;
 	int sequence; // just for debugging prints
 
 	// player state

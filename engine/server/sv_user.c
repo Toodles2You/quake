@@ -1322,6 +1322,8 @@ static void SV_RunCmd (usercmd_t *ucmd)
 		SV_RunThink (sv_player);
 	}
 
+	pmove.protocol = svs.protocol;
+
 	float *playerOrigin = ed_vector (sv_player, origin);
 	float *playerMins = ed_vector (sv_player, mins);
 
@@ -1335,7 +1337,10 @@ static void SV_RunCmd (usercmd_t *ucmd)
 	VectorCopy (playerVangle, pmove.angles);
 
 	pmove.spectator = host_client->spectator;
-	pmove.waterjumptime = ed_float (sv_player, teleport_time);
+	if (pmove.protocol == PROTOCOL_NETQUAKE)
+		pmove.waterjumptime = ed_float (sv_player, teleport_time) - sv.time;
+	else
+		pmove.waterjumptime = ed_float (sv_player, teleport_time);
 	pmove.numphysent = 1;
 	pmove.physents[0].model = sv.worldmodel;
 	pmove.cmd = *ucmd;
@@ -1352,11 +1357,37 @@ static void SV_RunCmd (usercmd_t *ucmd)
 	}
 	AddLinksToPmove (sv_areanodes);
 
-	PlayerMove ();
+	if (pmove.protocol == PROTOCOL_NETQUAKE)
+	{
+		const bool water_jumping = ((int)ed_float (sv_player, flags) & FL_WATERJUMP);
+		if (water_jumping && pmove.waterjumptime > 0)
+		{
+			// force velocity
+			pmove.velocity[0] = ed_vector (sv_player, movedir)[0];
+			pmove.velocity[1] = ed_vector (sv_player, movedir)[1];
+		}
+		PlayerMove ();
+		if (water_jumping && (!waterlevel || pmove.waterjumptime <= 0))
+		{
+			// left the water or got stuck
+			ed_float (sv_player, flags) = (int)ed_float (sv_player, flags) & ~FL_WATERJUMP;
+			pmove.waterjumptime = 0;
+			// restore velocity
+			pmove.velocity[0] = playerVelocity[0];
+			pmove.velocity[1] = playerVelocity[1];
+		}
+	}
+	else
+	{
+		PlayerMove ();
+	}
 
 	host_client->oldbuttons = pmove.oldbuttons;
 
-	ed_float (sv_player, teleport_time) = pmove.waterjumptime;
+	if (pmove.protocol == PROTOCOL_NETQUAKE)
+		ed_float (sv_player, teleport_time) = sv.time + pmove.waterjumptime;
+	else
+		ed_float (sv_player, teleport_time) = pmove.waterjumptime;
 	ed_float (sv_player, waterlevel) = waterlevel;
 	ed_float (sv_player, watertype) = watertype;
 
