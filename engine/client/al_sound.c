@@ -485,7 +485,7 @@ void S_StaticSound (sfx_t *sfx, vec3_t origin, float fvol, float attenuation)
 static void S_UpdateAmbientSounds (void)
 {
 	// calc ambient sound levels
-	mleaf_t *leaf = cl.cmodel_precache[1] ? CMod_PointInLeaf (listener_origin, cl.cmodel_precache[1]) : NULL;
+	mleaf_t *leaf = (snd_ambient && cl.cmodel_precache[1]) ? CMod_PointInLeaf (listener_origin, cl.cmodel_precache[1]) : NULL;
 
 	for (int i = 0; i < NUM_AMBIENTS; i++)
 	{
