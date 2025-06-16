@@ -147,8 +147,6 @@ typedef struct
 	challenge_t challenges[MAX_CHALLENGES]; // to prevent invalid IPs from connecting
 } server_static_t;
 
-//=============================================================================
-
 typedef enum
 {
 	ss_dead,	// no map loaded
@@ -228,8 +226,6 @@ typedef struct
 	byte signon_buffers[MAX_SIGNON_BUFFERS][MAX_DATAGRAM];
 } server_t;
 
-//=============================================================================
-
 // edict->deadflag values
 enum
 {
@@ -296,8 +292,6 @@ enum
 	SFL_CROSS_TRIGGERS = 65280,
 };
 
-//============================================================================
-
 extern cvar_t sv_maxspeed;
 
 extern cvar_t teamplay;
@@ -325,8 +319,6 @@ extern char localmodels[MAX_MODELS][5]; // inline model names for precache
 extern char localinfo[MAX_LOCALINFO_STRING + 1];
 
 extern FILE *sv_fraglogfile;
-
-//===========================================================
 
 //
 // sv_main.c

@@ -85,8 +85,6 @@ static byte *SV_FatPVS (vec3_t org)
 	return fatpvs;
 }
 
-//=============================================================================
-
 // because there can be a lot of nails, there is a special
 // network protocol for them
 
@@ -146,8 +144,6 @@ static void SV_EmitNailUpdate (sizebuf_t *msg)
 			MSG_WriteByte (msg, bits[i]);
 	}
 }
-
-//=============================================================================
 
 /*
 ==================

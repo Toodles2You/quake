@@ -869,7 +869,6 @@ void R_DrawWaterSurfaces (void)
 	}
 	else
 	{
-
 		for (i = 0; i < BMODEL (cl.worldmodel)->numtextures; i++)
 		{
 			t = BMODEL (cl.worldmodel)->textures[i];

@@ -944,7 +944,6 @@ Cmd_Origin
 */
 void Cmd_Origin (void)
 {
-
 	// rotate points into frame of reference so model points down the positive x
 	// axis
 	GetToken (false);
@@ -964,7 +963,6 @@ Cmd_Eyeposition
 */
 void Cmd_Eyeposition (void)
 {
-
 	// rotate points into frame of reference so model points down the positive x
 	// axis
 	GetToken (false);
@@ -984,7 +982,6 @@ Cmd_ScaleUp
 */
 void Cmd_ScaleUp (void)
 {
-
 	GetToken (false);
 	scale_up = atof (token);
 }

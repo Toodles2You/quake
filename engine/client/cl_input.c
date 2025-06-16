@@ -336,8 +336,6 @@ static float CL_KeyState (kbutton_t *key)
 	return val;
 }
 
-//==========================================================================
-
 cvar_t cl_upspeed = {"cl_upspeed", "200"};
 cvar_t cl_forwardspeed = {"cl_forwardspeed", "200", CVAR_ARCHIVE};
 cvar_t cl_backspeed = {"cl_backspeed", "200", CVAR_ARCHIVE};

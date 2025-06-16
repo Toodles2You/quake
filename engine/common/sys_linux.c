@@ -43,10 +43,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 static bool nostdout;
 
-// =======================================================================
-// General routines
-// =======================================================================
-
 void Sys_Printf (char *fmt, ...)
 {
 	va_list argptr;
@@ -200,7 +196,6 @@ void Sys_DebugLog (char *file, char *fmt, ...)
 
 void Sys_EditFile (char *filename)
 {
-
 	char cmd[256];
 	char *term;
 	char *editor;
@@ -236,10 +231,6 @@ double Sys_FloatTime (void)
 
 	return (tp.tv_sec - secbase) + tp.tv_usec / 1000000.0;
 }
-
-// =======================================================================
-// Sleeps for microseconds
-// =======================================================================
 
 void Sys_Sleep (int msec)
 {

@@ -209,8 +209,6 @@ bool SV_movestep (edict_t *ent, vec3_t move, bool relink)
 	return true;
 }
 
-//============================================================================
-
 /*
 ======================
 SV_StepDirection

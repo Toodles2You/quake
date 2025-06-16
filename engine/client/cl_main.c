@@ -788,8 +788,6 @@ void CL_ReadPackets (void)
 	}
 }
 
-//=============================================================================
-
 static void CL_Download_f (void)
 {
 	char *p, *q;

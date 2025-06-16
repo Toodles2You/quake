@@ -7,8 +7,6 @@
 #define TOP_RANGE 16 // soldier uniform colors
 #define BOTTOM_RANGE 96
 
-//=============================================================================
-
 typedef struct efrag_s
 {
 	struct mleaf_s *leaf;

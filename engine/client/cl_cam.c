@@ -520,7 +520,6 @@ void Cam_FinishMove (usercmd_t *cmd)
 	{
 		if (!(oldbuttons & BUTTON_ATTACK))
 		{
-
 			oldbuttons |= BUTTON_ATTACK;
 			autocam++;
 

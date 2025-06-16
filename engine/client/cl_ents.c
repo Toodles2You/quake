@@ -32,8 +32,6 @@ static struct predicted_player
 	vec3_t origin; // predicted origin
 } predicted_players[MAX_CLIENTS];
 
-//============================================================
-
 dlight_t *CL_AllocDlight (int key)
 {
 	int i;
@@ -597,8 +595,6 @@ static void CL_LinkProjectiles (void)
 	}
 }
 
-//========================================
-
 extern int cl_spikeindex, cl_playerindex, cl_flagindex;
 extern int parsecountmod;
 extern double parsecounttime;
@@ -858,8 +854,6 @@ static void CL_LinkPlayers (void)
 	}
 }
 
-//======================================================================
-
 /*
 ===============
 CL_SetSolid
@@ -928,7 +922,6 @@ void CL_SetUpPlayerPrediction (bool dopred)
 
 	for (j = 0, pplayer = predicted_players, state = frame->playerstate; j < MAX_CLIENTS; j++, pplayer++, state++)
 	{
-
 		pplayer->active = false;
 
 		if (state->messagenum != cl.parsecount)
@@ -995,7 +988,6 @@ void CL_SetSolidPlayers (int playernum)
 
 	for (j = 0, pplayer = predicted_players; j < MAX_CLIENTS; j++, pplayer++)
 	{
-
 		if (!pplayer->active)
 			continue; // not present this frame
 

@@ -134,8 +134,6 @@ void SV_DropClient (client_t *drop)
 	SV_FullClientUpdate (drop, &sv.reliable_datagram);
 }
 
-//====================================================================
-
 int SV_CalcPing (client_t *cl)
 {
 	float ping;
@@ -638,7 +636,6 @@ static void SVC_RemoteCommand (void)
 	}
 	else
 	{
-
 		Con_Printf ("Rcon from %s:\n%s\n", NET_AdrToString (net_from), net_message[SERVER].data + 4);
 
 		SV_BeginRedirect (RD_PACKET);

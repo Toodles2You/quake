@@ -44,8 +44,6 @@ typedef struct particle_s
 	ptype_t type;
 } particle_t;
 
-//====================================================
-
 extern entity_t r_worldentity;
 extern vec3_t modelorg;
 extern entity_t *currententity;

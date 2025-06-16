@@ -104,8 +104,6 @@ double parsecounttime;
 
 int cl_spikeindex, cl_playerindex, cl_flagindex;
 
-//=============================================================================
-
 int packet_latency[NET_TIMINGS];
 
 int CL_CalcNet (void)
@@ -137,8 +135,6 @@ int CL_CalcNet (void)
 	}
 	return lost * 100 / NET_TIMINGS;
 }
-
-//=============================================================================
 
 /*
 ===============
@@ -989,10 +985,8 @@ void CL_ParseServerMessage (void)
 			if (i == PRINT_CHAT)
 			{
 				S_LocalSound ("misc/talk.wav");
-				// con_ormask = 128;
 			}
 			Con_Printf ("%s", MSG_ReadString ());
-			// con_ormask = 0;
 			break;
 
 		case svc_centerprint:

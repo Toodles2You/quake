@@ -678,7 +678,6 @@ void SV_SendClientMessages (void)
 			// will it fit?
 			if (c->netchan.message.cursize + c->backbuf_size[0] < c->netchan.message.maxsize)
 			{
-
 				Con_DPrintf ("%s: backbuf %d bytes\n", c->name, c->backbuf_size[0]);
 
 				// it'll fit

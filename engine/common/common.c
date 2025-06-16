@@ -97,8 +97,6 @@ The file "parms.txt" will be read out of the game directory and appended to the 
 	
 */
 
-//============================================================================
-
 // ClearLink is used for new headnodes
 void ClearLink (link_t *l)
 {
@@ -563,8 +561,6 @@ void MSG_ReadDeltaUsercmd (usercmd_t *from, usercmd_t *move)
 	move->msec = MSG_ReadByte ();
 }
 
-//===========================================================================
-
 void SZ_Alloc (sizebuf_t *buf, int startsize)
 {
 	if (startsize < 256)
@@ -625,8 +621,6 @@ void SZ_Print (sizebuf_t *buf, char *data)
 	else
 		memcpy ((byte *)SZ_GetSpace (buf, len - 1) - 1, data, len); // write over trailing 0
 }
-
-//============================================================================
 
 char *COM_SkipPath (char *pathname)
 {

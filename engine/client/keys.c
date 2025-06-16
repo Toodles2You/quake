@@ -274,8 +274,6 @@ static void Key_Console (int key)
 	}
 }
 
-//============================================================================
-
 char chat_buffer[32];
 bool team_message = false;
 
@@ -325,8 +323,6 @@ static void Key_Message (int key)
 	chat_buffer[chat_bufferlen++] = key;
 	chat_buffer[chat_bufferlen] = 0;
 }
-
-//============================================================================
 
 /*
 ===================

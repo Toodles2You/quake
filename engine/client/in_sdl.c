@@ -340,7 +340,6 @@ static void IN_ActivateGrabs (void)
 
 static void IN_DeactivateGrabs (void)
 {
-
 	if (mouse_state & MOUSE_RELATIVE)
 		SDL_SetRelativeMouseMode (SDL_FALSE);
 

@@ -453,8 +453,6 @@ int SV_TruePointContents (vec3_t p)
 	return SV_HullPointContents (&sv.worldmodel->hulls[HULL_POINT], 0, p);
 }
 
-//===========================================================================
-
 /*
 ============
 SV_TestEntityPosition
@@ -682,8 +680,6 @@ static trace_t SV_ClipMoveToEntity (edict_t *ent, vec3_t start, vec3_t mins, vec
 
 	return trace;
 }
-
-//===========================================================================
 
 /*
 ====================

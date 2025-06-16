@@ -210,8 +210,6 @@ static void SCR_CheckDrawCenterString (void)
 	SCR_DrawCenterString ();
 }
 
-//=============================================================================
-
 /*
 ====================
 AdaptFovx
@@ -290,8 +288,6 @@ static void SCR_CalcRefdef (void)
 	// force the status bar to redraw
 	Sbar_Changed ();
 
-	//========================================
-
 	// bound viewsize
 	if (scr_viewsize.value < 30)
 		Cvar_Set (src_client, "viewsize", "30");
@@ -364,8 +360,6 @@ static void SCR_SizeDown_f (void)
 	Cvar_SetValue (src_client, "viewsize", scr_viewsize.value - 10);
 	vid.recalc_refdef = true;
 }
-
-//============================================================================
 
 void SCR_Init (void)
 {
@@ -463,8 +457,6 @@ static void SCR_DrawLoading (void)
 	pic = Draw_CachePic ("gfx/loading.lmp");
 	Draw_Pic ((vid.width - pic->width) / 2, (vid.height - 48 - pic->height) / 2, pic);
 }
-
-//=============================================================================
 
 static void SCR_SetUpToDrawConsole (void)
 {
@@ -588,8 +580,6 @@ static void SCR_ScreenShot_f (void)
 	Con_Printf ("Wrote %s\n", pcxname);
 }
 
-//=============================================================================
-
 void SCR_BeginLoadingPlaque (void)
 {
 	S_StopAllSounds ();
@@ -616,8 +606,6 @@ void SCR_EndLoadingPlaque (void)
 	scr_disabled_for_loading = false;
 	Con_ClearNotify ();
 }
-
-//=============================================================================
 
 static char *scr_notifystring;
 static bool scr_drawdialog;
@@ -684,8 +672,6 @@ int SCR_ModalMessage (char *text)
 
 	return key_lastpress == 'y';
 }
-
-//=============================================================================
 
 /*
 ===============

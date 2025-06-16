@@ -268,8 +268,6 @@ extern stvert_t stverts[MAXALIASVERTS];
 extern mtriangle_t triangles[MAXALIASTRIS];
 extern trivertx_t *poseverts[MAXALIASFRAMES];
 
-//===================================================================
-
 //
 // Whole model
 //
@@ -305,8 +303,6 @@ typedef struct model_s
 #define BMODEL(model) ((mbrush_t *)model->data)
 #define SMODEL(model) ((msprite_t *)model->data)
 #define AMODEL(model) ((aliashdr_t *)model->data)
-
-//============================================================================
 
 extern texture_t *r_notexture_mip;
 

@@ -292,8 +292,6 @@ void Host_ClearMemory (void)
 	memset (&cl, 0, sizeof (cl));
 }
 
-//============================================================================
-
 /*
 ===================
 Host_FilterTime
@@ -509,8 +507,6 @@ void Host_Frame (double time)
 	host_framecount++;
 	cl_framecount++;
 }
-
-//============================================================================
 
 extern cvar_t qport;
 

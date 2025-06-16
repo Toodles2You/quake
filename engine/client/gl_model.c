@@ -953,8 +953,6 @@ static void *Mod_LoadAliasGroup (void *pin, maliasframedesc_t *frame)
 	return ptemp;
 }
 
-//=========================================================
-
 /*
 =================
 Mod_FloodFillSkin
@@ -1116,8 +1114,6 @@ static void *Mod_LoadAllSkins (model_t *mod, int numskins, daliasskintype_t *psk
 	return (void *)pskintype;
 }
 
-//=========================================================================
-
 static void Mod_LoadAliasModel (model_t *mod, void *buffer)
 {
 	int i, j;
@@ -1246,8 +1242,6 @@ static void Mod_LoadAliasModel (model_t *mod, void *buffer)
 	//
 	GL_MakeAliasModelDisplayLists (mod, pheader);
 }
-
-//=============================================================================
 
 static void *Mod_LoadSpriteFrame (model_t *mod, void *pin, mspriteframe_t **ppframe, int framenum)
 {
@@ -1389,8 +1383,6 @@ static void Mod_LoadSpriteModel (model_t *mod, void *buffer)
 			pframetype = (dspriteframetype_t *)Mod_LoadSpriteGroup (mod, pframetype + 1, &psprite->frames[i].frameptr, i);
 	}
 }
-
-//=============================================================================
 
 void Mod_Print (void)
 {

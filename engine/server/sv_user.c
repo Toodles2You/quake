@@ -479,8 +479,6 @@ static void SV_Begin_f (void)
 	}
 }
 
-//=============================================================================
-
 static void SV_NextDownload_f (void)
 {
 	byte buffer[1024];
@@ -674,8 +672,6 @@ static void SV_BeginDownload_f (void)
 	Sys_Printf ("Downloading %s to %s\n", name, host_client->name);
 }
 
-//=============================================================================
-
 static void SV_Say (bool team)
 {
 	client_t *client;
@@ -774,8 +770,6 @@ static void SV_Say_Team_f (void)
 {
 	SV_Say (true);
 }
-
-//============================================================================
 
 /*
 =================
@@ -1139,8 +1133,6 @@ static float SV_CalcRoll (vec3_t angles, vec3_t velocity)
 
 	return side * sign;
 }
-
-//============================================================================
 
 static vec3_t pmove_mins, pmove_maxs;
 

@@ -3,8 +3,6 @@
 #include "mathlib.h"
 #include "bsplib.h"
 
-//=============================================================================
-
 int nummodels;
 dmodel_t dmodels[MAX_MAP_MODELS];
 
@@ -49,8 +47,6 @@ unsigned short dmarksurfaces[MAX_MAP_MARKSURFACES];
 
 int numsurfedges;
 int dsurfedges[MAX_MAP_SURFEDGES];
-
-//=============================================================================
 
 /*
 =============
@@ -271,8 +267,6 @@ void LoadBSPFile (char *filename)
 	SwapBSPFile (false);
 }
 
-//============================================================================
-
 FILE *wadfile;
 dheader_t outheader;
 
@@ -327,8 +321,6 @@ void WriteBSPFile (char *filename)
 	SafeWrite (wadfile, header, sizeof (dheader_t));
 	fclose (wadfile);
 }
-
-//============================================================================
 
 /*
 =============

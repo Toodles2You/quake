@@ -378,7 +378,6 @@ void FloorDivMod (double numer, double denom, int *quotient, int *rem)
 
 	if (numer >= 0.0)
 	{
-
 		x = floor (numer / denom);
 		q = (int)x;
 		r = (int)floor (numer - (x * denom));

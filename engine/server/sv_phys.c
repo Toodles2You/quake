@@ -663,8 +663,6 @@ static void SV_Physics_Pusher (edict_t *ent)
 	}
 }
 
-//============================================================================
-
 /*
 =============
 SV_Physics_None
@@ -901,8 +899,6 @@ static void SV_Physics_Step (edict_t *ent)
 
 	SV_CheckWaterTransition (ent);
 }
-
-//============================================================================
 
 void SV_ProgStartFrame (void)
 {

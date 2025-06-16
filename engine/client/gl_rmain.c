@@ -468,8 +468,6 @@ static void R_DrawAliasModel (entity_t *e)
 	glPopMatrix ();
 }
 
-//==================================================================================
-
 static void R_DrawEntitiesOnList (void)
 {
 	int i;

@@ -228,8 +228,6 @@ static void Z_CheckHeap (void)
 	}
 }
 
-//============================================================================
-
 #define HUNK_SENTINAL 0x1df001ed
 
 typedef struct
@@ -786,8 +784,6 @@ void *Cache_Alloc (cache_user_t *c, size_t size, char *name)
 
 	return Cache_Check (c);
 }
-
-//============================================================================
 
 void Memory_Init (void *buf, size_t size)
 {

@@ -397,8 +397,6 @@ void ED_ParseGlobals (char *data)
 	}
 }
 
-//============================================================================
-
 char *ED_NewString (char *string)
 {
 	char *new, *new_p;

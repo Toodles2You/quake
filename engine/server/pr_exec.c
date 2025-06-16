@@ -79,8 +79,6 @@ static const char *const pr_opnames[] = {
 	"BITAND", "BITOR",
 };
 
-//=============================================================================
-
 static void PR_PrintStatement (progs_state_t *pr, dstatement_t *s)
 {
 	int i;
@@ -430,7 +428,6 @@ void PR_ExecuteProgram (progs_state_t *pr, func_t fnum)
 			c->_float = a->function != b->function;
 			break;
 
-			//==================
 		case OP_STORE_F:
 		case OP_STORE_ENT:
 		case OP_STORE_FLD: // integers
@@ -483,8 +480,6 @@ void PR_ExecuteProgram (progs_state_t *pr, func_t fnum)
 			c->vector[1] = a->vector[1];
 			c->vector[2] = a->vector[2];
 			break;
-
-			//==================
 
 		case OP_IFNOT:
 			if (!a->_int)

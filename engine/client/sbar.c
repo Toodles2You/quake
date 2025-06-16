@@ -208,8 +208,6 @@ void Sbar_Init (void)
 	}
 }
 
-//=============================================================================
-
 // drawing routines are relative to the status bar location
 
 static void Sbar_DrawPic (int x, int y, qpic_t *pic)
@@ -294,8 +292,6 @@ static void Sbar_DrawNum (int x, int y, int num, int digits, int color)
 	}
 }
 
-//=============================================================================
-
 static void Sbar_SoloScoreboard (void)
 {
 	char str[80];
@@ -325,8 +321,6 @@ static void Sbar_DrawScoreboard (void)
 {
 	Sbar_SoloScoreboard ();
 }
-
-//=============================================================================
 
 static void Sbar_DrawInventory (void)
 {
@@ -519,8 +513,6 @@ static void Sbar_DrawInventory (void)
 	}
 }
 
-//=============================================================================
-
 static void Sbar_DrawFace (void)
 {
 	int f, anim;
@@ -664,8 +656,6 @@ void Sbar_Draw (void)
 		Sbar_DrawNum (248, 0, cl.stats[STAT_AMMO], 3, cl.stats[STAT_AMMO] <= 10);
 	}
 }
-
-//=============================================================================
 
 static void Sbar_IntermissionNumber (int x, int y, int num, int digits, int color)
 {

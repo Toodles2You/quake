@@ -167,8 +167,6 @@ void GL_SubdivideSurface (mbrush_t *model, msurface_t *fa)
 	SubdividePolygon (numverts, verts[0]);
 }
 
-//=========================================================
-
 // speed up sin calculations - Ed
 static const float turbsin[] = {
 #include "warp_sin.h"
@@ -833,8 +831,6 @@ void R_DrawSkyBox (void)
 		glEnd ();
 	}
 }
-
-//===============================================================
 
 /*
 =============

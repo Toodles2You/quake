@@ -496,7 +496,6 @@ void GrabMip (void)
 		mipstep = 1 << miplevel;
 		for (y = 0; y < h; y += mipstep)
 		{
-
 			for (x = 0; x < w; x += mipstep)
 			{
 				count = 0;

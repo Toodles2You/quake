@@ -238,8 +238,6 @@ void M_DrawTextBox (int x, int y, int width, int lines)
 	M_DrawTransPic (cx, cy + 8, p);
 }
 
-//=============================================================================
-
 static int m_save_demonum;
 
 void M_ToggleMenu_f (void)
@@ -262,8 +260,6 @@ void M_ToggleMenu_f (void)
 	else
 		M_Menu_Main_f ();
 }
-
-//=============================================================================
 /* MAIN MENU */
 
 static int m_main_cursor;
@@ -347,8 +343,6 @@ static void M_Main_Key (int key)
 		}
 	}
 }
-
-//=============================================================================
 /* SINGLE PLAYER MENU */
 
 static int m_singleplayer_cursor;
@@ -422,8 +416,6 @@ static void M_SinglePlayer_Key (int key)
 		}
 	}
 }
-
-//=============================================================================
 /* LOAD/SAVE MENU */
 
 static int load_cursor; // 0 < load_cursor < MAX_SAVEGAMES
@@ -580,8 +572,6 @@ static void M_Save_Key (int k)
 		break;
 	}
 }
-
-//=============================================================================
 /* MULTIPLAYER MENU */
 
 static int m_multiplayer_cursor;
@@ -647,8 +637,6 @@ static void M_MultiPlayer_Key (int key)
 		}
 	}
 }
-
-//=============================================================================
 /* SETUP MENU */
 
 extern cvar_t name;
@@ -822,8 +810,6 @@ static void M_Setup_Key (int k)
 	if (setup_bottom < 0)
 		setup_bottom = 13;
 }
-
-//=============================================================================
 /* OPTIONS MENU */
 
 #define OPTIONS_ITEMS 14
@@ -1057,8 +1043,6 @@ static void M_Options_Key (int k)
 			m_options_cursor = 0;
 	}
 }
-
-//=============================================================================
 /* KEYS MENU */
 
 static const char *const bindnames[][2] = {
@@ -1245,8 +1229,6 @@ static void M_Keys_Key (int k)
 		break;
 	}
 }
-
-//=============================================================================
 /* VIDEO MENU */
 
 static void M_Menu_Video_f (void)
@@ -1265,8 +1247,6 @@ static void M_Video_Key (int key)
 {
 	(*vid_menukeyfn) (key);
 }
-
-//=============================================================================
 /* HELP MENU */
 
 static int help_page;
@@ -1308,8 +1288,6 @@ static void M_Help_Key (int key)
 		break;
 	}
 }
-
-//=============================================================================
 /* QUIT MENU */
 
 static int msgNumber;
@@ -1396,8 +1374,6 @@ static void M_Quit_Draw (void)
 	M_Print (64, 100, quitMessage[msgNumber * 4 + 2]);
 	M_Print (64, 108, quitMessage[msgNumber * 4 + 3]);
 }
-
-//=============================================================================
 /* LAN CONFIG MENU */
 
 static int lanConfig_cursor = -1;
@@ -1622,8 +1598,6 @@ static void M_LanConfig_Key (int key)
 		lanConfig_port = l;
 	sprintf (lanConfig_portname, "%u", lanConfig_port);
 }
-
-//=============================================================================
 /* GAME OPTIONS MENU */
 
 typedef struct
@@ -2054,8 +2028,6 @@ static void M_GameOptions_Key (int key)
 		break;
 	}
 }
-
-//=============================================================================
 /* SEARCH MENU */
 
 #ifdef FIXME
@@ -2111,8 +2083,6 @@ void M_Search_Draw (void)
 }
 
 void M_Search_Key (int key) {}
-
-//=============================================================================
 /* SLIST MENU */
 
 int slist_cursor;
@@ -2213,8 +2183,6 @@ void M_ServerList_Key (int k)
 }
 
 #endif
-
-//=============================================================================
 /* Menu Subsystem */
 
 void M_Init (void)

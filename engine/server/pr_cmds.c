@@ -629,8 +629,6 @@ scalar checkpos (entity, vector)
 */
 static void PF_checkpos (progs_state_t *pr) {}
 
-//============================================================================
-
 static byte checkpvs[MAX_MAP_LEAFS / 8];
 
 static int PF_newcheckclient (int check)
@@ -736,8 +734,6 @@ static void PF_checkclient (progs_state_t *pr)
 	// might be able to see it
 	RETURN_EDICT (ent);
 }
-
-//============================================================================
 
 /*
 =================
@@ -1502,8 +1498,6 @@ static void PF_WriteEntity (progs_state_t *pr)
 		MSG_WriteShort (WriteDest (pr), pr_get_edict_num (pr, OFS_PARM1));
 }
 
-//=============================================================================
-
 int SV_ModelIndex (char *name);
 
 static void PF_makestatic (progs_state_t *pr)
@@ -1529,8 +1523,6 @@ static void PF_makestatic (progs_state_t *pr)
 	// throw the entity away now
 	ED_Free (ent);
 }
-
-//=============================================================================
 
 static void PF_setspawnparms (progs_state_t *pr)
 {

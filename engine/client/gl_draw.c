@@ -144,9 +144,6 @@ static void Scrap_Upload (void)
 	scrap_dirty = false;
 }
 
-//=============================================================================
-/* Support Routines */
-
 static int GL_LoadPicTexture (qpic_t *pic)
 {
 	int gl_texturenum = 0;
@@ -648,8 +645,6 @@ void Draw_FadeScreen (void)
 	Sbar_Changed ();
 }
 
-//=============================================================================
-
 /*
 ================
 Draw_BeginDisc
@@ -692,8 +687,6 @@ void GL_Set2D (void)
 
 	glColor4f (1, 1, 1, 1);
 }
-
-//====================================================================
 
 static void GL_ResampleTexture (unsigned *in, int inwidth, int inheight, unsigned *out, int outwidth, int outheight)
 {

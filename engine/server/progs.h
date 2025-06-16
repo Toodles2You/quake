@@ -101,8 +101,6 @@ typedef struct progs_state_s
 	unsigned short crc;
 } progs_state_t;
 
-//============================================================================
-
 void PR_Init (void);
 
 void PR_ExecuteProgram (progs_state_t *pr, func_t fnum);
@@ -146,8 +144,6 @@ int ED_ForNum (edict_t *e);
 
 #define EDICT_TO_PROG(e) ((byte *)e - (byte *)sv.edicts)
 #define PROG_TO_EDICT(e) ((edict_t *)((byte *)sv.edicts + e))
-
-//============================================================================
 
 #define pr_global(_PR, _TYPE, _OFS) (*(_TYPE *)(_PR->globals + _OFS))
 #define pr_global_ptr(_PR, _TYPE, _OFS) ((_TYPE *)(_PR->globals + _OFS))
@@ -195,8 +191,6 @@ eval_t *GetEdictFieldValue (edict_t *ed, char *field);
 char *PR_GetString (progs_state_t *pr, int num);
 int PR_SetString (progs_state_t *pr, char *s);
 void PR_CheckEmptyString (progs_state_t *pr, char *s);
-
-//============================================================================
 
 void PF_changeyaw (progs_state_t *pr);
 

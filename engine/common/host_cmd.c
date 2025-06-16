@@ -649,15 +649,11 @@ static void Host_Changelevel2_f (void)
 		SV_SpawnServer (level, startspot);
 }
 
-//============================================================================
-
 static void Host_Version_f (void)
 {
 	Con_Printf ("Version " QUAKE_VERSION "\n");
 	Con_Printf ("Build: " __TIME__ " " __DATE__ "\n");
 }
-
-//===========================================================================
 
 /*
 ===============================================================================
@@ -731,8 +727,6 @@ static void Host_Stopdemo_f (void)
 	CL_StopPlayback ();
 	CL_Disconnect ();
 }
-
-//=============================================================================
 
 void Host_InitCommands (void)
 {

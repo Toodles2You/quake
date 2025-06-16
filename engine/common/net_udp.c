@@ -44,8 +44,6 @@ static byte net_message_buffer[NUM_SOCKETS][MAX_UDP_PACKET];
 // int gethostname (char *, int);
 // int close (int);
 
-//=============================================================================
-
 static void NetadrToSockadr (netadr_t *a, struct sockaddr_in *s)
 {
 	memset (s, 0, sizeof (*s));
@@ -170,8 +168,6 @@ bool NET_IsClientLegal (netadr_t *adr)
 	return false;
 }
 
-//=============================================================================
-
 bool NET_GetPacket (netsocket_e sock)
 {
 	int ret;
@@ -198,8 +194,6 @@ bool NET_GetPacket (netsocket_e sock)
 	return ret;
 }
 
-//=============================================================================
-
 void NET_SendPacket (netsocket_e sock, int length, void *data, netadr_t to)
 {
 	int ret;
@@ -218,8 +212,6 @@ void NET_SendPacket (netsocket_e sock, int length, void *data, netadr_t to)
 		Sys_Printf ("NET_SendPacket: %s\n", strerror (errno));
 	}
 }
-
-//=============================================================================
 
 static int UDP_OpenSocket (int port)
 {

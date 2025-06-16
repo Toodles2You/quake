@@ -117,8 +117,6 @@ static float V_CalcBob (void)
 	return bob;
 }
 
-//=============================================================================
-
 static cvar_t v_centermove = {"v_centermove", "0.15", false};
 static cvar_t v_centerspeed = {"v_centerspeed", "500"};
 
@@ -769,8 +767,6 @@ void V_ClampViewAngles (void)
 	else if (cl.viewangles[PITCH] < -cl_pitchmax.value)
 		cl.viewangles[PITCH] = -cl_pitchmax.value;
 }
-
-//============================================================================
 
 void V_Init (void)
 {

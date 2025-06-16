@@ -608,8 +608,6 @@ static void CMod_LoadBrushModel (cmodel_t *mod, void *buffer, bool world)
 	CMod_LoadSubmodels (&header->lumps[LUMP_MODELS]);
 }
 
-//=============================================================================
-
 void CMod_Print (void)
 {
 	int i;
