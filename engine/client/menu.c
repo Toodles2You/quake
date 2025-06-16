@@ -44,10 +44,6 @@ enum
 	m_quit,
 	m_lanconfig,
 	m_gameoptions,
-#ifdef FIXME
-	m_search,
-	m_slist
-#endif
 } m_state;
 
 void M_Menu_Main_f (void);
@@ -63,8 +59,6 @@ static void M_Menu_Help_f (void);
 static void M_Menu_Quit_f (void);
 static void M_Menu_LanConfig_f (void);
 static void M_Menu_GameOptions_f (void);
-static void M_Menu_Search_f (void);
-static void M_Menu_ServerList_f (void);
 
 static void M_Main_Draw (void);
 static void M_SinglePlayer_Draw (void);
@@ -79,8 +73,6 @@ static void M_Help_Draw (void);
 static void M_Quit_Draw (void);
 static void M_LanConfig_Draw (void);
 static void M_GameOptions_Draw (void);
-static void M_Search_Draw (void);
-static void M_ServerList_Draw (void);
 
 static void M_Main_Key (int key);
 static void M_SinglePlayer_Key (int key);
@@ -95,11 +87,8 @@ static void M_Help_Key (int key);
 static void M_Quit_Key (int key);
 static void M_LanConfig_Key (int key);
 static void M_GameOptions_Key (int key);
-static void M_Search_Key (int key);
-static void M_ServerList_Key (int key);
 
-static bool m_entersound; // play after drawing a frame, so caching
-						  // won't disrupt the sound
+static bool m_entersound; // play after drawing a frame, so caching won't disrupt the sound
 static bool m_recursiveDraw;
 
 static int m_return_state;
@@ -1399,10 +1388,8 @@ static void M_Menu_LanConfig_f (void)
 	}
 	if (StartingGame && lanConfig_cursor == 3)
 		lanConfig_cursor = 1;
-#ifndef FIXME
 	if (JoiningGame && lanConfig_cursor == 2)
 		lanConfig_cursor = 3;
-#endif
 	lanConfig_port = PORT_SERVER;
 	sprintf (lanConfig_portname, "%u", lanConfig_port);
 
@@ -1443,9 +1430,6 @@ static void M_LanConfig_Draw (void)
 
 	if (JoiningGame)
 	{
-#ifdef FIXME
-		M_Print (basex, lanConfig_cursor_table[2], "Search for local games...");
-#endif
 		M_Print (basex, 108, "Join game at:");
 		M_DrawTextBox (basex + 8, lanConfig_cursor_table[3] - 8, 22, 1);
 		M_Print (basex + 16, lanConfig_cursor_table[3], lanConfig_joinname);
@@ -1481,10 +1465,8 @@ static void M_LanConfig_Key (int key)
 	case K_UPARROW:
 		S_LocalSound ("misc/menu1.wav");
 		lanConfig_cursor--;
-#ifndef FIXME
 		if (JoiningGame && lanConfig_cursor == 2)
 			lanConfig_cursor = 1;
-#endif
 		if (lanConfig_cursor < 0)
 			lanConfig_cursor = NUM_LANCONFIG_CMDS - 1;
 		break;
@@ -1492,10 +1474,8 @@ static void M_LanConfig_Key (int key)
 	case K_DOWNARROW:
 		S_LocalSound ("misc/menu1.wav");
 		lanConfig_cursor++;
-#ifndef FIXME
 		if (JoiningGame && lanConfig_cursor == 2)
 			lanConfig_cursor = 3;
-#endif
 		if (lanConfig_cursor >= NUM_LANCONFIG_CMDS)
 			lanConfig_cursor = 0;
 		break;
@@ -1513,9 +1493,6 @@ static void M_LanConfig_Key (int key)
 		}
 
 		Cbuf_AddText (src_client, "stopdemo\n");
-#ifdef FIXME
-		net_hostport = lanConfig_port;
-#endif
 
 		if (lanConfig_cursor == 2)
 		{
@@ -1524,9 +1501,6 @@ static void M_LanConfig_Key (int key)
 				M_Menu_GameOptions_f ();
 				break;
 			}
-#ifdef FIXME
-			M_Menu_Search_f ();
-#endif
 			break;
 		}
 
@@ -1607,9 +1581,8 @@ typedef struct
 } level_t;
 
 static level_t const levels[] = {
-	{"start", "Entrance"}, // 0
-
-	{"e1m1", "Slipgate Complex"}, // 1
+	{"start", "Entrance"},
+	{"e1m1", "Slipgate Complex"},
 	{"e1m2", "Castle of the Damned"},
 	{"e1m3", "The Necropolis"},
 	{"e1m4", "The Grisly Grotto"},
@@ -1617,24 +1590,21 @@ static level_t const levels[] = {
 	{"e1m6", "The Door To Chthon"},
 	{"e1m7", "The House of Chthon"},
 	{"e1m8", "Ziggurat Vertigo"},
-
-	{"e2m1", "The Installation"}, // 9
+	{"e2m1", "The Installation"},
 	{"e2m2", "Ogre Citadel"},
 	{"e2m3", "Crypt of Decay"},
 	{"e2m4", "The Ebon Fortress"},
 	{"e2m5", "The Wizard's Manse"},
 	{"e2m6", "The Dismal Oubliette"},
 	{"e2m7", "Underearth"},
-
-	{"e3m1", "Termination Central"}, // 16
+	{"e3m1", "Termination Central"},
 	{"e3m2", "The Vaults of Zin"},
 	{"e3m3", "The Tomb of Terror"},
 	{"e3m4", "Satan's Dark Delight"},
 	{"e3m5", "Wind Tunnels"},
 	{"e3m6", "Chambers of Torment"},
 	{"e3m7", "The Haunted Halls"},
-
-	{"e4m1", "The Sewage System"}, // 23
+	{"e4m1", "The Sewage System"},
 	{"e4m2", "The Tower of Despair"},
 	{"e4m3", "The Elder God Shrine"},
 	{"e4m4", "The Palace of Hate"},
@@ -1642,10 +1612,8 @@ static level_t const levels[] = {
 	{"e4m6", "The Pain Maze"},
 	{"e4m7", "Azure Agony"},
 	{"e4m8", "The Nameless City"},
-
-	{"end", "Shub-Niggurath's Pit"}, // 31
-
-	{"dm1", "Place of Two Deaths"}, // 32
+	{"end", "Shub-Niggurath's Pit"},
+	{"dm1", "Place of Two Deaths"},
 	{"dm2", "Claustrophobopolis"},
 	{"dm3", "The Abandoned Base"},
 	{"dm4", "The Bad Place"},
@@ -1653,33 +1621,28 @@ static level_t const levels[] = {
 	{"dm6", "The Dark Zone"},
 };
 
-static const level_t hipnoticlevels[] = {
-	{"start", "Command HQ"}, // 0
-
-	{"hip1m1", "The Pumping Station"}, // 1
+static const level_t hipnotic_levels[] = {
+	{"start", "Command HQ"},
+	{"hip1m1", "The Pumping Station"},
 	{"hip1m2", "Storage Facility"},
 	{"hip1m3", "The Lost Mine"},
 	{"hip1m4", "Research Facility"},
 	{"hip1m5", "Military Complex"},
-
-	{"hip2m1", "Ancient Realms"}, // 6
+	{"hip2m1", "Ancient Realms"},
 	{"hip2m2", "The Black Cathedral"},
 	{"hip2m3", "The Catacombs"},
 	{"hip2m4", "The Crypt"},
 	{"hip2m5", "Mortum's Keep"},
 	{"hip2m6", "The Gremlin's Domain"},
-
-	{"hip3m1", "Tur Torment"}, // 12
+	{"hip3m1", "Tur Torment"},
 	{"hip3m2", "Pandemonium"},
 	{"hip3m3", "Limbo"},
 	{"hip3m4", "The Gauntlet"},
-
-	{"hipend", "Armagon's Lair"}, // 16
-
-	{"hipdm1", "The Edge of Oblivion"} // 17
+	{"hipend", "Armagon's Lair"},
+	{"hipdm1", "The Edge of Oblivion"},
 };
 
-static const level_t roguelevels[] = {
+static const level_t rogue_levels[] = {
 	{"start", "Split Decision"},
 	{"r1m1", "Deviant's Domain"},
 	{"r1m2", "Dread Portal"},
@@ -1716,7 +1679,7 @@ static const episode_t episodes[] = {
 	{"Deathmatch Arena", 32, 6},
 };
 
-static const episode_t hipnoticepisodes[] = {
+static const episode_t hipnotic_episodes[] = {
 	{"Scourge of Armagon", 0, 1},
 	{"Fortress of the Dead", 1, 5},
 	{"Dominion of Darkness", 6, 6},
@@ -1725,7 +1688,7 @@ static const episode_t hipnoticepisodes[] = {
 	{"Deathmatch Arena", 17, 1},
 };
 
-static const episode_t rogueepisodes[] = {
+static const episode_t rogue_episodes[] = {
 	{"Introduction", 0, 1},
 	{"Hell's Fortress", 1, 7},
 	{"Corridors of Time", 8, 8},
@@ -1846,22 +1809,22 @@ static void M_GameOptions_Draw (void)
 
 	M_Print (0, 112, "         Episode");
 	if (hipnotic)
-		M_Print (160, 112, hipnoticepisodes[startepisode].description);
+		M_Print (160, 112, hipnotic_episodes[startepisode].description);
 	else if (rogue)
-		M_Print (160, 112, rogueepisodes[startepisode].description);
+		M_Print (160, 112, rogue_episodes[startepisode].description);
 	else
 		M_Print (160, 112, episodes[startepisode].description);
 
 	M_Print (0, 120, "           Level");
 	if (hipnotic)
 	{
-		M_Print (160, 120, hipnoticlevels[hipnoticepisodes[startepisode].firstLevel + startlevel].description);
-		M_Print (160, 128, hipnoticlevels[hipnoticepisodes[startepisode].firstLevel + startlevel].name);
+		M_Print (160, 120, hipnotic_levels[hipnotic_episodes[startepisode].firstLevel + startlevel].description);
+		M_Print (160, 128, hipnotic_levels[hipnotic_episodes[startepisode].firstLevel + startlevel].name);
 	}
 	else if (rogue)
 	{
-		M_Print (160, 120, roguelevels[rogueepisodes[startepisode].firstLevel + startlevel].description);
-		M_Print (160, 128, roguelevels[rogueepisodes[startepisode].firstLevel + startlevel].name);
+		M_Print (160, 120, rogue_levels[rogue_episodes[startepisode].firstLevel + startlevel].description);
+		M_Print (160, 128, rogue_levels[rogue_episodes[startepisode].firstLevel + startlevel].name);
 	}
 	else
 	{
@@ -1953,9 +1916,9 @@ static void M_NetStart_Change (int dir)
 	case 8:
 		startlevel += dir;
 		if (hipnotic)
-			count = hipnoticepisodes[startepisode].levels;
+			count = hipnotic_episodes[startepisode].levels;
 		else if (rogue)
-			count = rogueepisodes[startepisode].levels;
+			count = rogue_episodes[startepisode].levels;
 		else
 			count = episodes[startepisode].levels;
 
@@ -2015,9 +1978,9 @@ static void M_GameOptions_Key (int key)
 			SCR_BeginLoadingPlaque ();
 
 			if (hipnotic)
-				Cbuf_AddText (src_server, va ("map %s\n", hipnoticlevels[hipnoticepisodes[startepisode].firstLevel + startlevel].name));
+				Cbuf_AddText (src_server, va ("map %s\n", hipnotic_levels[hipnotic_episodes[startepisode].firstLevel + startlevel].name));
 			else if (rogue)
-				Cbuf_AddText (src_server, va ("map %s\n", roguelevels[rogueepisodes[startepisode].firstLevel + startlevel].name));
+				Cbuf_AddText (src_server, va ("map %s\n", rogue_levels[rogue_episodes[startepisode].firstLevel + startlevel].name));
 			else
 				Cbuf_AddText (src_server, va ("map %s\n", levels[episodes[startepisode].firstLevel + startlevel].name));
 
@@ -2028,161 +1991,7 @@ static void M_GameOptions_Key (int key)
 		break;
 	}
 }
-/* SEARCH MENU */
 
-#ifdef FIXME
-
-bool searchComplete = false;
-double searchCompleteTime;
-
-void M_Menu_Search_f (void)
-{
-	key_dest = key_menu;
-	m_state = m_search;
-	m_entersound = false;
-	slistSilent = true;
-	slistLocal = false;
-	searchComplete = false;
-	NET_Slist_f ();
-}
-
-void M_Search_Draw (void)
-{
-	qpic_t *p;
-	int x;
-
-	p = Draw_CachePic ("gfx/p_multi.lmp");
-	M_DrawPic ((320 - p->width) / 2, 4, p);
-	x = (320 / 2) - ((12 * 8) / 2) + 4;
-	M_DrawTextBox (x - 8, 32, 12, 1);
-	M_Print (x, 40, "Searching...");
-
-	if (slistInProgress)
-	{
-		NET_Poll ();
-		return;
-	}
-
-	if (!searchComplete)
-	{
-		searchComplete = true;
-		searchCompleteTime = realtime;
-	}
-
-	if (hostCacheCount)
-	{
-		M_Menu_ServerList_f ();
-		return;
-	}
-
-	M_PrintWhite ((320 / 2) - ((22 * 8) / 2), 64, "No Quake servers found");
-	if ((realtime - searchCompleteTime) < 3.0)
-		return;
-
-	M_Menu_LanConfig_f ();
-}
-
-void M_Search_Key (int key) {}
-/* SLIST MENU */
-
-int slist_cursor;
-bool slist_sorted;
-
-void M_Menu_ServerList_f (void)
-{
-	key_dest = key_menu;
-	m_state = m_slist;
-	m_entersound = true;
-	slist_cursor = 0;
-	m_return_onerror = false;
-	m_return_reason[0] = 0;
-	slist_sorted = false;
-}
-
-void M_ServerList_Draw (void)
-{
-	int n;
-	char string[64];
-	qpic_t *p;
-
-	if (!slist_sorted)
-	{
-		if (hostCacheCount > 1)
-		{
-			int i, j;
-			hostcache_t temp;
-			for (i = 0; i < hostCacheCount; i++)
-				for (j = i + 1; j < hostCacheCount; j++)
-					if (strcmp (hostcache[j].name, hostcache[i].name) < 0)
-					{
-						memcpy (&temp, &hostcache[j], sizeof (hostcache_t));
-						memcpy (&hostcache[j], &hostcache[i], sizeof (hostcache_t));
-						memcpy (&hostcache[i], &temp, sizeof (hostcache_t));
-					}
-		}
-		slist_sorted = true;
-	}
-
-	p = Draw_CachePic ("gfx/p_multi.lmp");
-	M_DrawPic ((320 - p->width) / 2, 4, p);
-	for (n = 0; n < hostCacheCount; n++)
-	{
-		if (hostcache[n].maxusers)
-			sprintf (string, "%-15.15s %-15.15s %2u/%2u\n", hostcache[n].name, hostcache[n].map, hostcache[n].users, hostcache[n].maxusers);
-		else
-			sprintf (string, "%-15.15s %-15.15s\n", hostcache[n].name, hostcache[n].map);
-		M_Print (16, 32 + 8 * n, string);
-	}
-	M_DrawCharacter (0, 32 + slist_cursor * 8, 12 + ((int)(realtime * 4) & 1));
-
-	if (*m_return_reason)
-		M_PrintWhite (16, 148, m_return_reason);
-}
-
-void M_ServerList_Key (int k)
-{
-	switch (k)
-	{
-	case K_ESCAPE:
-		M_Menu_LanConfig_f ();
-		break;
-
-	case K_SPACE:
-		M_Menu_Search_f ();
-		break;
-
-	case K_UPARROW:
-	case K_LEFTARROW:
-		S_LocalSound ("misc/menu1.wav");
-		slist_cursor--;
-		if (slist_cursor < 0)
-			slist_cursor = hostCacheCount - 1;
-		break;
-
-	case K_DOWNARROW:
-	case K_RIGHTARROW:
-		S_LocalSound ("misc/menu1.wav");
-		slist_cursor++;
-		if (slist_cursor >= hostCacheCount)
-			slist_cursor = 0;
-		break;
-
-	case K_ENTER:
-		S_LocalSound ("misc/menu2.wav");
-		m_return_state = m_state;
-		m_return_onerror = true;
-		slist_sorted = false;
-		key_dest = key_game;
-		m_state = m_none;
-		Cbuf_AddText (src_client, va ("connect \"%s\"\n", hostcache[slist_cursor].cname));
-		break;
-
-	default:
-		break;
-	}
-}
-
-#endif
 /* Menu Subsystem */
 
 void M_Init (void)
@@ -2207,15 +2016,12 @@ void M_Draw (void)
 	if (m_state == m_none || key_dest != key_menu)
 		return;
 
-	if (!m_recursiveDraw)
-	{
-		if (scr_con_current)
-			Draw_ConsoleBackground (vid.height);
-		else
-			Draw_FadeScreen ();
-	}
-	else
+	if (m_recursiveDraw)
 		m_recursiveDraw = false;
+	else if (scr_con_current)
+		Draw_ConsoleBackground (vid.height);
+	else
+		Draw_FadeScreen ();
 
 	switch (m_state)
 	{
@@ -2273,16 +2079,6 @@ void M_Draw (void)
 	case m_gameoptions:
 		M_GameOptions_Draw ();
 		break;
-
-#ifdef FIXME
-	case m_search:
-		M_Search_Draw ();
-		break;
-
-	case m_slist:
-		M_ServerList_Draw ();
-		break;
-#endif
 	}
 
 	if (m_entersound)
@@ -2350,15 +2146,5 @@ void M_Keydown (int key)
 	case m_gameoptions:
 		M_GameOptions_Key (key);
 		return;
-
-#ifdef FIXME
-	case m_search:
-		M_Search_Key (key);
-		break;
-
-	case m_slist:
-		M_ServerList_Key (key);
-		return;
-#endif
 	}
 }
