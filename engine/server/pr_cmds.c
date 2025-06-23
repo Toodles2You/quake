@@ -947,7 +947,7 @@ static void PF_Find (progs_state_t *pr)
 	RETURN_EDICT (sv.edicts);
 }
 
-void PR_CheckEmptyString (progs_state_t *pr, char *s)
+static void PR_CheckEmptyString (progs_state_t *pr, char *s)
 {
 	if (s[0] <= ' ')
 		PR_RunError (pr, "Bad string");

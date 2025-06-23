@@ -99,6 +99,10 @@ typedef struct progs_state_s
 	int xstatement;
 
 	unsigned short crc;
+
+	const char **known_strings;
+	int max_known_strings;
+	int num_known_strings;
 } progs_state_t;
 
 void PR_Init (void);
@@ -122,9 +126,6 @@ void PR_Profile_f (void);
 void ED_ClearEdict (edict_t *e);
 edict_t *ED_Alloc (void);
 void ED_Free (edict_t *ed);
-
-char *ED_NewString (char *string);
-// returns a copy of the string allocated from the server's string heap
 
 void ED_Print (edict_t *ed);
 void ED_Write (FILE *f, edict_t *ed);
@@ -157,7 +158,7 @@ int ED_ForNum (edict_t *e);
 #define sv_pr_execute(_FIELD) PR_ExecuteProgram (&sv.pr, sv.pr.global_struct[pr_##_FIELD])
 
 #define pr_get_string(_PR, _OFS) PR_GetString (_PR, pr_global (_PR, string_t, _OFS))
-#define pr_set_string(_PR, _OFS, _STR) (pr_global (_PR, string_t, _OFS) = PR_SetString (_PR, _STR))
+#define pr_set_string(_PR, _OFS, _STR) (pr_global (_PR, string_t, _OFS) = PR_SetEngineString (_PR, _STR))
 
 #define pr_get_edict(_PR, _OFS) ((edict_t *)((byte *)sv.edicts + pr_global (_PR, int32_t, _OFS)))
 #define pr_get_edict_num(_PR, _OFS) ED_ForNum (pr_get_edict (_PR, _OFS))
@@ -169,7 +170,7 @@ int ED_ForNum (edict_t *e);
 #define ed_vector(_ED, _FIELD) ((float *)((float *)(_ED + 1) + sv.pr.field_struct[pr_##_FIELD]))
 
 #define ed_get_string(_ED, _FIELD) PR_GetString (&sv.pr, ed_int (_ED, _FIELD))
-#define ed_set_string(_ED, _FIELD, _STR) (ed_int (_ED, _FIELD) = PR_SetString (&sv.pr, _STR))
+#define ed_set_string(_ED, _FIELD, _STR) (ed_int (_ED, _FIELD) = PR_SetEngineString (&sv.pr, _STR))
 
 #define ed_get_edict(_ED, _FIELD) PROG_TO_EDICT (ed_int (_ED, _FIELD))
 #define ed_set_edict(_ED, _FIELD, _ED2) (ed_int (_ED, _FIELD) = EDICT_TO_PROG (_ED2))
@@ -189,8 +190,9 @@ void ED_PrintNum (int ent);
 eval_t *GetEdictFieldValue (edict_t *ed, char *field);
 
 char *PR_GetString (progs_state_t *pr, int num);
-int PR_SetString (progs_state_t *pr, char *s);
-void PR_CheckEmptyString (progs_state_t *pr, char *s);
+int PR_SetEngineString (progs_state_t *pr, char *s);
+int PR_AllocString (progs_state_t *pr, int size, char **ptr);
+void PR_ClearStrings (progs_state_t *pr);
 
 void PF_changeyaw (progs_state_t *pr);
 

@@ -1,6 +1,8 @@
 /*
 ===========================================================================
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2002-2009 John Fitzgibbons and others
+Copyright (C) 2010-2014 QuakeSpasm developers
 Copyright (C) 2023-2024 Justin Keller
 
 This program is free software: you can redistribute it and/or modify
@@ -397,14 +399,15 @@ void ED_ParseGlobals (char *data)
 	}
 }
 
-char *ED_NewString (char *string)
+// returns a copy of the string allocated from the server's string heap
+static string_t ED_NewString (char *string)
 {
-	char *new, *new_p;
+	char *new_p;
 	int i, l;
+	string_t num;
 
 	l = strlen (string) + 1;
-	new = Hunk_Alloc (l);
-	new_p = new;
+	num = PR_AllocString (&sv.pr, l, &new_p);
 
 	for (i = 0; i < l; i++)
 	{
@@ -420,7 +423,7 @@ char *ED_NewString (char *string)
 			*new_p++ = string[i];
 	}
 
-	return new;
+	return num;
 }
 
 /*
@@ -445,7 +448,7 @@ static bool ED_ParseEpair (void *base, ddef_t *key, char *s)
 	switch (key->type & ~DEF_SAVEGLOBAL)
 	{
 	case ev_string:
-		*(string_t *)d = PR_SetString (&sv.pr, ED_NewString (s));
+		*(string_t *)d = ED_NewString (s);
 		break;
 
 	case ev_float:

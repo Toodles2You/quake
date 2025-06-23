@@ -265,6 +265,8 @@ void Host_ShutdownServer (bool crash)
 		sv_fraglogfile = NULL;
 	}
 
+	PR_ClearStrings (&sv.pr);
+
 	//
 	// clear structures
 	//
@@ -285,6 +287,7 @@ void Host_ClearMemory (void)
 	Con_DPrintf ("Clearing memory\n");
 	CMod_ClearAll ();
 	Mod_ClearAll ();
+	PR_ClearStrings (&sv.pr);
 	if (host_hunklevel)
 		Hunk_FreeToLowMark (host_hunklevel);
 

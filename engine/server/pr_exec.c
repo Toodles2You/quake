@@ -1,6 +1,7 @@
 /*
 ===========================================================================
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2010-2014 QuakeSpasm developers
 Copyright (C) 2023-2024 Justin Keller
 
 This program is free software: you can redistribute it and/or modify
@@ -162,7 +163,7 @@ void PR_Profile_f (void)
 		if (best)
 		{
 			if (num < 10)
-				Con_Printf ("%7i %s\n", best->profile, pr->strings + best->s_name);
+				Con_Printf ("%7i %s\n", best->profile, PR_GetString (pr, best->s_name));
 			num++;
 			best->profile = 0;
 		}
@@ -387,7 +388,7 @@ void PR_ExecuteProgram (progs_state_t *pr, func_t fnum)
 			c->_float = !a->vector[0] && !a->vector[1] && !a->vector[2];
 			break;
 		case OP_NOT_S:
-			c->_float = !a->string || !pr->strings[a->string];
+			c->_float = !a->string || !PR_GetString (pr, a->string)[0];
 			break;
 		case OP_NOT_FNC:
 			c->_float = !a->function;
@@ -403,7 +404,7 @@ void PR_ExecuteProgram (progs_state_t *pr, func_t fnum)
 			c->_float = (a->vector[0] == b->vector[0]) && (a->vector[1] == b->vector[1]) && (a->vector[2] == b->vector[2]);
 			break;
 		case OP_EQ_S:
-			c->_float = !strcmp (pr->strings + a->string, pr->strings + b->string);
+			c->_float = !strcmp (PR_GetString (pr, a->string), PR_GetString (pr, b->string));
 			break;
 		case OP_EQ_E:
 			c->_float = a->_int == b->_int;
@@ -419,7 +420,7 @@ void PR_ExecuteProgram (progs_state_t *pr, func_t fnum)
 			c->_float = (a->vector[0] != b->vector[0]) || (a->vector[1] != b->vector[1]) || (a->vector[2] != b->vector[2]);
 			break;
 		case OP_NE_S:
-			c->_float = strcmp (pr->strings + a->string, pr->strings + b->string);
+			c->_float = strcmp (PR_GetString (pr, a->string), PR_GetString (pr, b->string));
 			break;
 		case OP_NE_E:
 			c->_float = a->_int != b->_int;
@@ -547,35 +548,78 @@ void PR_ExecuteProgram (progs_state_t *pr, func_t fnum)
 	}
 }
 
-#define MAX_PRSTR 1024
-static char *pr_strtbl[MAX_PRSTR];
-static int num_prstr;
+#define PR_STRING_ALLOCSLOTS 256
+
+static void PR_AllocStringSlots (progs_state_t *pr)
+{
+	pr->max_known_strings += PR_STRING_ALLOCSLOTS;
+	// Con_DPrintf ("PR_AllocStringSlots: realloc'ing for %d slots\n", pr->max_known_strings);
+	pr->known_strings = (const char **)Z_Realloc ((void *)pr->known_strings, pr->max_known_strings * sizeof (char *));
+}
 
 char *PR_GetString (progs_state_t *pr, int num)
 {
-	if (num < 0)
+	if (num >= 0 && num < pr->progs->numstrings)
+		return pr->strings + num;
+	if (num < 0 && num >= -pr->num_known_strings)
 	{
-		return pr_strtbl[-num];
+		if (!pr->known_strings[-1 - num])
+		{
+			Host_Error ("PR_GetString: attempt to get a non-existant string %d\n", num);
+			return "";
+		}
+		return pr->known_strings[-1 - num];
 	}
-	return pr->strings + num;
+	Host_Error ("PR_GetString: invalid string offset %d\n", num);
+	return "";
 }
 
-int PR_SetString (progs_state_t *pr, char *s)
+int PR_SetEngineString (progs_state_t *pr, char *s)
 {
 	int i;
-
-	if (s - pr->strings < 0)
+	if (!s)
+		return 0;
+	if (s >= pr->strings && s <= pr->strings + pr->progs->numstrings - 2)
+		return (int)(s - pr->strings);
+	for (i = 0; i < pr->num_known_strings; i++)
 	{
-		for (i = 0; i <= num_prstr; i++)
-			if (pr_strtbl[i] == s)
-				break;
-		if (i < num_prstr)
-			return -i;
-		if (num_prstr == MAX_PRSTR - 1)
-			Sys_Error ("MAX_PRSTR");
-		num_prstr++;
-		pr_strtbl[num_prstr] = s;
-		return -num_prstr;
+		if (pr->known_strings[i] == s)
+			return -1 - i;
 	}
-	return (int)(s - pr->strings);
+	// new unknown engine string
+	// Con_DPrintf ("PR_SetEngineString: new engine string %p\n", s);
+	if (i >= pr->max_known_strings)
+		PR_AllocStringSlots (pr);
+	pr->num_known_strings++;
+	pr->known_strings[i] = s;
+	return -1 - i;
+}
+
+int PR_AllocString (progs_state_t *pr, int size, char **ptr)
+{
+	int i;
+	if (!size)
+		return 0;
+	for (i = 0; i < pr->num_known_strings; i++)
+	{
+		if (!pr->known_strings[i])
+			break;
+	}
+	if (i >= pr->max_known_strings)
+		PR_AllocStringSlots (pr);
+	pr->num_known_strings++;
+	pr->known_strings[i] = (char *)Hunk_AllocName (size, "string");
+	if (ptr)
+		*ptr = (char *)pr->known_strings[i];
+	return -1 - i;
+}
+
+void PR_ClearStrings (progs_state_t *pr)
+{
+	if (pr->known_strings)
+	{
+		Z_Free ((void *)pr->known_strings);
+		pr->known_strings = NULL;
+	}
+	pr->max_known_strings = pr->num_known_strings = 0;
 }

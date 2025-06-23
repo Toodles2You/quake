@@ -1,6 +1,8 @@
 /*
 ===========================================================================
 Copyright (C) 1996-1997 Id Software, Inc.
+Copyright (C) 2002-2009 John Fitzgibbons and others
+Copyright (C) 2010-2014 QuakeSpasm developers
 Copyright (C) 2023-2024 Justin Keller
 
 This program is free software: you can redistribute it and/or modify
@@ -130,6 +132,48 @@ void *Z_Malloc (size_t size)
 	memset (buf, 0, size);
 
 	return buf;
+}
+
+#define q_min(a, b) ((a) < (b) ? (a) : (b))
+
+void *Z_Realloc (void *ptr, size_t size)
+{
+	int old_size;
+	void *old_ptr;
+	memblock_t *block;
+
+	if (!ptr)
+		return Z_Malloc (size);
+
+	block = (memblock_t *)((byte *)ptr - sizeof (memblock_t));
+	if (block->id != ZONEID)
+		Sys_Error ("Z_Realloc: realloced a pointer without ZONEID");
+	if (block->tag == 0)
+		Sys_Error ("Z_Realloc: realloced a freed pointer");
+
+	old_size = block->size;
+	old_size -= (4 + (int)sizeof (memblock_t)); /* see Z_TagMalloc() */
+	old_ptr = ptr;
+
+	Z_Free (ptr);
+	ptr = Z_TagMalloc (size, 1);
+	if (!ptr)
+		Sys_Error ("Z_Realloc: failed on allocation of %i bytes", size);
+
+	if (ptr != old_ptr)
+		memmove (ptr, old_ptr, q_min (old_size, size));
+	if (old_size < size)
+		memset ((byte *)ptr + old_size, 0, size - old_size);
+
+	return ptr;
+}
+
+char *Z_Strdup (const char *s)
+{
+	size_t sz = strlen (s) + 1;
+	char *ptr = (char *)Z_Malloc (sz);
+	memcpy (ptr, s, sz);
+	return ptr;
 }
 
 void *Z_TagMalloc (size_t size, size_t tag)

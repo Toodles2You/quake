@@ -335,6 +335,8 @@ int PR_LoadProgs (progs_state_t *pr, char *filename, int version, int crc)
 	for (i = 0; i < pr->progs->numglobals; i++)
 		((int32_t *)pr->globals)[i] = LittleLong (((int32_t *)pr->globals)[i]);
 
+	PR_SetEngineString (pr, "");
+
 	return 0;
 }
 

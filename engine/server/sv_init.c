@@ -444,9 +444,9 @@ void SV_SpawnServer (char *server, char *startspot)
 		sv_pr_float (deathmatch) = deathmatch.value;
 	}
 
-	sv_pr_int (mapname) = PR_SetString (&sv.pr, sv.name);
+	sv_pr_int (mapname) = PR_SetEngineString (&sv.pr, sv.name);
 #ifdef QUAKE2
-	sv_pr_int (startspot) = PR_SetString (&sv.pr, sv.startspot);
+	sv_pr_int (startspot) = PR_SetEngineString (&sv.pr, sv.startspot);
 #endif
 
 	// serverflags are for cross level information (sigils)
