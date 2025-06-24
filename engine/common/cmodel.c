@@ -165,12 +165,11 @@ Loads a model into the cache
 static void CMod_LoadModel (cmodel_t *mod, bool crash, bool world)
 {
 	uint32_t *buf;
-	byte stackbuf[1024]; // avoid dirtying the cache heap
 
 	//
 	// load the file
 	//
-	buf = (uint32_t *)COM_LoadStackFile (mod->name, stackbuf, sizeof (stackbuf));
+	buf = (uint32_t *)COM_LoadTempFile (mod->name);
 	if (!buf)
 	{
 		if (crash)

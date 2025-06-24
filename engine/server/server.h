@@ -177,10 +177,6 @@ typedef struct
 	bool paused; // are we paused?
 	bool loadgame;
 
-	// check player/eyes models for hacks
-	unsigned int model_player_checksum;
-	unsigned int eyes_player_checksum;
-
 	char name[64]; // map name
 	char startspot[64];
 	char modelname[MAX_QPATH]; // maps/<name>.bsp, for model_precache[0]

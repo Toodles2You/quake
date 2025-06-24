@@ -259,8 +259,7 @@ bool S_LoadSound (sfx_t *sfx)
 	strcpy (filename, "sound/");
 	strcat (filename, sfx->name);
 
-	byte stackbuf[1024]; // avoid dirtying the cache heap
-	byte *data = COM_LoadStackFile (filename, stackbuf, sizeof (stackbuf));
+	byte *data = COM_LoadTempFile (filename);
 	if (!data)
 		return false;
 

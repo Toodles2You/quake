@@ -399,7 +399,6 @@ static void SV_SpawnSpectator (void)
 
 static void SV_Begin_f (void)
 {
-	unsigned int pmodel = 0, emodel = 0;
 	int i;
 
 	if (host_client->state == cs_spawned)
@@ -459,14 +458,6 @@ static void SV_Begin_f (void)
 	host_client->netchan.frame_rate = 0;
 	host_client->netchan.drop_count = 0;
 	host_client->netchan.good_count = 0;
-
-	//check they're not cheating
-
-	pmodel = atoi (Info_ValueForKey (host_client->userinfo, "pmodel"));
-	emodel = atoi (Info_ValueForKey (host_client->userinfo, "emodel"));
-
-	if (pmodel != sv.model_player_checksum || emodel != sv.eyes_player_checksum)
-		SV_BroadcastPrintf (PRINT_HIGH, "%s WARNING: non standard player/eyes model detected\n", host_client->name);
 
 	// if we are paused, tell the client
 	if (sv.paused)

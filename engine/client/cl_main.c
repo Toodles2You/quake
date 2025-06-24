@@ -64,8 +64,6 @@ int cl_numvisedicts, cl_oldnumvisedicts;
 entity_t *cl_visedicts, *cl_oldvisedicts;
 entity_t cl_visedicts_list[2][MAX_VISEDICTS];
 
-char emodel_name[] = {'e' ^ 0xff, 'm' ^ 0xff, 'o' ^ 0xff, 'd' ^ 0xff, 'e' ^ 0xff, 'l' ^ 0xff, 0};
-char pmodel_name[] = {'p' ^ 0xff, 'm' ^ 0xff, 'o' ^ 0xff, 'd' ^ 0xff, 'e' ^ 0xff, 'l' ^ 0xff, 0};
 char prespawn_name[] = {'p' ^ 0xff, 'r' ^ 0xff, 'e' ^ 0xff, 's' ^ 0xff, 'p' ^ 0xff, 'a' ^ 0xff, 'w' ^ 0xff, 'n' ^ 0xff, ' ' ^ 0xff,
 						'%' ^ 0xff, 'i' ^ 0xff, ' ' ^ 0xff, '0' ^ 0xff, ' ' ^ 0xff, '%' ^ 0xff, 'i' ^ 0xff, 0};
 char modellist_name[] = {'m' ^ 0xff, 'o' ^ 0xff, 'd' ^ 0xff, 'e' ^ 0xff, 'l' ^ 0xff, 'l' ^ 0xff, 'i' ^ 0xff, 's' ^ 0xff,
@@ -483,9 +481,6 @@ static void CL_FullInfo_f (void)
 		if (*s)
 			s++;
 
-		if (!strcasecmp (key, pmodel_name) || !strcasecmp (key, emodel_name))
-			continue;
-
 		Info_SetValueForKey (cls.userinfo, key, value, MAX_INFO_STRING, true);
 	}
 }
@@ -509,8 +504,6 @@ static void CL_SetInfo_f (void)
 		Con_Printf ("usage: setinfo [ <key> <value> ]\n");
 		return;
 	}
-	if (!strcasecmp (Cmd_Argv (1), pmodel_name) || !strcmp (Cmd_Argv (1), emodel_name))
-		return;
 
 	Info_SetValueForKey (cls.userinfo, Cmd_Argv (1), Cmd_Argv (2), MAX_INFO_STRING, true);
 	if (cls.state >= ca_connected)
@@ -799,8 +792,6 @@ static void simple_crypt (char *buf, int len)
 
 static void CL_FixupModelNames (void)
 {
-	simple_crypt (emodel_name, sizeof (emodel_name) - 1);
-	simple_crypt (pmodel_name, sizeof (pmodel_name) - 1);
 	simple_crypt (prespawn_name, sizeof (prespawn_name) - 1);
 	simple_crypt (modellist_name, sizeof (modellist_name) - 1);
 	simple_crypt (soundlist_name, sizeof (soundlist_name) - 1);

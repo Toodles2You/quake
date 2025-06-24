@@ -122,7 +122,6 @@ size_t COM_OpenFile (char *filename, int *hndl);
 size_t COM_FOpenFile (char *filename, FILE **file);
 void COM_CloseFile (int h);
 
-byte *COM_LoadStackFile (char *path, void *buffer, size_t bufsize);
 byte *COM_LoadTempFile (char *path);
 byte *COM_LoadHunkFile (char *path);
 void COM_CreatePath (char *path);

@@ -240,18 +240,6 @@ static void SV_CalcPHS (void)
 	Con_Printf ("Average leafs visible / hearable / total: %i / %i / %i\n", vcount / num, count / num, num);
 }
 
-static unsigned int SV_CheckModel (char *mdl)
-{
-	byte stackbuf[1024]; // avoid dirtying the cache heap
-	byte *buf;
-	unsigned short crc;
-
-	buf = (byte *)COM_LoadStackFile (mdl, stackbuf, sizeof (stackbuf));
-	crc = CRC_Block (buf, com_filesize);
-
-	return crc;
-}
-
 static bool SV_LoadProgs (void)
 {
 	if (PR_LoadProgs (&sv.pr, "qwprogs.dat", PROG_VERSION_QUAKE, PROG_CRC_ANY) == 0)
@@ -414,10 +402,6 @@ void SV_SpawnServer (char *server, char *startspot)
 		sv.model_precache[1 + i] = localmodels[i];
 		sv.models[i + 1] = CMod_ForName (localmodels[i], false, false);
 	}
-
-	//check player/eyes models for hacks
-	sv.model_player_checksum = SV_CheckModel ("progs/player.mdl");
-	sv.eyes_player_checksum = SV_CheckModel ("progs/eyes.mdl");
 
 	//
 	// spawn the rest of the entities on the map

@@ -1097,8 +1097,12 @@ void COM_CloseFile (int h)
 	Sys_FileClose (h);
 }
 
-static byte *loadbuf;
-static size_t loadsize;
+enum
+{
+	FILE_ZONE,
+	FILE_HUNK,
+	FILE_TEMP,
+};
 
 /*
 ============
@@ -1125,21 +1129,12 @@ static byte *COM_LoadFile (char *path, int usehunk)
 	// extract the filename base name for hunk tag
 	COM_FileBase (path, base);
 
-	if (usehunk == 1)
+	if (usehunk == FILE_HUNK)
 		buf = Hunk_AllocName (len + 1, base);
-	else if (usehunk == 2)
+	else if (usehunk == FILE_TEMP)
 		buf = Hunk_TempAlloc (len + 1);
-	else if (usehunk == 0)
+	else if (usehunk == FILE_ZONE)
 		buf = Z_Malloc (len + 1);
-	else if (usehunk == 4)
-	{
-		if (len + 1 > loadsize)
-			buf = Hunk_TempAlloc (len + 1);
-		else
-			buf = loadbuf;
-	}
-	else
-		Sys_Error ("COM_LoadFile: bad usehunk");
 
 	if (!buf)
 		Sys_Error ("COM_LoadFile: not enough space for %s", path);
@@ -1155,24 +1150,12 @@ static byte *COM_LoadFile (char *path, int usehunk)
 
 byte *COM_LoadHunkFile (char *path)
 {
-	return COM_LoadFile (path, 1);
+	return COM_LoadFile (path, FILE_HUNK);
 }
 
 byte *COM_LoadTempFile (char *path)
 {
-	return COM_LoadFile (path, 2);
-}
-
-// uses temp hunk if larger than bufsize
-byte *COM_LoadStackFile (char *path, void *buffer, size_t bufsize)
-{
-	byte *buf;
-
-	loadbuf = (byte *)buffer;
-	loadsize = bufsize;
-	buf = COM_LoadFile (path, 4);
-
-	return buf;
+	return COM_LoadFile (path, FILE_TEMP);
 }
 
 /*
