@@ -20,6 +20,11 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "clientdef.h"
 
+sfx_t *cl_sfx_menu1;
+sfx_t *cl_sfx_menu2;
+sfx_t *cl_sfx_menu3;
+sfx_t *cl_sfx_talk;
+
 cvar_t volume = {"volume", "0.7", CVAR_ARCHIVE};
 cvar_t loadas8bit = {"loadas8bit", "0"};
 cvar_t ambient_level = {"ambient_level", "0.3"};
@@ -42,6 +47,7 @@ static ALuint *al_sources;
 
 static sfx_t *known_sfx;
 static int num_sfx;
+static int low_sfx;
 static ALuint *al_buffers;
 
 #define SOUND_NOMINAL_CLIP_DIST 1000.0f
@@ -188,6 +194,11 @@ void S_Init (void)
 	for (int i = 0; i < MAX_CHANNELS; i++)
 		channels[i].al_source = al_sources[i];
 
+	cl_sfx_menu1 = S_PrecacheSound ("misc/menu1.wav");
+	cl_sfx_menu2 = S_PrecacheSound ("misc/menu2.wav");
+	cl_sfx_menu3 = S_PrecacheSound ("misc/menu3.wav");
+	cl_sfx_talk = S_PrecacheSound ("misc/talk.wav");
+
 	ambient_sfx[AMBIENT_WATER] = S_PrecacheSound ("ambience/water1.wav");
 	ambient_sfx[AMBIENT_SKY] = S_PrecacheSound ("ambience/wind2.wav");
 
@@ -239,6 +250,9 @@ static sfx_t *S_FindName (char *name)
 	sfx->al_buffers[0] = al_buffers[i * 2];
 	sfx->al_buffers[1] = al_buffers[i * 2 + 1];
 
+	if (!S_LoadSound (sfx))
+		return NULL;
+
 	num_sfx++;
 
 	return sfx;
@@ -249,11 +263,7 @@ sfx_t *S_PrecacheSound (char *name)
 	if (!snd_context)
 		return NULL;
 
-	sfx_t *sfx = S_FindName (name);
-
-	S_LoadSound (sfx);
-
-	return sfx;
+	return S_FindName (name);
 }
 
 // FIXME:
@@ -350,12 +360,8 @@ void SND_Stop (channel_t *chan)
 
 void SND_Play (channel_t *chan)
 {
-	sfxcache_t *cache = S_LoadSound (chan->sfx);
-	if (!cache)
-		return;
-
-	chan->looping = (cache->loopstart != -1) ? LOOP_INTRO : LOOP_NO;
-	chan->finished = realtime + cache->duration;
+	chan->looping = (chan->sfx->loopstart != -1) ? LOOP_INTRO : LOOP_NO;
+	chan->finished = realtime + chan->sfx->duration;
 
 	alSourceRewind (chan->al_source);
 	alSourcei (chan->al_source, AL_BUFFER, 0);
@@ -383,11 +389,6 @@ void S_StartSound (int entnum, int entchannel, sfx_t *sfx, vec3_t origin, float 
 
 	if (!SND_Audible (entnum, origin, attenuation / SOUND_NOMINAL_CLIP_DIST))
 		return;
-
-	// new channel
-	sfxcache_t *cache = S_LoadSound (sfx);
-	if (!cache)
-		return; // couldn't load the sound's data
 
 	// pick a channel to play on
 	channel_t *chan = SND_PickChannel (entnum, entchannel);
@@ -454,10 +455,6 @@ void S_StaticSound (sfx_t *sfx, vec3_t origin, float fvol, float attenuation)
 		return;
 
 	if (num_channels == MAX_CHANNELS)
-		return;
-
-	sfxcache_t *cache = S_LoadSound (sfx);
-	if (!cache)
 		return;
 
 #if 0 // doesn't really matter
@@ -597,15 +594,41 @@ void S_Update (vec3_t origin, vec3_t forward, vec3_t right, vec3_t up)
 	}
 }
 
-void S_LocalSound (char *sound)
+void S_LocalSound (sfx_t *sfx)
+{
+	if (!snd_context)
+		return;
+	if (!sfx)
+		return;
+	S_StartSound (cl.playernum + 1, -1, sfx, vec3_origin, 1, 1);
+}
+
+void S_InitBase (void)
+{
+	low_sfx = num_sfx;
+}
+
+void S_ClearAll (void)
 {
 	if (!snd_context)
 		return;
 
-	sfx_t *sfx = S_PrecacheSound (sound);
+	for (int i = low_sfx + 1; i < num_sfx; i++)
+		memset (known_sfx + i, 0, sizeof (sfx_t));
 
-	if (!sfx)
+	num_sfx = low_sfx;
+}
+
+void S_Print (void)
+{
+	int i;
+	sfx_t *sfx;
+
+	Con_Printf ("Cached sfx:\n");
+
+	if (!snd_context)
 		return;
 
-	S_StartSound (cl.playernum + 1, -1, sfx, vec3_origin, 1, 1);
+	for (i = 0, sfx = known_sfx; i < num_sfx; i++, sfx++)
+		Con_Printf ("%u : %s\n", i, sfx->name);
 }

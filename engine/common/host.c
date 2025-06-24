@@ -287,6 +287,7 @@ void Host_ClearMemory (void)
 	Con_DPrintf ("Clearing memory\n");
 	CMod_ClearAll ();
 	Mod_ClearAll ();
+	S_ClearAll ();
 	PR_ClearStrings (&sv.pr);
 	if (host_hunklevel)
 		Hunk_FreeToLowMark (host_hunklevel);
@@ -577,6 +578,7 @@ void Host_Init (quakeparms_t *parms)
 		Music_Init ();
 		Sbar_Init ();
 		CL_Init ();
+		S_InitBase ();
 	}
 
 	Cbuf_InsertText (src_client, "exec quake.rc\n");

@@ -967,7 +967,7 @@ void CL_ParseServerMessage (void)
 			i = MSG_ReadByte ();
 			if (i == PRINT_CHAT)
 			{
-				S_LocalSound ("misc/talk.wav");
+				S_LocalSound (cl_sfx_talk);
 			}
 			Con_Printf ("%s", MSG_ReadString ());
 			break;

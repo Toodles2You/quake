@@ -15,20 +15,14 @@ enum
 typedef struct sfx_s
 {
 	char name[MAX_QPATH];
-	ALuint al_buffers[2];
-	cache_user_t cache;
-} sfx_t;
-
-typedef struct
-{
 	int length;
 	int loopstart;
 	int speed;
 	int width;
 	bool stereo;
 	float duration;
-	byte data[];
-} sfxcache_t;
+	ALuint al_buffers[2];
+} sfx_t;
 
 typedef struct
 {
@@ -62,9 +56,16 @@ void S_SetSoundPaused (bool paused);
 
 extern cvar_t volume;
 
-void S_LocalSound (char *s);
-sfxcache_t *S_LoadSound (sfx_t *s);
-
+void S_LocalSound (sfx_t *sfx);
+bool S_LoadSound (sfx_t *s);
 void S_SetAmbientActive (bool active);
+void S_InitBase (void);
+void S_ClearAll (void);
+void S_Print (void);
+
+extern sfx_t *cl_sfx_menu1;
+extern sfx_t *cl_sfx_menu2;
+extern sfx_t *cl_sfx_menu3;
+extern sfx_t *cl_sfx_talk;
 
 #endif /* !_SOUND_H */

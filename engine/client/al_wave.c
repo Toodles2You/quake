@@ -207,38 +207,34 @@ static wavinfo_t GetWavinfo (char *name, byte *wav, int wavlength)
 	return info;
 }
 
-static void ResampleSfx (sfx_t *sfx, int inrate, int inwidth, int outrate, byte *data)
+static void ResampleSfx (sfx_t *sfx, int inrate, int inwidth, int outrate, byte *data, byte *outdata)
 {
-	sfxcache_t *cache = Cache_Check (&sfx->cache);
-	if (!cache)
-		return;
-
 	float stepscale = (float)inrate / outrate; // this is usually 0.5, 1, or 2
 
-	int outcount = cache->length / stepscale;
-	cache->length = outcount;
-	if (cache->loopstart != -1)
-		cache->loopstart = cache->loopstart / stepscale;
+	int outcount = sfx->length / stepscale;
+	sfx->length = outcount;
+	if (sfx->loopstart != -1)
+		sfx->loopstart = sfx->loopstart / stepscale;
 
-	cache->speed = outrate;
+	sfx->speed = outrate;
 	if (loadas8bit.value || snd_loadas8bit)
-		cache->width = 1;
+		sfx->width = 1;
 	else
-		cache->width = inwidth;
-	cache->stereo = 0;
+		sfx->width = inwidth;
+	sfx->stereo = 0;
 
 	// resample / decimate to the current source rate
 
-	if (stepscale == 1 && inwidth == 1 && cache->width == 1)
+	if (stepscale == 1 && inwidth == 1 && sfx->width == 1)
 	{
 		// fast special case
-		memcpy (cache->data, data, outcount);
+		memcpy (outdata, data, outcount);
 	}
 	else
 	{
 		// general case
-		int samplefrac = 0;
 		int fracstep = stepscale * 256;
+		int samplefrac = 0;
 		for (int i = 0; i < outcount; i++)
 		{
 			int srcsample = samplefrac >> 8;
@@ -248,21 +244,16 @@ static void ResampleSfx (sfx_t *sfx, int inrate, int inwidth, int outrate, byte 
 				sample = ((uint16_t *)data)[srcsample]; // FIXME: check endianness
 			else
 				sample = (int)data[srcsample] << 8;
-			if (cache->width == 2)
-				((uint16_t *)cache->data)[i] = sample;
+			if (sfx->width == 2)
+				((uint16_t *)outdata)[i] = sample;
 			else
-				cache->data[i] = sample >> 8;
+				outdata[i] = sample >> 8;
 		}
 	}
 }
 
-sfxcache_t *S_LoadSound (sfx_t *sfx)
+bool S_LoadSound (sfx_t *sfx)
 {
-	// see if still in memory
-	sfxcache_t *cache = Cache_Check (&sfx->cache);
-	if (cache)
-		return cache;
-
 	// load it in
 	char filename[256];
 	strcpy (filename, "sound/");
@@ -271,44 +262,46 @@ sfxcache_t *S_LoadSound (sfx_t *sfx)
 	byte stackbuf[1024]; // avoid dirtying the cache heap
 	byte *data = COM_LoadStackFile (filename, stackbuf, sizeof (stackbuf));
 	if (!data)
-		return NULL;
+		return false;
 
 	wavinfo_t info = GetWavinfo (sfx->name, data, com_filesize);
 	if (info.channels != 1)
-		return NULL;
+		return false;
 
 	float stepscale = (float)info.rate / snd_speed;
 	int len = info.samples / stepscale;
 
 	len = len * info.width * info.channels;
 
-	cache = Cache_Alloc (&sfx->cache, len + sizeof (sfxcache_t), sfx->name);
-	if (!cache)
-		return NULL;
+	sfx->length = info.samples;
+	sfx->loopstart = info.loopstart;
+	sfx->speed = info.rate;
+	sfx->width = info.width;
+	sfx->stereo = false;
+	sfx->duration = (float)sfx->length / sfx->speed;
 
-	cache->length = info.samples;
-	cache->loopstart = info.loopstart;
-	cache->speed = info.rate;
-	cache->width = info.width;
-	cache->stereo = false;
-	cache->duration = (float)cache->length / cache->speed;
+	data += info.dataofs;
 
-	ResampleSfx (sfx, cache->speed, cache->width, snd_speed, data + info.dataofs);
+	byte *resampled = malloc (len);
+
+	ResampleSfx (sfx, sfx->speed, sfx->width, snd_speed, data, resampled);
 
 	int format;
-	if (cache->width == 2)
-		format = cache->stereo ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
+	if (sfx->width == 2)
+		format = sfx->stereo ? AL_FORMAT_STEREO16 : AL_FORMAT_MONO16;
 	else
-		format = cache->stereo ? AL_FORMAT_STEREO8 : AL_FORMAT_MONO8;
+		format = sfx->stereo ? AL_FORMAT_STEREO8 : AL_FORMAT_MONO8;
 
-	len = cache->length * cache->width * (1 + cache->stereo);
-	alBufferData (sfx->al_buffers[0], format, cache->data, len, cache->speed);
+	len = sfx->length * sfx->width * (1 + sfx->stereo);
+	alBufferData (sfx->al_buffers[0], format, resampled, len, sfx->speed);
 
-	if (cache->loopstart != -1)
+	if (sfx->loopstart != -1)
 	{
-		int len2 = (cache->length - cache->loopstart) * cache->width * (1 + cache->stereo);
-		alBufferData (sfx->al_buffers[1], format, cache->data + (len - len2), len2, cache->speed);
+		int len2 = (sfx->length - sfx->loopstart) * sfx->width * (1 + sfx->stereo);
+		alBufferData (sfx->al_buffers[1], format, resampled + (len - len2), len2, sfx->speed);
 	}
 
-	return cache;
+	free (resampled);
+
+	return true;
 }

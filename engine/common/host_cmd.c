@@ -744,4 +744,5 @@ void Host_InitCommands (void)
 	Cmd_AddCommand (src_client, "stopdemo", Host_Stopdemo_f);
 
 	Cmd_AddCommand (src_client, "mcache", Mod_Print);
+	Cmd_AddCommand (src_client, "scache", S_Print);
 }
