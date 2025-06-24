@@ -531,15 +531,15 @@ static void Host_InitNet (void)
 
 void Host_Init (quakeparms_t *parms)
 {
-	int minimum_memory = MINIMUM_MEMORY;
-	if (!standard_quake)
-		minimum_memory = MINIMUM_MEMORY_LEVELPAK;
-	if (COM_CheckParm ("-minmemory"))
-		parms->memsize = minimum_memory;
-
 	host_parms = *parms;
 
-	if (parms->memsize < minimum_memory)
+	size_t minimum_memory = MINIMUM_MEMORY;
+	if (quake_mode == QUAKE_LEVELPAK)
+		minimum_memory = MINIMUM_MEMORY_LEVELPAK;
+
+	if (COM_CheckParm ("-minmemory"))
+		parms->memsize = minimum_memory;
+	else if (parms->memsize < minimum_memory)
 		Sys_Error ("Only %4.1f megs of memory available, can't execute game", parms->memsize / (float)0x100000);
 
 	com_argc = parms->argc;

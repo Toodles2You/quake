@@ -28,7 +28,7 @@ char com_token[1024];
 int com_argc;
 char **com_argv;
 
-bool standard_quake = true;
+int quake_mode;
 bool rogue;
 bool hipnotic;
 
@@ -738,17 +738,17 @@ void COM_InitArgv (int argc, char **argv)
 	if (COM_CheckParm ("-rogue"))
 	{
 		rogue = true;
-		standard_quake = false;
+		quake_mode = QUAKE_LEVELPAK;
 	}
 
 	if (COM_CheckParm ("-hipnotic"))
 	{
 		hipnotic = true;
-		standard_quake = false;
+		quake_mode = QUAKE_LEVELPAK;
 	}
 
 	if (COM_CheckParm ("-game"))
-		standard_quake = false;
+		quake_mode = QUAKE_UGC;
 }
 
 static void COM_InitFilesystem (void);

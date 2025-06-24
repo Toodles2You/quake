@@ -127,7 +127,14 @@ byte *COM_LoadHunkFile (char *path);
 void COM_CreatePath (char *path);
 void COM_Gamedir (char *dir);
 
-extern bool standard_quake;
+enum
+{
+	QUAKE_STANDARD,
+	QUAKE_LEVELPAK,
+	QUAKE_UGC,
+};
+
+extern int quake_mode;
 extern bool rogue;
 extern bool hipnotic;
 
