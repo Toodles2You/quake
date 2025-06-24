@@ -850,12 +850,12 @@ ALIAS MODELS
 
 aliashdr_t *pheader;
 
-stvert_t stverts[MAXALIASVERTS];
-mtriangle_t triangles[MAXALIASTRIS];
+stvert_t *stverts;
+mtriangle_t *triangles;
 
 // a pose is a single set of vertexes.  a frame may be
 // an animating sequence of poses
-trivertx_t *poseverts[MAXALIASFRAMES];
+trivertx_t **poseverts;
 int posenum;
 
 static void *Mod_LoadAliasFrame (void *pin, maliasframedesc_t *frame)
@@ -879,6 +879,8 @@ static void *Mod_LoadAliasFrame (void *pin, maliasframedesc_t *frame)
 
 	pinframe = (trivertx_t *)(pdaliasframe + 1);
 
+	if ((posenum % 64) == 0)
+		poseverts = realloc (poseverts, (posenum + 64) * sizeof (trivertx_t *));
 	poseverts[posenum] = pinframe;
 	posenum++;
 
@@ -918,6 +920,8 @@ static void *Mod_LoadAliasGroup (void *pin, maliasframedesc_t *frame)
 
 	for (i = 0; i < numframes; i++)
 	{
+		if ((posenum % 64) == 0)
+			poseverts = realloc (poseverts, (posenum + 64) * sizeof (trivertx_t *));
 		poseverts[posenum] = (trivertx_t *)((daliasframe_t *)ptemp + 1);
 		posenum++;
 
@@ -1124,9 +1128,6 @@ static void Mod_LoadAliasModel (model_t *mod, void *buffer)
 	if (pheader->numverts <= 0)
 		Sys_Error ("model %s has no vertices", mod->name);
 
-	if (pheader->numverts > MAXALIASVERTS)
-		Sys_Error ("model %s has too many vertices", mod->name);
-
 	pheader->numtris = pinmodel->numtris;
 
 	if (pheader->numtris <= 0)
@@ -1158,6 +1159,7 @@ static void Mod_LoadAliasModel (model_t *mod, void *buffer)
 	// load base s and t vertices
 	//
 	pinstverts = (stvert_t *)pskintype;
+	stverts = pinstverts;
 
 	for (i = 0; i < pheader->numverts; i++)
 	{
@@ -1170,6 +1172,7 @@ static void Mod_LoadAliasModel (model_t *mod, void *buffer)
 	// load triangle lists
 	//
 	pintriangles = (dtriangle_t *)&pinstverts[pheader->numverts];
+	triangles = pintriangles;
 
 	for (i = 0; i < pheader->numtris; i++)
 	{
@@ -1184,6 +1187,7 @@ static void Mod_LoadAliasModel (model_t *mod, void *buffer)
 	//
 	posenum = 0;
 	pframetype = (daliasframetype_t *)&pintriangles[pheader->numtris];
+	poseverts = NULL;
 
 	for (i = 0; i < numframes; i++)
 	{
@@ -1207,6 +1211,8 @@ static void Mod_LoadAliasModel (model_t *mod, void *buffer)
 	// build the draw lists
 	//
 	GL_MakeAliasModelDisplayLists (mod, pheader);
+
+	free (poseverts);
 }
 
 static void *Mod_LoadSpriteFrame (model_t *mod, void *pin, mspriteframe_t **ppframe, int framenum)
