@@ -1311,7 +1311,6 @@ void COM_CloseFile (int h)
 	Sys_FileClose (h);
 }
 
-static cache_user_t *loadcache;
 static byte *loadbuf;
 static size_t loadsize;
 
@@ -1346,8 +1345,6 @@ static byte *COM_LoadFile (char *path, int usehunk)
 		buf = Hunk_TempAlloc (len + 1);
 	else if (usehunk == 0)
 		buf = Z_Malloc (len + 1);
-	else if (usehunk == 3)
-		buf = Cache_Alloc (loadcache, len + 1, base);
 	else if (usehunk == 4)
 	{
 		if (len + 1 > loadsize)
@@ -1378,12 +1375,6 @@ byte *COM_LoadHunkFile (char *path)
 byte *COM_LoadTempFile (char *path)
 {
 	return COM_LoadFile (path, 2);
-}
-
-void COM_LoadCacheFile (char *path, struct cache_user_s *cu)
-{
-	loadcache = cu;
-	COM_LoadFile (path, 3);
 }
 
 // uses temp hunk if larger than bufsize
@@ -1562,11 +1553,6 @@ void COM_Gamedir (char *dir)
 		Z_Free (com_searchpaths);
 		com_searchpaths = next;
 	}
-
-	//
-	// flush all data, so it will be forced to reload
-	//
-	Cache_Flush ();
 
 	if (!strcmp (dir, QUAKE_BASEDIR))
 		return;
