@@ -372,10 +372,8 @@ static void SV_Spawn_f (void)
 	ClientReliableWrite_Byte (host_client, STAT_MONSTERS);
 	ClientReliableWrite_Long (host_client, sv_pr_float (killed_monsters));
 
-	// get the client to check and download skins
-	// when that is completed, a begin command will be issued
-	ClientReliableWrite_Begin (host_client, svc_stufftext, 8);
-	ClientReliableWrite_String (host_client, "skins\n");
+	MSG_WriteByte (&host_client->netchan.message, svc_stufftext);
+	MSG_WriteString (&host_client->netchan.message, va ("cmd begin %i\n", svs.spawncount));
 }
 
 static void SV_SpawnSpectator (void)
@@ -602,7 +600,6 @@ static void SV_BeginDownload_f (void)
 {
 	char *name;
 	extern cvar_t allow_download;
-	extern cvar_t allow_download_skins;
 	extern cvar_t allow_download_models;
 	extern cvar_t allow_download_sounds;
 	extern cvar_t allow_download_maps;
@@ -617,8 +614,6 @@ static void SV_BeginDownload_f (void)
 		|| *name == '.'
 		// leading slash bad as well, must be in subdir
 		|| *name == '/'
-		// next up, skin check
-		|| (strncmp (name, "skins/", 6) == 0 && !allow_download_skins.value)
 		// now models
 		|| (strncmp (name, "progs/", 6) == 0 && !allow_download_models.value)
 		// now sounds

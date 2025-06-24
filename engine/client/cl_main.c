@@ -47,7 +47,6 @@ cvar_t cl_solid_players = {"cl_solid_players", "1"};
 //
 cvar_t name = {"name", "Player", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
 cvar_t team = {"team", "", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
-cvar_t skin = {"skin", "", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
 cvar_t topcolor = {"topcolor", "0", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
 cvar_t bottomcolor = {"bottomcolor", "0", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
 cvar_t rate = {"rate", "2500", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
@@ -845,9 +844,6 @@ static void CL_FixupModelNames (void)
 
 void CL_Init (void)
 {
-	extern cvar_t baseskin;
-	extern cvar_t noskins;
-
 	cls.state = ca_disconnected;
 
 	CL_FixupModelNames ();
@@ -892,14 +888,10 @@ void CL_Init (void)
 	Cvar_RegisterVariable (src_client, &cl_predict_players);
 	Cvar_RegisterVariable (src_client, &cl_solid_players);
 
-	Cvar_RegisterVariable (src_client, &baseskin);
-	Cvar_RegisterVariable (src_client, &noskins);
-
 	//
 	// info mirrors
 	//
 	Cvar_RegisterVariable (src_client, &name);
-	Cvar_RegisterVariable (src_client, &skin);
 	Cvar_RegisterVariable (src_client, &team);
 	Cvar_RegisterVariable (src_client, &topcolor);
 	Cvar_RegisterVariable (src_client, &bottomcolor);
@@ -914,9 +906,6 @@ void CL_Init (void)
 	Cmd_AddCommand (src_client, "stop", CL_Stop_f);
 	Cmd_AddCommand (src_client, "playdemo", CL_PlayDemo_f);
 	Cmd_AddCommand (src_client, "timedemo", CL_TimeDemo_f);
-
-	Cmd_AddCommand (src_client, "skins", Skin_Skins_f);
-	Cmd_AddCommand (src_client, "allskins", Skin_AllSkins_f);
 
 	Cmd_AddCommand (src_client, "connect", CL_Connect_f);
 	Cmd_AddCommand (src_client, "reconnect", CL_Reconnect_f);

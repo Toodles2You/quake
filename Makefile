@@ -81,7 +81,6 @@ ENGINE_CLIENT_SRC = \
 	engine/client/menu.c \
 	engine/client/part.c \
 	engine/client/sbar.c \
-	engine/client/skin.c \
 	engine/client/stb_vorbis.c \
 	engine/client/view.c \
 	engine/client/wad.c \

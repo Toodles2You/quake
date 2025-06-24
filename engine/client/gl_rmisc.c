@@ -150,7 +150,6 @@ void R_TranslatePlayerSkin (int playernum)
 	unsigned frac, fracstep;
 	player_info_t *player;
 	extern byte player_8bit_texels[320 * 200];
-	char s[512];
 
 	GL_DisableMultitexture ();
 
@@ -158,12 +157,7 @@ void R_TranslatePlayerSkin (int playernum)
 	if (!player->name[0])
 		return;
 
-	strcpy (s, Info_ValueForKey (player->userinfo, "skin"));
-	COM_StripExtension (s, s);
-	if (player->skin && !strcmp (s, player->skin->name))
-		player->skin = NULL;
-
-	if (player->_topcolor != player->topcolor || player->_bottomcolor != player->bottomcolor || !player->skin)
+	if (player->_topcolor != player->topcolor || player->_bottomcolor != player->bottomcolor)
 	{
 		player->_topcolor = player->topcolor;
 		player->_bottomcolor = player->bottomcolor;
@@ -198,20 +192,9 @@ void R_TranslatePlayerSkin (int playernum)
 		tinwidth = 296;
 		tinheight = 194;
 
-		if (!player->skin)
-			Skin_Find (player);
-		if ((original = Skin_Cache (player->skin)) != NULL)
-		{
-			//skin data width
-			inwidth = 320;
-			inheight = 200;
-		}
-		else
-		{
-			original = player_8bit_texels;
-			inwidth = 296;
-			inheight = 194;
-		}
+		original = player_8bit_texels;
+		inwidth = 296;
+		inheight = 194;
 
 		// because this happens during gameplay, do it fast
 		// instead of sending it through gl_upload 8

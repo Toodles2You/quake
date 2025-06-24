@@ -398,12 +398,7 @@ static void R_DrawAliasModel (entity_t *e)
 	if (currententity->scoreboard && !gl_nocolors.value)
 	{
 		i = currententity->scoreboard - cl.players;
-		if (!currententity->scoreboard->skin)
-		{
-			Skin_Find (currententity->scoreboard);
-			R_TranslatePlayerSkin (i);
-		}
-
+		R_TranslatePlayerSkin (i);
 		if (i >= 0 && i < MAX_CLIENTS)
 			GL_Bind (playertextures + i);
 	}

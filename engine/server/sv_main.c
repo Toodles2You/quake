@@ -23,7 +23,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 netadr_t master_adr[MAX_MASTERS]; // address of group servers
 
 cvar_t allow_download = {"allow_download", "1"};
-cvar_t allow_download_skins = {"allow_download_skins", "1"};
 cvar_t allow_download_models = {"allow_download_models", "1"};
 cvar_t allow_download_sounds = {"allow_download_sounds", "1"};
 cvar_t allow_download_maps = {"allow_download_maps", "1"};
@@ -254,8 +253,7 @@ static void SVC_Status (void)
 			top = (top < 0) ? 0 : ((top > 13) ? 13 : top);
 			bottom = (bottom < 0) ? 0 : ((bottom > 13) ? 13 : bottom);
 			ping = SV_CalcPing (cl);
-			Con_Printf ("%i %i %i %i \"%s\" \"%s\" %i %i\n", cl->userid, cl->old_frags, (int)(realtime - cl->connection_started) / 60, ping, cl->name,
-						Info_ValueForKey (cl->userinfo, "skin"), top, bottom);
+			Con_Printf ("%i %i %i %i \"%s\" %i %i\n", cl->userid, cl->old_frags, (int)(realtime - cl->connection_started) / 60, ping, cl->name, top, bottom);
 		}
 	}
 	SV_EndRedirect ();
@@ -1277,7 +1275,6 @@ void SV_Init (void)
 	Cvar_RegisterVariable (src_server, &filterban);
 
 	Cvar_RegisterVariable (src_server, &allow_download);
-	Cvar_RegisterVariable (src_server, &allow_download_skins);
 	Cvar_RegisterVariable (src_server, &allow_download_models);
 	Cvar_RegisterVariable (src_server, &allow_download_sounds);
 	Cvar_RegisterVariable (src_server, &allow_download_maps);

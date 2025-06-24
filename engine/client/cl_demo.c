@@ -669,10 +669,8 @@ void CL_Record_f (void)
 	MSG_WriteLong (&buf, cl.stats[STAT_MONSTERS]);
 #endif
 
-	// get the client to check and download skins
-	// when that is completed, a begin command will be issued
-	MSG_WriteByte (&buf, svc_stufftext);
-	MSG_WriteString (&buf, va ("skins\n"));
+	MSG_WriteByte (&cls.netchan.message, clc_stringcmd);
+	MSG_WriteString (&cls.netchan.message, va ("begin %i", cl.servercount));
 
 	CL_WriteRecordDemoMessage (&buf, seq++);
 

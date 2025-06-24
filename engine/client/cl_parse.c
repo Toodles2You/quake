@@ -282,9 +282,6 @@ static void CL_RequestNextDownload (void)
 	{
 	case dl_single:
 		break;
-	case dl_skin:
-		Skin_NextDownload ();
-		break;
 	case dl_model:
 		Model_NextDownload ();
 		break;
@@ -337,10 +334,7 @@ static void CL_ParseDownload (void)
 	// open the file if not opened yet
 	if (!cls.download)
 	{
-		if (strncmp (cls.downloadtempname, "skins/", 6))
-			sprintf (name, "%s/%s", com_gamedir, cls.downloadtempname);
-		else
-			sprintf (name, QUAKE_BASEDIR "/%s", cls.downloadtempname);
+		sprintf (name, "%s/%s", com_gamedir, cls.downloadtempname);
 
 		COM_CreatePath (name);
 
@@ -388,16 +382,8 @@ static void CL_ParseDownload (void)
 		// rename the temp file to it's final name
 		if (strcmp (cls.downloadtempname, cls.downloadname))
 		{
-			if (strncmp (cls.downloadtempname, "skins/", 6))
-			{
-				sprintf (oldn, "%s/%s", com_gamedir, cls.downloadtempname);
-				sprintf (newn, "%s/%s", com_gamedir, cls.downloadname);
-			}
-			else
-			{
-				sprintf (oldn, QUAKE_BASEDIR "/%s", cls.downloadtempname);
-				sprintf (newn, QUAKE_BASEDIR "/%s", cls.downloadname);
-			}
+			sprintf (oldn, "%s/%s", com_gamedir, cls.downloadtempname);
+			sprintf (newn, "%s/%s", com_gamedir, cls.downloadname);
 			r = rename (oldn, newn);
 			if (r)
 				Con_Printf ("failed to rename.\n");
@@ -802,9 +788,6 @@ static void CL_ProcessUserInfo (int slot, player_info_t *player)
 		player->spectator = true;
 	else
 		player->spectator = false;
-
-	if (cls.state == ca_active)
-		Skin_Find (player);
 
 	if (slot == cl.playernum)
 		cl.userid = player->userid;

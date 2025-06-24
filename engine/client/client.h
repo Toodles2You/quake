@@ -2,13 +2,6 @@
 #ifndef _CLIENT_H
 #define _CLIENT_H
 
-typedef struct
-{
-	char name[16];
-	bool failedload; // the name isn't a valid skin
-	cache_user_t cache;
-} skin_t;
-
 // player_state_t is the information needed by a player entity
 // to do move prediction and to generate a drawable entity
 typedef struct
@@ -58,7 +51,6 @@ typedef struct player_info_s
 	int _bottomcolor;
 
 	int spectator;
-	skin_t *skin;
 } player_info_t;
 
 typedef struct
@@ -131,7 +123,6 @@ typedef enum
 	dl_none,
 	dl_model,
 	dl_sound,
-	dl_skin,
 	dl_single,
 } dltype_t;
 
@@ -444,31 +435,5 @@ void Cam_Track (usercmd_t *cmd);
 void Cam_FinishMove (usercmd_t *cmd);
 void Cam_Reset (void);
 void CL_InitCam (void);
-
-//
-// skin.c
-//
-typedef struct
-{
-	char manufacturer;
-	char version;
-	char encoding;
-	char bits_per_pixel;
-	uint16_t xmin, ymin, xmax, ymax;
-	uint16_t hres, vres;
-	unsigned char palette[48];
-	char reserved;
-	char color_planes;
-	uint16_t bytes_per_line;
-	uint16_t palette_type;
-	char filler[58];
-	unsigned char data; // unbounded
-} pcx_t;
-
-void Skin_Find (player_info_t *sc);
-byte *Skin_Cache (skin_t *skin);
-void Skin_Skins_f (void);
-void Skin_AllSkins_f (void);
-void Skin_NextDownload (void);
 
 #endif /* !_CLIENT_H */
