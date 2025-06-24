@@ -148,7 +148,7 @@ static void SV_Soundlist_f (void)
 	}
 
 	MSG_WriteByte (&host_client->netchan.message, svc_soundlist);
-	MSG_WriteByte (&host_client->netchan.message, n);
+	MSG_WriteShort (&host_client->netchan.message, n);
 	for (s = sv.sound_precache + 1 + n; *s && host_client->netchan.message.cursize < (MAX_MSGLEN / 2); s++, n++)
 		MSG_WriteString (&host_client->netchan.message, *s);
 
@@ -156,9 +156,9 @@ static void SV_Soundlist_f (void)
 
 	// next msg
 	if (*s)
-		MSG_WriteByte (&host_client->netchan.message, n);
+		MSG_WriteShort (&host_client->netchan.message, n);
 	else
-		MSG_WriteByte (&host_client->netchan.message, 0);
+		MSG_WriteShort (&host_client->netchan.message, 0);
 }
 
 static void SV_Modellist_f (void)
@@ -192,16 +192,16 @@ static void SV_Modellist_f (void)
 	}
 
 	MSG_WriteByte (&host_client->netchan.message, svc_modellist);
-	MSG_WriteByte (&host_client->netchan.message, n);
+	MSG_WriteShort (&host_client->netchan.message, n);
 	for (s = sv.model_precache + 1 + n; *s && host_client->netchan.message.cursize < (MAX_MSGLEN / 2); s++, n++)
 		MSG_WriteString (&host_client->netchan.message, *s);
 	MSG_WriteByte (&host_client->netchan.message, 0);
 
 	// next msg
 	if (*s)
-		MSG_WriteByte (&host_client->netchan.message, n);
+		MSG_WriteShort (&host_client->netchan.message, n);
 	else
-		MSG_WriteByte (&host_client->netchan.message, 0);
+		MSG_WriteShort (&host_client->netchan.message, 0);
 }
 
 static void SV_PreSpawn_f (void)

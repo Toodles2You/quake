@@ -528,7 +528,7 @@ static void PF_ambientsound (progs_state_t *pr)
 	for (i = 0; i < 3; i++)
 		MSG_WriteCoord (&sv.signon, pos[i]);
 
-	MSG_WriteByte (&sv.signon, soundnum);
+	MSG_WriteShort (&sv.signon, soundnum);
 
 	MSG_WriteByte (&sv.signon, vol * 255);
 	MSG_WriteByte (&sv.signon, attenuation * 64);
@@ -1509,7 +1509,7 @@ static void PF_makestatic (progs_state_t *pr)
 
 	MSG_WriteByte (&sv.signon, svc_spawnstatic);
 
-	MSG_WriteByte (&sv.signon, SV_ModelIndex (ed_get_string (ent, model)));
+	MSG_WriteShort (&sv.signon, SV_ModelIndex (ed_get_string (ent, model)));
 
 	MSG_WriteByte (&sv.signon, ed_float (ent, frame));
 	MSG_WriteByte (&sv.signon, ed_float (ent, colormap));

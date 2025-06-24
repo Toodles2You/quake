@@ -393,7 +393,7 @@ void SV_StartSound (edict_t *entity, int channel, char *sample, int volume, floa
 		MSG_WriteByte (&sv.multicast, volume);
 	if (channel & SND_ATTENUATION)
 		MSG_WriteByte (&sv.multicast, attenuation * 64);
-	MSG_WriteByte (&sv.multicast, sound_num);
+	MSG_WriteShort (&sv.multicast, sound_num);
 	for (i = 0; i < 3; i++)
 		MSG_WriteCoord (&sv.multicast, origin[i]);
 

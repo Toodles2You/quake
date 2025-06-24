@@ -217,7 +217,7 @@ static void SV_WriteDelta (entity_state_t *from, entity_state_t *to, sizebuf_t *
 	if (bits & U_MOREBITS)
 		MSG_WriteByte (msg, bits & 255);
 	if (bits & U_MODEL)
-		MSG_WriteByte (msg, to->modelindex);
+		MSG_WriteShort (msg, to->modelindex);
 	if (bits & U_FRAME)
 		MSG_WriteByte (msg, to->frame);
 	if (bits & U_COLORMAP)
@@ -414,7 +414,7 @@ static void SV_WritePlayersToClient (client_t *client, edict_t *clent, byte *pvs
 				MSG_WriteShort (msg, ed_vector (ent, velocity)[i]);
 
 		if (pflags & PF_MODEL)
-			MSG_WriteByte (msg, ed_float (ent, modelindex));
+			MSG_WriteShort (msg, ed_float (ent, modelindex));
 
 		if (pflags & PF_SKINNUM)
 			MSG_WriteByte (msg, ed_float (ent, skin));

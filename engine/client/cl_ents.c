@@ -161,7 +161,7 @@ static void CL_ParseDelta (entity_state_t *from, entity_state_t *to, int bits)
 	to->flags = bits;
 
 	if (bits & U_MODEL)
-		to->modelindex = MSG_ReadByte ();
+		to->modelindex = MSG_ReadShort ();
 
 	if (bits & U_FRAME)
 		to->frame = MSG_ReadByte ();
@@ -649,7 +649,7 @@ void CL_ParsePlayerinfo (void)
 			state->velocity[i] = 0;
 	}
 	if (flags & PF_MODEL)
-		state->modelindex = MSG_ReadByte ();
+		state->modelindex = MSG_ReadShort ();
 	else
 		state->modelindex = cl_playerindex;
 

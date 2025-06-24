@@ -575,7 +575,7 @@ static void CL_ParseSoundList (void)
 	// precache sounds
 	//	memset (cl.sound_precache, 0, sizeof(cl.sound_precache));
 
-	numsounds = MSG_ReadByte ();
+	numsounds = MSG_ReadShort ();
 
 	for (;;)
 	{
@@ -588,7 +588,7 @@ static void CL_ParseSoundList (void)
 		strcpy (cl.sound_name[numsounds], str);
 	}
 
-	n = MSG_ReadByte ();
+	n = MSG_ReadShort ();
 
 	if (n)
 	{
@@ -610,7 +610,7 @@ static void CL_ParseModelList (void)
 	int n;
 
 	// precache models and note certain default indexes
-	nummodels = MSG_ReadByte ();
+	nummodels = MSG_ReadShort ();
 
 	for (;;)
 	{
@@ -630,7 +630,7 @@ static void CL_ParseModelList (void)
 			cl_flagindex = nummodels;
 	}
 
-	n = MSG_ReadByte ();
+	n = MSG_ReadShort ();
 
 	if (n)
 	{
@@ -649,7 +649,7 @@ static void CL_ParseBaseline (entity_state_t *es)
 {
 	int i;
 
-	es->modelindex = MSG_ReadByte ();
+	es->modelindex = MSG_ReadShort ();
 	es->frame = MSG_ReadByte ();
 	es->colormap = MSG_ReadByte ();
 	es->skinnum = MSG_ReadByte ();
@@ -702,7 +702,7 @@ static void CL_ParseStaticSound (void)
 
 	for (i = 0; i < 3; i++)
 		org[i] = MSG_ReadCoord ();
-	sound_num = MSG_ReadByte ();
+	sound_num = MSG_ReadShort ();
 	vol = MSG_ReadByte ();
 	atten = MSG_ReadByte ();
 
@@ -730,7 +730,7 @@ static void CL_ParseStartSoundPacket (void)
 	else
 		attenuation = DEFAULT_SOUND_PACKET_ATTENUATION;
 
-	sound_num = MSG_ReadByte ();
+	sound_num = MSG_ReadShort ();
 
 	for (i = 0; i < 3; i++)
 		pos[i] = MSG_ReadCoord ();

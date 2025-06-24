@@ -38,8 +38,8 @@ enum
 
 #define MIN_EDICTS 768
 #define MAX_LIGHTSTYLES 64
-#define MAX_MODELS 256 // these are sent over the net as bytes
-#define MAX_SOUNDS 256 // so they cannot be blindly increased
+#define MAX_MODELS 1024 // these are sent over the net as bytes
+#define MAX_SOUNDS 1024 // so they cannot be blindly increased
 
 #define SAVEGAME_COMMENT_LENGTH 39
 

@@ -471,7 +471,7 @@ void CL_Record_f (void)
 
 	// soundlist
 	MSG_WriteByte (&buf, svc_soundlist);
-	MSG_WriteByte (&buf, 0);
+	MSG_WriteShort (&buf, 0);
 
 	n = 0;
 	s = cl.sound_name[n + 1];
@@ -481,11 +481,11 @@ void CL_Record_f (void)
 		if (buf.cursize > MAX_MSGLEN / 2)
 		{
 			MSG_WriteByte (&buf, 0);
-			MSG_WriteByte (&buf, n);
+			MSG_WriteShort (&buf, n);
 			CL_WriteRecordDemoMessage (&buf, seq++);
 			SZ_Clear (&buf);
 			MSG_WriteByte (&buf, svc_soundlist);
-			MSG_WriteByte (&buf, n + 1);
+			MSG_WriteShort (&buf, n + 1);
 		}
 		n++;
 		s = cl.sound_name[n + 1];
@@ -493,14 +493,14 @@ void CL_Record_f (void)
 	if (buf.cursize)
 	{
 		MSG_WriteByte (&buf, 0);
-		MSG_WriteByte (&buf, 0);
+		MSG_WriteShort (&buf, 0);
 		CL_WriteRecordDemoMessage (&buf, seq++);
 		SZ_Clear (&buf);
 	}
 
 	// modellist
 	MSG_WriteByte (&buf, svc_modellist);
-	MSG_WriteByte (&buf, 0);
+	MSG_WriteShort (&buf, 0);
 
 	n = 0;
 	s = cl.model_name[n + 1];
@@ -510,11 +510,11 @@ void CL_Record_f (void)
 		if (buf.cursize > MAX_MSGLEN / 2)
 		{
 			MSG_WriteByte (&buf, 0);
-			MSG_WriteByte (&buf, n);
+			MSG_WriteShort (&buf, n);
 			CL_WriteRecordDemoMessage (&buf, seq++);
 			SZ_Clear (&buf);
 			MSG_WriteByte (&buf, svc_modellist);
-			MSG_WriteByte (&buf, n + 1);
+			MSG_WriteShort (&buf, n + 1);
 		}
 		n++;
 		s = cl.model_name[n + 1];
@@ -522,7 +522,7 @@ void CL_Record_f (void)
 	if (buf.cursize)
 	{
 		MSG_WriteByte (&buf, 0);
-		MSG_WriteByte (&buf, 0);
+		MSG_WriteShort (&buf, 0);
 		CL_WriteRecordDemoMessage (&buf, seq++);
 		SZ_Clear (&buf);
 	}
@@ -539,9 +539,9 @@ void CL_Record_f (void)
 			if (ent->model == cl.model_precache[j])
 				break;
 		if (j == MAX_MODELS)
-			MSG_WriteByte (&buf, 0);
+			MSG_WriteShort (&buf, 0);
 		else
-			MSG_WriteByte (&buf, j);
+			MSG_WriteShort (&buf, j);
 
 		MSG_WriteByte (&buf, ent->frame);
 		MSG_WriteByte (&buf, 0);
@@ -574,7 +574,7 @@ void CL_Record_f (void)
 			MSG_WriteByte (&buf, svc_spawnbaseline);
 			MSG_WriteShort (&buf, i);
 
-			MSG_WriteByte (&buf, es->modelindex);
+			MSG_WriteShort (&buf, es->modelindex);
 			MSG_WriteByte (&buf, es->frame);
 			MSG_WriteByte (&buf, es->colormap);
 			MSG_WriteByte (&buf, es->skinnum);
