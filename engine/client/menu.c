@@ -21,10 +21,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "clientdef.h"
 #include "serverdef.h"
 
-#ifdef QUAKE_REGISTERED
-extern bool static_registered;
-#endif
-
 void (*vid_menudrawfn) ();
 void (*vid_menukeyfn) (int key);
 
@@ -1829,11 +1825,7 @@ static void M_NetStart_Change (int dir)
 			count = 6;
 		else if (rogue)
 			count = 4;
-#ifdef QUAKE_REGISTERED
-		else if (!static_registered)
-			count = 2;
 		else
-#endif
 			count = 7;
 
 		if (startepisode < 0)
