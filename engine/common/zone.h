@@ -72,8 +72,6 @@ void Memory_Init (void *buf, size_t size);
 void Z_Free (void *ptr);
 void *Z_Malloc (size_t size); // returns 0 filled memory
 void *Z_Realloc (void *ptr, size_t size);
-char *Z_Strdup (const char *s);
-void *Z_TagMalloc (size_t size, size_t tag);
 
 void *Hunk_Alloc (size_t size); // returns 0 filled memory
 void *Hunk_AllocName (size_t size, char *name);
