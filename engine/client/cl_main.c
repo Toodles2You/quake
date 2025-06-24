@@ -112,8 +112,8 @@ static void CL_SendConnectPacket (void)
 		return;
 	}
 
-	if (adr.port == 0)
-		adr.port = BigShort (PORT_SERVER);
+	if (!adr.port)
+		adr.port = PORT_SERVER;
 
 	t2 = Sys_FloatTime ();
 
@@ -165,8 +165,8 @@ void CL_CheckForResend (void)
 		return;
 	}
 
-	if (adr.port == 0)
-		adr.port = BigShort (PORT_SERVER);
+	if (!adr.port)
+		adr.port = PORT_SERVER;
 
 	t2 = Sys_FloatTime ();
 

@@ -270,10 +270,6 @@ int PR_LoadProgs (progs_state_t *pr, char *filename, int version, int crc)
 	sprintf (num, "%i", pr->crc);
 	Info_SetValueForStarKey (svs.info, "*progs", num, MAX_SERVERINFO_STRING, sv_highchars.value);
 
-	// byte swap the header
-	for (i = 0; i < sizeof (*pr->progs) / sizeof (int32_t); i++)
-		((int32_t *)pr->progs)[i] = LittleLong (((int32_t *)pr->progs)[i]);
-
 	if (version != PROG_VERSION_ANY && version != pr->progs->version)
 	{
 		Con_Printf ("progs.dat has wrong version number (%i should be %i)", pr->progs->version, version);
@@ -292,48 +288,14 @@ int PR_LoadProgs (progs_state_t *pr, char *filename, int version, int crc)
 	pr->statements = (dstatement_t *)((byte *)pr->progs + pr->progs->ofs_statements);
 	pr->globals = (float *)((byte *)pr->progs + pr->progs->ofs_globals);
 
-	*(size_t *)&pr->edict_size = sizeof (edict_t) + pr->progs->entityfields * sizeof (int32_t);
-
-	// byte swap the lumps
-	for (i = 0; i < pr->progs->numstatements; i++)
-	{
-		pr->statements[i].op = LittleShort (pr->statements[i].op);
-		pr->statements[i].a = LittleShort (pr->statements[i].a);
-		pr->statements[i].b = LittleShort (pr->statements[i].b);
-		pr->statements[i].c = LittleShort (pr->statements[i].c);
-	}
-
-	for (i = 0; i < pr->progs->numfunctions; i++)
-	{
-		pr->functions[i].first_statement = LittleLong (pr->functions[i].first_statement);
-		pr->functions[i].parm_start = LittleLong (pr->functions[i].parm_start);
-		pr->functions[i].s_name = LittleLong (pr->functions[i].s_name);
-		pr->functions[i].s_file = LittleLong (pr->functions[i].s_file);
-		pr->functions[i].numparms = LittleLong (pr->functions[i].numparms);
-		pr->functions[i].locals = LittleLong (pr->functions[i].locals);
-	}
-
-	for (i = 0; i < pr->progs->numglobaldefs; i++)
-	{
-		pr->globaldefs[i].type = LittleShort (pr->globaldefs[i].type);
-		pr->globaldefs[i].ofs = LittleShort (pr->globaldefs[i].ofs);
-		pr->globaldefs[i].s_name = LittleLong (pr->globaldefs[i].s_name);
-	}
+	*(size_t *)&pr->edict_size = sizeof (edict_t) + pr->progs->entityfields * 4;
 
 	for (i = 0; i < pr->progs->numfielddefs; i++)
-	{
-		pr->fielddefs[i].type = LittleShort (pr->fielddefs[i].type);
 		if (pr->fielddefs[i].type & DEF_SAVEGLOBAL)
 		{
 			Con_Printf ("PR_LoadProgs: pr_fielddefs[i].type & DEF_SAVEGLOBAL");
 			return 1;
 		}
-		pr->fielddefs[i].ofs = LittleShort (pr->fielddefs[i].ofs);
-		pr->fielddefs[i].s_name = LittleLong (pr->fielddefs[i].s_name);
-	}
-
-	for (i = 0; i < pr->progs->numglobals; i++)
-		((int32_t *)pr->globals)[i] = LittleLong (((int32_t *)pr->globals)[i]);
 
 	PR_SetEngineString (pr, "");
 

@@ -80,7 +80,7 @@ void CL_WriteDemoCmd (usercmd_t *pcmd)
 
 	//Con_Printf("write: %ld bytes, %4.4f\n", msg->cursize, realtime);
 
-	fl = LittleFloat ((float)realtime);
+	fl = (float)realtime;
 	fwrite (&fl, sizeof (fl), 1, cls.demofile);
 
 	c = dem_cmd;
@@ -89,17 +89,11 @@ void CL_WriteDemoCmd (usercmd_t *pcmd)
 	// correct for byte order, bytes don't matter
 	cmd = *pcmd;
 
-	for (i = 0; i < 3; i++)
-		cmd.angles[i] = LittleFloat (cmd.angles[i]);
-	cmd.forwardmove = LittleShort (cmd.forwardmove);
-	cmd.sidemove = LittleShort (cmd.sidemove);
-	cmd.upmove = LittleShort (cmd.upmove);
-
 	fwrite (&cmd, sizeof (cmd), 1, cls.demofile);
 
 	for (i = 0; i < 3; i++)
 	{
-		fl = LittleFloat (cl.viewangles[i]);
+		fl = cl.viewangles[i];
 		fwrite (&fl, 4, 1, cls.demofile);
 	}
 
@@ -124,13 +118,13 @@ static void CL_WriteDemoMessage (sizebuf_t *msg)
 	if (!cls.demorecording)
 		return;
 
-	fl = LittleFloat ((float)realtime);
+	fl = (float)realtime;
 	fwrite (&fl, sizeof (fl), 1, cls.demofile);
 
 	c = dem_read;
 	fwrite (&c, sizeof (c), 1, cls.demofile);
 
-	len = LittleLong (msg->cursize);
+	len = msg->cursize;
 	fwrite (&len, 4, 1, cls.demofile);
 	fwrite (msg->data, msg->cursize, 1, cls.demofile);
 
@@ -154,7 +148,6 @@ static bool CL_GetDemoMessage (void)
 
 	// read the time from the packet
 	fread (&demotime, sizeof (demotime), 1, cls.demofile);
-	demotime = LittleFloat (demotime);
 
 	// decide if it is time to grab the next message
 	if (cls.timedemo)
@@ -213,26 +206,19 @@ static bool CL_GetDemoMessage (void)
 			CL_StopPlayback ();
 			return false;
 		}
-		// byte order stuff
-		for (j = 0; j < 3; j++)
-			pcmd->angles[j] = LittleFloat (pcmd->angles[j]);
-		pcmd->forwardmove = LittleShort (pcmd->forwardmove);
-		pcmd->sidemove = LittleShort (pcmd->sidemove);
-		pcmd->upmove = LittleShort (pcmd->upmove);
 		cl.frames[i].senttime = demotime;
 		cl.frames[i].receivedtime = -1; // we haven't gotten a reply yet
 		cls.netchan.outgoing_sequence++;
 		for (i = 0; i < 3; i++)
 		{
 			r = fread (&f, 4, 1, cls.demofile);
-			cl.viewangles[i] = LittleFloat (f);
+			cl.viewangles[i] = f;
 		}
 		break;
 
 	case dem_read:
 		// get the next message
 		fread (&net_message[CLIENT].cursize, 4, 1, cls.demofile);
-		net_message[CLIENT].cursize = LittleLong (net_message[CLIENT].cursize);
 		// Con_Printf("read: %ld bytes\n", net_message[CLIENT].cursize);
 		if (net_message[CLIENT].cursize > MAX_MSGLEN)
 			Sys_Error ("Demo message > MAX_MSGLEN");
@@ -246,9 +232,9 @@ static bool CL_GetDemoMessage (void)
 
 	case dem_set:
 		fread (&i, 4, 1, cls.demofile);
-		cls.netchan.outgoing_sequence = LittleLong (i);
+		cls.netchan.outgoing_sequence = i;
 		fread (&i, 4, 1, cls.demofile);
-		cls.netchan.incoming_sequence = LittleLong (i);
+		cls.netchan.incoming_sequence = i;
 		break;
 
 	default:
@@ -328,16 +314,16 @@ static void CL_WriteRecordDemoMessage (sizebuf_t *msg, int seq)
 	if (!cls.demorecording)
 		return;
 
-	fl = LittleFloat ((float)realtime);
+	fl = (float)realtime;
 	fwrite (&fl, sizeof (fl), 1, cls.demofile);
 
 	c = dem_read;
 	fwrite (&c, sizeof (c), 1, cls.demofile);
 
-	len = LittleLong (msg->cursize + 8);
+	len = msg->cursize + 8;
 	fwrite (&len, 4, 1, cls.demofile);
 
-	i = LittleLong (seq);
+	i = seq;
 	fwrite (&i, 4, 1, cls.demofile);
 	fwrite (&i, 4, 1, cls.demofile);
 
@@ -357,15 +343,15 @@ static void CL_WriteSetDemoMessage (void)
 	if (!cls.demorecording)
 		return;
 
-	fl = LittleFloat ((float)realtime);
+	fl = (float)realtime;
 	fwrite (&fl, sizeof (fl), 1, cls.demofile);
 
 	c = dem_set;
 	fwrite (&c, sizeof (c), 1, cls.demofile);
 
-	len = LittleLong (cls.netchan.outgoing_sequence);
+	len = cls.netchan.outgoing_sequence;
 	fwrite (&len, 4, 1, cls.demofile);
-	len = LittleLong (cls.netchan.incoming_sequence);
+	len = cls.netchan.incoming_sequence;
 	fwrite (&len, 4, 1, cls.demofile);
 
 	fflush (cls.demofile);

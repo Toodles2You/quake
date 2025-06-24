@@ -59,7 +59,7 @@ void W_LoadWadFile (char *filename)
 {
 	lumpinfo_t *lump_p;
 	wadinfo_t *header;
-	unsigned i;
+	unsigned int i;
 	int infotableofs;
 
 	wad_base = COM_LoadHunkFile (filename);
@@ -72,18 +72,12 @@ void W_LoadWadFile (char *filename)
 		(header->identification[3] != '2' && header->identification[3] != '3'))
 		Sys_Error ("Wad file %s doesn't have WAD2 or WAD3 id\n", filename);
 
-	wad_numlumps = LittleLong (header->numlumps);
-	infotableofs = LittleLong (header->infotableofs);
+	wad_numlumps = header->numlumps;
+	infotableofs = header->infotableofs;
 	wad_lumps = (lumpinfo_t *)(wad_base + infotableofs);
 
 	for (i = 0, lump_p = wad_lumps; i < wad_numlumps; i++, lump_p++)
-	{
-		lump_p->filepos = LittleLong (lump_p->filepos);
-		lump_p->size = LittleLong (lump_p->size);
 		W_CleanupName (lump_p->name, lump_p->name);
-		if (lump_p->type == TYP_QPIC)
-			W_SwapPic ((qpic_t *)(wad_base + lump_p->filepos));
-	}
 }
 
 lumpinfo_t *W_GetLumpinfo (char *name)
@@ -139,7 +133,7 @@ static wad_t *wad_head = NULL;
 void W_LoadMapWadFile (char *filename)
 {
 	lumpinfo_t *lump_p;
-	unsigned i;
+	unsigned int i;
 	int infotableofs;
 
 	int handle;
@@ -168,7 +162,7 @@ void W_LoadMapWadFile (char *filename)
 
 	Con_DPrintf ("%s\n", filename);
 
-	int numlumps = LittleLong (header.numlumps);
+	int numlumps = header.numlumps;
 
 	wad_t *wad = Hunk_Alloc (sizeof (wad_t) + sizeof (lumpinfo_t) * numlumps);
 	strncpy (wad->name, filename, 16);
@@ -177,7 +171,7 @@ void W_LoadMapWadFile (char *filename)
 	wad->next = wad_head;
 	wad_head = wad;
 
-	infotableofs = LittleLong (header.infotableofs);
+	infotableofs = header.infotableofs;
 
 	Sys_FileSeek (wad->handle, infotableofs);
 	if (Sys_FileRead (wad->handle, &wad->lumps[0], sizeof (lumpinfo_t) * wad->numlumps) <= 0)
@@ -187,11 +181,7 @@ void W_LoadMapWadFile (char *filename)
 	}
 
 	for (i = 0, lump_p = wad->lumps; i < wad->numlumps; i++, lump_p++)
-	{
-		lump_p->filepos = LittleLong (lump_p->filepos);
-		lump_p->size = LittleLong (lump_p->size);
 		W_CleanupName (lump_p->name, lump_p->name);
-	}
 }
 
 static bool W_GetMapLumpInfo (char *name, wad_t **wad, lumpinfo_t **lump)
@@ -265,18 +255,4 @@ void W_FreeMapWadFiles (void)
 	} while (wad = next);
 
 	wad_head = NULL;
-}
-
-/*
-=============================================================================
-
-automatic byte swapping
-
-=============================================================================
-*/
-
-void W_SwapPic (qpic_t *pic)
-{
-	pic->width = LittleLong (pic->width);
-	pic->height = LittleLong (pic->height);
 }

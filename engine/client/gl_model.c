@@ -23,7 +23,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "clientdef.h"
 
-extern unsigned d_8to24table[];
+extern unsigned int d_8to24table[];
 extern int d_lightmap_bytes;
 
 static mbrush_t *loadmodel;
@@ -108,7 +108,7 @@ static model_t *Mod_LoadModel (model_t *mod, bool crash, bool world)
 	// fill it in
 	//
 
-	switch (LittleLong (*(uint32_t *)buf))
+	switch (*(uint32_t *)buf)
 	{
 	case IDPOLYHEADER:
 		mod->type = mod_alias;
@@ -173,23 +173,17 @@ static texture_t *Mod_LoadMiptex (miptex_t *mt)
 		mt = &info;
 	}
 
-	mt->width = LittleLong (mt->width);
-	mt->height = LittleLong (mt->height);
-
 	if ((mt->width & 15) || (mt->height & 15))
 	{
 		Con_DPrintf ("Texture %s is not 16 aligned", mt->name);
 		return r_notexture_mip;
 	}
 
-	for (i = 0; i < MIPLEVELS; i++)
-		mt->offsets[i] = LittleLong (mt->offsets[i]);
-
 	int pixels = mt->width * mt->height / 64 * 85;
 	int txsize = pixels;
 
 	if (mod_version != BSPQUAKE)
-		txsize += sizeof (uint16_t) + 768;
+		txsize += 770;
 
 	texture_t *tx = Hunk_AllocName (sizeof (texture_t) + txsize, loadname);
 
@@ -213,7 +207,7 @@ static texture_t *Mod_LoadMiptex (miptex_t *mt)
 
 	if (mod_version != BSPQUAKE)
 	{
-		pal = (byte *)(tx + 1) + pixels + sizeof (uint16_t);
+		pal = (byte *)(tx + 1) + pixels + 2;
 		colors = *((uint16_t *)pal - 1);
 		bytes = 3;
 
@@ -256,20 +250,16 @@ static void Mod_LoadTextures (lump_t *l)
 	}
 	m = (dmiptexlump_t *)(mod_base + l->fileofs);
 
-	m->nummiptex = LittleLong (m->nummiptex);
-
 	loadmodel->numtextures = m->nummiptex;
 	loadmodel->textures = Hunk_AllocName (m->nummiptex * sizeof (*loadmodel->textures), loadname);
 
 	for (i = 0; i < m->nummiptex; i++)
 	{
-		m->dataofs[i] = LittleLong (m->dataofs[i]);
 		if (m->dataofs[i] == -1)
 		{
 			loadmodel->textures[i] = r_notexture_mip;
 			continue;
 		}
-		// Con_Printf("%s\n", ((miptex_t *)((byte *)m + m->dataofs[i]))->name);
 		loadmodel->textures[i] = Mod_LoadMiptex ((miptex_t *)((byte *)m + m->dataofs[i]));
 	}
 
@@ -397,7 +387,6 @@ static void Mod_ReadWorldPairs (byte *data)
 
 	while (COM_ReadPair (&data, k, v))
 	{
-		Con_DSafePrintf ("\"%s\" = \"%s\"\n", k, v);
 		if (!strcasecmp ("skyname", k) || !strcasecmp ("sky", k))
 		{
 			mod_needsky = false;
@@ -489,13 +478,13 @@ static void Mod_LoadSubmodels (model_t *mod, lump_t *l)
 			bout = out->data;
 		}
 
-		bout->firstmodelsurface = LittleLong (in->firstface);
-		bout->nummodelsurfaces = LittleLong (in->numfaces);
+		bout->firstmodelsurface = in->firstface;
+		bout->nummodelsurfaces = in->numfaces;
 
 		for (j = 0; j < 3; j++)
 		{
-			out->mins[j] = LittleFloat (in->mins[j]) - 1.0f;
-			out->maxs[j] = LittleFloat (in->maxs[j]) + 1.0f;
+			out->mins[j] = in->mins[j] - 1.0f;
+			out->maxs[j] = in->maxs[j] + 1.0f;
 		}
 
 		out->radius = RadiusFromBounds (out->mins, out->maxs);
@@ -521,9 +510,9 @@ static void Mod_LoadVertexes (lump_t *l)
 
 	for (i = 0; i < count; i++, in++, out++)
 	{
-		out->position[0] = LittleFloat (in->point[0]);
-		out->position[1] = LittleFloat (in->point[1]);
-		out->position[2] = LittleFloat (in->point[2]);
+		out->position[0] = in->point[0];
+		out->position[1] = in->point[1];
+		out->position[2] = in->point[2];
 	}
 }
 
@@ -546,8 +535,8 @@ static void Mod_LoadEdges (lump_t *l)
 
 	for (i = 0; i < count; i++, in++, out++)
 	{
-		out->v[0] = (unsigned short)LittleShort (in->v[0]);
-		out->v[1] = (unsigned short)LittleShort (in->v[1]);
+		out->v[0] = in->v[0];
+		out->v[1] = in->v[1];
 	}
 }
 
@@ -572,10 +561,10 @@ static void Mod_LoadTexinfo (lump_t *l)
 	for (i = 0; i < count; i++, in++, out++)
 	{
 		for (j = 0; j < 8; j++)
-			out->vecs[0][j] = LittleFloat (in->vecs[0][j]);
+			out->vecs[0][j] = in->vecs[0][j];
 
-		miptex = LittleLong (in->miptex);
-		out->flags = LittleLong (in->flags);
+		miptex = in->miptex;
+		out->flags = in->flags;
 
 		if (!loadmodel->textures)
 		{
@@ -666,18 +655,18 @@ static void Mod_LoadFaces (lump_t *l)
 
 	for (surfnum = 0; surfnum < count; surfnum++, in++, out++)
 	{
-		out->firstedge = LittleLong (in->firstedge);
-		out->numedges = LittleShort (in->numedges);
+		out->firstedge = in->firstedge;
+		out->numedges = in->numedges;
 		out->flags = 0;
 
-		planenum = LittleShort (in->planenum);
-		side = LittleShort (in->side);
+		planenum = in->planenum;
+		side = in->side;
 		if (side)
 			out->flags |= SURF_PLANEBACK;
 
 		out->plane = loadmodel->planes + planenum;
 
-		out->texinfo = loadmodel->texinfo + LittleShort (in->texinfo);
+		out->texinfo = loadmodel->texinfo + in->texinfo;
 
 		CalcSurfaceExtents (out);
 
@@ -685,7 +674,7 @@ static void Mod_LoadFaces (lump_t *l)
 
 		for (i = 0; i < MAXLIGHTMAPS; i++)
 			out->styles[i] = in->styles[i];
-		i = LittleLong (in->lightofs);
+		i = in->lightofs;
 		if (i == -1)
 			out->samples = NULL;
 		else
@@ -746,7 +735,7 @@ static void Mod_LoadMarksurfaces (lump_t *l)
 
 	for (i = 0; i < count; i++)
 	{
-		j = LittleShort (in[i]);
+		j = in[i];
 		if (j >= loadmodel->numsurfaces)
 			Sys_Error ("Mod_ParseMarksurfaces: bad surface number");
 		out[i] = loadmodel->surfaces + j;
@@ -770,7 +759,7 @@ static void Mod_LoadSurfedges (lump_t *l)
 	loadmodel->numsurfedges = count;
 
 	for (i = 0; i < count; i++)
-		out[i] = LittleLong (in[i]);
+		out[i] = in[i];
 }
 
 static void Mod_LoadPlanes (lump_t *l)
@@ -797,13 +786,13 @@ static void Mod_LoadPlanes (lump_t *l)
 		bits = 0;
 		for (j = 0; j < 3; j++)
 		{
-			out->normal[j] = LittleFloat (in->normal[j]);
+			out->normal[j] = in->normal[j];
 			if (out->normal[j] < 0)
 				bits |= 1 << j;
 		}
 
-		out->dist = LittleFloat (in->dist);
-		out->type = LittleLong (in->type);
+		out->dist = in->dist;
+		out->type = in->type;
 		out->signbits = bits;
 	}
 }
@@ -819,30 +808,18 @@ static void Mod_LoadBrushModel (model_t *mod, void *buffer, bool world)
 
 	mod->data = loadmodel;
 
-	mod_version = LittleLong (header->version);
+	mod_version = header->version;
 
 	if (mod_version == BSPVERSION)
-	{
 		d_lightmap_bytes = 3;
-	}
 	else if (mod_version == BSPQUAKE)
-	{
 		d_lightmap_bytes = 1;
-	}
 	else
-	{
-		Sys_Error ("Mod_LoadBrushModel: %s has wrong version number \
-			(%i should be %i or %i)",
-				   mod->name, mod_version, BSPVERSION, BSPQUAKE);
-	}
+		Sys_Error ("Mod_LoadBrushModel: %s has wrong version number (%i should be %i or %i)", mod->name, mod_version, BSPVERSION, BSPQUAKE);
 
 	mod_needsky = true;
 
-	// swap all the lumps
 	mod_base = (byte *)header;
-
-	for (i = 0; i < sizeof (dheader_t) / 4; i++)
-		((int32_t *)header)[i] = LittleLong (((int32_t *)header)[i]);
 
 	// load into heap
 
@@ -895,8 +872,7 @@ static void *Mod_LoadAliasFrame (void *pin, maliasframedesc_t *frame)
 
 	for (i = 0; i < 3; i++)
 	{
-		// these are byte values, so we don't have to worry about
-		// endianness
+		// these are byte values, so we don't have to worry about endianness
 		frame->bboxmin.v[i] = pdaliasframe->bboxmin.v[i];
 		frame->bboxmin.v[i] = pdaliasframe->bboxmax.v[i];
 	}
@@ -920,7 +896,7 @@ static void *Mod_LoadAliasGroup (void *pin, maliasframedesc_t *frame)
 
 	pingroup = (daliasgroup_t *)pin;
 
-	numframes = LittleLong (pingroup->numframes);
+	numframes = pingroup->numframes;
 
 	frame->firstpose = posenum;
 	frame->numposes = numframes;
@@ -934,7 +910,7 @@ static void *Mod_LoadAliasGroup (void *pin, maliasframedesc_t *frame)
 
 	pin_intervals = (daliasinterval_t *)(pingroup + 1);
 
-	frame->interval = LittleFloat (pin_intervals->interval);
+	frame->interval = pin_intervals->interval;
 
 	pin_intervals += numframes;
 
@@ -1071,7 +1047,7 @@ static void *Mod_LoadAllSkins (model_t *mod, int numskins, daliasskintype_t *psk
 			// animating skin group.  yuck.
 			pskintype++;
 			pinskingroup = (daliasskingroup_t *)pskintype;
-			groupskins = LittleLong (pinskingroup->numskins);
+			groupskins = pinskingroup->numskins;
 			pinskinintervals = (daliasskininterval_t *)(pinskingroup + 1);
 
 			pskintype = (void *)(pinskinintervals + groupskins);
@@ -1117,7 +1093,7 @@ static void Mod_LoadAliasModel (model_t *mod, void *buffer)
 
 	pinmodel = (mdl_t *)buffer;
 
-	version = LittleLong (pinmodel->version);
+	version = pinmodel->version;
 	if (version != ALIAS_VERSION)
 		Sys_Error ("%s has wrong version number (%i should be %i)", mod->name, version, ALIAS_VERSION);
 
@@ -1125,25 +1101,25 @@ static void Mod_LoadAliasModel (model_t *mod, void *buffer)
 	// allocate space for a working header, plus all the data except the frames,
 	// skin and group info
 	//
-	size = sizeof (aliashdr_t) + (LittleLong (pinmodel->numframes) - 1) * sizeof (pheader->frames[0]);
+	size = sizeof (aliashdr_t) + (pinmodel->numframes - 1) * sizeof (pheader->frames[0]);
 	pheader = Hunk_AllocName (size, loadname);
 
 	mod->data = pheader;
 
-	mod->flags = LittleLong (pinmodel->flags);
+	mod->flags = pinmodel->flags;
 
 	//
-	// endian-adjust and copy the data, starting with the alias model header
+	// copy the data, starting with the alias model header
 	//
-	pheader->boundingradius = LittleFloat (pinmodel->boundingradius);
-	pheader->numskins = LittleLong (pinmodel->numskins);
-	pheader->skinwidth = LittleLong (pinmodel->skinwidth);
-	pheader->skinheight = LittleLong (pinmodel->skinheight);
+	pheader->boundingradius = pinmodel->boundingradius;
+	pheader->numskins = pinmodel->numskins;
+	pheader->skinwidth = pinmodel->skinwidth;
+	pheader->skinheight = pinmodel->skinheight;
 
 	if (pheader->skinheight > MAX_LBM_HEIGHT)
 		Sys_Error ("model %s has a skin taller than %d", mod->name, MAX_LBM_HEIGHT);
 
-	pheader->numverts = LittleLong (pinmodel->numverts);
+	pheader->numverts = pinmodel->numverts;
 
 	if (pheader->numverts <= 0)
 		Sys_Error ("model %s has no vertices", mod->name);
@@ -1151,25 +1127,25 @@ static void Mod_LoadAliasModel (model_t *mod, void *buffer)
 	if (pheader->numverts > MAXALIASVERTS)
 		Sys_Error ("model %s has too many vertices", mod->name);
 
-	pheader->numtris = LittleLong (pinmodel->numtris);
+	pheader->numtris = pinmodel->numtris;
 
 	if (pheader->numtris <= 0)
 		Sys_Error ("model %s has no triangles", mod->name);
 
-	pheader->numframes = LittleLong (pinmodel->numframes);
+	pheader->numframes = pinmodel->numframes;
 	numframes = pheader->numframes;
 	if (numframes < 1)
 		Sys_Error ("Mod_LoadAliasModel: Invalid # of frames: %d\n", numframes);
 
-	pheader->size = LittleFloat (pinmodel->size) * ALIAS_BASE_SIZE_RATIO;
-	mod->synctype = LittleLong (pinmodel->synctype);
+	pheader->size = pinmodel->size * ALIAS_BASE_SIZE_RATIO;
+	mod->synctype = pinmodel->synctype;
 	mod->numframes = pheader->numframes;
 
 	for (i = 0; i < 3; i++)
 	{
-		pheader->scale[i] = LittleFloat (pinmodel->scale[i]);
-		pheader->scale_origin[i] = LittleFloat (pinmodel->scale_origin[i]);
-		pheader->eyeposition[i] = LittleFloat (pinmodel->eyeposition[i]);
+		pheader->scale[i] = pinmodel->scale[i];
+		pheader->scale_origin[i] = pinmodel->scale_origin[i];
+		pheader->eyeposition[i] = pinmodel->eyeposition[i];
 	}
 
 	//
@@ -1185,9 +1161,9 @@ static void Mod_LoadAliasModel (model_t *mod, void *buffer)
 
 	for (i = 0; i < pheader->numverts; i++)
 	{
-		stverts[i].onseam = LittleLong (pinstverts[i].onseam);
-		stverts[i].s = LittleLong (pinstverts[i].s);
-		stverts[i].t = LittleLong (pinstverts[i].t);
+		stverts[i].onseam = pinstverts[i].onseam;
+		stverts[i].s = pinstverts[i].s;
+		stverts[i].t = pinstverts[i].t;
 	}
 
 	//
@@ -1197,10 +1173,10 @@ static void Mod_LoadAliasModel (model_t *mod, void *buffer)
 
 	for (i = 0; i < pheader->numtris; i++)
 	{
-		triangles[i].facesfront = LittleLong (pintriangles[i].facesfront);
+		triangles[i].facesfront = pintriangles[i].facesfront;
 
 		for (j = 0; j < 3; j++)
-			triangles[i].vertindex[j] = LittleLong (pintriangles[i].vertindex[j]);
+			triangles[i].vertindex[j] = pintriangles[i].vertindex[j];
 	}
 
 	//
@@ -1213,7 +1189,7 @@ static void Mod_LoadAliasModel (model_t *mod, void *buffer)
 	{
 		aliasframetype_t frametype;
 
-		frametype = LittleLong (pframetype->type);
+		frametype = pframetype->type;
 
 		if (frametype == ALIAS_SINGLE)
 			pframetype = (daliasframetype_t *)Mod_LoadAliasFrame (pframetype + 1, &pheader->frames[i]);
@@ -1242,8 +1218,8 @@ static void *Mod_LoadSpriteFrame (model_t *mod, void *pin, mspriteframe_t **ppfr
 
 	pinframe = (dspriteframe_t *)pin;
 
-	width = LittleLong (pinframe->width);
-	height = LittleLong (pinframe->height);
+	width = pinframe->width;
+	height = pinframe->height;
 	size = width * height;
 
 	pspriteframe = Hunk_AllocName (sizeof (mspriteframe_t), loadname);
@@ -1254,8 +1230,8 @@ static void *Mod_LoadSpriteFrame (model_t *mod, void *pin, mspriteframe_t **ppfr
 
 	pspriteframe->width = width;
 	pspriteframe->height = height;
-	origin[0] = LittleLong (pinframe->origin[0]);
-	origin[1] = LittleLong (pinframe->origin[1]);
+	origin[0] = pinframe->origin[0];
+	origin[1] = pinframe->origin[1];
 
 	pspriteframe->up = origin[1];
 	pspriteframe->down = origin[1] - height;
@@ -1280,7 +1256,7 @@ static void *Mod_LoadSpriteGroup (model_t *mod, void *pin, mspriteframe_t **ppfr
 
 	pingroup = (dspritegroup_t *)pin;
 
-	numframes = LittleLong (pingroup->numframes);
+	numframes = pingroup->numframes;
 
 	pspritegroup = Hunk_AllocName (sizeof (mspritegroup_t) + (numframes - 1) * sizeof (pspritegroup->frames[0]), loadname);
 
@@ -1296,7 +1272,7 @@ static void *Mod_LoadSpriteGroup (model_t *mod, void *pin, mspriteframe_t **ppfr
 
 	for (i = 0; i < numframes; i++)
 	{
-		*poutintervals = LittleFloat (pin_intervals->interval);
+		*poutintervals = pin_intervals->interval;
 		if (*poutintervals <= 0.0)
 			Sys_Error ("Mod_LoadSpriteGroup: interval<=0");
 
@@ -1324,13 +1300,11 @@ static void Mod_LoadSpriteModel (model_t *mod, void *buffer)
 
 	pin = (dsprite_t *)buffer;
 
-	version = LittleLong (pin->version);
+	version = pin->version;
 	if (version != SPRITE_VERSION)
-		Sys_Error ("%s has wrong version number "
-				   "(%i should be %i)",
-				   mod->name, version, SPRITE_VERSION);
+		Sys_Error ("%s has wrong version number (%i should be %i)", mod->name, version, SPRITE_VERSION);
 
-	numframes = LittleLong (pin->numframes);
+	numframes = pin->numframes;
 
 	size = sizeof (msprite_t) + (numframes - 1) * sizeof (psprite->frames);
 
@@ -1338,11 +1312,11 @@ static void Mod_LoadSpriteModel (model_t *mod, void *buffer)
 
 	mod->data = psprite;
 
-	psprite->type = LittleLong (pin->type);
-	psprite->maxwidth = LittleLong (pin->width);
-	psprite->maxheight = LittleLong (pin->height);
-	psprite->beamlength = LittleFloat (pin->beamlength);
-	mod->synctype = LittleLong (pin->synctype);
+	psprite->type = pin->type;
+	psprite->maxwidth = pin->width;
+	psprite->maxheight = pin->height;
+	psprite->beamlength = pin->beamlength;
+	mod->synctype = pin->synctype;
 	psprite->numframes = numframes;
 
 	mod->mins[0] = mod->mins[1] = -psprite->maxwidth / 2;
@@ -1364,7 +1338,7 @@ static void Mod_LoadSpriteModel (model_t *mod, void *buffer)
 	{
 		spriteframetype_t frametype;
 
-		frametype = LittleLong (pframetype->type);
+		frametype = pframetype->type;
 		psprite->frames[i].type = frametype;
 
 		if (frametype == SPR_SINGLE)

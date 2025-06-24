@@ -27,7 +27,7 @@ static int gl_lightmap_format = GL_RGBA;
 
 static int lightmap_textures;
 
-static unsigned blocklights[18 * 18 * 3];
+static unsigned int blocklights[18 * 18 * 3];
 
 #define BLOCK_WIDTH 128
 #define BLOCK_HEIGHT 128
@@ -127,9 +127,9 @@ static void R_BuildLightMap (msurface_t *surf, byte *dest, int stride)
 	int t;
 	int i, j, k, size;
 	byte *lightmap;
-	unsigned scale;
+	unsigned int scale;
 	int maps;
-	unsigned *bl;
+	unsigned int *bl;
 
 	surf->cached_dlight = (surf->dlightframe == r_framecount);
 

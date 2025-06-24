@@ -134,7 +134,7 @@ static bool RecursiveLightPoint (mnode_t *node, vec3_t start, vec3_t end, vec3_t
 	int i, k;
 	mtexinfo_t *tex;
 	byte *lightmap;
-	unsigned scale;
+	unsigned int scale;
 	int maps;
 
 	if (node->contents < 0)

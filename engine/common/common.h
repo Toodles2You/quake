@@ -2,7 +2,7 @@
 #ifndef _COMMON_H
 #define _COMMON_H
 
-typedef unsigned char byte;
+typedef uint8_t byte;
 
 #define MAX_INFO_STRING 196
 #define MAX_SERVERINFO_STRING 512
@@ -45,33 +45,6 @@ void InsertLinkAfter (link_t *l, link_t *after);
 #endif
 
 #define STRUCT_FROM_LINK(l, t, m) ((t *)((byte *)l - offsetof (t, m)))
-
-//============================================================================
-
-#ifndef NULL
-#define NULL ((void *)0)
-#endif
-
-#define Q_MAXCHAR ((char)0x7f)
-#define Q_MAXSHORT ((int16_t)0x7fff)
-#define Q_MAXINT ((int32_t)0x7fffffff)
-#define Q_MAXLONG ((int32_t)0x7fffffff)
-#define Q_MAXFLOAT ((int)0x7fffffff)
-
-#define Q_MINCHAR ((char)0x80)
-#define Q_MINSHORT ((int16_t)0x8000)
-#define Q_MININT ((int32_t)0x80000000)
-#define Q_MINLONG ((int32_t)0x80000000)
-#define Q_MINFLOAT ((int)0x7fffffff)
-
-//============================================================================
-
-extern int16_t (*BigShort) (int16_t l);
-extern int16_t (*LittleShort) (int16_t l);
-extern int32_t (*BigLong) (int32_t l);
-extern int32_t (*LittleLong) (int32_t l);
-extern float (*BigFloat) (float l);
-extern float (*LittleFloat) (float l);
 
 //============================================================================
 

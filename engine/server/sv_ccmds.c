@@ -57,8 +57,8 @@ static void SV_SetMaster_f (void)
 			Con_Printf ("Setting nomaster mode.\n");
 			return;
 		}
-		if (master_adr[i - 1].port == 0)
-			master_adr[i - 1].port = BigShort (PORT_MASTER);
+		if (!master_adr[i - 1].port)
+			master_adr[i - 1].port = PORT_MASTER;
 
 		Con_Printf ("Master server at %s\n", NET_AdrToString (master_adr[i - 1]));
 

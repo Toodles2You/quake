@@ -32,7 +32,7 @@ SDL_Window *window = NULL;
 
 bool gl_mtexable = false;
 
-unsigned d_8to24table[256];
+unsigned int d_8to24table[256];
 
 static const char *gl_vendor;
 static const char *gl_renderer;
@@ -81,12 +81,12 @@ static void VID_InitSignals (void)
 static void VID_SetPalette (unsigned char *palette)
 {
 	byte *pal;
-	unsigned r, g, b;
-	unsigned v;
+	unsigned int r, g, b;
+	unsigned int v;
 	int r1, g1, b1;
 	int k;
-	unsigned short i;
-	unsigned *table;
+	int i;
+	unsigned int *table;
 	int dist, bestdist;
 
 	//

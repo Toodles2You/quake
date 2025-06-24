@@ -16,16 +16,16 @@ typedef struct vrect_s
 
 typedef struct
 {
-	unsigned width;
-	unsigned height;
+	unsigned int width;
+	unsigned int height;
 	float aspect; // width / height -- < 0 is taller than wide
 	bool recalc_refdef; // if true, recalc vid-based stuff
-	unsigned conwidth;
-	unsigned conheight;
+	unsigned int conwidth;
+	unsigned int conheight;
 } viddef_t;
 
 extern viddef_t vid; // global video state
-extern unsigned d_8to24table[256];
+extern unsigned int d_8to24table[256];
 extern void (*vid_menudrawfn) ();
 extern void (*vid_menukeyfn) (int key);
 

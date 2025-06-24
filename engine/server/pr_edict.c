@@ -23,14 +23,14 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "serverdef.h"
 
 static const int pr_type_size[ev_types] = {
-	1,										// ev_void
-	sizeof (string_t) / sizeof (uint32_t),	// ev_string
-	sizeof (float) / sizeof (uint32_t),		// ev_float
-	sizeof (float) * 3 / sizeof (uint32_t), // ev_vector
-	sizeof (uint32_t) / sizeof (uint32_t),	// ev_entity
-	sizeof (uint32_t) / sizeof (uint32_t),	// ev_field
-	sizeof (func_t) / sizeof (uint32_t),	// ev_function
-	sizeof (void *) / sizeof (uint32_t),	// ev_pointer
+	1, // ev_void
+	1, // ev_string
+	1, // ev_float
+	3, // ev_vector
+	1, // ev_entity
+	1, // ev_field
+	1, // ev_function
+	2, // ev_pointer
 };
 
 static bool ED_ParseEpair (void *base, ddef_t *key, char *s);
@@ -55,7 +55,7 @@ Sets everything to NULL
 */
 void ED_ClearEdict (edict_t *e)
 {
-	memset (e + 1, 0, sv.pr.progs->entityfields * sizeof (int32_t));
+	memset (e + 1, 0, sv.pr.progs->entityfields * 4);
 	e->free = false;
 }
 

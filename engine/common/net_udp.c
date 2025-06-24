@@ -41,22 +41,19 @@ static char net_public_adr[24];
 #define MAX_UDP_PACKET 8192
 static byte net_message_buffer[NUM_SOCKETS][MAX_UDP_PACKET];
 
-// int gethostname (char *, int);
-// int close (int);
-
 static void NetadrToSockadr (netadr_t *a, struct sockaddr_in *s)
 {
 	memset (s, 0, sizeof (*s));
 	s->sin_family = AF_INET;
 
 	*(int32_t *)&s->sin_addr = *(int32_t *)&a->ip;
-	s->sin_port = a->port;
+	s->sin_port = htons (a->port);
 }
 
 static void SockadrToNetadr (struct sockaddr_in *s, netadr_t *a)
 {
 	*(int32_t *)&a->ip = *(int32_t *)&s->sin_addr;
-	a->port = s->sin_port;
+	a->port = ntohs (s->sin_port);
 }
 
 bool NET_CompareBaseAdr (netadr_t a, netadr_t b)
@@ -116,18 +113,14 @@ bool NET_StringToAdr (char *s, netadr_t *a)
 	strcpy (copy, s);
 	// strip off a trailing :port if present
 	for (colon = copy; *colon; colon++)
-	{
 		if (*colon == ':')
 		{
 			*colon = 0;
 			sadr.sin_port = htons (atoi (colon + 1));
 		}
-	}
 
 	if (copy[0] >= '0' && copy[0] <= '9')
-	{
 		*(int32_t *)&sadr.sin_addr = inet_addr (copy);
-	}
 	else
 	{
 		if (!(h = gethostbyname (copy)))
@@ -140,8 +133,7 @@ bool NET_StringToAdr (char *s, netadr_t *a)
 	return true;
 }
 
-// Returns true if we can't bind the address locally--in other words,
-// the IP is NOT one of our interfaces.
+// Returns true if we can't bind the address locally--in other words, the IP is NOT one of our interfaces.
 bool NET_IsClientLegal (netadr_t *adr)
 {
 	struct sockaddr_in sadr;
@@ -235,14 +227,12 @@ static int UDP_OpenSocket (int port)
 		Con_Printf ("Binding to IP Interface Address of %s\n", inet_ntoa (address.sin_addr));
 	}
 	else
-	{
 		address.sin_addr.s_addr = INADDR_ANY;
-	}
 
 	if (port == PORT_ANY)
 		address.sin_port = 0;
 	else
-		address.sin_port = htons ((uint16_t)port);
+		address.sin_port = htons (port);
 
 	if (bind (newsocket, (void *)&address, sizeof (address)) == -1)
 		Sys_Error ("UDP_OpenSocket: bind: %s", strerror (errno));
@@ -272,7 +262,7 @@ netadr_t NET_GetLocalAddress (void)
 		if (getsockname (net_socket[SERVER], (struct sockaddr *)&address, &namelen) == -1)
 			Sys_Error ("NET_Init: getsockname:", strerror (errno));
 
-		net_local_adr.port = address.sin_port;
+		net_local_adr.port = ntohs (address.sin_port);
 
 		Con_Printf ("IP address %s\n", NET_AdrToString (net_local_adr));
 

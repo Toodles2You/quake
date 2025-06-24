@@ -871,7 +871,7 @@ static void CL_MuzzleFlash (void)
 
 	i = MSG_ReadShort ();
 
-	if ((unsigned)(i - 1) >= MAX_CLIENTS)
+	if ((unsigned int)i - 1 >= MAX_CLIENTS)
 		return;
 
 	pl = &cl.frames[parsecountmod].playerstate[i - 1];

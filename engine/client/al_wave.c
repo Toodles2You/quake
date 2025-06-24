@@ -41,9 +41,9 @@ static byte *last_chunk;
 static byte *iff_data;
 static int iff_chunk_len;
 
-static short GetLittleShort (void)
+static int GetLittleShort (void)
 {
-	short val = 0;
+	int val = 0;
 	val = *data_p;
 	val = val + (*(data_p + 1) << 8);
 	data_p += 2;
@@ -241,7 +241,7 @@ static void ResampleSfx (sfx_t *sfx, int inrate, int inwidth, int outrate, byte 
 			samplefrac += fracstep;
 			int sample;
 			if (inwidth == 2)
-				sample = ((uint16_t *)data)[srcsample]; // FIXME: check endianness
+				sample = ((uint16_t *)data)[srcsample];
 			else
 				sample = (int)data[srcsample] << 8;
 			if (sfx->width == 2)

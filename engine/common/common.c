@@ -173,81 +173,10 @@ int strcasecmp (char *s1, char *s2)
 #endif /* _WIN32 */
 
 /*
-============================================================================
-
-					BYTE ORDER FUNCTIONS
-
-============================================================================
-*/
-
-static bool bigendien;
-
-int16_t (*BigShort) (int16_t l);
-int16_t (*LittleShort) (int16_t l);
-int32_t (*BigLong) (int32_t l);
-int32_t (*LittleLong) (int32_t l);
-float (*BigFloat) (float l);
-float (*LittleFloat) (float l);
-
-static int16_t ShortSwap (int16_t l)
-{
-	byte b1, b2;
-
-	b1 = l & 255;
-	b2 = (l >> 8) & 255;
-
-	return (b1 << 8) + b2;
-}
-
-static int16_t ShortNoSwap (int16_t l)
-{
-	return l;
-}
-
-static int32_t LongSwap (int32_t l)
-{
-	byte b1, b2, b3, b4;
-
-	b1 = l & 255;
-	b2 = (l >> 8) & 255;
-	b3 = (l >> 16) & 255;
-	b4 = (l >> 24) & 255;
-
-	return ((int32_t)b1 << 24) + ((int32_t)b2 << 16) + ((int32_t)b3 << 8) + b4;
-}
-
-static int32_t LongNoSwap (int32_t l)
-{
-	return l;
-}
-
-static float FloatSwap (float f)
-{
-	union
-	{
-		float f;
-		byte b[4];
-	} dat1, dat2;
-
-	dat1.f = f;
-	dat2.b[0] = dat1.b[3];
-	dat2.b[1] = dat1.b[2];
-	dat2.b[2] = dat1.b[1];
-	dat2.b[3] = dat1.b[0];
-	return dat2.f;
-}
-
-static float FloatNoSwap (float f)
-{
-	return f;
-}
-
-/*
 ==============================================================================
 
-			MESSAGE IO FUNCTIONS
+MESSAGE IO FUNCTIONS
 
-Handles byte ordering and avoids alignment errors
 ==============================================================================
 */
 
@@ -258,7 +187,7 @@ Handles byte ordering and avoids alignment errors
 void MSG_WriteChar (sizebuf_t *sb, int c)
 {
 	byte *buf = SZ_GetSpace (sb, 1);
-	buf[0] = c;
+	((signed char *)buf)[0] = c;
 }
 
 void MSG_WriteByte (sizebuf_t *sb, int c)
@@ -270,27 +199,19 @@ void MSG_WriteByte (sizebuf_t *sb, int c)
 void MSG_WriteShort (sizebuf_t *sb, int c)
 {
 	byte *buf = SZ_GetSpace (sb, 2);
-	buf[0] = c & 0xff;
-	buf[1] = c >> 8;
+	((short *)buf)[0] = c;
 }
 
 void MSG_WriteLong (sizebuf_t *sb, int c)
 {
 	byte *buf = SZ_GetSpace (sb, 4);
-	buf[0] = c & 0xff;
-	buf[1] = (c >> 8) & 0xff;
-	buf[2] = (c >> 16) & 0xff;
-	buf[3] = c >> 24;
+	((int *)buf)[0] = c;
 }
 
 void MSG_WriteFloat (sizebuf_t *sb, float f)
 {
-	union
-	{
-		float f;
-		int32_t l;
-	} dat = {f};
-	MSG_WriteLong (sb, LittleLong (dat.l));
+	byte *buf = SZ_GetSpace (sb, 4);
+	((float *)buf)[0] = f;
 }
 
 void MSG_WriteString (sizebuf_t *sb, char *s)
@@ -383,92 +304,57 @@ int MSG_GetReadCount (void)
 	return msg_readcount;
 }
 
+static inline bool MSG_BadRead (int readcount)
+{
+	if (msg_readcount + readcount > net_message[msg_socket].cursize)
+		msg_badread = true;
+	return msg_badread;
+}
+
 // returns -1 and sets msg_badread if no more characters are available
 int MSG_ReadChar (void)
 {
-	int c;
-
-	if (msg_readcount + 1 > net_message[msg_socket].cursize)
-	{
-		msg_badread = true;
+	if (MSG_BadRead (1))
 		return -1;
-	}
-
-	c = (signed char)net_message[msg_socket].data[msg_readcount];
+	int c = (signed char)net_message[msg_socket].data[msg_readcount];
 	msg_readcount++;
-
 	return c;
 }
 
 int MSG_ReadByte (void)
 {
-	int c;
-
-	if (msg_readcount + 1 > net_message[msg_socket].cursize)
-	{
-		msg_badread = true;
+	if (MSG_BadRead (1))
 		return -1;
-	}
-
-	c = (unsigned char)net_message[msg_socket].data[msg_readcount];
+	int c = net_message[msg_socket].data[msg_readcount];
 	msg_readcount++;
-
 	return c;
 }
 
 int MSG_ReadShort (void)
 {
-	int c;
-
-	if (msg_readcount + 2 > net_message[msg_socket].cursize)
-	{
-		msg_badread = true;
+	if (MSG_BadRead (2))
 		return -1;
-	}
-
-	c = (short)(net_message[msg_socket].data[msg_readcount] + (net_message[msg_socket].data[msg_readcount + 1] << 8));
-
+	int c = *(short *)&net_message[msg_socket].data[msg_readcount];
 	msg_readcount += 2;
-
 	return c;
 }
 
 int MSG_ReadLong (void)
 {
-	int c;
-
-	if (msg_readcount + 4 > net_message[msg_socket].cursize)
-	{
-		msg_badread = true;
+	if (MSG_BadRead (4))
 		return -1;
-	}
-
-	c = net_message[msg_socket].data[msg_readcount] + (net_message[msg_socket].data[msg_readcount + 1] << 8) +
-		(net_message[msg_socket].data[msg_readcount + 2] << 16) + (net_message[msg_socket].data[msg_readcount + 3] << 24);
-
+	int c = *(int *)&net_message[msg_socket].data[msg_readcount];
 	msg_readcount += 4;
-
 	return c;
 }
 
 float MSG_ReadFloat (void)
 {
-	union
-	{
-		byte b[4];
-		float f;
-		int l;
-	} dat;
-
-	dat.b[0] = net_message[msg_socket].data[msg_readcount];
-	dat.b[1] = net_message[msg_socket].data[msg_readcount + 1];
-	dat.b[2] = net_message[msg_socket].data[msg_readcount + 2];
-	dat.b[3] = net_message[msg_socket].data[msg_readcount + 3];
+	if (MSG_BadRead (4))
+		return -1;
+	float f = *(float *)&net_message[msg_socket].data[msg_readcount];
 	msg_readcount += 4;
-
-	dat.l = LittleLong (dat.l);
-
-	return dat.f;
+	return f;
 }
 
 char *MSG_ReadString (void)
@@ -513,17 +399,17 @@ char *MSG_ReadStringLine (void)
 
 float MSG_ReadCoord (void)
 {
-	return MSG_ReadShort () * (1.0 / 8);
+	return MSG_ReadShort () * (1.0f / 8);
 }
 
 float MSG_ReadAngle (void)
 {
-	return MSG_ReadChar () * (360.0 / 256);
+	return (byte)MSG_ReadByte () * (360.0f / 256);
 }
 
 float MSG_ReadAngle16 (void)
 {
-	return MSG_ReadShort () * (360.0 / 65536);
+	return (unsigned short)MSG_ReadShort () * (360.0f / 65536);
 }
 
 void MSG_ReadDeltaUsercmd (usercmd_t *from, usercmd_t *move)
@@ -875,7 +761,7 @@ static void COM_CheckRegistered (bool modified)
 	COM_CloseFile (h);
 
 	for (i = 0; i < 128; i++)
-		if (pop[i] != (uint16_t)BigShort (check[i]))
+		if (pop[i * 2] != check[i * 2] || pop[i * 2 + 1] != check[i * 2 + 1])
 			Sys_Error ("Corrupted data file.");
 
 	Cvar_Set (src_client, "registered", "1");
@@ -937,30 +823,6 @@ static void COM_InitFilesystem (void);
 
 void COM_Init (char *basedir)
 {
-	byte swaptest[2] = {1, 0};
-
-	// set the byte swapping variables in a portable manner
-	if (*(short *)swaptest == 1)
-	{
-		bigendien = false;
-		BigShort = ShortSwap;
-		LittleShort = ShortNoSwap;
-		BigLong = LongSwap;
-		LittleLong = LongNoSwap;
-		BigFloat = FloatSwap;
-		LittleFloat = FloatNoSwap;
-	}
-	else
-	{
-		bigendien = true;
-		BigShort = ShortNoSwap;
-		LittleShort = ShortSwap;
-		BigLong = LongNoSwap;
-		LittleLong = LongSwap;
-		BigFloat = FloatNoSwap;
-		LittleFloat = FloatSwap;
-	}
-
 	Cvar_RegisterVariable (src_host, &registered);
 	Cmd_AddCommand (src_host, "path", COM_Path_f);
 
@@ -1418,8 +1280,6 @@ static pack_t *COM_LoadPackFile (char *packfile, bool *modified)
 	Sys_FileRead (packhandle, (void *)&header, sizeof (header));
 	if (header.id[0] != 'P' || header.id[1] != 'A' || header.id[2] != 'C' || header.id[3] != 'K')
 		Sys_Error ("%s is not a packfile", packfile);
-	header.dirofs = LittleLong (header.dirofs);
-	header.dirlen = LittleLong (header.dirlen);
 
 	numpackfiles = header.dirlen / sizeof (dpackfile_t);
 
@@ -1452,8 +1312,8 @@ static pack_t *COM_LoadPackFile (char *packfile, bool *modified)
 	for (i = 0; i < numpackfiles; i++)
 	{
 		strcpy (newfiles[i].name, info[i].name);
-		newfiles[i].filepos = LittleLong (info[i].filepos);
-		newfiles[i].filelen = LittleLong (info[i].filelen);
+		newfiles[i].filepos = info[i].filepos;
+		newfiles[i].filelen = info[i].filelen;
 	}
 
 	pack = Hunk_Alloc (sizeof (pack_t));

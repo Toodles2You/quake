@@ -206,8 +206,8 @@ static void SV_Modellist_f (void)
 
 static void SV_PreSpawn_f (void)
 {
-	unsigned buf;
-	unsigned check;
+	unsigned int buf;
+	unsigned int check;
 
 	if (host_client->state != cs_connected)
 	{
@@ -399,7 +399,7 @@ static void SV_SpawnSpectator (void)
 
 static void SV_Begin_f (void)
 {
-	unsigned pmodel = 0, emodel = 0;
+	unsigned int pmodel = 0, emodel = 0;
 	int i;
 
 	if (host_client->state == cs_spawned)

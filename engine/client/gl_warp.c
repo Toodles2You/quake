@@ -332,7 +332,7 @@ static int fgetLittleShort (FILE *f)
 	b1 = fgetc (f);
 	b2 = fgetc (f);
 
-	return (short)(b1 + b2 * 256);
+	return b1 + (b2 << 8);
 }
 
 static int fgetLittleLong (FILE *f)
@@ -843,10 +843,10 @@ void R_InitSky (texture_t *mt)
 {
 	int i, j, p;
 	byte *src;
-	unsigned trans[128 * 128];
-	unsigned transpix;
+	unsigned int trans[128 * 128];
+	unsigned int transpix;
 	int r, g, b;
-	unsigned *rgba;
+	unsigned int *rgba;
 
 	skyanimated = true;
 

@@ -189,7 +189,7 @@ static void CMod_LoadModel (cmodel_t *mod, bool crash, bool world)
 	// fill it in
 	//
 
-	switch (LittleLong (*(uint32_t *)buf))
+	switch (*(uint32_t *)buf)
 	{
 	case IDPOLYHEADER:
 		mod->type = mod_alias;
@@ -314,19 +314,19 @@ static void CMod_LoadSubmodels (lump_t *l)
 
 		for (j = 0; j < 3; j++)
 		{
-			out->mins[j] = LittleFloat (in->mins[j]) - 1.0f;
-			out->maxs[j] = LittleFloat (in->maxs[j]) + 1.0f;
+			out->mins[j] = in->mins[j] - 1.0f;
+			out->maxs[j] = in->maxs[j] + 1.0f;
 		}
 
-		out->hulls[HULL_POINT].firstclipnode = LittleLong (in->headnode[HULL_POINT]);
+		out->hulls[HULL_POINT].firstclipnode = in->headnode[HULL_POINT];
 
 		for (j = 1; j < MAX_MAP_HULLS; j++)
 		{
-			out->hulls[j].firstclipnode = LittleLong (in->headnode[j]);
+			out->hulls[j].firstclipnode = in->headnode[j];
 			out->hulls[j].lastclipnode = out->numclipnodes - 1;
 		}
 
-		out->numleafs = LittleLong (in->visleafs);
+		out->numleafs = in->visleafs;
 	}
 }
 
@@ -360,19 +360,19 @@ static void CMod_LoadNodes (lump_t *l)
 	{
 		for (j = 0; j < 3; j++)
 		{
-			out->minmaxs[j] = LittleShort (in->mins[j]);
-			out->minmaxs[3 + j] = LittleShort (in->maxs[j]);
+			out->minmaxs[j] = in->mins[j];
+			out->minmaxs[3 + j] = in->maxs[j];
 		}
 
-		p = LittleLong (in->planenum);
+		p = in->planenum;
 		out->plane = loadcmod->planes + p;
 
-		out->firstsurface = LittleShort (in->firstface);
-		out->numsurfaces = LittleShort (in->numfaces);
+		out->firstsurface = in->firstface;
+		out->numsurfaces = in->numfaces;
 
 		for (j = 0; j < 2; j++)
 		{
-			p = LittleShort (in->children[j]);
+			p = in->children[j];
 			if (p >= 0)
 				out->children[j] = loadcmod->nodes + p;
 			else
@@ -404,22 +404,22 @@ static void CMod_LoadLeafs (lump_t *l)
 	{
 		for (j = 0; j < 3; j++)
 		{
-			out->minmaxs[j] = LittleShort (in->mins[j]);
-			out->minmaxs[3 + j] = LittleShort (in->maxs[j]);
+			out->minmaxs[j] = in->mins[j];
+			out->minmaxs[3 + j] = in->maxs[j];
 		}
 
-		p = LittleLong (in->contents);
+		p = in->contents;
 		out->contents = p;
 
-		out->firstmarksurface = LittleShort (in->firstmarksurface);
-		out->nummarksurfaces = LittleShort (in->nummarksurfaces);
+		out->firstmarksurface = in->firstmarksurface;
+		out->nummarksurfaces = in->nummarksurfaces;
 
 		out->efrags = NULL;
 
 		for (j = 0; j < NUM_AMBIENTS; j++)
 			out->ambient_sound_level[j] = in->ambient_level[j];
 
-		p = LittleLong (in->visofs);
+		p = in->visofs;
 
 		if (p == -1)
 			out->compressed_vis = NULL;
@@ -467,9 +467,9 @@ static void CMod_LoadClipnodes (lump_t *l)
 
 	for (i = 0; i < count; i++, out++, in++)
 	{
-		out->planenum = LittleLong (in->planenum);
-		out->children[0] = LittleShort (in->children[0]);
-		out->children[1] = LittleShort (in->children[1]);
+		out->planenum = in->planenum;
+		out->children[0] = in->children[0];
+		out->children[1] = in->children[1];
 	}
 }
 
@@ -536,13 +536,13 @@ static void CMod_LoadPlanes (lump_t *l)
 		bits = 0;
 		for (j = 0; j < 3; j++)
 		{
-			out->normal[j] = LittleFloat (in->normal[j]);
+			out->normal[j] = in->normal[j];
 			if (out->normal[j] < 0)
 				bits |= 1 << j;
 		}
 
-		out->dist = LittleFloat (in->dist);
-		out->type = LittleLong (in->type);
+		out->dist = in->dist;
+		out->type = in->type;
 		out->signbits = bits;
 	}
 }
@@ -554,7 +554,7 @@ static void CMod_LoadBrushModel (cmodel_t *mod, void *buffer, bool world)
 
 	header = (dheader_t *)buffer;
 
-	mod_version = LittleLong (header->version);
+	mod_version = header->version;
 
 	if (mod_version != BSPVERSION && mod_version != BSPQUAKE)
 	{
@@ -563,11 +563,7 @@ static void CMod_LoadBrushModel (cmodel_t *mod, void *buffer, bool world)
 				   mod->name, mod_version, BSPVERSION, BSPQUAKE);
 	}
 
-	// swap all the lumps
 	mod_base = (byte *)header;
-
-	for (i = 0; i < sizeof (dheader_t) / 4; i++)
-		((int32_t *)header)[i] = LittleLong (((int32_t *)header)[i]);
 
 	// checksum all of the map, except for entities
 	mod->checksum = 0;

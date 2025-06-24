@@ -180,7 +180,7 @@ static void SV_CalcPHS (void)
 	int rowbytes, rowwords;
 	int i, j, k, l, index, num;
 	int bitbyte;
-	unsigned *dest, *src;
+	unsigned int *dest, *src;
 	byte *scan;
 	int count, vcount;
 
@@ -206,7 +206,7 @@ static void SV_CalcPHS (void)
 	sv.phs = Hunk_Alloc (rowbytes * num);
 	count = 0;
 	scan = sv.pvs;
-	dest = (unsigned *)sv.phs;
+	dest = (unsigned int *)sv.phs;
 	for (i = 0; i < num; i++, dest += rowwords, scan += rowbytes)
 	{
 		memcpy (dest, scan, rowbytes);
@@ -224,7 +224,7 @@ static void SV_CalcPHS (void)
 				index = ((j << 3) + k + 1);
 				if (index >= num)
 					continue;
-				src = (unsigned *)sv.pvs + index * rowwords;
+				src = (unsigned int *)sv.pvs + index * rowwords;
 				for (l = 0; l < rowwords; l++)
 					dest[l] |= src[l];
 			}
@@ -275,7 +275,7 @@ static bool SV_LoadProgs (void)
 #undef PR_FIELD
 #undef PR_FIELD_OPTIONAL
 
-	uint32_t *pr_global_struct = Hunk_AllocName ((pr_globals_count + pr_fields_count) * sizeof (uint32_t), "pr_tables");
+	uint32_t *pr_global_struct = Hunk_AllocName ((pr_globals_count + pr_fields_count) * 4, "pr_tables");
 	uint32_t *pr_fields_struct = pr_global_struct + pr_globals_count;
 
 	PR_BuildStructs (&sv.pr, pr_global_struct, pr_globals, pr_fields_struct, pr_fields);

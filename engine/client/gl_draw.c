@@ -223,7 +223,6 @@ qpic_t *Draw_CachePic (char *path)
 	dat = (qpic_t *)COM_LoadTempFile (path);
 	if (!dat)
 		Sys_Error ("Draw_CachePic: failed to load %s", path);
-	W_SwapPic (dat);
 
 	pic->pic.width = dat->width;
 	pic->pic.height = dat->height;
@@ -351,7 +350,6 @@ void Draw_Init (void)
 	cb = (qpic_t *)COM_LoadTempFile ("gfx/conback.lmp");
 	if (!cb)
 		Sys_Error ("Couldn't load gfx/conback.lmp");
-	W_SwapPic (cb);
 
 	// hack the version number directly into the pic
 	ver = QUAKE_VERSION;
@@ -525,7 +523,7 @@ void Draw_Pic (int x, int y, qpic_t *pic)
 
 void Draw_TransPic (int x, int y, qpic_t *pic)
 {
-	if (x < 0 || (unsigned)(x + pic->width) > vid.width || y < 0 || (unsigned)(y + pic->height) > vid.height)
+	if (x < 0 || x + pic->width > vid.width || y < 0 || y + pic->height > vid.height)
 		Sys_Error ("Draw_TransPic: bad coordinates");
 
 	Draw_Pic (x, y, pic);
@@ -628,11 +626,11 @@ void GL_Set2D (void)
 	glColor4f (1, 1, 1, 1);
 }
 
-static void GL_ResampleTexture (unsigned *in, int inwidth, int inheight, unsigned *out, int outwidth, int outheight)
+static void GL_ResampleTexture (unsigned int *in, int inwidth, int inheight, unsigned int *out, int outwidth, int outheight)
 {
 	int i, j;
-	unsigned *inrow;
-	unsigned frac, fracstep;
+	unsigned int *inrow;
+	unsigned int frac, fracstep;
 
 	fracstep = inwidth * 0x10000 / outwidth;
 	for (i = 0; i < outheight; i++, out += outwidth)
@@ -680,9 +678,9 @@ static void GL_MipMap (byte *in, int width, int height)
 	}
 }
 
-static void GL_Upload32 (unsigned *data, int width, int height, bool mipmap, bool alpha)
+static void GL_Upload32 (unsigned int *data, int width, int height, bool mipmap, bool alpha)
 {
-	static unsigned scaled[1024 * 512]; // [512*256];
+	static unsigned int scaled[1024 * 512]; // [512*256];
 	int scaled_width, scaled_height;
 
 	for (scaled_width = 1; scaled_width < width; scaled_width <<= 1);
@@ -819,7 +817,7 @@ static void GL_ResampleAlphaTexture (unsigned int *data, int width, int height)
 static void GL_Upload8 (int *gl_texturenum, int *gl_brightnum, byte *data, int width, int height, byte *pal, int bytes, int colors, bool mipmap, bool alpha)
 {
 	// TODO: Find a better way to allocate memory
-	unsigned trans[640 * 480 * 2];
+	unsigned int trans[640 * 480 * 2];
 	int i;
 	bool noalpha;
 	bool nobright = true;
