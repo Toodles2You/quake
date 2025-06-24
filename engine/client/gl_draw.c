@@ -680,7 +680,7 @@ static void GL_MipMap (byte *in, int width, int height)
 
 static void GL_Upload32 (unsigned int *data, int width, int height, bool mipmap, bool alpha)
 {
-	static unsigned int scaled[1024 * 512]; // [512*256];
+	unsigned int *scaled;
 	int scaled_width, scaled_height;
 
 	for (scaled_width = 1; scaled_width < width; scaled_width <<= 1);
@@ -694,18 +694,10 @@ static void GL_Upload32 (unsigned int *data, int width, int height, bool mipmap,
 	if (scaled_height > gl_max_size.value)
 		scaled_height = gl_max_size.value;
 
-	if (scaled_width * scaled_height > sizeof (scaled) / 4)
-		Sys_Error ("GL_LoadTexture: too big");
+	scaled = malloc (scaled_width * scaled_height * 4);
 
 	if (scaled_width == width && scaled_height == height)
-	{
-		if (!mipmap)
-		{
-			glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, data);
-			goto done;
-		}
 		memcpy (scaled, data, width * height * 4);
-	}
 	else
 		GL_ResampleTexture (data, width, height, scaled, scaled_width, scaled_height);
 
@@ -728,7 +720,8 @@ static void GL_Upload32 (unsigned int *data, int width, int height, bool mipmap,
 			glTexImage2D (GL_TEXTURE_2D, miplevel, GL_RGBA, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, scaled);
 		}
 	}
-done:
+
+	free (scaled);
 
 	float aniso = 4.0;
 	float max_aniso;
@@ -816,8 +809,6 @@ static void GL_ResampleAlphaTexture (unsigned int *data, int width, int height)
 
 static void GL_Upload8 (int *gl_texturenum, int *gl_brightnum, byte *data, int width, int height, byte *pal, int bytes, int colors, bool mipmap, bool alpha)
 {
-	// TODO: Find a better way to allocate memory
-	unsigned int trans[640 * 480 * 2];
 	int i;
 	bool noalpha;
 	bool nobright = true;
@@ -825,11 +816,11 @@ static void GL_Upload8 (int *gl_texturenum, int *gl_brightnum, byte *data, int w
 
 	int s = width * height;
 
-	unsigned int *remap = &trans[0];
-	unsigned int *brightmap = remap + s;
-
 	if (s & 3)
 		Sys_Error ("GL_Upload8: s&3");
+
+	unsigned int *remap = malloc (s * 4 * 2);
+	unsigned int *brightmap = remap + s;
 
 	// if there are no transparent pixels, make it a 3 component
 	// texture even if it was specified as otherwise
@@ -911,6 +902,8 @@ static void GL_Upload8 (int *gl_texturenum, int *gl_brightnum, byte *data, int w
 
 		GL_Bind (*gl_texturenum);
 	}
+
+	free (remap);
 }
 
 void GL_LoadTexture (int *gl_texturenum, int *gl_brightnum, char *identifier, int width, int height, byte *data, int bytes, int colors, byte *pal, bool mipmap,
