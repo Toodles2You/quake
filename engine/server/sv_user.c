@@ -66,6 +66,7 @@ static void SV_New_f (void)
 
 	host_client->state = cs_connected;
 	host_client->connection_started = realtime;
+	host_client->netchan.ignore_rate = true;
 
 	// send the info about the new client to all connected clients
 	//	SV_FullClientUpdate (host_client, &sv.reliable_datagram);
@@ -405,6 +406,7 @@ static void SV_Begin_f (void)
 		return; // don't begin again
 
 	host_client->state = cs_spawned;
+	host_client->netchan.ignore_rate = false;
 
 	// handle the case of a level changing while a client was connecting
 	if (atoi (Cmd_Argv (1)) != svs.spawncount)

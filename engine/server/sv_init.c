@@ -158,6 +158,7 @@ void SV_SaveSpawnparms (void)
 
 		// needs to reconnect
 		host_client->state = cs_connected;
+		host_client->netchan.ignore_rate = true;
 
 		// call the progs to get default spawn parms for the new client
 		sv_pr_int (self) = EDICT_TO_PROG (host_client->edict);

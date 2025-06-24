@@ -178,6 +178,8 @@ Returns true if the bandwidth choke isn't active
 */
 bool Netchan_CanPacket (netchan_t *chan)
 {
+	if (chan->ignore_rate)
+		return true;
 	if (chan->cleartime < realtime + MAX_BACKUP * chan->rate)
 		return true;
 	return false;
@@ -284,10 +286,8 @@ void Netchan_Transmit (netchan_t *chan, int length, byte *data)
 		chan->cleartime = realtime + send.cursize * chan->rate;
 	else
 		chan->cleartime += send.cursize * chan->rate;
-	// #ifdef SERVERONLY
 	if (chan->socket == SERVER && Host_IsPaused ())
 		chan->cleartime = realtime;
-	// #endif
 
 	if (showpackets.value)
 	{
@@ -308,9 +308,7 @@ bool Netchan_Process (netchan_t *chan)
 {
 	uint32_t sequence, sequence_ack;
 	uint32_t reliable_ack, reliable_message;
-	// #ifdef SERVERONLY
 	int qport;
-	// #endif
 	int i;
 
 	if (
@@ -326,10 +324,8 @@ bool Netchan_Process (netchan_t *chan)
 	sequence_ack = MSG_ReadLong ();
 
 	// read the qport if we are a server
-	// #ifdef SERVERONLY
 	if (chan->socket != CLIENT)
 		qport = MSG_ReadShort ();
-	// #endif
 
 	reliable_message = sequence >> 31;
 	reliable_ack = sequence_ack >> 31;

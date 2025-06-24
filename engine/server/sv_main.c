@@ -555,6 +555,7 @@ static void SVC_DirectConnect (void)
 	Netchan_Setup (&newcl->netchan, adr, SERVER, qport);
 
 	newcl->state = cs_connected;
+	newcl->netchan.ignore_rate = true;
 
 	newcl->datagram.allowoverflow = true;
 	newcl->datagram.data = newcl->datagram_buf;

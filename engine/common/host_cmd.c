@@ -192,6 +192,7 @@ static void Host_Restart_f (void)
 
 		// needs to reconnect
 		host_client->state = cs_connected;
+		host_client->netchan.ignore_rate = true;
 	}
 
 	SV_SpawnServer (mapname, startspot);

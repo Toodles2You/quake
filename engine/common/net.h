@@ -90,6 +90,8 @@ typedef struct
 	// time and size data to calculate bandwidth
 	int outgoing_size[MAX_LATENT];
 	double outgoing_time[MAX_LATENT];
+
+	bool ignore_rate;
 } netchan_t;
 
 extern int net_drop; // packets dropped before this one
