@@ -181,12 +181,12 @@ void *Hunk_AllocName (size_t size, char *name)
 	hunk_t *h;
 
 	if (size < 0)
-		Sys_Error ("Hunk_Alloc: bad size: %lu", size);
+		Sys_Error ("Hunk_Alloc: %s bad size: %lu", name, size);
 
 	size = sizeof (hunk_t) + ((size + 15) & ~15);
 
 	if (hunk_size - hunk_low_used - hunk_high_used < size)
-		Sys_Error ("Hunk_Alloc: failed on %lu bytes", size);
+		Sys_Error ("Hunk_Alloc: %s failed on %lu bytes", name, size);
 
 	h = (hunk_t *)(hunk_base + hunk_low_used);
 	hunk_low_used += size;
@@ -247,7 +247,7 @@ void *Hunk_HighAllocName (size_t size, char *name)
 	hunk_t *h;
 
 	if (size < 0)
-		Sys_Error ("Hunk_HighAllocName: bad size: %lu", size);
+		Sys_Error ("Hunk_HighAllocName: %s bad size: %lu", name, size);
 
 	if (hunk_tempactive)
 	{
@@ -259,7 +259,7 @@ void *Hunk_HighAllocName (size_t size, char *name)
 
 	if (hunk_size - hunk_low_used - hunk_high_used < size)
 	{
-		Con_Printf ("Hunk_HighAlloc: failed on %lu bytes\n", size);
+		Con_Printf ("Hunk_HighAlloc: %s failed on %lu bytes\n", name, size);
 		return NULL;
 	}
 
