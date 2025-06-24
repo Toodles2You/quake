@@ -9,7 +9,6 @@ void Draw_Character (int x, int y, int num);
 void Draw_Crosshair (int x, int y);
 void Draw_Pic (int x, int y, qpic_t *pic);
 void Draw_TransPic (int x, int y, qpic_t *pic);
-void Draw_TransPicTranslate (int x, int y, qpic_t *pic, byte *translation);
 void Draw_ConsoleBackground (int lines);
 void Draw_TileClear (int x, int y, int w, int h);
 void Draw_FadeScreen (void);

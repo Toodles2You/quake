@@ -47,8 +47,6 @@ cvar_t cl_solid_players = {"cl_solid_players", "1"};
 //
 cvar_t name = {"name", "Player", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
 cvar_t team = {"team", "", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
-cvar_t topcolor = {"topcolor", "0", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
-cvar_t bottomcolor = {"bottomcolor", "0", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
 cvar_t rate = {"rate", "2500", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
 cvar_t noaim = {"noaim", "0", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
 cvar_t msg = {"msg", "1", CVAR_ARCHIVE | CVAR_CLIENT_INFO};
@@ -410,40 +408,6 @@ static void CL_Users_f (void)
 	}
 
 	Con_Printf ("%i total users\n", c);
-}
-
-static void CL_Color_f (void)
-{
-	// just for quake compatability...
-	int top, bottom;
-	char num[16];
-
-	if (Cmd_Argc () == 1)
-	{
-		Con_Printf ("\"color\" is \"%s %s\"\n", Info_ValueForKey (cls.userinfo, "topcolor"), Info_ValueForKey (cls.userinfo, "bottomcolor"));
-		Con_Printf ("color <0-13> [0-13]\n");
-		return;
-	}
-
-	if (Cmd_Argc () == 2)
-		top = bottom = atoi (Cmd_Argv (1));
-	else
-	{
-		top = atoi (Cmd_Argv (1));
-		bottom = atoi (Cmd_Argv (2));
-	}
-
-	top &= 15;
-	if (top > 13)
-		top = 13;
-	bottom &= 15;
-	if (bottom > 13)
-		bottom = 13;
-
-	sprintf (num, "%i", top);
-	Cvar_Set (src_client, "topcolor", num);
-	sprintf (num, "%i", bottom);
-	Cvar_Set (src_client, "bottomcolor", num);
 }
 
 /*
@@ -849,8 +813,6 @@ void CL_Init (void)
 	CL_FixupModelNames ();
 
 	Info_SetValueForKey (cls.userinfo, "name", "Player", MAX_INFO_STRING, true);
-	Info_SetValueForKey (cls.userinfo, "topcolor", "0", MAX_INFO_STRING, true);
-	Info_SetValueForKey (cls.userinfo, "bottomcolor", "0", MAX_INFO_STRING, true);
 	Info_SetValueForKey (cls.userinfo, "rate", "2500", MAX_INFO_STRING, true);
 	Info_SetValueForKey (cls.userinfo, "msg", "1", MAX_INFO_STRING, true);
 
@@ -893,8 +855,6 @@ void CL_Init (void)
 	//
 	Cvar_RegisterVariable (src_client, &name);
 	Cvar_RegisterVariable (src_client, &team);
-	Cvar_RegisterVariable (src_client, &topcolor);
-	Cvar_RegisterVariable (src_client, &bottomcolor);
 	Cvar_RegisterVariable (src_client, &rate);
 	Cvar_RegisterVariable (src_client, &msg);
 	Cvar_RegisterVariable (src_client, &noaim);
@@ -919,7 +879,6 @@ void CL_Init (void)
 	Cmd_AddCommand (src_client, "fullinfo", CL_FullInfo_f);
 	Cmd_AddCommand (src_client, "fullserverinfo", CL_FullServerinfo_f);
 
-	Cmd_AddCommand (src_client, "color", CL_Color_f);
 	Cmd_AddCommand (src_client, "download", CL_Download_f);
 
 	Cmd_AddCommand (src_client, "nextul", CL_NextUpload);

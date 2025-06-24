@@ -35,7 +35,6 @@ int c_brush_polys, c_alias_polys;
 int currenttexture = -1; // to avoid unnecessary texture sets
 
 int particletexture; // little dot for particles
-int playertextures;	 // up to MAX_CLIENTS color translated skins
 
 //
 // view origin
@@ -80,7 +79,6 @@ cvar_t gl_smoothmodels = {"gl_smoothmodels", "1"};
 cvar_t gl_affinemodels = {"gl_affinemodels", "0"};
 cvar_t gl_polyblend = {"gl_polyblend", "1"};
 cvar_t gl_playermip = {"gl_playermip", "0"};
-cvar_t gl_nocolors = {"gl_nocolors", "0"};
 cvar_t gl_keeptjunctions = {"gl_keeptjunctions", "1"};
 cvar_t gl_partblend = {"gl_partblend", "0"};
 cvar_t gl_ztrick = {"gl_ztrick", "1"};
@@ -318,7 +316,6 @@ static void R_SetupAliasFrame (int frame, aliashdr_t *paliashdr, bool shade, flo
 
 static void R_DrawAliasModel (entity_t *e)
 {
-	int i;
 	int lnum;
 	vec3_t dist;
 	float add;
@@ -392,16 +389,6 @@ static void R_DrawAliasModel (entity_t *e)
 
 	anim = (int)(cl.time * 10) & 3;
 	GL_Bind (paliashdr->gl_texturenum[currententity->skinnum][anim]);
-
-	// we can't dynamically colormap textures, so they are cached
-	// seperately for the players.  Heads are just uncolored.
-	if (currententity->scoreboard && !gl_nocolors.value)
-	{
-		i = currententity->scoreboard - cl.players;
-		R_TranslatePlayerSkin (i);
-		if (i >= 0 && i < MAX_CLIENTS)
-			GL_Bind (playertextures + i);
-	}
 
 	if (gl_smoothmodels.value)
 		glShadeModel (GL_SMOOTH);

@@ -32,7 +32,6 @@ static cvar_t gl_picmip = {"gl_picmip", "0"};
 
 static qpic_t *draw_backtile;
 
-static int translate_texture;
 static int char_texture;
 
 typedef struct
@@ -163,8 +162,6 @@ typedef struct cachepic_s
 static cachepic_t menu_cachepics[MAX_CACHED_PICS];
 static int menu_numcachepics;
 
-static byte menuplyr_pixels[4096];
-
 qpic_t *Draw_PicFromWad (char *name)
 {
 	qpic_t *p;
@@ -227,12 +224,6 @@ qpic_t *Draw_CachePic (char *path)
 	if (!dat)
 		Sys_Error ("Draw_CachePic: failed to load %s", path);
 	W_SwapPic (dat);
-
-	// HACK HACK HACK --- we need to keep the bytes for
-	// the translatable player picture just for the menu
-	// configuration dialog
-	if (!strcmp (path, "gfx/menuplyr.lmp"))
-		memcpy (menuplyr_pixels, dat->data, dat->width * dat->height);
 
 	pic->pic.width = dat->width;
 	pic->pic.height = dat->height;
@@ -388,9 +379,6 @@ void Draw_Init (void)
 	// free loaded console
 	Hunk_FreeToLowMark (start);
 
-	// save a texture slot for translated picture
-	translate_texture = texture_extension_number++;
-
 	// save slots for scraps
 	scrap_texnum = texture_extension_number;
 	texture_extension_number += MAX_SCRAPS;
@@ -541,54 +529,6 @@ void Draw_TransPic (int x, int y, qpic_t *pic)
 		Sys_Error ("Draw_TransPic: bad coordinates");
 
 	Draw_Pic (x, y, pic);
-}
-
-/*
-=============
-Draw_TransPicTranslate
-
-Only used for the player color selection menu
-=============
-*/
-void Draw_TransPicTranslate (int x, int y, qpic_t *pic, byte *translation)
-{
-	int v, u;
-	unsigned trans[64 * 64], *dest;
-	byte *src;
-	int p;
-
-	GL_Bind (translate_texture);
-
-	dest = trans;
-	for (v = 0; v < 64; v++, dest += 64)
-	{
-		src = &menuplyr_pixels[((v * pic->height) >> 6) * pic->width];
-		for (u = 0; u < 64; u++)
-		{
-			p = src[(u * pic->width) >> 6];
-			if (p == 255)
-				dest[u] = p;
-			else
-				dest[u] = d_8to24table[translation[p]];
-		}
-	}
-
-	glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA, 64, 64, 0, GL_RGBA, GL_UNSIGNED_BYTE, trans);
-
-	glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_max);
-	glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
-
-	glColor3f (1, 1, 1);
-	glBegin (GL_QUADS);
-	glTexCoord2f (0, 0);
-	glVertex2f (x, y);
-	glTexCoord2f (1, 0);
-	glVertex2f (x + pic->width, y);
-	glTexCoord2f (1, 1);
-	glVertex2f (x + pic->width, y + pic->height);
-	glTexCoord2f (0, 1);
-	glVertex2f (x, y + pic->height);
-	glEnd ();
 }
 
 void Draw_ConsoleBackground (int lines)

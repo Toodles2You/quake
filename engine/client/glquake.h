@@ -70,7 +70,6 @@ extern int d_lightstylevalue[256]; // 8.8 fraction of base light value
 extern int currenttexture;
 extern int particletexture;
 extern int netgraphtexture;
-extern int playertextures;
 
 extern cvar_t r_norefresh;
 extern cvar_t r_drawentities;
@@ -96,7 +95,6 @@ extern cvar_t gl_smoothmodels;
 extern cvar_t gl_affinemodels;
 extern cvar_t gl_polyblend;
 extern cvar_t gl_keeptjunctions;
-extern cvar_t gl_nocolors;
 extern cvar_t gl_partblend;
 
 extern cvar_t gl_max_size;
@@ -104,7 +102,6 @@ extern cvar_t gl_playermip;
 
 extern float r_world_matrix[16];
 
-void R_TranslatePlayerSkin (int playernum);
 void GL_Bind (int texnum);
 
 // Multitexture

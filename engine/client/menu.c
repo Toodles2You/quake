@@ -140,38 +140,6 @@ static void M_DrawPic (int x, int y, qpic_t *pic)
 	Draw_Pic (x + ((vid.width - 320) >> 1), y, pic);
 }
 
-static byte identityTable[256];
-static byte translationTable[256];
-
-static void M_BuildTranslationTable (int top, int bottom)
-{
-	int j;
-	byte *dest, *source;
-
-	for (j = 0; j < 256; j++)
-		identityTable[j] = j;
-	dest = translationTable;
-	source = identityTable;
-	memcpy (dest, source, 256);
-
-	if (top < 128) // the artists made some backwards ranges.  sigh.
-		memcpy (dest + TOP_RANGE, source + top, 16);
-	else
-		for (j = 0; j < 16; j++)
-			dest[TOP_RANGE + j] = source[top + 15 - j];
-
-	if (bottom < 128)
-		memcpy (dest + BOTTOM_RANGE, source + bottom, 16);
-	else
-		for (j = 0; j < 16; j++)
-			dest[BOTTOM_RANGE + j] = source[bottom + 15 - j];
-}
-
-static void M_DrawTransPicTranslate (int x, int y, qpic_t *pic)
-{
-	Draw_TransPicTranslate (x + ((vid.width - 320) >> 1), y, pic, translationTable);
-}
-
 void M_DrawTextBox (int x, int y, int width, int lines)
 {
 	qpic_t *p;
@@ -629,20 +597,14 @@ static void M_MultiPlayer_Key (int key)
 /* SETUP MENU */
 
 extern cvar_t name;
-extern cvar_t topcolor;
-extern cvar_t bottomcolor;
 
-static int setup_cursor = 4;
-static const int setup_cursor_table[] = {40, 56, 80, 104, 140};
+static int setup_cursor = 2;
+static const int setup_cursor_table[] = {40, 56, 80};
 
 static char setup_hostname[16];
 static char setup_myname[16];
-static int setup_oldtop;
-static int setup_oldbottom;
-static int setup_top;
-static int setup_bottom;
 
-#define NUM_SETUP_CMDS 5
+#define NUM_SETUP_CMDS 3
 
 static void M_Menu_Setup_f (void)
 {
@@ -651,8 +613,6 @@ static void M_Menu_Setup_f (void)
 	m_entersound = true;
 	strcpy (setup_myname, name.string);
 	strcpy (setup_hostname, hostname.string);
-	setup_top = setup_oldtop = ((int)topcolor.value) >> 4;
-	setup_bottom = setup_oldbottom = ((int)bottomcolor.value) & 15;
 }
 
 static void M_Setup_Draw (void)
@@ -671,17 +631,8 @@ static void M_Setup_Draw (void)
 	M_DrawTextBox (160, 48, 16, 1);
 	M_Print (168, 56, setup_myname);
 
-	M_Print (64, 80, "Shirt color");
-	M_Print (64, 104, "Pants color");
-
-	M_DrawTextBox (64, 140 - 8, 14, 1);
-	M_Print (72, 140, "Accept Changes");
-
-	p = Draw_CachePic ("gfx/bigbox.lmp");
-	M_DrawTransPic (160, 64, p);
-	p = Draw_CachePic ("gfx/menuplyr.lmp");
-	M_BuildTranslationTable (setup_top * 16, setup_bottom * 16);
-	M_DrawTransPicTranslate (172, 72, p);
+	M_DrawTextBox (64, 80 - 8, 14, 1);
+	M_Print (72, 80, "Accept Changes");
 
 	M_DrawCharacter (56, setup_cursor_table[setup_cursor], 12 + ((int)(realtime * 4) & 1));
 
@@ -719,20 +670,12 @@ static void M_Setup_Key (int k)
 		if (setup_cursor < 2)
 			return;
 		S_LocalSound (cl_sfx_menu3);
-		if (setup_cursor == 2)
-			setup_top = setup_top - 1;
-		if (setup_cursor == 3)
-			setup_bottom = setup_bottom - 1;
 		break;
 	case K_RIGHTARROW:
 		if (setup_cursor < 2)
 			return;
 	forward:
 		S_LocalSound (cl_sfx_menu3);
-		if (setup_cursor == 2)
-			setup_top = setup_top + 1;
-		if (setup_cursor == 3)
-			setup_bottom = setup_bottom + 1;
 		break;
 
 	case K_ENTER:
@@ -747,8 +690,6 @@ static void M_Setup_Key (int k)
 			Cbuf_AddText (src_client, va ("name \"%s\"\n", setup_myname));
 		if (strcmp (hostname.string, setup_hostname) != 0)
 			Cvar_Set (src_server, "hostname", setup_hostname);
-		if (setup_top != setup_oldtop || setup_bottom != setup_oldbottom)
-			Cbuf_AddText (src_client, va ("color %i %i\n", setup_top, setup_bottom));
 		m_entersound = true;
 		M_Menu_MultiPlayer_f ();
 		break;
@@ -789,15 +730,6 @@ static void M_Setup_Key (int k)
 			}
 		}
 	}
-
-	if (setup_top > 13)
-		setup_top = 0;
-	if (setup_top < 0)
-		setup_top = 13;
-	if (setup_bottom > 13)
-		setup_bottom = 0;
-	if (setup_bottom < 0)
-		setup_bottom = 13;
 }
 /* OPTIONS MENU */
 

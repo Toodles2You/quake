@@ -771,19 +771,9 @@ static void CL_ParseClientdata (void)
 	}
 }
 
-static void CL_NewTranslation (int slot)
-{
-	if (slot > MAX_CLIENTS)
-		Sys_Error ("CL_NewTranslation: slot > MAX_CLIENTS");
-
-	R_TranslatePlayerSkin (slot);
-}
-
 static void CL_ProcessUserInfo (int slot, player_info_t *player)
 {
 	strncpy (player->name, Info_ValueForKey (player->userinfo, "name"), sizeof (player->name) - 1);
-	player->topcolor = atoi (Info_ValueForKey (player->userinfo, "topcolor"));
-	player->bottomcolor = atoi (Info_ValueForKey (player->userinfo, "bottomcolor"));
 	if (Info_ValueForKey (player->userinfo, "*spectator")[0])
 		player->spectator = true;
 	else
@@ -793,7 +783,6 @@ static void CL_ProcessUserInfo (int slot, player_info_t *player)
 		cl.userid = player->userid;
 
 	Sbar_Changed ();
-	CL_NewTranslation (slot);
 }
 
 static void CL_UpdateUserinfo (void)

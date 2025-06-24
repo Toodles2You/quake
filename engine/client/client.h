@@ -43,13 +43,6 @@ typedef struct player_info_s
 	int ping;
 	byte pl;
 
-	// skin information
-	int topcolor;
-	int bottomcolor;
-
-	int _topcolor;
-	int _bottomcolor;
-
 	int spectator;
 } player_info_t;
 

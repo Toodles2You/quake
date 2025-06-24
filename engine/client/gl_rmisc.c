@@ -114,7 +114,6 @@ void R_Init (void)
 	Cvar_RegisterVariable (src_client, &gl_affinemodels);
 	Cvar_RegisterVariable (src_client, &gl_polyblend);
 	Cvar_RegisterVariable (src_client, &gl_playermip);
-	Cvar_RegisterVariable (src_client, &gl_nocolors);
 	Cvar_RegisterVariable (src_client, &gl_keeptjunctions);
 	Cvar_RegisterVariable (src_client, &gl_partblend);
 
@@ -123,118 +122,6 @@ void R_Init (void)
 
 	netgraphtexture = texture_extension_number;
 	texture_extension_number++;
-
-	playertextures = texture_extension_number;
-	texture_extension_number += MAX_CLIENTS;
-}
-
-/*
-===============
-R_TranslatePlayerSkin
-
-Translates a skin texture by the per-player color lookup
-===============
-*/
-void R_TranslatePlayerSkin (int playernum)
-{
-	int top, bottom;
-	byte translate[256];
-	unsigned translate32[256];
-	int i, j;
-	byte *original;
-	unsigned pixels[512 * 256], *out;
-	unsigned scaled_width, scaled_height;
-	int inwidth, inheight;
-	int tinwidth, tinheight;
-	byte *inrow;
-	unsigned frac, fracstep;
-	player_info_t *player;
-	extern byte player_8bit_texels[320 * 200];
-
-	GL_DisableMultitexture ();
-
-	player = &cl.players[playernum];
-	if (!player->name[0])
-		return;
-
-	if (player->_topcolor != player->topcolor || player->_bottomcolor != player->bottomcolor)
-	{
-		player->_topcolor = player->topcolor;
-		player->_bottomcolor = player->bottomcolor;
-
-		top = player->topcolor;
-		bottom = player->bottomcolor;
-		top = (top < 0) ? 0 : ((top > 13) ? 13 : top);
-		bottom = (bottom < 0) ? 0 : ((bottom > 13) ? 13 : bottom);
-		top *= 16;
-		bottom *= 16;
-
-		for (i = 0; i < 256; i++)
-			translate[i] = i;
-
-		for (i = 0; i < 16; i++)
-		{
-			if (top < 128) // the artists made some backwards ranges.  sigh.
-				translate[TOP_RANGE + i] = top + i;
-			else
-				translate[TOP_RANGE + i] = top + 15 - i;
-
-			if (bottom < 128)
-				translate[BOTTOM_RANGE + i] = bottom + i;
-			else
-				translate[BOTTOM_RANGE + i] = bottom + 15 - i;
-		}
-
-		//
-		// locate the original skin pixels
-		//
-		// real model width
-		tinwidth = 296;
-		tinheight = 194;
-
-		original = player_8bit_texels;
-		inwidth = 296;
-		inheight = 194;
-
-		// because this happens during gameplay, do it fast
-		// instead of sending it through gl_upload 8
-		GL_Bind (playertextures + playernum);
-
-		scaled_width = gl_max_size.value < 512 ? gl_max_size.value : 512;
-		scaled_height = gl_max_size.value < 256 ? gl_max_size.value : 256;
-		// allow users to crunch sizes down even more if they want
-		scaled_width >>= (int)gl_playermip.value;
-		scaled_height >>= (int)gl_playermip.value;
-
-		for (i = 0; i < 256; i++)
-			translate32[i] = d_8to24table[translate[i]];
-
-		out = pixels;
-		memset (pixels, 0, sizeof (pixels));
-		fracstep = tinwidth * 0x10000 / scaled_width;
-		for (i = 0; i < scaled_height; i++, out += scaled_width)
-		{
-			inrow = original + inwidth * (i * tinheight / scaled_height);
-			frac = fracstep >> 1;
-			for (j = 0; j < scaled_width; j += 4)
-			{
-				out[j] = translate32[inrow[frac >> 16]];
-				frac += fracstep;
-				out[j + 1] = translate32[inrow[frac >> 16]];
-				frac += fracstep;
-				out[j + 2] = translate32[inrow[frac >> 16]];
-				frac += fracstep;
-				out[j + 3] = translate32[inrow[frac >> 16]];
-				frac += fracstep;
-			}
-		}
-
-		glTexImage2D (GL_TEXTURE_2D, 0, GL_RGBA, scaled_width, scaled_height, 0, GL_RGBA, GL_UNSIGNED_BYTE, pixels);
-
-		glTexEnvf (GL_TEXTURE_ENV, GL_TEXTURE_ENV_MODE, GL_MODULATE);
-		glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MIN_FILTER, gl_filter_max);
-		glTexParameterf (GL_TEXTURE_2D, GL_TEXTURE_MAG_FILTER, gl_filter_max);
-	}
 }
 
 void R_NewMap (void)

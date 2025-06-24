@@ -881,8 +881,6 @@ mtriangle_t triangles[MAXALIASTRIS];
 trivertx_t *poseverts[MAXALIASFRAMES];
 int posenum;
 
-byte player_8bit_texels[320 * 200];
-
 static void *Mod_LoadAliasFrame (void *pin, maliasframedesc_t *frame)
 {
 	trivertx_t *pinframe;
@@ -1056,14 +1054,6 @@ static void *Mod_LoadAllSkins (model_t *mod, int numskins, daliasskintype_t *psk
 		if (pskintype->type == ALIAS_SKIN_SINGLE)
 		{
 			Mod_FloodFillSkin (skin, pheader->skinwidth, pheader->skinheight);
-
-			// save 8 bit texels for the player model to remap
-			if (!strcmp (mod->name, "progs/player.mdl"))
-			{
-				if (s > sizeof (player_8bit_texels))
-					Sys_Error ("Player skin too large");
-				memcpy (player_8bit_texels, (byte *)(pskintype + 1), s);
-			}
 
 			sprintf (name, "%s_%i", mod->name, i);
 

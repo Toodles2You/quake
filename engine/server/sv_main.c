@@ -238,7 +238,6 @@ static void SVC_Status (void)
 	int i;
 	client_t *cl;
 	int ping;
-	int top, bottom;
 
 	Cmd_TokenizeString (src_server, "status");
 	SV_BeginRedirect (RD_PACKET);
@@ -248,12 +247,8 @@ static void SVC_Status (void)
 		cl = &svs.clients[i];
 		if ((cl->state == cs_connected || cl->state == cs_spawned) && !cl->spectator)
 		{
-			top = atoi (Info_ValueForKey (cl->userinfo, "topcolor"));
-			bottom = atoi (Info_ValueForKey (cl->userinfo, "bottomcolor"));
-			top = (top < 0) ? 0 : ((top > 13) ? 13 : top);
-			bottom = (bottom < 0) ? 0 : ((bottom > 13) ? 13 : bottom);
 			ping = SV_CalcPing (cl);
-			Con_Printf ("%i %i %i %i \"%s\" %i %i\n", cl->userid, cl->old_frags, (int)(realtime - cl->connection_started) / 60, ping, cl->name, top, bottom);
+			Con_Printf ("%i %i %i %i \"%s\"\n", cl->userid, cl->old_frags, (int)(realtime - cl->connection_started) / 60, ping, cl->name);
 		}
 	}
 	SV_EndRedirect ();
