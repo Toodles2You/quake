@@ -91,9 +91,6 @@ static float V_CalcBob (void)
 	static float bob;
 	float cycle;
 
-	if (cl.spectator)
-		return 0;
-
 	if (onground == -1)
 		return bob; // just use old value
 

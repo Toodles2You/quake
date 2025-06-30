@@ -514,13 +514,8 @@ static void CL_ParseServerData (void)
 		}
 	}
 
-	// parse player slot, high bit means spectator
+	// parse player slot
 	cl.playernum = MSG_ReadByte ();
-	if (cl.playernum & 128)
-	{
-		cl.spectator = true;
-		cl.playernum &= ~128;
-	}
 
 	// get the full level name
 	str = MSG_ReadString ();
@@ -530,7 +525,6 @@ static void CL_ParseServerData (void)
 	movevars.gravity = MSG_ReadFloat ();
 	movevars.stopspeed = MSG_ReadFloat ();
 	movevars.maxspeed = MSG_ReadFloat ();
-	movevars.spectatormaxspeed = MSG_ReadFloat ();
 	movevars.accelerate = MSG_ReadFloat ();
 	movevars.airaccelerate = MSG_ReadFloat ();
 	movevars.wateraccelerate = MSG_ReadFloat ();
@@ -774,10 +768,6 @@ static void CL_ParseClientdata (void)
 static void CL_ProcessUserInfo (int slot, player_info_t *player)
 {
 	strncpy (player->name, Info_ValueForKey (player->userinfo, "name"), sizeof (player->name) - 1);
-	if (Info_ValueForKey (player->userinfo, "*spectator")[0])
-		player->spectator = true;
-	else
-		player->spectator = false;
 
 	if (slot == cl.playernum)
 		cl.userid = player->userid;

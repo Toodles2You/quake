@@ -43,11 +43,6 @@ FILE *sv_fraglogfile;
 static cvar_t timeout = {"timeout", "65"}; // seconds without any message
 static cvar_t zombietime = {"zombietime", "2"}; // seconds to sink messages after disconnect
 
-//
-// game rules mirrored in svs.info
-//
-static cvar_t maxspectators = {"maxspectators", "0"};
-
 /*
 ==================
 SV_FinalMessage
@@ -89,25 +84,14 @@ void SV_DropClient (client_t *drop)
 	MSG_WriteByte (&drop->netchan.message, svc_disconnect);
 
 	if (drop->state == cs_spawned)
-		if (!drop->spectator)
-		{
-			// call the prog function for removing a client
-			// this will set the body to a dead frame, among other things
-			sv_pr_int (self) = EDICT_TO_PROG (drop->edict);
-			sv_pr_execute (ClientDisconnect);
-		}
-		else if (pr_field (SpectatorDisconnect))
-		{
-			// call the prog function for removing a client
-			// this will set the body to a dead frame, among other things
-			sv_pr_int (self) = EDICT_TO_PROG (drop->edict);
-			sv_pr_execute (SpectatorDisconnect);
-		}
+	{
+		// call the prog function for removing a client
+		// this will set the body to a dead frame, among other things
+		sv_pr_int (self) = EDICT_TO_PROG (drop->edict);
+		sv_pr_execute (ClientDisconnect);
+	}
 
-	if (drop->spectator)
-		Con_Printf ("Spectator %s removed\n", drop->name);
-	else
-		Con_Printf ("Client %s removed\n", drop->name);
+	Con_Printf ("Client %s removed\n", drop->name);
 
 	if (drop->download)
 	{
@@ -245,7 +229,7 @@ static void SVC_Status (void)
 	for (i = 0; i < MAX_CLIENTS; i++)
 	{
 		cl = &svs.clients[i];
-		if ((cl->state == cs_connected || cl->state == cs_spawned) && !cl->spectator)
+		if (cl->state == cs_connected || cl->state == cs_spawned)
 		{
 			ping = SV_CalcPing (cl);
 			Con_Printf ("%i %i %i %i \"%s\"\n", cl->userid, cl->old_frags, (int)(realtime - cl->connection_started) / 60, ping, cl->name);
@@ -390,8 +374,7 @@ static void SVC_DirectConnect (void)
 	edict_t *ent;
 	int edictnum;
 	char *s;
-	int clients, spectators;
-	bool spectator;
+	int clients;
 	int qport;
 	int version;
 	int challenge;
@@ -430,32 +413,15 @@ static void SVC_DirectConnect (void)
 		return;
 	}
 
-	// check for password or spectator_password
-	s = Info_ValueForKey (userinfo, "spectator");
-	if (s[0] && strcmp (s, "0"))
+	// check for password
+	s = Info_ValueForKey (userinfo, "password");
+	if (password.string[0] && strcasecmp (password.string, "none") && strcmp (password.string, s))
 	{
-		if (spectator_password.string[0] && strcasecmp (spectator_password.string, "none") && strcmp (spectator_password.string, s))
-		{ // failed
-			Con_Printf ("%s:spectator password failed\n", NET_AdrToString (net_from));
-			Netchan_OutOfBandPrint (SERVER, net_from, "%c\nrequires a spectator password\n\n", A2C_PRINT);
-			return;
-		}
-		Info_RemoveKey (userinfo, "spectator"); // remove passwd
-		Info_SetValueForStarKey (userinfo, "*spectator", "1", MAX_INFO_STRING, sv_highchars.value);
-		spectator = true;
+		Con_Printf ("%s:password failed\n", NET_AdrToString (net_from));
+		Netchan_OutOfBandPrint (SERVER, net_from, "%c\nserver requires a password\n\n", A2C_PRINT);
+		return;
 	}
-	else
-	{
-		s = Info_ValueForKey (userinfo, "password");
-		if (password.string[0] && strcasecmp (password.string, "none") && strcmp (password.string, s))
-		{
-			Con_Printf ("%s:password failed\n", NET_AdrToString (net_from));
-			Netchan_OutOfBandPrint (SERVER, net_from, "%c\nserver requires a password\n\n", A2C_PRINT);
-			return;
-		}
-		spectator = false;
-		Info_RemoveKey (userinfo, "password"); // remove passwd
-	}
+	Info_RemoveKey (userinfo, "password"); // remove passwd
 
 	adr = net_from;
 	userid++; // so every client gets a unique id
@@ -497,27 +463,19 @@ static void SVC_DirectConnect (void)
 		}
 	}
 
-	// count up the clients and spectators
+	// count up the clients
 	clients = 0;
-	spectators = 0;
 	for (i = 0, cl = svs.clients; i < MAX_CLIENTS; i++, cl++)
 	{
 		if (cl->state == cs_free)
 			continue;
-		if (cl->spectator)
-			spectators++;
-		else
-			clients++;
+		clients++;
 	}
 
 	// if at server limits, refuse connection
 	if (maxclients.value > MAX_CLIENTS)
 		Cvar_SetValue (src_server, "maxclients", MAX_CLIENTS);
-	if (maxspectators.value > MAX_CLIENTS)
-		Cvar_SetValue (src_server, "maxspectators", MAX_CLIENTS);
-	if (maxspectators.value + maxclients.value > MAX_CLIENTS)
-		Cvar_SetValue (src_server, "maxspectators", MAX_CLIENTS - maxspectators.value + maxclients.value);
-	if ((spectator && spectators >= (int)maxspectators.value) || (!spectator && clients >= (int)maxclients.value))
+	if (clients >= (int)maxclients.value)
 	{
 		Con_Printf ("%s:full connect\n", NET_AdrToString (adr));
 		Netchan_OutOfBandPrint (SERVER, adr, "%c\nserver is full\n\n", A2C_PRINT);
@@ -561,9 +519,6 @@ static void SVC_DirectConnect (void)
 	newcl->datagram.data = newcl->datagram_buf;
 	newcl->datagram.maxsize = sizeof (newcl->datagram_buf);
 
-	// spectator mode can ONLY be set at join time
-	newcl->spectator = spectator;
-
 	ent = ED_GetNum (edictnum);
 	newcl->edict = ent;
 
@@ -588,10 +543,7 @@ static void SVC_DirectConnect (void)
 			newcl->spawn_parms[i] = (&sv_pr_float (parm1))[i];
 	}
 
-	if (newcl->spectator)
-		Con_Printf ("Spectator %s connected\n", newcl->name);
-	else
-		Con_DPrintf ("Client %s connected\n", newcl->name);
+	Con_DPrintf ("Client %s connected\n", newcl->name);
 	newcl->sendinfo = true;
 }
 
@@ -876,7 +828,7 @@ void SV_ExtractFromUserinfo (client_t *cl)
 			}
 		}
 
-		if (cl->state >= cs_spawned && !cl->spectator)
+		if (cl->state >= cs_spawned)
 			SV_BroadcastPrintf (PRINT_HIGH, "%s changed name to %s\n", cl->name, val);
 	}
 
@@ -1185,8 +1137,7 @@ void SV_CheckTimeouts (void)
 	{
 		if (cl->state == cs_connected || cl->state == cs_spawned)
 		{
-			if (!cl->spectator)
-				nclients++;
+			nclients++;
 			if (cl->netchan.last_received < droptime)
 			{
 				SV_BroadcastPrintf (PRINT_HIGH, "%s timed out\n", cl->name);
@@ -1206,19 +1157,16 @@ void SV_CheckTimeouts (void)
 
 void SV_CheckVars (void)
 {
-	static char *pw, *spw;
+	static char *pw;
 	int v;
 
-	if (password.string == pw && spectator_password.string == spw)
+	if (password.string == pw)
 		return;
 	pw = password.string;
-	spw = spectator_password.string;
 
 	v = 0;
 	if (pw && pw[0] && strcmp (pw, "none"))
 		v |= 1;
-	if (spw && spw[0] && strcmp (spw, "none"))
-		v |= 2;
 
 	Con_Printf ("Updated needpass.\n");
 	if (!v)
@@ -1234,7 +1182,6 @@ void SV_Init (void)
 	extern cvar_t sv_gravity;
 	extern cvar_t sv_aim;
 	extern cvar_t sv_stopspeed;
-	extern cvar_t sv_spectatormaxspeed;
 	extern cvar_t sv_accelerate;
 	extern cvar_t sv_airaccelerate;
 	extern cvar_t sv_wateraccelerate;
@@ -1249,7 +1196,6 @@ void SV_Init (void)
 	Cvar_RegisterVariable (src_server, &sv_ticrate);
 
 	Cvar_RegisterVariable (src_server, &maxclients);
-	Cvar_RegisterVariable (src_server, &maxspectators);
 	Cvar_RegisterVariable (src_server, &hostname);
 
 	Cvar_RegisterVariable (src_server, &timeout);
@@ -1259,7 +1205,6 @@ void SV_Init (void)
 	Cvar_RegisterVariable (src_server, &sv_gravity);
 	Cvar_RegisterVariable (src_server, &sv_stopspeed);
 	Cvar_RegisterVariable (src_server, &sv_maxspeed);
-	Cvar_RegisterVariable (src_server, &sv_spectatormaxspeed);
 	Cvar_RegisterVariable (src_server, &sv_accelerate);
 	Cvar_RegisterVariable (src_server, &sv_airaccelerate);
 	Cvar_RegisterVariable (src_server, &sv_wateraccelerate);

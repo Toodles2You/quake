@@ -499,11 +499,6 @@ static void SV_UpdateClientStats (client_t *client)
 	ent = client->edict;
 	memset (stats, 0, sizeof (stats));
 
-	// if we are a spectator and we are tracking a player, we get his stats
-	// so our status bar reflects his
-	if (client->spectator && client->spec_track > 0)
-		ent = svs.clients[client->spec_track - 1].edict;
-
 	stats[STAT_HEALTH] = ed_float (ent, health);
 	stats[STAT_WEAPON] = SV_ModelIndex (ed_get_string (ent, weaponmodel));
 	stats[STAT_AMMO] = ed_float (ent, currentammo);
@@ -512,8 +507,7 @@ static void SV_UpdateClientStats (client_t *client)
 	stats[STAT_NAILS] = ed_float (ent, ammo_nails);
 	stats[STAT_ROCKETS] = ed_float (ent, ammo_rockets);
 	stats[STAT_CELLS] = ed_float (ent, ammo_cells);
-	if (!client->spectator)
-		stats[STAT_ACTIVEWEAPON] = ed_float (ent, weapon);
+	stats[STAT_ACTIVEWEAPON] = ed_float (ent, weapon);
 	// stuff the sigil bits into the high bits of items for sbar
 	stats[STAT_ITEMS] = (int)ed_float (ent, items) | ((int)sv_pr_float (serverflags) << 28);
 

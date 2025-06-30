@@ -328,7 +328,6 @@ void CL_Disconnect (void)
 
 		cls.demoplayback = cls.demorecording = cls.timedemo = false;
 	}
-	Cam_Reset ();
 
 	if (cls.download)
 	{
@@ -810,7 +809,6 @@ void CL_Init (void)
 	CL_InitInput ();
 	CL_InitTEnts ();
 	CL_InitPrediction ();
-	CL_InitCam ();
 	Pmove_Init ();
 
 	//

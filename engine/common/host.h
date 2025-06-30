@@ -23,7 +23,6 @@ extern quakeparms_t host_parms;
 extern cvar_t rcon_password;
 extern cvar_t rcon_address;
 extern cvar_t password;
-extern cvar_t spectator_password;
 extern cvar_t sys_ticrate;
 extern cvar_t developer;
 

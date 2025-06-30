@@ -54,7 +54,7 @@ static void CL_NudgePosition (void)
 	Con_DPrintf ("CL_NudgePosition: stuck\n");
 }
 
-void CL_PredictUsercmd (player_state_t *from, player_state_t *to, usercmd_t *u, bool spectator)
+void CL_PredictUsercmd (player_state_t *from, player_state_t *to, usercmd_t *u)
 {
 	// split up very long moves
 	if (u->msec > 50)
@@ -65,8 +65,8 @@ void CL_PredictUsercmd (player_state_t *from, player_state_t *to, usercmd_t *u, 
 		split = *u;
 		split.msec /= 2;
 
-		CL_PredictUsercmd (from, &temp, &split, spectator);
-		CL_PredictUsercmd (&temp, to, &split, spectator);
+		CL_PredictUsercmd (from, &temp, &split);
+		CL_PredictUsercmd (&temp, to, &split);
 		return;
 	}
 
@@ -80,7 +80,6 @@ void CL_PredictUsercmd (player_state_t *from, player_state_t *to, usercmd_t *u, 
 	pmove.oldbuttons = from->oldbuttons;
 	pmove.waterjumptime = from->waterjumptime;
 	pmove.dead = cl.stats[STAT_HEALTH] <= 0;
-	pmove.spectator = spectator;
 
 	pmove.cmd = *u;
 
@@ -149,7 +148,7 @@ void CL_PredictMove (void)
 	for (i = 1; i < UPDATE_BACKUP - 1 && cls.netchan.incoming_sequence + i < cls.netchan.outgoing_sequence; i++)
 	{
 		to = &cl.frames[(cls.netchan.incoming_sequence + i) & UPDATE_MASK];
-		CL_PredictUsercmd (&from->playerstate[cl.playernum], &to->playerstate[cl.playernum], &to->cmd, cl.spectator);
+		CL_PredictUsercmd (&from->playerstate[cl.playernum], &to->playerstate[cl.playernum], &to->cmd);
 		if (to->senttime >= cl.time)
 			break;
 		from = to;

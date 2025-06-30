@@ -179,8 +179,7 @@ enum
 	clc_move = 3,	   // [[usercmd_t]
 	clc_stringcmd = 4, // [string] message
 	clc_delta = 5,	   // [byte] sequence number, requests delta compression of message
-	clc_tmove = 6,	   // teleport request, spectator only
-	clc_upload = 7,	   // teleport request, spectator only
+	clc_upload = 7,
 };
 
 //

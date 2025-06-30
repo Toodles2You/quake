@@ -676,78 +676,6 @@ static void NudgePosition (void)
 	VectorCopy (base, pmove.origin);
 }
 
-static void SpectatorMove (void)
-{
-	float speed, drop, friction, control, newspeed, accel;
-	float currentspeed, addspeed, accelspeed;
-	int i;
-	vec3_t wishvel;
-	float fmove, smove;
-	vec3_t wishdir;
-	float wishspeed;
-
-	// friction
-
-	speed = Length (pmove.velocity);
-	if (speed < 1)
-	{
-		VectorCopy (vec3_origin, pmove.velocity)
-	}
-	else
-	{
-		drop = 0;
-
-		friction = movevars.friction * 1.5; // extra friction
-		control = speed < movevars.stopspeed ? movevars.stopspeed : speed;
-		drop += control * friction * frametime;
-
-		// scale the velocity
-		newspeed = speed - drop;
-		if (newspeed < 0)
-			newspeed = 0;
-		newspeed /= speed;
-
-		VectorScale (pmove.velocity, newspeed, pmove.velocity);
-	}
-
-	// accelerate
-	fmove = pmove.cmd.forwardmove;
-	smove = pmove.cmd.sidemove;
-
-	VectorNormalize (forward);
-	VectorNormalize (right);
-
-	for (i = 0; i < 3; i++)
-		wishvel[i] = forward[i] * fmove + right[i] * smove;
-	wishvel[2] += pmove.cmd.upmove;
-
-	VectorCopy (wishvel, wishdir);
-	wishspeed = VectorNormalize (wishdir);
-
-	//
-	// clamp to server defined max speed
-	//
-	if (wishspeed > movevars.spectatormaxspeed)
-	{
-		VectorScale (wishvel, movevars.spectatormaxspeed / wishspeed, wishvel);
-		wishspeed = movevars.spectatormaxspeed;
-	}
-
-	currentspeed = DotProduct (pmove.velocity, wishdir);
-	addspeed = wishspeed - currentspeed;
-	if (addspeed <= 0)
-		return;
-	accelspeed = movevars.accelerate * frametime * wishspeed;
-	if (accelspeed > addspeed)
-		accelspeed = addspeed;
-
-	for (i = 0; i < 3; i++)
-		pmove.velocity[i] += accelspeed * wishdir[i];
-
-	// move
-	VectorMA (pmove.origin, frametime, pmove.velocity, pmove.origin);
-}
-
 /*
 =============
 PlayerMove
@@ -764,12 +692,6 @@ void PlayerMove (void)
 	pmove.numtouch = 0;
 
 	AngleVectors (pmove.angles, forward, right, up);
-
-	if (pmove.spectator)
-	{
-		SpectatorMove ();
-		return;
-	}
 
 	NudgePosition ();
 

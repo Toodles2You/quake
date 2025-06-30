@@ -42,8 +42,6 @@ typedef struct player_info_s
 	int frags;
 	int ping;
 	byte pl;
-
-	int spectator;
 } player_info_t;
 
 typedef struct
@@ -185,8 +183,6 @@ typedef struct
 					   // throw out the first couple, so the player
 					   // doesn't accidentally do something the
 					   // first frame
-
-	int spectator;
 
 	double last_ping_request; // while showing scoreboard
 	double last_servermessage;
@@ -409,24 +405,6 @@ void CL_ParsePlayerinfo (void);
 //
 void CL_InitPrediction (void);
 void CL_PredictMove (void);
-void CL_PredictUsercmd (player_state_t *from, player_state_t *to, usercmd_t *u, bool spectator);
-
-//
-// cl_cam.c
-//
-enum
-{
-	CAM_NONE = 0,
-	CAM_TRACK,
-};
-
-extern int spec_track; // player# of who we are tracking
-
-bool Cam_DrawViewModel (void);
-bool Cam_DrawPlayer (int playernum);
-void Cam_Track (usercmd_t *cmd);
-void Cam_FinishMove (usercmd_t *cmd);
-void Cam_Reset (void);
-void CL_InitCam (void);
+void CL_PredictUsercmd (player_state_t *from, player_state_t *to, usercmd_t *u);
 
 #endif /* !_CLIENT_H */

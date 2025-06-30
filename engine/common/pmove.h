@@ -40,7 +40,6 @@ typedef struct
 	int oldbuttons;
 	float waterjumptime;
 	bool dead;
-	int spectator;
 
 	// world state
 	int numphysent;
@@ -59,7 +58,6 @@ typedef struct
 	float gravity;
 	float stopspeed;
 	float maxspeed;
-	float spectatormaxspeed;
 	float accelerate;
 	float airaccelerate;
 	float wateraccelerate;

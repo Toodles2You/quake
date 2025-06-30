@@ -423,10 +423,7 @@ void CL_Record_f (void)
 	MSG_WriteLong (&buf, cl.servercount);
 	MSG_WriteString (&buf, gamedirfile);
 
-	if (cl.spectator)
-		MSG_WriteByte (&buf, cl.playernum | 128);
-	else
-		MSG_WriteByte (&buf, cl.playernum);
+	MSG_WriteByte (&buf, cl.playernum);
 
 	// send full levelname
 	MSG_WriteString (&buf, cl.levelname);
@@ -435,7 +432,6 @@ void CL_Record_f (void)
 	MSG_WriteFloat (&buf, movevars.gravity);
 	MSG_WriteFloat (&buf, movevars.stopspeed);
 	MSG_WriteFloat (&buf, movevars.maxspeed);
-	MSG_WriteFloat (&buf, movevars.spectatormaxspeed);
 	MSG_WriteFloat (&buf, movevars.accelerate);
 	MSG_WriteFloat (&buf, movevars.airaccelerate);
 	MSG_WriteFloat (&buf, movevars.wateraccelerate);

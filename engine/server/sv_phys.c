@@ -43,7 +43,6 @@ cvar_t sv_maxvelocity = {"sv_maxvelocity", "2000"};
 cvar_t sv_gravity = {"sv_gravity", "800"};
 cvar_t sv_stopspeed = {"sv_stopspeed", "100"};
 cvar_t sv_maxspeed = {"sv_maxspeed", "320"};
-cvar_t sv_spectatormaxspeed = {"sv_spectatormaxspeed", "500"};
 cvar_t sv_accelerate = {"sv_accelerate", "10"};
 cvar_t sv_airaccelerate = {"sv_airaccelerate", "0.7"};
 cvar_t sv_wateraccelerate = {"sv_wateraccelerate", "10"};
@@ -1012,7 +1011,6 @@ void SV_SetMoveVars (void)
 	movevars.gravity = sv_gravity.value;
 	movevars.stopspeed = sv_stopspeed.value;
 	movevars.maxspeed = sv_maxspeed.value;
-	movevars.spectatormaxspeed = sv_spectatormaxspeed.value;
 	movevars.accelerate = sv_accelerate.value;
 	movevars.airaccelerate = sv_airaccelerate.value;
 	movevars.wateraccelerate = sv_wateraccelerate.value;

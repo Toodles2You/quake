@@ -88,8 +88,6 @@ static void SV_New_f (void)
 	MSG_WriteString (&host_client->netchan.message, gamedirfile);
 
 	playernum = ED_ForNum (host_client->edict) - 1;
-	if (host_client->spectator)
-		playernum |= 128;
 	MSG_WriteByte (&host_client->netchan.message, playernum);
 
 	// send full levelname
@@ -99,7 +97,6 @@ static void SV_New_f (void)
 	MSG_WriteFloat (&host_client->netchan.message, movevars.gravity);
 	MSG_WriteFloat (&host_client->netchan.message, movevars.stopspeed);
 	MSG_WriteFloat (&host_client->netchan.message, movevars.maxspeed);
-	MSG_WriteFloat (&host_client->netchan.message, movevars.spectatormaxspeed);
 	MSG_WriteFloat (&host_client->netchan.message, movevars.accelerate);
 	MSG_WriteFloat (&host_client->netchan.message, movevars.airaccelerate);
 	MSG_WriteFloat (&host_client->netchan.message, movevars.wateraccelerate);
@@ -377,27 +374,6 @@ static void SV_Spawn_f (void)
 	MSG_WriteString (&host_client->netchan.message, va ("cmd begin %i\n", svs.spawncount));
 }
 
-static void SV_SpawnSpectator (void)
-{
-	int i;
-	edict_t *e;
-
-	VectorCopy (vec3_origin, ed_vector (sv_player, origin));
-	VectorCopy (vec3_origin, ed_vector (sv_player, view_ofs));
-	ed_vector (sv_player, view_ofs)[2] = 22;
-
-	// search for an info_playerstart to spawn the spectator at
-	for (i = MAX_CLIENTS - 1; i < sv.num_edicts; i++)
-	{
-		e = ED_GetNum (i);
-		if (!strcmp (ed_get_string (e, classname), "info_player_start"))
-		{
-			VectorCopy (ed_vector (e, origin), ed_vector (sv_player, origin));
-			return;
-		}
-	}
-}
-
 static void SV_Begin_f (void)
 {
 	int i;
@@ -421,22 +397,6 @@ static void SV_Begin_f (void)
 	{
 		// if this is the last client to be connected, unpause
 		sv.paused = false;
-	}
-	else if (host_client->spectator)
-	{
-		SV_SpawnSpectator ();
-
-		if (pr_field (SpectatorConnect))
-		{
-			// copy spawn parms out of the client_t
-			for (i = 0; i < NUM_SPAWN_PARMS; i++)
-				(&sv_pr_float (parm1))[i] = host_client->spawn_parms[i];
-
-			// call the spawn function
-			sv_pr_float (time) = sv.time;
-			sv_pr_int (self) = EDICT_TO_PROG (sv_player);
-			sv_pr_execute (SpectatorConnect);
-		}
 	}
 	else
 	{
@@ -677,9 +637,7 @@ static void SV_Say (bool team)
 		t1[31] = 0;
 	}
 
-	if (host_client->spectator && (!sv_spectalk.value || team))
-		sprintf (text, "[SPEC] %s: ", host_client->name);
-	else if (team)
+	if (team)
 		sprintf (text, "(%s): ", host_client->name);
 	else
 		sprintf (text, "%s: ", host_client->name);
@@ -726,24 +684,12 @@ static void SV_Say (bool team)
 	{
 		if (client->state != cs_spawned)
 			continue;
-		if (host_client->spectator && !sv_spectalk.value)
-			if (!client->spectator)
-				continue;
 
 		if (team)
 		{
-			// the spectator team
-			if (host_client->spectator)
-			{
-				if (!client->spectator)
-					continue;
-			}
-			else
-			{
-				t2 = Info_ValueForKey (client->userinfo, "team");
-				if (strcmp (t1, t2) || client->spectator)
-					continue; // on different teams
-			}
+			t2 = Info_ValueForKey (client->userinfo, "team");
+			if (strcmp (t1, t2))
+				continue; // on different teams
 		}
 		SV_ClientPrintf (client, PRINT_CHAT, "%s", text);
 	}
@@ -831,12 +777,6 @@ static void SV_Pause_f (void)
 		return;
 	}
 
-	if (host_client->spectator)
-	{
-		SV_ClientPrintf (host_client, PRINT_HIGH, "Spectators can not pause.\n");
-		return;
-	}
-
 	if (sv.paused)
 		sprintf (st, "%s paused the game\n", host_client->name);
 	else
@@ -855,51 +795,8 @@ The client is going to disconnect, so remove the connection immediately
 static void SV_Drop_f (void)
 {
 	SV_EndRedirect ();
-	if (!host_client->spectator)
-		SV_BroadcastPrintf (PRINT_HIGH, "%s dropped\n", host_client->name);
+	SV_BroadcastPrintf (PRINT_HIGH, "%s dropped\n", host_client->name);
 	SV_DropClient (host_client);
-}
-
-/*
-=================
-SV_PTrack_f
-
-Change the bandwidth estimate for a client
-=================
-*/
-static void SV_PTrack_f (void)
-{
-	int i;
-	edict_t *ent, *tent;
-
-	if (!host_client->spectator)
-		return;
-
-	if (Cmd_Argc () != 2)
-	{
-		// turn off tracking
-		host_client->spec_track = 0;
-		ent = ED_GetNum (host_client - svs.clients + 1);
-		tent = ED_GetNum (0);
-		ed_int (ent, goalentity) = EDICT_TO_PROG (tent);
-		return;
-	}
-
-	i = atoi (Cmd_Argv (1));
-	if (i < 0 || i >= MAX_CLIENTS || svs.clients[i].state != cs_spawned || svs.clients[i].spectator)
-	{
-		SV_ClientPrintf (host_client, PRINT_HIGH, "Invalid client to track\n");
-		host_client->spec_track = 0;
-		ent = ED_GetNum (host_client - svs.clients + 1);
-		tent = ED_GetNum (0);
-		ed_int (ent, goalentity) = EDICT_TO_PROG (tent);
-		return;
-	}
-	host_client->spec_track = i + 1; // now tracking
-
-	ent = ED_GetNum (host_client - svs.clients + 1);
-	tent = ED_GetNum (i + 1);
-	ed_int (ent, goalentity) = EDICT_TO_PROG (tent);
 }
 
 /*
@@ -1043,8 +940,6 @@ static const ucmd_t ucmds[] = {
 
 	{"download", SV_BeginDownload_f},
 	{"nextdl", SV_NextDownload_f},
-
-	{"ptrack", SV_PTrack_f}, //ZOID - used with autocam
 
 	{NULL, NULL},
 };
@@ -1300,15 +1195,12 @@ static void SV_RunCmd (usercmd_t *ucmd)
 	if (sv.frametime > 0.1)
 		sv.frametime = 0.1;
 
-	if (!host_client->spectator)
-	{
-		sv_pr_float (frametime) = sv.frametime;
-		sv_pr_float (time) = sv.time;
-		sv_pr_int (self) = EDICT_TO_PROG (sv_player);
-		sv_pr_execute (PlayerPreThink);
+	sv_pr_float (frametime) = sv.frametime;
+	sv_pr_float (time) = sv.time;
+	sv_pr_int (self) = EDICT_TO_PROG (sv_player);
+	sv_pr_execute (PlayerPreThink);
 
-		SV_RunThink (sv_player);
-	}
+	SV_RunThink (sv_player);
 
 	pmove.protocol = svs.protocol;
 
@@ -1324,7 +1216,6 @@ static void SV_RunCmd (usercmd_t *ucmd)
 	VectorCopy (playerVelocity, pmove.velocity);
 	VectorCopy (playerVangle, pmove.angles);
 
-	pmove.spectator = host_client->spectator;
 	if (pmove.protocol == PROTOCOL_NETQUAKE)
 		pmove.waterjumptime = ed_float (sv_player, teleport_time) - sv.time;
 	else
@@ -1396,26 +1287,23 @@ static void SV_RunCmd (usercmd_t *ucmd)
 
 	VectorCopy (pmove.angles, playerVangle);
 
-	if (!host_client->spectator)
+	// link into place and touch triggers
+	SV_LinkEdict (sv_player, true);
+
+	// touch other objects
+	for (i = 0; i < pmove.numtouch; i++)
 	{
-		// link into place and touch triggers
-		SV_LinkEdict (sv_player, true);
+		n = pmove.physents[pmove.touchindex[i]].info;
+		ent = ED_GetNum (n);
+		if (!ed_int (ent, touch) || (playertouch[n / 8] & (1 << (n % 8))))
+			continue;
 
-		// touch other objects
-		for (i = 0; i < pmove.numtouch; i++)
-		{
-			n = pmove.physents[pmove.touchindex[i]].info;
-			ent = ED_GetNum (n);
-			if (!ed_int (ent, touch) || (playertouch[n / 8] & (1 << (n % 8))))
-				continue;
+		sv_pr_int (self) = EDICT_TO_PROG (ent);
+		sv_pr_int (other) = EDICT_TO_PROG (sv_player);
 
-			sv_pr_int (self) = EDICT_TO_PROG (ent);
-			sv_pr_int (other) = EDICT_TO_PROG (sv_player);
+		PR_ExecuteProgram (&sv.pr, ed_int (ent, touch));
 
-			PR_ExecuteProgram (&sv.pr, ed_int (ent, touch));
-
-			playertouch[n / 8] |= 1 << (n % 8);
-		}
+		playertouch[n / 8] |= 1 << (n % 8);
 	}
 }
 
@@ -1429,20 +1317,10 @@ Done after running a player command.
 static void SV_PostRunCmd (void)
 {
 	// run post-think
-
-	if (!host_client->spectator)
-	{
-		sv_pr_float (time) = sv.time;
-		sv_pr_int (self) = EDICT_TO_PROG (sv_player);
-		sv_pr_execute (PlayerPostThink);
-		SV_RunNewmis ();
-	}
-	else if (pr_field (SpectatorThink))
-	{
-		sv_pr_float (time) = sv.time;
-		sv_pr_int (self) = EDICT_TO_PROG (sv_player);
-		sv_pr_execute (SpectatorThink);
-	}
+	sv_pr_float (time) = sv.time;
+	sv_pr_int (self) = EDICT_TO_PROG (sv_player);
+	sv_pr_execute (PlayerPostThink);
+	SV_RunNewmis ();
 }
 
 /*
@@ -1572,18 +1450,6 @@ void SV_ExecuteClientMessage (client_t *cl)
 		case clc_stringcmd:
 			s = MSG_ReadString ();
 			SV_ExecuteUserCommand (s);
-			break;
-
-		case clc_tmove:
-			o[0] = MSG_ReadCoord ();
-			o[1] = MSG_ReadCoord ();
-			o[2] = MSG_ReadCoord ();
-			// only allowed by spectators
-			if (host_client->spectator)
-			{
-				VectorCopy (o, ed_vector (sv_player, origin));
-				SV_LinkEdict (sv_player, false);
-			}
 			break;
 
 		case clc_upload:

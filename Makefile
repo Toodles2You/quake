@@ -55,7 +55,6 @@ ENGINE_CLIENT_SRC = \
 	engine/client/al_vorbis.c \
 	engine/client/al_wave.c \
 	engine/client/chase.c \
-	engine/client/cl_cam.c \
 	engine/client/cl_demo.c \
 	engine/client/cl_ents.c \
 	engine/client/cl_input.c \

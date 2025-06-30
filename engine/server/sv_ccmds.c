@@ -405,11 +405,7 @@ static void SV_Status_f (void)
 
 			Con_Printf ("%-16.16s  ", cl->name);
 
-			Con_Printf ("%6i %5i", cl->userid, (int)ed_float (cl->edict, frags));
-			if (cl->spectator)
-				Con_Printf (" (s)\n");
-			else
-				Con_Printf ("\n");
+			Con_Printf ("%6i %5i\n", cl->userid, (int)ed_float (cl->edict, frags));
 
 			s = NET_BaseAdrToString (cl->netchan.remote_address);
 			Con_Printf ("  %-16.16s", s);
@@ -457,12 +453,8 @@ static void SV_Status_f (void)
 				Con_Printf ("ZOMBIE\n");
 				continue;
 			}
-			Con_Printf ("%4i %4i %3.1f %4i", (int)(1000 * cl->netchan.frame_rate), (int)SV_CalcPing (cl),
+			Con_Printf ("%4i %4i %3.1f %4i\n", (int)(1000 * cl->netchan.frame_rate), (int)SV_CalcPing (cl),
 						100.0 * cl->netchan.drop_count / cl->netchan.incoming_sequence, cl->netchan.qport);
-			if (cl->spectator)
-				Con_Printf (" (s)\n");
-			else
-				Con_Printf ("\n");
 		}
 	}
 	Con_Printf ("\n");

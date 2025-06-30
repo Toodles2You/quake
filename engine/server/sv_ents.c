@@ -329,21 +329,6 @@ static void SV_WritePlayersToClient (client_t *client, edict_t *clent, byte *pvs
 
 		ent = cl->edict;
 
-		// ZOID visibility tracking
-		if (ent != clent && !(client->spec_track && client->spec_track - 1 == j))
-		{
-			if (cl->spectator)
-				continue;
-
-			// ignore if not touching a PV leaf
-			for (i = 0; i < ent->num_leafs; i++)
-				if (pvs[ent->leafnums[i] >> 3] & (1 << (ent->leafnums[i] & 7)))
-					break;
-
-			if (i == ent->num_leafs)
-				continue; // not visible
-		}
-
 		pflags = PF_MSEC | PF_COMMAND;
 
 		if (ed_float (ent, modelindex) != sv_playermodel)
@@ -360,19 +345,12 @@ static void SV_WritePlayersToClient (client_t *client, edict_t *clent, byte *pvs
 		if (ed_vector (ent, mins)[2] != -24)
 			pflags |= PF_GIB;
 
-		if (cl->spectator)
-		{ // only sent origin and velocity to spectators
-			pflags &= PF_VELOCITY1 | PF_VELOCITY2 | PF_VELOCITY3;
-		}
-		else if (ent == clent)
+		if (ent == clent)
 		{ // don't send a lot of data on personal entity
 			pflags &= ~(PF_MSEC | PF_COMMAND);
 			if (ed_float (ent, weaponframe))
 				pflags |= PF_WEAPONFRAME;
 		}
-
-		if (client->spec_track && client->spec_track - 1 == j && ed_float (ent, weaponframe))
-			pflags |= PF_WEAPONFRAME;
 
 		MSG_WriteByte (msg, svc_playerinfo);
 		MSG_WriteByte (msg, j);

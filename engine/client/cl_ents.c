@@ -798,9 +798,6 @@ static void CL_LinkPlayers (void)
 		if (!state->modelindex)
 			continue;
 
-		if (!Cam_DrawPlayer (j))
-			continue;
-
 		// grab an entity to fill in
 		if (cl_numvisedicts == MAX_VISEDICTS)
 			break; // object list is full
@@ -842,7 +839,7 @@ static void CL_LinkPlayers (void)
 
 			oldphysent = pmove.numphysent;
 			CL_SetSolidPlayers (j);
-			CL_PredictUsercmd (state, &exact, &state->command, false);
+			CL_PredictUsercmd (state, &exact, &state->command);
 			pmove.numphysent = oldphysent;
 			VectorCopy (exact.origin, ent->origin);
 		}
@@ -956,7 +953,7 @@ void CL_SetUpPlayerPrediction (bool dopred)
 				state->command.msec = msec;
 				//Con_DPrintf ("predict: %i\n", msec);
 
-				CL_PredictUsercmd (state, &exact, &state->command, false);
+				CL_PredictUsercmd (state, &exact, &state->command);
 				VectorCopy (exact.origin, pplayer->origin);
 			}
 		}

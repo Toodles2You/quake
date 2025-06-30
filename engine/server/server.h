@@ -29,8 +29,6 @@ typedef struct client_s
 {
 	client_state_e state;
 
-	int spectator; // non-interactive
-
 	bool sendinfo;		// at end of frame, send info to all
 						// this prevents malicious multiple broadcasts
 	float lastnametime; // time of last name change
@@ -81,8 +79,6 @@ typedef struct client_s
 	FILE *download;	   // file being downloaded
 	int downloadsize;  // total bytes
 	int downloadcount; // bytes sent
-
-	int spec_track; // entnum of player tracking
 
 	double whensaid[10]; // JACK: For floodprots
 	int whensaidhead;	 // Head value for floodprots
