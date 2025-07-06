@@ -20,6 +20,9 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "bothdef.h"
 
+extern vec3_t player_mins;
+extern vec3_t player_maxs;
+
 static const vec3_t hull_sizes[MAX_MAP_HULLS][2] = {
 	{{0, 0, 0}, {0, 0, 0}},
 	{{-16, -16, -36}, {16, 16, 36}},
@@ -463,6 +466,10 @@ static void CMod_LoadClipnodes (lump_t *l)
 			VectorCopy (hull_sizes[i][1], hull->clip_maxs);
 		}
 	}
+
+	// FIXME: this stinks
+	VectorCopy (loadcmod->hulls[1].clip_mins, player_mins);
+	VectorCopy (loadcmod->hulls[1].clip_maxs, player_maxs);
 
 	for (i = 0; i < count; i++, out++, in++)
 	{

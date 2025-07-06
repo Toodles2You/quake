@@ -32,9 +32,8 @@ static float frametime;
 
 static vec3_t forward, right, up;
 
-// FIXME: Use BSP sizes
-vec3_t player_mins = {-16, -16, -24};
-vec3_t player_maxs = {16, 16, 32};
+vec3_t player_mins;
+vec3_t player_maxs;
 
 void PM_InitBoxHull (void);
 
