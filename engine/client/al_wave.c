@@ -207,7 +207,7 @@ static wavinfo_t GetWavinfo (char *name, byte *wav, int wavlength)
 	return info;
 }
 
-static void ResampleSfx (sfx_t *sfx, int inrate, int inwidth, int outrate, byte *data, byte *outdata)
+static byte *ResampleSfx (sfx_t *sfx, int inrate, int inwidth, int outrate, byte *data)
 {
 	float stepscale = (float)inrate / outrate; // this is usually 0.5, 1, or 2
 
@@ -221,14 +221,15 @@ static void ResampleSfx (sfx_t *sfx, int inrate, int inwidth, int outrate, byte 
 		sfx->width = 1;
 	else
 		sfx->width = inwidth;
-	sfx->stereo = 0;
+	sfx->stereo = false;
 
 	// resample / decimate to the current source rate
+	byte *resampled = malloc (sfx->length * sfx->width * (1 + sfx->stereo));
 
 	if (stepscale == 1 && inwidth == 1 && sfx->width == 1)
 	{
 		// fast special case
-		memcpy (outdata, data, outcount);
+		memcpy (resampled, data, outcount);
 	}
 	else
 	{
@@ -245,11 +246,13 @@ static void ResampleSfx (sfx_t *sfx, int inrate, int inwidth, int outrate, byte 
 			else
 				sample = (int)data[srcsample] << 8;
 			if (sfx->width == 2)
-				((uint16_t *)outdata)[i] = sample;
+				((uint16_t *)resampled)[i] = sample;
 			else
-				outdata[i] = sample >> 8;
+				resampled[i] = sample >> 8;
 		}
 	}
+
+	return resampled;
 }
 
 bool S_LoadSound (sfx_t *sfx)
@@ -279,11 +282,7 @@ bool S_LoadSound (sfx_t *sfx)
 	sfx->stereo = false;
 	sfx->duration = (float)sfx->length / sfx->speed;
 
-	data += info.dataofs;
-
-	byte *resampled = malloc (len);
-
-	ResampleSfx (sfx, sfx->speed, sfx->width, snd_speed, data, resampled);
+	byte *resampled = ResampleSfx (sfx, sfx->speed, sfx->width, snd_speed, data + info.dataofs);
 
 	int format;
 	if (sfx->width == 2)
