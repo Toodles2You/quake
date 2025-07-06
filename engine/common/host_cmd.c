@@ -23,7 +23,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 extern cvar_t maxclients;
 extern cvar_t pausable;
-extern cvar_t sv_ticrate;
 
 int current_skill;
 
@@ -448,8 +447,6 @@ static void Host_Loadgame_f (void)
 	}
 
 	sv.num_edicts = entnum;
-	sv.newtime = sv.oldtime = time;
-	sv.deltatime = sv_ticrate.value;
 
 	fclose (f);
 
@@ -603,8 +600,7 @@ static int LoadGamestate (char *level, char *startspot)
 	}
 
 	//	sv.num_edicts = entnum;
-	sv.newtime = sv.oldtime = time;
-	sv.deltatime = sv_ticrate.value;
+	sv.time = time;
 	fclose (f);
 
 	//	for (i=0 ; i<NUM_SPAWN_PARMS ; i++)

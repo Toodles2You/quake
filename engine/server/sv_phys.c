@@ -49,8 +49,6 @@ cvar_t sv_wateraccelerate = {"sv_wateraccelerate", "10"};
 cvar_t sv_friction = {"sv_friction", "4"};
 cvar_t sv_waterfriction = {"sv_waterfriction", "4"};
 
-cvar_t sv_ticrate = {"sv_ticrate", "0"};
-
 void SV_CheckAllEnts (void)
 {
 	int e;
@@ -913,10 +911,10 @@ static void SV_RunEntity (edict_t *ent)
 {
 	if (ed_field (lastruntime))
 	{
-		if (ed_float (ent, lastruntime) == (float)realtime)
+		if (ed_float (ent, lastruntime) == sv.time)
 			return;
 
-		ed_float (ent, lastruntime) = (float)realtime;
+		ed_float (ent, lastruntime) = sv.time;
 	}
 
 	switch ((int)ed_float (ent, movetype))
@@ -961,7 +959,7 @@ void SV_RunNewmis (void)
 	SV_RunEntity (ent);
 }
 
-void SV_RunPhysics (void)
+void SV_Physics (void)
 {
 	int i;
 	edict_t *ent;
@@ -992,30 +990,6 @@ void SV_RunPhysics (void)
 		sv_pr_float (force_retouch)--;
 		if (sv_pr_float (force_retouch) < 0.0f)
 			sv_pr_float (force_retouch) = 0.0f;
-	}
-}
-
-void SV_Physics (void)
-{
-	// don't bother running a frame if sv_ticrate seconds haven't passed
-	sv.deltatime += sv.newtime - sv.oldtime;
-	sv.oldtime = sv.newtime;
-
-	if (sv_ticrate.value <= 0.0f)
-	{
-		sv.time = sv.newtime;
-		sv.frametime = sv.deltatime;
-		SV_RunPhysics ();
-		sv.deltatime = 0.0f;
-		return;
-	}
-
-	while (sv.deltatime >= sv_ticrate.value)
-	{
-		sv.deltatime -= sv_ticrate.value;
-		sv.time += sv_ticrate.value;
-		sv.frametime = sv_ticrate.value;
-		SV_RunPhysics ();
 	}
 }
 

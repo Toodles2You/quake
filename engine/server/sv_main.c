@@ -106,7 +106,7 @@ void SV_DropClient (client_t *drop)
 	*drop->uploadfn = 0;
 
 	drop->state = cs_zombie;			 // become free in a few seconds
-	drop->connection_started = realtime; // for zombie timeout
+	drop->connection_started = host_time; // for zombie timeout
 
 	drop->old_frags = 0;
 	ed_float (drop->edict, frags) = 0;
@@ -171,7 +171,7 @@ void SV_FullClientUpdate (client_t *client, sizebuf_t *buf)
 
 	MSG_WriteByte (buf, svc_updateentertime);
 	MSG_WriteByte (buf, i);
-	MSG_WriteFloat (buf, realtime - client->connection_started);
+	MSG_WriteFloat (buf, host_time - client->connection_started);
 
 	strcpy (info, client->userinfo);
 	Info_RemovePrefixedKeys (info, '_'); // server passwords, etc
@@ -232,7 +232,7 @@ static void SVC_Status (void)
 		if (cl->state == cs_connected || cl->state == cs_spawned)
 		{
 			ping = SV_CalcPing (cl);
-			Con_Printf ("%i %i %i %i \"%s\"\n", cl->userid, cl->old_frags, (int)(realtime - cl->connection_started) / 60, ping, cl->name);
+			Con_Printf ("%i %i %i %i \"%s\"\n", cl->userid, cl->old_frags, (int)(host_time - cl->connection_started) / 60, ping, cl->name);
 		}
 	}
 	SV_EndRedirect ();
@@ -249,10 +249,10 @@ void SV_CheckLog (void)
 
 	// bump sequence if allmost full, or ten minutes have passed and
 	// there is something still sitting there
-	if (sz->cursize > LOG_HIGHWATER || (realtime - svs.logtime > LOG_FLUSH && sz->cursize))
+	if (sz->cursize > LOG_HIGHWATER || (host_time - svs.logtime > LOG_FLUSH && sz->cursize))
 	{
 		// swap buffers and bump sequence
-		svs.logtime = realtime;
+		svs.logtime = host_time;
 		svs.logsequence++;
 		sz = &svs.log[svs.logsequence & 1];
 		sz->cursize = 0;
@@ -348,7 +348,7 @@ static void SVC_GetChallenge (void)
 		// overwrite the oldest
 		svs.challenges[oldest].challenge = (rand () << 16) ^ rand ();
 		svs.challenges[oldest].adr = net_from;
-		svs.challenges[oldest].time = realtime;
+		svs.challenges[oldest].time = host_time;
 		i = oldest;
 	}
 
@@ -676,10 +676,10 @@ void Master_Heartbeat (void)
 	int active;
 	int i;
 
-	if (realtime - svs.last_heartbeat < HEARTBEAT_SECONDS)
+	if (host_time - svs.last_heartbeat < HEARTBEAT_SECONDS)
 		return; // not time to send yet
 
-	svs.last_heartbeat = realtime;
+	svs.last_heartbeat = host_time;
 
 	//
 	// count active users
@@ -814,10 +814,10 @@ void SV_ExtractFromUserinfo (client_t *cl)
 	{
 		if (!Host_IsPaused ())
 		{
-			if (!cl->lastnametime || realtime - cl->lastnametime > 5)
+			if (!cl->lastnametime || host_time - cl->lastnametime > 5)
 			{
 				cl->lastnamecount = 0;
-				cl->lastnametime = realtime;
+				cl->lastnametime = host_time;
 			}
 			else if (cl->lastnamecount++ > 4)
 			{
@@ -1130,7 +1130,7 @@ void SV_CheckTimeouts (void)
 	float droptime;
 	int nclients;
 
-	droptime = realtime - timeout.value;
+	droptime = host_time - timeout.value;
 	nclients = 0;
 
 	for (i = 0, cl = svs.clients; i < MAX_CLIENTS; i++, cl++)
@@ -1145,7 +1145,7 @@ void SV_CheckTimeouts (void)
 				cl->state = cs_free; // don't bother with zombie state
 			}
 		}
-		if (cl->state == cs_zombie && realtime - cl->connection_started > zombietime.value)
+		if (cl->state == cs_zombie && host_time - cl->connection_started > zombietime.value)
 			cl->state = cs_free; // can now be reused
 	}
 	if (Host_IsPaused () && !nclients)
@@ -1188,12 +1188,8 @@ void SV_Init (void)
 	extern cvar_t sv_friction;
 	extern cvar_t sv_waterfriction;
 
-	extern cvar_t sv_ticrate;
-
 	SV_InitOperatorCommands ();
 	SV_UserInit ();
-
-	Cvar_RegisterVariable (src_server, &sv_ticrate);
 
 	Cvar_RegisterVariable (src_server, &maxclients);
 	Cvar_RegisterVariable (src_server, &hostname);
@@ -1236,7 +1232,7 @@ void SV_Init (void)
 
 	// init fraglog stuff
 	svs.logsequence = 1;
-	svs.logtime = realtime;
+	svs.logtime = host_time;
 	svs.log[0].data = svs.log_buf[0];
 	svs.log[0].maxsize = sizeof (svs.log_buf[0]);
 	svs.log[0].cursize = 0;

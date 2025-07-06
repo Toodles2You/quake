@@ -598,7 +598,7 @@ void SCR_BeginLoadingPlaque (void)
 	scr_drawloading = false;
 
 	scr_disabled_for_loading = true;
-	scr_disabled_time = realtime;
+	scr_disabled_time = host_time;
 }
 
 void SCR_EndLoadingPlaque (void)
@@ -726,7 +726,7 @@ void SCR_UpdateScreen (void)
 {
 	if (scr_disabled_for_loading)
 	{
-		if (realtime - scr_disabled_time > 60)
+		if (host_time - scr_disabled_time > 60)
 		{
 			scr_disabled_for_loading = false;
 			Con_Printf ("load failed.\n");

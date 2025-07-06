@@ -289,7 +289,7 @@ static channel_t *SND_PickChannel (int entnum, int entchannel)
 		if (chan->entnum == cl.playernum + 1 && entnum != cl.playernum + 1 && chan->sfx)
 			continue;
 
-		double remaining = chan->finished - realtime;
+		double remaining = chan->finished - host_time;
 		if (remaining >= bestremaining)
 			continue;
 
@@ -361,7 +361,7 @@ void SND_Stop (channel_t *chan)
 void SND_Play (channel_t *chan)
 {
 	chan->looping = (chan->sfx->loopstart != -1) ? LOOP_INTRO : LOOP_NO;
-	chan->finished = realtime + chan->sfx->duration;
+	chan->finished = host_time + chan->sfx->duration;
 
 	alSourceRewind (chan->al_source);
 	alSourcei (chan->al_source, AL_BUFFER, 0);

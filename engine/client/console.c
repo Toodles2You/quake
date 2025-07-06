@@ -55,7 +55,7 @@ static char *con_text = 0;
 static cvar_t con_notifytime = {"con_notifytime", "3"}; //seconds
 
 #define NUM_CON_TIMES 4
-static float con_times[NUM_CON_TIMES]; // realtime time the line was generated for transparent notify lines
+static float con_times[NUM_CON_TIMES]; // host_time time the line was generated for transparent notify lines
 
 static int con_vislines;
 
@@ -265,7 +265,7 @@ void Con_Print (char *txt)
 			Con_Linefeed ();
 			// mark time for transparent overlay
 			if (con_current >= 0)
-				con_times[con_current % NUM_CON_TIMES] = realtime;
+				con_times[con_current % NUM_CON_TIMES] = host_time;
 		}
 
 		switch (c)
@@ -461,7 +461,7 @@ static void Con_DrawInput (void)
 	text = key_lines[edit_line];
 
 	// add the cursor frame
-	text[key_linepos] = 10 + ((int)(realtime * CON_CURSORSPEED) & 1);
+	text[key_linepos] = 10 + ((int)(host_time * CON_CURSORSPEED) & 1);
 
 	// fill out remainder with spaces
 	for (i = key_linepos + 1; i < con_linewidth; i++)
@@ -502,7 +502,7 @@ void Con_DrawNotify (void)
 		time = con_times[i % NUM_CON_TIMES];
 		if (time == 0)
 			continue;
-		time = realtime - time;
+		time = host_time - time;
 		if (time > con_notifytime.value)
 			continue;
 		text = con_text + (i % con_totallines) * con_linewidth;
@@ -527,7 +527,7 @@ void Con_DrawNotify (void)
 			Draw_Character ((x + 5) << 3, v, chat_buffer[x]);
 			x++;
 		}
-		Draw_Character ((x + 5) << 3, v, 10 + ((int)(realtime * CON_CURSORSPEED) & 1));
+		Draw_Character ((x + 5) << 3, v, 10 + ((int)(host_time * CON_CURSORSPEED) & 1));
 		v += 8;
 	}
 

@@ -65,7 +65,7 @@ static void SV_New_f (void)
 		return;
 
 	host_client->state = cs_connected;
-	host_client->connection_started = realtime;
+	host_client->connection_started = host_time;
 	host_client->netchan.ignore_rate = true;
 
 	// send the info about the new client to all connected clients
@@ -644,17 +644,17 @@ static void SV_Say (bool team)
 
 	if (fp_messages)
 	{
-		if (!Host_IsPaused () && realtime < host_client->lockedtill)
+		if (!Host_IsPaused () && host_time < host_client->lockedtill)
 		{
-			SV_ClientPrintf (host_client, PRINT_CHAT, "You can't talk for %d more seconds\n", (int)(host_client->lockedtill - realtime));
+			SV_ClientPrintf (host_client, PRINT_CHAT, "You can't talk for %d more seconds\n", (int)(host_client->lockedtill - host_time));
 			return;
 		}
 		tmp = host_client->whensaidhead - fp_messages + 1;
 		if (tmp < 0)
 			tmp = 10 + tmp;
-		if (!Host_IsPaused () && host_client->whensaid[tmp] && (realtime - host_client->whensaid[tmp] < fp_persecond))
+		if (!Host_IsPaused () && host_client->whensaid[tmp] && (host_time - host_client->whensaid[tmp] < fp_persecond))
 		{
-			host_client->lockedtill = realtime + fp_secondsdead;
+			host_client->lockedtill = host_time + fp_secondsdead;
 			if (fp_msg[0])
 				SV_ClientPrintf (host_client, PRINT_CHAT, "FloodProt: %s\n", fp_msg);
 			else
@@ -664,7 +664,7 @@ static void SV_Say (bool team)
 		host_client->whensaidhead++;
 		if (host_client->whensaidhead > 9)
 			host_client->whensaidhead = 0;
-		host_client->whensaid[host_client->whensaidhead] = realtime;
+		host_client->whensaid[host_client->whensaidhead] = host_time;
 	}
 
 	p = Cmd_Args ();
@@ -1344,7 +1344,7 @@ void SV_ExecuteClientMessage (client_t *cl)
 
 	// calc ping time
 	frame = &cl->frames[cl->netchan.incoming_acknowledged & UPDATE_MASK];
-	frame->ping_time = realtime - frame->senttime;
+	frame->ping_time = host_time - frame->senttime;
 
 	// make sure the reply sequence number matches the incoming
 	// sequence number
@@ -1354,7 +1354,7 @@ void SV_ExecuteClientMessage (client_t *cl)
 		cl->send_message = false; // don't reply, sequences have slipped
 
 	// save time for ping calculations
-	cl->frames[cl->netchan.outgoing_sequence & UPDATE_MASK].senttime = realtime;
+	cl->frames[cl->netchan.outgoing_sequence & UPDATE_MASK].senttime = host_time;
 	cl->frames[cl->netchan.outgoing_sequence & UPDATE_MASK].ping_time = -1;
 
 	host_client = cl;

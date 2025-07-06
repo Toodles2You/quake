@@ -503,7 +503,7 @@ void CL_SendCmd (void)
 	// save this command off for prediction
 	i = cls.netchan.outgoing_sequence & UPDATE_MASK;
 	cmd = &cl.frames[i].cmd;
-	cl.frames[i].senttime = realtime;
+	cl.frames[i].senttime = host_time;
 	cl.frames[i].receivedtime = -1; // we haven't gotten a reply yet
 
 	//	seq_hash = (cls.netchan.outgoing_sequence & 0xffff) ; // ^ QW_CHECK_HASH;

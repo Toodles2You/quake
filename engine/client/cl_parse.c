@@ -746,7 +746,7 @@ static void CL_ParseClientdata (void)
 	frame = &cl.frames[i];
 	parsecounttime = cl.frames[i].senttime;
 
-	frame->receivedtime = realtime;
+	frame->receivedtime = host_time;
 
 	// calculate latency
 	latency = frame->receivedtime - frame->senttime;
@@ -890,7 +890,7 @@ void CL_ParseServerMessage (void)
 	char *s;
 	int i, j;
 
-	cl.last_servermessage = realtime;
+	cl.last_servermessage = host_time;
 	CL_ClearProjectiles ();
 
 	//
@@ -1020,7 +1020,7 @@ void CL_ParseServerMessage (void)
 			i = MSG_ReadByte ();
 			if (i >= MAX_CLIENTS)
 				Host_Error ("CL_ParseServerMessage: svc_updateentertime > MAX_SCOREBOARD");
-			cl.players[i].entertime = realtime - MSG_ReadFloat ();
+			cl.players[i].entertime = host_time - MSG_ReadFloat ();
 			break;
 
 		case svc_particle:
@@ -1071,7 +1071,7 @@ void CL_ParseServerMessage (void)
 
 		case svc_intermission:
 			cl.intermission = 1;
-			cl.completed_time = realtime;
+			cl.completed_time = host_time;
 			vid.recalc_refdef = true; // go to full screen
 			if (cl.serverprotocol == PROTOCOL_QUAKEWORLD)
 			{
@@ -1085,7 +1085,7 @@ void CL_ParseServerMessage (void)
 
 		case svc_finale:
 			cl.intermission = 2;
-			cl.completed_time = realtime;
+			cl.completed_time = host_time;
 			vid.recalc_refdef = true; // go to full screen
 			SCR_CenterPrint (MSG_ReadString ());
 			break;

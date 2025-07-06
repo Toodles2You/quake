@@ -38,8 +38,6 @@ bool host_initialized; // true if into command execution
 
 double host_frametime;
 double host_time;
-double realtime;	// without any filtering or bounding
-double oldrealtime; // last frame run
 int host_framecount;
 
 int host_hunklevel;
@@ -189,7 +187,7 @@ static void Host_InitLocal (void)
 		cls.state = ca_disconnected;
 	}
 
-	host_time = 1.0; // so a think at time 0 won't get called
+	host_time = 1.0f; // so a think at time 0 won't get called
 }
 
 /*
@@ -303,23 +301,41 @@ Returns false if the time is too short to run a frame
 */
 static void Host_FilterTime (double time)
 {
-	realtime += time;
-
-	host_frametime = realtime - oldrealtime;
-	oldrealtime = realtime;
+	host_frametime = time;
 
 	if (host_framerate.value > 0)
 		host_frametime = host_framerate.value;
-	else
-	{ // don't allow really long or short frames
-		if (host_frametime > 0.1)
-			host_frametime = 0.1;
-		if (host_frametime < 0.001)
-			host_frametime = 0.001;
-	}
+	else if (host_frametime > 0.1) // don't allow really long or short frames
+		host_frametime = 0.1;
+	else if (host_frametime < 0.001)
+		host_frametime = 0.001;
 
 	if (host_timescale.value > 0.01)
 		host_frametime *= host_timescale.value;
+
+	if (!Host_IsPaused ())
+	{
+		if (cls.state == ca_active)
+		{
+			cl.time += host_frametime;
+			cl.frametime = host_frametime;
+		}
+		else
+			cl.frametime = 0.0f;
+
+		if (sv.state == ss_active)
+		{
+			sv.time += host_frametime;
+			sv.frametime = host_frametime;
+		}
+		else
+			sv.frametime = 0.0f;
+	}
+	else
+	{
+		cl.frametime = 0.0f;
+		sv.frametime = 0.0f;
+	}
 }
 
 /*
@@ -351,10 +367,6 @@ static void Host_ServerFrame (double time)
 
 	// keep the random time dependent
 	rand ();
-
-	// decide the simulation time
-	if (!Host_IsPaused ())
-		sv.newtime += time;
 
 	// check timeouts
 	SV_CheckTimeouts ();
@@ -644,7 +656,14 @@ bool Host_IsLocalClient (int userid)
 
 bool Host_IsPaused (void)
 {
-	return sv.paused || (maxclients.value <= 1 && key_dest != key_game);
+	if (Host_IsLocalGame ())
+	{
+		if (Host_IsDedicated ())
+			return sv.paused;
+		if (maxclients.value <= 1 && key_dest != key_game)
+			return true;
+	}
+	return cl.paused;
 }
 
 bool Host_IsDedicated (void)

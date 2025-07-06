@@ -113,10 +113,6 @@ void CL_PredictMove (void)
 	if (cl.paused)
 		return;
 
-	cl.time = realtime - cls.latency - cl_pushlatency.value * 0.001;
-	if (cl.time > realtime)
-		cl.time = realtime;
-
 	if (cl.intermission)
 		return;
 
@@ -133,8 +129,11 @@ void CL_PredictMove (void)
 
 	// we can now render a frame
 	if (cls.state == ca_onserver)
+	{
 		// first update is the final signon stage
 		cls.state = ca_active;
+		cl.time = 1.0f;
+	}
 
 	if (cl_nopred.value || Host_IsLocalGame ())
 	{
@@ -143,7 +142,11 @@ void CL_PredictMove (void)
 		return;
 	}
 
-	// predict forward until cl.time <= to->senttime
+	float predtime = host_time - cls.latency - cl_pushlatency.value * 0.001;
+	if (predtime > host_time)
+		predtime = host_time;
+
+	// predict forward until predtime <= to->senttime
 	oldphysent = pmove.numphysent;
 	CL_SetSolidPlayers (cl.playernum);
 
@@ -153,7 +156,7 @@ void CL_PredictMove (void)
 	{
 		to = &cl.frames[(cls.netchan.incoming_sequence + i) & UPDATE_MASK];
 		CL_PredictUsercmd (&from->playerstate[cl.playernum], &to->playerstate[cl.playernum], &to->cmd);
-		if (to->senttime >= cl.time)
+		if (to->senttime >= predtime)
 			break;
 		from = to;
 	}
@@ -168,7 +171,7 @@ void CL_PredictMove (void)
 		f = 0;
 	else
 	{
-		f = (cl.time - from->senttime) / (to->senttime - from->senttime);
+		f = (predtime - from->senttime) / (to->senttime - from->senttime);
 
 		if (f < 0)
 			f = 0;

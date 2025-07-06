@@ -155,7 +155,7 @@ void Netchan_Setup (netchan_t *chan, netadr_t adr, netsocket_e sock, int qport)
 	memset (chan, 0, sizeof (*chan));
 
 	chan->remote_address = adr;
-	chan->last_received = realtime;
+	chan->last_received = host_time;
 
 	chan->message.data = chan->message_buf;
 	chan->message.allowoverflow = true;
@@ -180,7 +180,7 @@ bool Netchan_CanPacket (netchan_t *chan)
 {
 	if (chan->ignore_rate)
 		return true;
-	if (chan->cleartime < realtime + MAX_BACKUP * chan->rate)
+	if (chan->cleartime < host_time + MAX_BACKUP * chan->rate)
 		return true;
 	return false;
 }
@@ -274,7 +274,7 @@ void Netchan_Transmit (netchan_t *chan, int length, byte *data)
 	// send the datagram
 	i = chan->outgoing_sequence & (MAX_LATENT - 1);
 	chan->outgoing_size[i] = send.cursize;
-	chan->outgoing_time[i] = realtime;
+	chan->outgoing_time[i] = host_time;
 
 	// zoid, no input in demo playback mode
 #ifndef SERVERONLY
@@ -282,12 +282,12 @@ void Netchan_Transmit (netchan_t *chan, int length, byte *data)
 #endif
 		NET_SendPacket (chan->socket, send.cursize, send.data, chan->remote_address);
 
-	if (chan->cleartime < realtime)
-		chan->cleartime = realtime + send.cursize * chan->rate;
+	if (chan->cleartime < host_time)
+		chan->cleartime = host_time + send.cursize * chan->rate;
 	else
 		chan->cleartime += send.cursize * chan->rate;
 	if (chan->socket == SERVER && Host_IsPaused ())
-		chan->cleartime = realtime;
+		chan->cleartime = host_time;
 
 	if (showpackets.value)
 	{
@@ -381,11 +381,11 @@ bool Netchan_Process (netchan_t *chan)
 	//
 	chan->frame_latency = chan->frame_latency * OLD_AVG + (chan->outgoing_sequence - sequence_ack) * (1.0 - OLD_AVG);
 
-	chan->frame_rate = chan->frame_rate * OLD_AVG + (realtime - chan->last_received) * (1.0 - OLD_AVG);
+	chan->frame_rate = chan->frame_rate * OLD_AVG + (host_time - chan->last_received) * (1.0 - OLD_AVG);
 
 	chan->good_count += 1;
 
-	chan->last_received = realtime;
+	chan->last_received = host_time;
 
 	return true;
 }

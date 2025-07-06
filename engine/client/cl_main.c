@@ -89,7 +89,7 @@ static void CL_SendConnectPacket (void)
 	double t1, t2;
 	// JACK: Fixed bug where DNS lookups would cause two connects real fast
 	//       Now, adds lookup time to the connect time.
-	//		 Should I add it to realtime instead?!?!
+	//		 Should I add it to host_time instead?!?!
 
 	if (cls.state != ca_disconnected)
 		return;
@@ -115,7 +115,7 @@ static void CL_SendConnectPacket (void)
 
 	t2 = Sys_FloatTime ();
 
-	connect_time = realtime + t2 - t1; // for retransmit requests
+	connect_time = host_time + t2 - t1; // for retransmit requests
 
 	cls.qport = qport.value;
 
@@ -144,7 +144,7 @@ void CL_CheckForResend (void)
 		return;
 	if (cls.state != ca_disconnected)
 		return;
-	if (connect_time && realtime - connect_time < 5.0)
+	if (connect_time && host_time - connect_time < 5.0)
 		return;
 
 	t1 = Sys_FloatTime ();
@@ -168,7 +168,7 @@ void CL_CheckForResend (void)
 
 	t2 = Sys_FloatTime ();
 
-	connect_time = realtime + t2 - t1; // for retransmit requests
+	connect_time = host_time + t2 - t1; // for retransmit requests
 
 	Con_Printf ("Connecting to %s...\n", cls.servername);
 	sprintf (data, "%c%c%c%cgetchallenge\n", 255, 255, 255, 255);
@@ -735,7 +735,7 @@ void CL_ReadPackets (void)
 	//
 	// check timeout
 	//
-	if (cls.state >= ca_connected && realtime - cls.netchan.last_received > cl_timeout.value)
+	if (cls.state >= ca_connected && host_time - cls.netchan.last_received > cl_timeout.value)
 	{
 		Con_Printf ("\nServer connection timed out.\n");
 		CL_Disconnect ();

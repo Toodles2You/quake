@@ -21,6 +21,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "clientdef.h"
 
 #define MAX_BEAMS 8
+#define RANDTIME (1.0 / 30.0)
 
 typedef struct
 {
@@ -28,6 +29,8 @@ typedef struct
 	model_t *model;
 	float endtime;
 	vec3_t start, end;
+	float randtime;
+	float randval[MAX_BEAMS];
 } beam_t;
 
 static beam_t cl_beams[MAX_BEAMS];
@@ -90,6 +93,13 @@ static explosion_t *CL_AllocExplosion (void)
 	return &cl_explosions[index];
 }
 
+static void CL_RandomizeBeam (beam_t *b)
+{
+	b->randtime = cl.time + RANDTIME;
+	for (int i = 0; i < MAX_BEAMS; i++)
+		b->randval[i] = rand () % 360;
+}
+
 static void CL_ParseBeam (model_t *m)
 {
 	int ent;
@@ -116,6 +126,7 @@ static void CL_ParseBeam (model_t *m)
 			b->endtime = cl.time + 0.2;
 			VectorCopy (start, b->start);
 			VectorCopy (end, b->end);
+			CL_RandomizeBeam (b);
 			return;
 		}
 
@@ -129,6 +140,7 @@ static void CL_ParseBeam (model_t *m)
 			b->endtime = cl.time + 0.2;
 			VectorCopy (start, b->start);
 			VectorCopy (end, b->end);
+			CL_RandomizeBeam (b);
 			return;
 		}
 	}
@@ -356,6 +368,9 @@ static void CL_UpdateBeams (void)
 	{
 		if (!b->model || b->endtime < cl.time)
 			continue;
+		
+		if (b->randtime < cl.time)
+			CL_RandomizeBeam (b);
 
 		// if coming from the player, update the start position
 		if (b->entity == cl.playernum + 1) // entity 0 is the world
@@ -387,6 +402,7 @@ static void CL_UpdateBeams (void)
 		// add new entities for the lightning
 		VectorCopy (b->start, org);
 		d = VectorNormalize (dist);
+		int j = 0;
 		while (d > 0)
 		{
 			ent = CL_NewTempEntity ();
@@ -396,11 +412,12 @@ static void CL_UpdateBeams (void)
 			ent->model = b->model;
 			ent->angles[0] = pitch;
 			ent->angles[1] = yaw;
-			ent->angles[2] = rand () % 360;
+			ent->angles[2] = b->randval[j];
 
 			for (i = 0; i < 3; i++)
 				org[i] += dist[i] * 30;
 			d -= 30;
+			j = (j + 1) % MAX_BEAMS;
 		}
 	}
 }

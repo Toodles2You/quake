@@ -94,7 +94,7 @@ static float V_CalcBob (void)
 	if ((view_message->flags & PF_ONGROUND) == 0)
 		return bob; // just use old value
 
-	bobtime += host_frametime;
+	bobtime += cl.frametime;
 	cycle = bobtime - (int)(bobtime / cl_bobcycle.value) * cl_bobcycle.value;
 	cycle /= cl_bobcycle.value;
 	if (cycle < cl_bobup.value)
@@ -166,7 +166,7 @@ static void V_DriftPitch (void)
 		if (fabs (cl.frames[(cls.netchan.outgoing_sequence - 1) & UPDATE_MASK].cmd.forwardmove) < 200)
 			cl.driftmove = 0;
 		else
-			cl.driftmove += host_frametime;
+			cl.driftmove += cl.frametime;
 
 		if (cl.driftmove > v_centermove.value)
 			V_StartPitchDrift ();
@@ -181,10 +181,10 @@ static void V_DriftPitch (void)
 		return;
 	}
 
-	move = host_frametime * cl.pitchvel;
-	cl.pitchvel += host_frametime * v_centerspeed.value;
+	move = cl.frametime * cl.pitchvel;
+	cl.pitchvel += cl.frametime * v_centerspeed.value;
 
-	//Con_Printf ("move: %f (%f)\n", move, host_frametime);
+	//Con_Printf ("move: %f (%f)\n", move, cl.frametime);
 
 	if (delta > 0)
 	{
@@ -455,12 +455,12 @@ void V_UpdatePalette (void)
 	}
 
 	// drop the damage value
-	cl.cshifts[CSHIFT_DAMAGE].percent -= host_frametime * 150;
+	cl.cshifts[CSHIFT_DAMAGE].percent -= cl.frametime * 150;
 	if (cl.cshifts[CSHIFT_DAMAGE].percent <= 0)
 		cl.cshifts[CSHIFT_DAMAGE].percent = 0;
 
 	// drop the bonus value
-	cl.cshifts[CSHIFT_BONUS].percent -= host_frametime * 100;
+	cl.cshifts[CSHIFT_BONUS].percent -= cl.frametime * 100;
 	if (cl.cshifts[CSHIFT_BONUS].percent <= 0)
 		cl.cshifts[CSHIFT_BONUS].percent = 0;
 
@@ -506,7 +506,7 @@ static void CalcGunAngle (void)
 		pitch = 10;
 	if (pitch < -10)
 		pitch = -10;
-	move = host_frametime * 20;
+	move = cl.frametime * 20;
 	if (yaw > oldyaw)
 	{
 		if (oldyaw + move < yaw)
@@ -591,7 +591,7 @@ static void V_CalcViewRoll (void)
 	{
 		r_refdef.viewangles[ROLL] += v_dmg_time / v_kicktime.value * v_dmg_roll;
 		r_refdef.viewangles[PITCH] += v_dmg_time / v_kicktime.value * v_dmg_pitch;
-		v_dmg_time -= host_frametime;
+		v_dmg_time -= cl.frametime;
 	}
 }
 
@@ -699,7 +699,7 @@ static void V_CalcRefdef (void)
 	{
 		float steptime;
 
-		steptime = host_frametime;
+		steptime = cl.frametime;
 
 		oldz += steptime * 80;
 		if (oldz > cl.simorg[2])
@@ -721,7 +721,7 @@ static void V_DropPunchAngle (void)
 	int sign = signbit (cl.punchangle);
 	int s = sign ? -10 : 10;
 
-	cl.punchangle -= s * host_frametime;
+	cl.punchangle -= s * cl.frametime;
 
 	if (sign != signbit (cl.punchangle))
 		cl.punchangle = 0;

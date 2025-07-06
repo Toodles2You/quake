@@ -66,7 +66,7 @@ typedef struct
 	int qport;
 
 	// bandwidth estimator
-	double cleartime; // if realtime > nc->cleartime, free to go
+	double cleartime; // if host_time > nc->cleartime, free to go
 	double rate;	  // seconds / byte
 
 	// sequencing variables

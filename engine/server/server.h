@@ -162,10 +162,7 @@ typedef struct
 	server_state_t state; // precache commands are only valid during load
 
 	double time;
-	double newtime;
-	double oldtime;
 	double frametime;
-	double deltatime;
 
 	int lastcheck;		  // used by PF_checkclient
 	double lastchecktime; // for monster ai
@@ -354,7 +351,6 @@ void SV_SpawnServer (char *server, char *startspot);
 // sv_phys.c
 //
 void SV_ProgStartFrame (void);
-void SV_RunPhysics (void);
 void SV_Physics (void);
 bool SV_RunThink (edict_t *ent);
 void SV_RunNewmis (void);

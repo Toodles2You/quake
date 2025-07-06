@@ -78,9 +78,9 @@ void CL_WriteDemoCmd (usercmd_t *pcmd)
 	byte c;
 	usercmd_t cmd;
 
-	//Con_Printf("write: %ld bytes, %4.4f\n", msg->cursize, realtime);
+	//Con_Printf("write: %ld bytes, %4.4f\n", msg->cursize, host_time);
 
-	fl = (float)realtime;
+	fl = (float)host_time;
 	fwrite (&fl, sizeof (fl), 1, cls.demofile);
 
 	c = dem_cmd;
@@ -113,12 +113,12 @@ static void CL_WriteDemoMessage (sizebuf_t *msg)
 	float fl;
 	byte c;
 
-	//Con_Printf("write: %ld bytes, %4.4f\n", msg->cursize, realtime);
+	//Con_Printf("write: %ld bytes, %4.4f\n", msg->cursize, host_time);
 
 	if (!cls.demorecording)
 		return;
 
-	fl = (float)realtime;
+	fl = (float)host_time;
 	fwrite (&fl, sizeof (fl), 1, cls.demofile);
 
 	c = dem_read;
@@ -166,19 +166,19 @@ static bool CL_GetDemoMessage (void)
 			cls.td_starttime = Sys_FloatTime ();
 			cls.td_startframe = host_framecount;
 		}
-		realtime = demotime; // warp
+		host_time = demotime; // warp
 	}
 	else if (!cl.paused && cls.state >= ca_onserver)
 	{ // allways grab until fully connected
-		if (realtime + 1.0 < demotime)
+		if (host_time + 1.0 < demotime)
 		{
 			// too far back
-			realtime = demotime - 1.0;
+			host_time = demotime - 1.0;
 			// rewind back to time
 			fseek (cls.demofile, ftell (cls.demofile) - sizeof (demotime), SEEK_SET);
 			return false;
 		}
-		else if (realtime < demotime)
+		else if (host_time < demotime)
 		{
 			// rewind back to time
 			fseek (cls.demofile, ftell (cls.demofile) - sizeof (demotime), SEEK_SET);
@@ -186,7 +186,7 @@ static bool CL_GetDemoMessage (void)
 		}
 	}
 	else
-		realtime = demotime; // we're warping
+		host_time = demotime; // we're warping
 
 	if (cls.state < ca_demostart)
 		Host_Error ("CL_GetDemoMessage: cls.state != ca_active");
@@ -309,12 +309,12 @@ static void CL_WriteRecordDemoMessage (sizebuf_t *msg, int seq)
 	float fl;
 	byte c;
 
-	//Con_Printf("write: %ld bytes, %4.4f\n", msg->cursize, realtime);
+	//Con_Printf("write: %ld bytes, %4.4f\n", msg->cursize, host_time);
 
 	if (!cls.demorecording)
 		return;
 
-	fl = (float)realtime;
+	fl = (float)host_time;
 	fwrite (&fl, sizeof (fl), 1, cls.demofile);
 
 	c = dem_read;
@@ -338,12 +338,12 @@ static void CL_WriteSetDemoMessage (void)
 	float fl;
 	byte c;
 
-	//Con_Printf("write: %ld bytes, %4.4f\n", msg->cursize, realtime);
+	//Con_Printf("write: %ld bytes, %4.4f\n", msg->cursize, host_time);
 
 	if (!cls.demorecording)
 		return;
 
-	fl = (float)realtime;
+	fl = (float)host_time;
 	fwrite (&fl, sizeof (fl), 1, cls.demofile);
 
 	c = dem_set;
@@ -752,7 +752,7 @@ void CL_PlayDemo_f (void)
 	cls.demoplayback = true;
 	cls.state = ca_demostart;
 	Netchan_Setup (&cls.netchan, net_from, CLIENT, 0);
-	realtime = 0;
+	host_time = 0;
 }
 
 /*

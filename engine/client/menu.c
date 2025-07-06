@@ -435,7 +435,7 @@ static void M_Load_Draw (void)
 		M_Print (16, 32 + 8 * i, m_filenames[i]);
 
 	// line cursor
-	M_DrawCharacter (8, 32 + load_cursor * 8, 12 + ((int)(realtime * 4) & 1));
+	M_DrawCharacter (8, 32 + load_cursor * 8, 12 + ((int)(host_time * 4) & 1));
 }
 
 static void M_Save_Draw (void)
@@ -450,7 +450,7 @@ static void M_Save_Draw (void)
 		M_Print (16, 32 + 8 * i, m_filenames[i]);
 
 	// line cursor
-	M_DrawCharacter (8, 32 + load_cursor * 8, 12 + ((int)(realtime * 4) & 1));
+	M_DrawCharacter (8, 32 + load_cursor * 8, 12 + ((int)(host_time * 4) & 1));
 }
 
 static void M_Load_Key (int k)
@@ -630,12 +630,12 @@ static void M_Setup_Draw (void)
 	M_DrawTextBox (64, 80 - 8, 14, 1);
 	M_Print (72, 80, "Accept Changes");
 
-	M_DrawCharacter (56, setup_cursor_table[setup_cursor], 12 + ((int)(realtime * 4) & 1));
+	M_DrawCharacter (56, setup_cursor_table[setup_cursor], 12 + ((int)(host_time * 4) & 1));
 
 	if (setup_cursor == 0)
-		M_DrawCharacter (168 + 8 * strlen (setup_hostname), setup_cursor_table[setup_cursor], 10 + ((int)(realtime * 4) & 1));
+		M_DrawCharacter (168 + 8 * strlen (setup_hostname), setup_cursor_table[setup_cursor], 10 + ((int)(host_time * 4) & 1));
 	else if (setup_cursor == 1)
-		M_DrawCharacter (168 + 8 * strlen (setup_myname), setup_cursor_table[setup_cursor], 10 + ((int)(realtime * 4) & 1));
+		M_DrawCharacter (168 + 8 * strlen (setup_myname), setup_cursor_table[setup_cursor], 10 + ((int)(host_time * 4) & 1));
 }
 
 static void M_Setup_Key (int k)
@@ -895,7 +895,7 @@ static void M_Options_Draw (void)
 		M_Print (16, 136, "         Video Options");
 
 	// cursor
-	M_DrawCharacter (200, 32 + m_options_cursor * 8, 12 + ((int)(realtime * 4) & 1));
+	M_DrawCharacter (200, 32 + m_options_cursor * 8, 12 + ((int)(host_time * 4) & 1));
 }
 
 static void M_Options_Key (int k)
@@ -1084,7 +1084,7 @@ static void M_Keys_Draw (void)
 	if (bind_grab)
 		M_DrawCharacter (130, 48 + m_keys_cursor * 8, '=');
 	else
-		M_DrawCharacter (130, 48 + m_keys_cursor * 8, 12 + ((int)(realtime * 4) & 1));
+		M_DrawCharacter (130, 48 + m_keys_cursor * 8, 12 + ((int)(host_time * 4) & 1));
 }
 
 static void M_Keys_Key (int k)
@@ -1368,13 +1368,13 @@ static void M_LanConfig_Draw (void)
 		M_Print (basex + 8, lanConfig_cursor_table[2], "OK");
 	}
 
-	M_DrawCharacter (basex - 8, lanConfig_cursor_table[lanConfig_cursor], 12 + ((int)(realtime * 4) & 1));
+	M_DrawCharacter (basex - 8, lanConfig_cursor_table[lanConfig_cursor], 12 + ((int)(host_time * 4) & 1));
 
 	if (lanConfig_cursor == 1)
-		M_DrawCharacter (basex + 9 * 8 + 8 * strlen (lanConfig_portname), lanConfig_cursor_table[1], 10 + ((int)(realtime * 4) & 1));
+		M_DrawCharacter (basex + 9 * 8 + 8 * strlen (lanConfig_portname), lanConfig_cursor_table[1], 10 + ((int)(host_time * 4) & 1));
 
 	if (lanConfig_cursor == 3)
-		M_DrawCharacter (basex + 16 + 8 * strlen (lanConfig_joinname), lanConfig_cursor_table[3], 10 + ((int)(realtime * 4) & 1));
+		M_DrawCharacter (basex + 16 + 8 * strlen (lanConfig_joinname), lanConfig_cursor_table[3], 10 + ((int)(host_time * 4) & 1));
 
 	if (*m_return_reason)
 		M_PrintWhite (basex, 148, m_return_reason);
@@ -1761,7 +1761,7 @@ static void M_GameOptions_Draw (void)
 	}
 
 	// line cursor
-	M_DrawCharacter (144, gameoptions_cursor_table[gameoptions_cursor], 12 + ((int)(realtime * 4) & 1));
+	M_DrawCharacter (144, gameoptions_cursor_table[gameoptions_cursor], 12 + ((int)(host_time * 4) & 1));
 }
 
 static void M_NetStart_Change (int dir)
