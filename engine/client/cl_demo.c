@@ -51,7 +51,7 @@ void CL_StopPlayback (void)
 	cls.demoplayback = false;
 	cls.demofile = NULL;
 	cls.state = ca_disconnected;
-	cls.demoplayback = 0;
+	cls.protocol = 0;
 
 	if (cls.timedemo)
 		CL_FinishTimeDemo ();
@@ -419,6 +419,7 @@ void CL_Record_f (void)
 
 	// send the serverdata
 	MSG_WriteByte (&buf, svc_serverdata);
+	MSG_WriteLong (&buf, PROTOCOL_VERSION);
 	MSG_WriteLong (&buf, PROTOCOL_QUAKEWORLD);
 	MSG_WriteLong (&buf, cl.servercount);
 	MSG_WriteString (&buf, gamedirfile);
@@ -597,7 +598,7 @@ void CL_Record_f (void)
 		MSG_WriteByte (&buf, i);
 		MSG_WriteShort (&buf, player->ping);
 
-		MSG_WriteByte (&buf, svc_updatepl);
+		MSG_WriteByte (&buf, svc_updateplayer);
 		MSG_WriteByte (&buf, i);
 		MSG_WriteByte (&buf, player->pl);
 

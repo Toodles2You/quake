@@ -2,6 +2,10 @@
 #ifndef _PROTOCOL_H
 #define _PROTOCOL_H
 
+// engine protocol
+#define PROTOCOL_VERSION 451
+
+// game protocols (because someone thought it was a good idea to let progs send packets)
 enum
 {
 	PROTOCOL_NETQUAKE = 15,
@@ -104,69 +108,158 @@ enum
 //
 enum
 {
-	svc_bad = 0,
-	svc_nop = 1,
-	svc_disconnect = 2,
-	svc_updatestat = 3, // [byte] [byte]
-	svc_setview = 5,	// [short] entity number
-	svc_sound = 6,		// <see code>
-	svc_print = 8,		// [byte] id [string] null terminated string
-	svc_stufftext = 9,	// [string] stuffed into client's console buffer
-						// the string should be \n terminated
-	svc_setangle = 10,	// [angle3] set the view angle to this absolute value
+	svc_nq_bad,
+	svc_nq_nop,
+	svc_nq_disconnect,
+	svc_nq_updatestat,
+	svc_nq_version,
+	svc_nq_setview,
+	svc_nq_sound,
+	svc_nq_time,
+	svc_nq_print,
+	svc_nq_stufftext,
+	svc_nq_setangle,
+	svc_nq_serverinfo,
+	svc_nq_lightstyle,
+	svc_nq_updatename,
+	svc_nq_updatefrags,
+	svc_nq_clientdata,
+	svc_nq_stopsound,
+	svc_nq_updatecolors,
+	svc_nq_particle,
+	svc_nq_damage,
+	svc_nq_spawnstatic,
+	svc_nq_21,
+	svc_nq_spawnbaseline,
+	svc_nq_tempentity,
+	svc_nq_setpause,
+	svc_nq_signonnum,
+	svc_nq_centerprint,
+	svc_nq_killedmonster,
+	svc_nq_foundsecret,
+	svc_nq_spawnstaticsound,
+	svc_nq_intermission,
+	svc_nq_finale,
+	svc_nq_cdtrack,
+	svc_nq_sellscreen,
+	svc_nq_cutscene,
+};
 
-	svc_serverdata = 11,  // [long] protocol ...
-	svc_lightstyle = 12,  // [byte] [string]
-	svc_updatefrags = 14, // [byte] [short]
-	svc_stopsound = 16,	  // <see code>
-	svc_particle = 18,	  // [vec3] <variable>
-	svc_damage = 19,
+enum
+{
+	svc_qw_bad,
+	svc_qw_nop,
+	svc_qw_disconnect,
+	svc_qw_updatestat,
+	svc_qw_4,
+	svc_qw_setview,
+	svc_qw_sound,
+	svc_qw_12,
+	svc_qw_print,
+	svc_qw_stufftext,
+	svc_qw_setangle,
+	svc_qw_serverdata,
+	svc_qw_lightstyle,
+	svc_qw_13,
+	svc_qw_updatefrags,
+	svc_qw_15,
+	svc_qw_stopsound,
+	svc_qw_17,
+	svc_qw_18,
+	svc_qw_damage,
+	svc_qw_spawnstatic,
+	svc_qw_21,
+	svc_qw_spawnbaseline,
+	svc_qw_tempentity,
+	svc_qw_setpause,
+	svc_qw_25,
+	svc_qw_centerprint,
+	svc_qw_killedmonster,
+	svc_qw_foundsecret,
+	svc_qw_spawnstaticsound,
+	svc_qw_intermission,
+	svc_qw_finale,
+	svc_qw_cdtrack,
+	svc_qw_sellscreen,
+	svc_qw_smallkick,
+	svc_qw_bigkick,
+	svc_qw_updateping,
+	svc_qw_updateentertime,
+	svc_qw_updatestatlong,
+	svc_qw_muzzleflash,
+	svc_qw_updateuserinfo,
+	svc_qw_download,
+	svc_qw_playerinfo,
+	svc_qw_nails,
+	svc_qw_chokecount,
+	svc_qw_modellist,
+	svc_qw_soundlist,
+	svc_qw_packetentities,
+	svc_qw_deltapacketentities,
+	svc_qw_maxspeed,
+	svc_qw_entgravity,
+	svc_qw_setinfo,
+	svc_qw_serverinfo,
+	svc_qw_updateplayer,
+};
 
-	svc_spawnstatic = 20,
-	svc_spawnbaseline = 22,
-
-	svc_temp_entity = 23, // variable
-	svc_setpause = 24,	  // [byte] on / off
-
-	svc_centerprint = 26, // [string] to put in center of the screen
-
-	svc_killedmonster = 27,
-	svc_foundsecret = 28,
-
-	svc_spawnstaticsound = 29, // [coord3] [byte] samp [byte] vol [byte] aten
-
-	svc_intermission = 30, // [vec3_t] origin [vec3_t] angle
-	svc_finale = 31,	   // [string] text
-
-	svc_cdtrack = 32, // [byte] track
-	svc_sellscreen = 33,
-
-	svc_smallkick = 34, // set client punchangle to 2
-	svc_bigkick = 35,	// set client punchangle to 4
-
-	svc_updateping = 36,	  // [byte] [short]
-	svc_updateentertime = 37, // [byte] [float]
-
-	svc_updatestatlong = 38, // [byte] [long]
-
-	svc_muzzleflash = 39, // [short] entity
-
-	svc_updateuserinfo = 40, // [byte] slot [long] uid
-							 // [string] userinfo
-
-	svc_download = 41,			  // [short] size [size bytes]
-	svc_playerinfo = 42,		  // variable
-	svc_nails = 43,				  // [byte] num [48 bits] xyzpy 12 12 12 4 8
-	svc_chokecount = 44,		  // [byte] packets choked
-	svc_modellist = 45,			  // [strings]
-	svc_soundlist = 46,			  // [strings]
-	svc_packetentities = 47,	  // [...]
-	svc_deltapacketentities = 48, // [...]
-	svc_maxspeed = 49,			  // maxspeed change, for prediction
-	svc_entgravity = 50,		  // gravity change, for prediction
-	svc_setinfo = 51,			  // setinfo on a client
-	svc_serverinfo = 52,		  // serverinfo
-	svc_updatepl = 53,			  // [byte] [byte]
+enum
+{
+	svc_reserved = 63,
+	svc_bad,
+	svc_nop,
+	svc_disconnect,
+	svc_updatestat,
+	svc_version,
+	svc_setview,
+	svc_sound,
+	svc_time,
+	svc_print,
+	svc_stufftext,
+	svc_setangle,
+	svc_serverdata,
+	svc_lightstyle,
+	svc_updatename,
+	svc_updatefrags,
+	svc_clientdata,
+	svc_stopsound,
+	svc_updatecolors,
+	svc_particle,
+	svc_damage,
+	svc_spawnstatic,
+	svc_21,
+	svc_spawnbaseline,
+	svc_tempentity,
+	svc_setpause,
+	svc_signonnum,
+	svc_centerprint,
+	svc_killedmonster,
+	svc_foundsecret,
+	svc_spawnstaticsound,
+	svc_intermission,
+	svc_finale,
+	svc_cdtrack,
+	svc_sellscreen,
+	svc_smallkick,
+	svc_bigkick,
+	svc_updateping,
+	svc_updateentertime,
+	svc_updatestatlong,
+	svc_muzzleflash,
+	svc_updateuserinfo,
+	svc_download,
+	svc_playerinfo,
+	svc_nails,
+	svc_chokecount,
+	svc_modellist,
+	svc_soundlist,
+	svc_packetentities,
+	svc_deltapacketentities,
+	svc_maxspeed,
+	svc_entgravity,
+	svc_setinfo,
+	svc_serverinfo,
+	svc_updateplayer,
 };
 
 //
@@ -205,13 +298,10 @@ enum
 
 #define MAX_CLIENTS 32
 
-#define UPDATE_BACKUP                                                                                                                                          \
-	64	// copies of entity_state_t to keep buffered                                                                                                           \
-		// must be power of two
+#define UPDATE_BACKUP 64 // copies of entity_state_t to keep buffered; must be power of two
 #define UPDATE_MASK (UPDATE_BACKUP - 1)
 
-// entity_state_t is the information conveyed from the server
-// in an update message
+// entity_state_t is the information conveyed from the server in an update message
 typedef struct
 {
 	int number; // edict index

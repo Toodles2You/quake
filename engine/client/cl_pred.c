@@ -70,7 +70,7 @@ void CL_PredictUsercmd (player_state_t *from, player_state_t *to, usercmd_t *u)
 		return;
 	}
 
-	pmove.protocol = cl.serverprotocol;
+	pmove.protocol = cls.protocol;
 
 	VectorCopy (from->origin, pmove.origin);
 	//	VectorCopy (from->viewangles, pmove.angles);

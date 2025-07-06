@@ -90,7 +90,7 @@ typedef struct progs_state_s
 	const uint32_t *field_struct;
 	const size_t edict_size;
 
-	builtin_t *builtins;
+	const builtin_t *builtins;
 	size_t numbuiltins;
 
 	size_t argc;
@@ -177,8 +177,7 @@ int ED_ForNum (edict_t *e);
 
 #define ed_field(_FIELD) (sv.pr.field_struct[pr_##_FIELD] != 0)
 
-extern builtin_t *pr_builtins;
-extern int pr_numbuiltins;
+extern const builtin_t pr_builtins[83];
 
 extern bool pr_trace;
 

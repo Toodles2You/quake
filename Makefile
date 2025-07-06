@@ -124,8 +124,8 @@ ENGINE_LIBS = -lm -lGL -ldl $(SDL_LIBS) $(AL_LIBS)
 
 ENGINE_CFLAGS = \
 	-ffast-math \
-	-DQUAKE_VERSION=\"$(ENGINE_VERSION)\" \
-	-DQUAKE_BASEDIR=\"$(ENGINE_BASEDIR)\" \
+	-DENGINE_VERSION=\"$(ENGINE_VERSION)\" \
+	-DENGINE_BASEDIR=\"$(ENGINE_BASEDIR)\" \
 	-Icommon \
 	-Iengine/common \
 	-Iengine/client \

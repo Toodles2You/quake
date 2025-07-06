@@ -648,7 +648,7 @@ static void Host_Changelevel2_f (void)
 
 static void Host_Version_f (void)
 {
-	Con_Printf ("Version " QUAKE_VERSION "\n");
+	Con_Printf ("Version " ENGINE_VERSION "\n");
 	Con_Printf ("Build: " __TIME__ " " __DATE__ "\n");
 }
 

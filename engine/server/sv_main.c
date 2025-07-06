@@ -165,7 +165,7 @@ void SV_FullClientUpdate (client_t *client, sizebuf_t *buf)
 	MSG_WriteByte (buf, i);
 	MSG_WriteShort (buf, SV_CalcPing (client));
 
-	MSG_WriteByte (buf, svc_updatepl);
+	MSG_WriteByte (buf, svc_updateplayer);
 	MSG_WriteByte (buf, i);
 	MSG_WriteByte (buf, client->lossage);
 
@@ -381,9 +381,9 @@ static void SVC_DirectConnect (void)
 	float spawn_parms[NUM_SPAWN_PARMS];
 
 	version = atoi (Cmd_Argv (1));
-	if (version != PROTOCOL_QUAKEWORLD)
+	if (version != PROTOCOL_VERSION)
 	{
-		Netchan_OutOfBandPrint (SERVER, net_from, "%c\nServer is version %i.\n", A2C_PRINT, PROTOCOL_QUAKEWORLD);
+		Netchan_OutOfBandPrint (SERVER, net_from, "%c\nServer is version %i.\n", A2C_PRINT, PROTOCOL_VERSION);
 		Con_Printf ("* rejected connect from version %i\n", version);
 		return;
 	}
@@ -1228,7 +1228,7 @@ void SV_Init (void)
 	for (i = 0; i < MAX_MODELS; i++)
 		sprintf (localmodels[i], "*%i", i);
 
-	Info_SetValueForStarKey (svs.info, "*version", QUAKE_VERSION, MAX_SERVERINFO_STRING, sv_highchars.value);
+	Info_SetValueForStarKey (svs.info, "*version", ENGINE_VERSION, MAX_SERVERINFO_STRING, sv_highchars.value);
 
 	// init fraglog stuff
 	svs.logsequence = 1;

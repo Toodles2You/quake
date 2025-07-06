@@ -20,85 +20,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "clientdef.h"
 
-static const char *const svc_strings[] = {
-	"svc_bad",
-	"svc_nop",
-	"svc_disconnect",
-	"svc_updatestat",
-	"svc_version",
-	"svc_setview",
-	"svc_sound",
-	"svc_time",
-	"svc_print",
-	"svc_stufftext",
-
-	"svc_setangle",
-
-	"svc_serverdata",
-	"svc_lightstyle",
-	"svc_updatename",
-	"svc_updatefrags",
-	"svc_clientdata",
-	"svc_stopsound",
-	"svc_updatecolors",
-	"svc_particle",
-	"svc_damage",
-
-	"svc_spawnstatic",
-	"svc_spawnbinary",
-	"svc_spawnbaseline",
-
-	"svc_temp_entity",
-	"svc_setpause",
-	"svc_signonnum",
-	"svc_centerprint",
-	"svc_killedmonster",
-	"svc_foundsecret",
-	"svc_spawnstaticsound",
-	"svc_intermission",
-	"svc_finale",
-
-	"svc_cdtrack",
-	"svc_sellscreen",
-
-	"svc_smallkick",
-	"svc_bigkick",
-
-	"svc_updateping",
-	"svc_updateentertime",
-
-	"svc_updatestatlong",
-	"svc_muzzleflash",
-	"svc_updateuserinfo",
-	"svc_download",
-	"svc_playerinfo",
-	"svc_nails",
-	"svc_choke",
-	"svc_modellist",
-	"svc_soundlist",
-	"svc_packetentities",
-	"svc_deltapacketentities",
-	"svc_maxspeed",
-	"svc_entgravity",
-
-	"svc_setinfo",
-	"svc_serverinfo",
-	"svc_updatepl",
-	"NEW PROTOCOL",
-	"NEW PROTOCOL",
-	"NEW PROTOCOL",
-	"NEW PROTOCOL",
-	"NEW PROTOCOL",
-	"NEW PROTOCOL",
-	"NEW PROTOCOL",
-	"NEW PROTOCOL",
-	"NEW PROTOCOL",
-	"NEW PROTOCOL",
-	"NEW PROTOCOL",
-	"NEW PROTOCOL",
-	"NEW PROTOCOL",
-};
-
 int parsecountmod;
 double parsecounttime;
 
@@ -482,12 +403,17 @@ static void CL_ParseServerData (void)
 	CL_ClearState ();
 
 	// parse protocol version number
-	cl.serverprotocol = MSG_ReadLong ();
+	int version = MSG_ReadLong ();
 
-	if (!cls.demoplayback && cl.serverprotocol != PROTOCOL_QUAKEWORLD && cl.serverprotocol != PROTOCOL_NETQUAKE)
-		Host_Error ("Server returned version %i, not %i or %i\n", cl.serverprotocol, PROTOCOL_QUAKEWORLD, PROTOCOL_NETQUAKE);
+	if (!cls.demoplayback && version != PROTOCOL_VERSION)
+		Host_Error ("Server returned version %i, not %i\n", version, PROTOCOL_VERSION);
 
-	Con_Printf ("Using protocol %i\n", cl.serverprotocol);
+	cls.protocol = MSG_ReadLong ();
+
+	if (!cls.demoplayback && cls.protocol != PROTOCOL_NETQUAKE && cls.protocol != PROTOCOL_QUAKEWORLD)
+		Host_Error ("Server using protocol %i\n", cls.protocol);
+
+	Con_DPrintf ("Using protocol %i\n", cls.protocol);
 
 	cl.servercount = MSG_ReadLong ();
 
@@ -536,7 +462,7 @@ static void CL_ParseServerData (void)
 
 	// seperate the printfs so the server message can have a color
 	Con_Printf ("\n\n\35\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\36\37\n\n");
-	Con_Printf ("%c%s\n", 2, str);
+	Con_Printf ("%c%s\n", 2, cl.levelname);
 
 	// ask for the sound list next
 	memset (cl.sound_name, 0, sizeof (cl.sound_name));
@@ -882,13 +808,535 @@ static void CL_MuzzleFlash (void)
 	dl->color[3] = 0.7;
 }
 
-#define SHOWNET(x)                                                                                                                                             \
-	if (cl_shownet.value == 2)                                                                                                                                 \
-		Con_Printf ("%3i:%s\n", msg_readcount - 1, x);
+#define CL_ShowNet(x) if (cl_shownet.value == 2) { Con_Printf ("%3i:%s\n", msg_readcount - 1, x); }
+
+static const char *const svc_nq_strings[] =
+{
+	"svc_bad",
+	"svc_nop",
+	"svc_disconnect",
+	"svc_updatestat",
+	"svc_version",
+	"svc_setview",
+	"svc_sound",
+	"svc_time",
+	"svc_print",
+	"svc_stufftext",
+	"svc_setangle",
+	"svc_serverinfo",
+	"svc_lightstyle",
+	"svc_updatename",
+	"svc_updatefrags",
+	"svc_clientdata",
+	"svc_stopsound",
+	"svc_updatecolors",
+	"svc_particle",
+	"svc_damage",
+	"svc_spawnstatic",
+	"svc_21",
+	"svc_spawnbaseline",
+	"svc_tempentity",
+	"svc_setpause",
+	"svc_signonnum",
+	"svc_centerprint",
+	"svc_killedmonster",
+	"svc_foundsecret",
+	"svc_spawnstaticsound",
+	"svc_intermission",
+	"svc_finale",
+	"svc_cdtrack",
+	"svc_sellscreen",
+	"svc_cutscene",
+};
+
+static const char *const svc_strings[] =
+{
+	"svc_bad",
+	"svc_nop",
+	"svc_disconnect",
+	"svc_updatestat",
+	"svc_4",
+	"svc_setview",
+	"svc_sound",
+	"svc_12",
+	"svc_print",
+	"svc_stufftext",
+	"svc_setangle",
+	"svc_serverdata",
+	"svc_lightstyle",
+	"svc_13",
+	"svc_updatefrags",
+	"svc_15",
+	"svc_stopsound",
+	"svc_17",
+	"svc_18",
+	"svc_damage",
+	"svc_spawnstatic",
+	"svc_21",
+	"svc_spawnbaseline",
+	"svc_tempentity",
+	"svc_setpause",
+	"svc_25",
+	"svc_centerprint",
+	"svc_killedmonster",
+	"svc_foundsecret",
+	"svc_spawnstaticsound",
+	"svc_intermission",
+	"svc_finale",
+	"svc_cdtrack",
+	"svc_sellscreen",
+	"svc_smallkick",
+	"svc_bigkick",
+	"svc_updateping",
+	"svc_updateentertime",
+	"svc_updatestatlong",
+	"svc_muzzleflash",
+	"svc_updateuserinfo",
+	"svc_download",
+	"svc_playerinfo",
+	"svc_nails",
+	"svc_chokecount",
+	"svc_modellist",
+	"svc_soundlist",
+	"svc_packetentities",
+	"svc_deltapacketentities",
+	"svc_maxspeed",
+	"svc_entgravity",
+	"svc_setinfo",
+	"svc_serverinfo",
+	"svc_updateplayer",
+};
+
+typedef void (*svc_callback_t) (void);
+
+// TODO: Move these
+static int msg_number;
+static int msg_protocol;
+
+static void SVC_Deprecated (void)
+{
+	Host_Error ("CL_ParseServerMessage: Deprecated server message %i for %i", msg_number, msg_protocol);
+}
+		
+static void SVC_Bad (void)
+{
+	Host_Error ("CL_ParseServerMessage: Illegible server message %i for %i", msg_number, msg_protocol);
+}
+
+static void SVC_Nop (void) {}
+
+static void SVC_Disconnect (void)
+{
+	if (cls.state == ca_connected)
+		Host_Error ("Server disconnected\nServer version may not be compatible");
+	else
+		Host_Error ("Server disconnected");
+}
+
+static void SVC_UpdateStat (void)
+{
+	int i = MSG_ReadByte ();
+	int j = MSG_ReadByte ();
+	CL_SetStat (i, j);
+}
+
+static void SVC_SetView (void)
+{
+	int i = MSG_ReadByte ();
+	int j = MSG_ReadLong ();
+	CL_SetStat (i, j);
+}
+
+static void SVC_Sound (void)
+{
+	CL_ParseStartSoundPacket ();
+}
+
+static void SVC_Print (void)
+{
+	int i = MSG_ReadByte ();
+	if (i == PRINT_CHAT)
+		S_LocalSound (cl_sfx_talk);
+	Con_Printf ("%s", MSG_ReadString ());
+}
+
+static void SVC_StuffText (void)
+{
+	char *s = MSG_ReadString ();
+	Con_DPrintf ("stufftext: %s\n", s);
+	Cbuf_AddText (src_client, s);
+}
+
+static void SVC_SetAngle (void)
+{
+	for (int i = 0; i < 3; i++)
+		cl.viewangles[i] = MSG_ReadAngle ();
+}
+
+static void SVC_ServerData (void)
+{
+	Cbuf_Execute (src_client); // make sure any stuffed commands are done
+	CL_ParseServerData ();
+	vid.recalc_refdef = true; // leave full screen intermission
+}
+
+static void SVC_LightStyle (void)
+{
+	int i = MSG_ReadByte ();
+	if (i >= MAX_LIGHTSTYLES)
+		Sys_Error ("svc_lightstyle > MAX_LIGHTSTYLES");
+	strcpy (cl_lightstyle[i].map, MSG_ReadString ());
+	cl_lightstyle[i].length = strlen (cl_lightstyle[i].map);
+}
+
+static void SVC_UpdateFrags (void)
+{
+	Sbar_Changed ();
+	int i = MSG_ReadByte ();
+	if (i >= MAX_CLIENTS)
+		Host_Error ("CL_ParseServerMessage: svc_updatefrags > MAX_SCOREBOARD");
+	cl.players[i].frags = MSG_ReadShort ();
+}
+
+static void SVC_StopSound (void)
+{
+	int i = MSG_ReadShort ();
+	S_StopSound (i >> 3, i & 7);
+}
+
+static void SVC_Particle (void)
+{
+	R_ParseParticleEffect ();
+}
+
+static void SVC_Damage (void)
+{
+	V_ParseDamage ();
+}
+
+static void SVC_SpawnStatic (void)
+{
+	CL_ParseStatic ();
+}
+
+static void SVC_SpawnBaseline (void)
+{
+	int i = MSG_ReadShort ();
+	CL_ParseBaseline (&cl_baselines[i]);
+}
+
+static void SVC_TempEntity (void)
+{
+	CL_ParseTEnt (msg_protocol == PROTOCOL_QUAKEWORLD);
+}
+
+static void SVC_SetPause (void)
+{
+	cl.paused = MSG_ReadByte ();
+	if (cl.paused)
+		Music_Pause ();
+	else
+		Music_Resume ();
+}
+
+static void SVC_CenterPrint (void)
+{
+	SCR_CenterPrint (MSG_ReadString ());
+}
+
+static void SVC_KilledMonster (void)
+{
+	cl.stats[STAT_MONSTERS]++;
+}
+
+static void SVC_FoundSecret (void)
+{
+	cl.stats[STAT_SECRETS]++;
+}
+
+static void SVC_SpawnStaticSound (void)
+{
+	CL_ParseStaticSound ();
+}
+
+static void SVC_Intermission (void)
+{
+	cl.intermission = 1;
+	cl.completed_time = cl.time;
+	vid.recalc_refdef = true; // go to full screen
+	if (msg_protocol == PROTOCOL_QUAKEWORLD)
+	{
+		for (int i = 0; i < 3; i++)
+			cl.simorg[i] = MSG_ReadCoord ();
+		for (int i = 0; i < 3; i++)
+			cl.simangles[i] = MSG_ReadAngle ();
+		VectorCopy (vec3_origin, cl.simvel);
+	}
+}
+
+static void SVC_Finale (void)
+{
+	cl.intermission = 2;
+	cl.completed_time = cl.time;
+	vid.recalc_refdef = true; // go to full screen
+	SCR_CenterPrint (MSG_ReadString ());
+}
+
+static void SVC_CDTrack (void)
+{
+	cl.cdtrack = MSG_ReadByte ();
+	bool looping = true;
+	if (msg_protocol != PROTOCOL_QUAKEWORLD)
+		looping = MSG_ReadByte ();
+	Music_Play (cl.cdtrack, looping);
+}
+
+static void SVC_SellScreen (void)
+{
+	Cmd_ExecuteString (src_client, "help");
+}
+
+static void SVC_Cutscene (void)
+{
+	cl.intermission = 3;
+	cl.completed_time = cl.time;
+	vid.recalc_refdef = true; // go to full screen
+	SCR_CenterPrint (MSG_ReadString ());
+}
+
+static void SVC_SmallKick (void)
+{
+	cl.punchangle = -2;
+}
+
+static void SVC_BigKick (void)
+{
+	cl.punchangle = -4;
+}
+
+static void SVC_UpdatePing (void)
+{
+	int i = MSG_ReadByte ();
+	if (i >= MAX_CLIENTS)
+		Host_Error ("CL_ParseServerMessage: svc_updateping > MAX_SCOREBOARD");
+	cl.players[i].ping = MSG_ReadShort ();
+}
+
+static void SVC_UpdateEnterTime (void)
+{
+	// time is sent over as seconds ago
+	int i = MSG_ReadByte ();
+	if (i >= MAX_CLIENTS)
+		Host_Error ("CL_ParseServerMessage: svc_updateentertime > MAX_SCOREBOARD");
+	cl.players[i].entertime = host_time - MSG_ReadFloat ();
+}
+
+static void SVC_UpdateStatLong (void)
+{
+	int i = MSG_ReadByte ();
+	int j = MSG_ReadLong ();
+	CL_SetStat (i, j);
+}
+
+static void SVC_MuzzleFlash (void)
+{
+	CL_MuzzleFlash ();
+}
+
+static void SVC_UpdateUserInfo (void)
+{
+	CL_UpdateUserinfo ();
+}
+
+static void SVC_Download (void)
+{
+	CL_ParseDownload ();
+}
+
+static void SVC_PlayerInfo (void)
+{
+	CL_ParsePlayerinfo ();
+}
+
+static void SVC_Nails (void)
+{
+	CL_ParseProjectiles ();
+}
+
+static void SVC_ChokeCount (void)
+{
+	int i = MSG_ReadByte ();
+	for (int j = 0; j < i; j++)
+		cl.frames[(cls.netchan.incoming_acknowledged - 1 - j) & UPDATE_MASK].receivedtime = -2;
+}
+
+static void SVC_ModelList (void)
+{
+	CL_ParseModelList ();
+}
+
+static void SVC_SoundList (void)
+{
+	CL_ParseSoundList ();
+}
+
+static void SVC_PacketEntities (void)
+{
+	CL_ParsePacketEntities (false);
+}
+
+static void SVC_DeltaPacketEntities (void)
+{
+	CL_ParsePacketEntities (true);
+}
+
+static void SVC_MaxSpeed (void)
+{
+	movevars.maxspeed = MSG_ReadFloat ();
+}
+
+static void SVC_EntGravity (void)
+{
+	movevars.entgravity = MSG_ReadFloat ();
+}
+
+static void SVC_SetInfo (void)
+{
+	CL_SetInfo ();
+}
+
+static void SVC_ServerInfo (void)
+{
+	CL_ServerInfo ();
+}
+
+static void SVC_UpdatePlayer (void)
+{
+	int i = MSG_ReadByte ();
+	if (i >= MAX_CLIENTS)
+		Host_Error ("CL_ParseServerMessage: svc_updatepl > MAX_SCOREBOARD");
+	cl.players[i].pl = MSG_ReadByte ();
+}
+
+static const svc_callback_t svc_nq_callbacks[] = {
+	SVC_Bad,
+	SVC_Nop,
+	SVC_Disconnect,
+	SVC_UpdateStat,
+	SVC_Deprecated, // SVC_Version
+	SVC_SetView,
+	SVC_Sound,
+	SVC_Deprecated, // SVC_Time
+	SVC_Print,
+	SVC_StuffText,
+	SVC_SetAngle,
+	SVC_ServerInfo,
+	SVC_LightStyle,
+	SVC_Deprecated, // SVC_UpdateName
+	SVC_UpdateFrags,
+	SVC_Deprecated, // SVC_ClientData
+	SVC_StopSound,
+	SVC_Deprecated, // SVC_UpdateColors
+	SVC_Particle,
+	SVC_Damage,
+	SVC_SpawnStatic,
+	SVC_Deprecated,
+	SVC_SpawnBaseline,
+	SVC_TempEntity,
+	SVC_SetPause,
+	SVC_Deprecated, // SVC_SignonNum
+	SVC_CenterPrint,
+	SVC_KilledMonster,
+	SVC_FoundSecret,
+	SVC_SpawnStaticSound,
+	SVC_Intermission,
+	SVC_Finale,
+	SVC_CDTrack,
+	SVC_SellScreen,
+	SVC_Cutscene,
+};
+
+static void SVC_NQ_ParseServerMessage (void)
+{
+	if (msg_number <= -1 || msg_number >= lengthof (svc_nq_callbacks))
+	{
+		SVC_Bad ();
+		return;
+	}
+	CL_ShowNet (svc_nq_strings[msg_number]);
+	svc_nq_callbacks[msg_number]();
+}
+
+static const svc_callback_t svc_callbacks[] = {
+	SVC_Bad,
+	SVC_Nop,
+	SVC_Disconnect,
+	SVC_UpdateStat,
+	SVC_Deprecated, // SVC_Version
+	SVC_SetView,
+	SVC_Sound,
+	SVC_Deprecated, // SVC_Time
+	SVC_Print,
+	SVC_StuffText,
+	SVC_SetAngle,
+	SVC_ServerData,
+	SVC_LightStyle,
+	SVC_Deprecated, // SVC_UpdateName
+	SVC_UpdateFrags,
+	SVC_Deprecated, // SVC_ClientData
+	SVC_StopSound,
+	SVC_Deprecated, // SVC_UpdateColors
+	SVC_Particle,
+	SVC_Damage,
+	SVC_SpawnStatic,
+	SVC_Deprecated,
+	SVC_SpawnBaseline,
+	SVC_TempEntity,
+	SVC_SetPause,
+	SVC_Deprecated, // SVC_SignonNum
+	SVC_CenterPrint,
+	SVC_KilledMonster,
+	SVC_FoundSecret,
+	SVC_SpawnStaticSound,
+	SVC_Intermission,
+	SVC_Finale,
+	SVC_CDTrack,
+	SVC_SellScreen,
+	SVC_SmallKick,
+	SVC_BigKick,
+	SVC_UpdatePing,
+	SVC_UpdateEnterTime,
+	SVC_UpdateStatLong,
+	SVC_MuzzleFlash,
+	SVC_UpdateUserInfo,
+	SVC_Download,
+	SVC_PlayerInfo,
+	SVC_Nails,
+	SVC_ChokeCount,
+	SVC_ModelList,
+	SVC_SoundList,
+	SVC_PacketEntities,
+	SVC_DeltaPacketEntities,
+	SVC_MaxSpeed,
+	SVC_EntGravity,
+	SVC_SetInfo,
+	SVC_ServerInfo,
+	SVC_UpdatePlayer,
+};
+
+static void SVC_ParseServerMessage (void)
+{
+	if (msg_number <= -1 || msg_number >= lengthof (svc_callbacks))
+	{
+		SVC_Bad ();
+		return;
+	}
+	CL_ShowNet (svc_strings[msg_number]);
+	svc_callbacks[msg_number]();
+}
 
 void CL_ParseServerMessage (void)
 {
-	int cmd;
 	char *s;
 	int i, j;
 
@@ -916,258 +1364,36 @@ void CL_ParseServerMessage (void)
 			break;
 		}
 
-		cmd = MSG_ReadByte ();
+		msg_number = MSG_ReadByte ();
 
-		if (cmd == -1)
+		if (msg_number == -1)
 		{
 			msg_readcount++; // so the EOM showner has the right value
-			SHOWNET ("END OF MESSAGE");
+			CL_ShowNet ("END OF MESSAGE");
 			break;
 		}
 
-		SHOWNET (svc_strings[cmd]);
-
-		// other commands
-		switch (cmd)
+		// Messages from the engine are always in QW format
+		if (msg_number > svc_reserved)
 		{
-		default:
-			Host_Error ("CL_ParseServerMessage: Illegible server message %i", cmd);
-			break;
+			msg_number -= svc_reserved + 1;
+			msg_protocol = PROTOCOL_QUAKEWORLD;
+		}
+		else
+			msg_protocol = cls.protocol;
 
-		case svc_nop:
+		switch (msg_protocol)
+		{
+		case PROTOCOL_NETQUAKE:
+		{
+			SVC_NQ_ParseServerMessage ();
 			break;
-
-		case svc_disconnect:
-			if (cls.state == ca_connected)
-				Host_Error ("Server disconnected\nServer version may not be compatible");
-			else
-				Host_Error ("Server disconnected");
+		}
+		case PROTOCOL_QUAKEWORLD:
+		{
+			SVC_ParseServerMessage ();
 			break;
-
-		case svc_print:
-			i = MSG_ReadByte ();
-			if (i == PRINT_CHAT)
-			{
-				S_LocalSound (cl_sfx_talk);
-			}
-			Con_Printf ("%s", MSG_ReadString ());
-			break;
-
-		case svc_centerprint:
-			SCR_CenterPrint (MSG_ReadString ());
-			break;
-
-		case svc_stufftext:
-			s = MSG_ReadString ();
-			Con_DPrintf ("stufftext: %s\n", s);
-			Cbuf_AddText (src_client, s);
-			break;
-
-		case svc_damage:
-			V_ParseDamage ();
-			break;
-
-		case svc_serverdata:
-			Cbuf_Execute (src_client); // make sure any stuffed commands are done
-			CL_ParseServerData ();
-			vid.recalc_refdef = true; // leave full screen intermission
-			break;
-
-		case svc_setangle:
-			for (i = 0; i < 3; i++)
-				cl.viewangles[i] = MSG_ReadAngle ();
-			break;
-
-		case svc_lightstyle:
-			i = MSG_ReadByte ();
-			if (i >= MAX_LIGHTSTYLES)
-				Sys_Error ("svc_lightstyle > MAX_LIGHTSTYLES");
-			strcpy (cl_lightstyle[i].map, MSG_ReadString ());
-			cl_lightstyle[i].length = strlen (cl_lightstyle[i].map);
-			break;
-
-		case svc_sound:
-			CL_ParseStartSoundPacket ();
-			break;
-
-		case svc_stopsound:
-			i = MSG_ReadShort ();
-			S_StopSound (i >> 3, i & 7);
-			break;
-
-		case svc_updatefrags:
-			Sbar_Changed ();
-			i = MSG_ReadByte ();
-			if (i >= MAX_CLIENTS)
-				Host_Error ("CL_ParseServerMessage: svc_updatefrags > MAX_SCOREBOARD");
-			cl.players[i].frags = MSG_ReadShort ();
-			break;
-
-		case svc_updateping:
-			i = MSG_ReadByte ();
-			if (i >= MAX_CLIENTS)
-				Host_Error ("CL_ParseServerMessage: svc_updateping > MAX_SCOREBOARD");
-			cl.players[i].ping = MSG_ReadShort ();
-			break;
-
-		case svc_updatepl:
-			i = MSG_ReadByte ();
-			if (i >= MAX_CLIENTS)
-				Host_Error ("CL_ParseServerMessage: svc_updatepl > MAX_SCOREBOARD");
-			cl.players[i].pl = MSG_ReadByte ();
-			break;
-
-		case svc_updateentertime:
-			// time is sent over as seconds ago
-			i = MSG_ReadByte ();
-			if (i >= MAX_CLIENTS)
-				Host_Error ("CL_ParseServerMessage: svc_updateentertime > MAX_SCOREBOARD");
-			cl.players[i].entertime = host_time - MSG_ReadFloat ();
-			break;
-
-		case svc_particle:
-			R_ParseParticleEffect ();
-			break;
-
-		case svc_spawnbaseline:
-			i = MSG_ReadShort ();
-			CL_ParseBaseline (&cl_baselines[i]);
-			break;
-		case svc_spawnstatic:
-			CL_ParseStatic ();
-			break;
-		case svc_temp_entity:
-			CL_ParseTEnt ();
-			break;
-
-		case svc_killedmonster:
-			cl.stats[STAT_MONSTERS]++;
-			break;
-
-		case svc_foundsecret:
-			cl.stats[STAT_SECRETS]++;
-			break;
-
-		case svc_updatestat:
-			i = MSG_ReadByte ();
-			j = MSG_ReadByte ();
-			CL_SetStat (i, j);
-			break;
-		case svc_updatestatlong:
-			i = MSG_ReadByte ();
-			j = MSG_ReadLong ();
-			CL_SetStat (i, j);
-			break;
-
-		case svc_spawnstaticsound:
-			CL_ParseStaticSound ();
-			break;
-
-		case svc_cdtrack:
-			cl.cdtrack = MSG_ReadByte ();
-			i = 1;
-			if (cl.serverprotocol == PROTOCOL_NETQUAKE)
-				i = MSG_ReadByte ();
-			Music_Play (cl.cdtrack, i);
-			break;
-
-		case svc_intermission:
-			cl.intermission = 1;
-			cl.completed_time = host_time;
-			vid.recalc_refdef = true; // go to full screen
-			if (cl.serverprotocol == PROTOCOL_QUAKEWORLD)
-			{
-				for (i = 0; i < 3; i++)
-					cl.simorg[i] = MSG_ReadCoord ();
-				for (i = 0; i < 3; i++)
-					cl.simangles[i] = MSG_ReadAngle ();
-				VectorCopy (vec3_origin, cl.simvel);
-			}
-			break;
-
-		case svc_finale:
-			cl.intermission = 2;
-			cl.completed_time = host_time;
-			vid.recalc_refdef = true; // go to full screen
-			SCR_CenterPrint (MSG_ReadString ());
-			break;
-
-		case svc_sellscreen:
-			Cmd_ExecuteString (src_client, "help");
-			break;
-
-		case svc_smallkick:
-			cl.punchangle = -2;
-			break;
-		case svc_bigkick:
-			cl.punchangle = -4;
-			break;
-
-		case svc_muzzleflash:
-			CL_MuzzleFlash ();
-			break;
-
-		case svc_updateuserinfo:
-			CL_UpdateUserinfo ();
-			break;
-
-		case svc_setinfo:
-			CL_SetInfo ();
-			break;
-
-		case svc_serverinfo:
-			CL_ServerInfo ();
-			break;
-
-		case svc_download:
-			CL_ParseDownload ();
-			break;
-
-		case svc_playerinfo:
-			CL_ParsePlayerinfo ();
-			break;
-
-		case svc_nails:
-			CL_ParseProjectiles ();
-			break;
-
-		case svc_chokecount: // some preceding packets were choked
-			i = MSG_ReadByte ();
-			for (j = 0; j < i; j++)
-				cl.frames[(cls.netchan.incoming_acknowledged - 1 - j) & UPDATE_MASK].receivedtime = -2;
-			break;
-
-		case svc_modellist:
-			CL_ParseModelList ();
-			break;
-
-		case svc_soundlist:
-			CL_ParseSoundList ();
-			break;
-
-		case svc_packetentities:
-			CL_ParsePacketEntities (false);
-			break;
-
-		case svc_deltapacketentities:
-			CL_ParsePacketEntities (true);
-			break;
-
-		case svc_maxspeed:
-			movevars.maxspeed = MSG_ReadFloat ();
-			break;
-
-		case svc_entgravity:
-			movevars.entgravity = MSG_ReadFloat ();
-			break;
-
-		case svc_setpause:
-			cl.paused = MSG_ReadByte ();
-			if (cl.paused)
-				Music_Pause ();
-			else
-				Music_Resume ();
-			break;
+		}
 		}
 	}
 

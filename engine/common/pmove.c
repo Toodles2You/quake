@@ -700,7 +700,7 @@ void PlayerMove (void)
 	// set onground, watertype, and waterlevel
 	PM_CatagorizePosition ();
 
-	if (pmove.protocol == PROTOCOL_NETQUAKE)
+	if (pmove.protocol != PROTOCOL_QUAKEWORLD)
 	{
 		// TODO: emulate server jumping for client prediction
 		if (pmove.waterjumptime > 0)

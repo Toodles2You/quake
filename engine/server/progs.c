@@ -258,7 +258,7 @@ int PR_LoadProgs (progs_state_t *pr, char *filename, int version, int crc)
 	pr->progs = (dprograms_t *)COM_LoadHunkFile (filename);
 	if (!pr->progs)
 	{
-		Con_DPrintf ("PR_LoadProgs: couldn't load progs.dat");
+		Con_DPrintf ("PR_LoadProgs: couldn't load %s\n", filename);
 		return 1;
 	}
 	Con_DPrintf ("Programs occupy %iK.\n", com_filesize / 1024);
@@ -272,12 +272,12 @@ int PR_LoadProgs (progs_state_t *pr, char *filename, int version, int crc)
 
 	if (version != PROG_VERSION_ANY && version != pr->progs->version)
 	{
-		Con_Printf ("progs.dat has wrong version number (%i should be %i)", pr->progs->version, version);
+		Con_Printf ("%s has wrong version number (%i should be %i)", filename, pr->progs->version, version);
 		return 1;
 	}
 	if (crc != PROG_CRC_ANY && crc != pr->progs->crc)
 	{
-		Con_Printf ("progs.dat system vars have been modified, progdefs.h is out of date");
+		Con_Printf ("%s system vars have been modified, progdefs.h is out of date", filename);
 		return 1;
 	}
 
@@ -318,10 +318,9 @@ void PR_BuildStructs (progs_state_t *pr, uint32_t *global_struct, pr_field_t *gl
 				global_struct[i] = 0;
 				if (!global_fields[i].optional)
 				{
-					Host_Error ("PR_LoadProgs: progs.dat globaldefs missing %s\n", global_fields[i].name);
+					Host_Error ("PR_LoadProgs: globaldefs missing %s\n", global_fields[i].name);
 					break;
 				}
-				Con_DPrintf ("PR_LoadProgs: progs.dat globaldefs does not define %s\n", global_fields[i].name);
 				continue;
 			}
 			if (def->type != ev_function)
@@ -348,10 +347,9 @@ void PR_BuildStructs (progs_state_t *pr, uint32_t *global_struct, pr_field_t *gl
 				field_struct[i] = 0;
 				if (!fields[i].optional)
 				{
-					Host_Error ("PR_LoadProgs: progs.dat fielddefs missing %s\n", fields[i].name);
+					Host_Error ("PR_LoadProgs: fielddefs missing %s\n", fields[i].name);
 					break;
 				}
-				Con_DPrintf ("PR_LoadProgs: progs.dat fielddefs does not define %s\n", fields[i].name);
 				continue;
 			}
 			field_struct[i] = def->ofs;

@@ -176,7 +176,7 @@ static void CL_ParseBeam (model_t *m)
 	Con_Printf ("beam list overflow!\n");
 }
 
-void CL_ParseTEnt (void)
+void CL_ParseTEnt (bool quakeworld)
 {
 	int type;
 	vec3_t pos;
@@ -266,7 +266,7 @@ void CL_ParseTEnt (void)
 		S_StartSound (-1, 0, cl_sfx_r_exp3, pos, 1, 1);
 
 		// sprite
-		if (cl.serverprotocol == PROTOCOL_QUAKEWORLD && cl_model_s_explod != NULL)
+		if (quakeworld && cl_model_s_explod != NULL)
 		{
 			ex = CL_AllocExplosion ();
 			VectorCopy (pos, ex->origin);
@@ -311,7 +311,7 @@ void CL_ParseTEnt (void)
 		break;
 
 	case TE_GUNSHOT: // bullet hitting wall
-		if (cl.serverprotocol == PROTOCOL_NETQUAKE)
+		if (!quakeworld)
 			cnt = 1;
 		else
 			cnt = MSG_ReadByte ();
@@ -322,7 +322,7 @@ void CL_ParseTEnt (void)
 		break;
 
 	case TE_BLOOD:
-		if (cl.serverprotocol == PROTOCOL_NETQUAKE)
+		if (!quakeworld)
 		{
 			// color mapped explosion
 			pos[0] = MSG_ReadCoord ();
@@ -350,7 +350,7 @@ void CL_ParseTEnt (void)
 		break;
 
 	case TE_LIGHTNINGBLOOD:
-		if (cl.serverprotocol == PROTOCOL_NETQUAKE)
+		if (!quakeworld)
 		{
 			// grappling hook beam
 			CL_ParseBeam (cl_model_beam);

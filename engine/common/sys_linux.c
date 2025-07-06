@@ -300,7 +300,7 @@ int main (int c, char **v)
 	else
 	{
 		fcntl (0, F_SETFL, fcntl (0, F_GETFL, 0) | FNDELAY);
-		printf ("Linux Quake -- Version " QUAKE_VERSION "\n");
+		printf ("Linux Quake -- Version " ENGINE_VERSION "\n");
 	}
 
 	oldtime = Sys_FloatTime () - 0.1;

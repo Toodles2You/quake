@@ -83,6 +83,7 @@ static void SV_New_f (void)
 
 	// send the serverdata
 	MSG_WriteByte (&host_client->netchan.message, svc_serverdata);
+	MSG_WriteLong (&host_client->netchan.message, PROTOCOL_VERSION);
 	MSG_WriteLong (&host_client->netchan.message, svs.protocol);
 	MSG_WriteLong (&host_client->netchan.message, svs.spawncount);
 	MSG_WriteString (&host_client->netchan.message, gamedirfile);
@@ -107,8 +108,6 @@ static void SV_New_f (void)
 	// send music
 	MSG_WriteByte (&host_client->netchan.message, svc_cdtrack);
 	MSG_WriteByte (&host_client->netchan.message, ed_float (sv.edicts, sounds));
-	if (svs.protocol == PROTOCOL_NETQUAKE)
-		MSG_WriteByte (&host_client->netchan.message, 3);
 
 	// send server info string
 	MSG_WriteByte (&host_client->netchan.message, svc_stufftext);
@@ -726,7 +725,7 @@ static void SV_Pings_f (void)
 		ClientReliableWrite_Begin (host_client, svc_updateping, 4);
 		ClientReliableWrite_Byte (host_client, j);
 		ClientReliableWrite_Short (host_client, SV_CalcPing (client));
-		ClientReliableWrite_Begin (host_client, svc_updatepl, 4);
+		ClientReliableWrite_Begin (host_client, svc_updateplayer, 4);
 		ClientReliableWrite_Byte (host_client, j);
 		ClientReliableWrite_Byte (host_client, client->lossage);
 	}
@@ -1216,7 +1215,7 @@ static void SV_RunCmd (usercmd_t *ucmd)
 	VectorCopy (playerVelocity, pmove.velocity);
 	VectorCopy (playerVangle, pmove.angles);
 
-	if (pmove.protocol == PROTOCOL_NETQUAKE)
+	if (pmove.protocol != PROTOCOL_QUAKEWORLD)
 		pmove.waterjumptime = ed_float (sv_player, teleport_time) - sv.time;
 	else
 		pmove.waterjumptime = ed_float (sv_player, teleport_time);
@@ -1236,7 +1235,7 @@ static void SV_RunCmd (usercmd_t *ucmd)
 	}
 	AddLinksToPmove (sv_areanodes);
 
-	if (pmove.protocol == PROTOCOL_NETQUAKE)
+	if (pmove.protocol != PROTOCOL_QUAKEWORLD)
 	{
 		const bool water_jumping = ((int)ed_float (sv_player, flags) & FL_WATERJUMP);
 		if (water_jumping && pmove.waterjumptime > 0)
@@ -1263,7 +1262,7 @@ static void SV_RunCmd (usercmd_t *ucmd)
 
 	host_client->oldbuttons = pmove.oldbuttons;
 
-	if (pmove.protocol == PROTOCOL_NETQUAKE)
+	if (pmove.protocol != PROTOCOL_QUAKEWORLD)
 		ed_float (sv_player, teleport_time) = sv.time + pmove.waterjumptime;
 	else
 		ed_float (sv_player, teleport_time) = pmove.waterjumptime;
@@ -1383,18 +1382,22 @@ void SV_ExecuteClientMessage (client_t *cl)
 		switch (c)
 		{
 		default:
+		{
 			Con_Printf ("SV_ReadClientMessage: unknown command char %i\n", c);
 			SV_DropClient (cl);
 			return;
-
+		}
 		case clc_nop:
+		{
 			break;
-
+		}
 		case clc_delta:
+		{
 			cl->delta_sequence = MSG_ReadByte ();
 			break;
-
+		}
 		case clc_move:
+		{
 			if (move_issued)
 				return; // someone is trying to cheat...
 
@@ -1446,15 +1449,18 @@ void SV_ExecuteClientMessage (client_t *cl)
 			cl->lastcmd = newcmd;
 			cl->lastcmd.buttons = 0; // avoid multiple fires on lag
 			break;
-
+		}
 		case clc_stringcmd:
+		{
 			s = MSG_ReadString ();
 			SV_ExecuteUserCommand (s);
 			break;
-
+		}
 		case clc_upload:
+		{
 			SV_NextUpload ();
 			break;
+		}
 		}
 	}
 }

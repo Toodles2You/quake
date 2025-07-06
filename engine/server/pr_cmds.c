@@ -1697,7 +1697,7 @@ static void PF_Fixme (progs_state_t *pr)
 	PR_RunError (pr, "unimplemented bulitin");
 }
 
-static builtin_t pr_builtin[] = {
+const builtin_t pr_builtins[83] = {
 	PF_Fixme,
 	PF_makevectors,	 // void(entity e)	makevectors 		= #1;
 	PF_setorigin,		 // void(entity e, vector o) setorigin	= #2;
@@ -1793,5 +1793,3 @@ static builtin_t pr_builtin[] = {
 	PF_multicast,
 };
 
-builtin_t *pr_builtins = pr_builtin;
-int pr_numbuiltins = lengthof (pr_builtin);

@@ -122,7 +122,7 @@ static void CL_SendConnectPacket (void)
 	Info_SetValueForStarKey (cls.userinfo, "*ip", NET_AdrToString (adr), MAX_INFO_STRING, true);
 
 	//	Con_Printf ("Connecting to %s...\n", cls.servername);
-	sprintf (data, "%c%c%c%cconnect %i %i %i \"%s\"\n", 255, 255, 255, 255, PROTOCOL_QUAKEWORLD, cls.qport, cls.challenge, cls.userinfo);
+	sprintf (data, "%c%c%c%cconnect %i %i %i \"%s\"\n", 255, 255, 255, 255, PROTOCOL_VERSION, cls.qport, cls.challenge, cls.userinfo);
 
 	NET_SendPacket (CLIENT, strlen (data), data, adr);
 }
@@ -323,6 +323,7 @@ void CL_Disconnect (void)
 		memset (&cls.netchan, 0, sizeof (cls.netchan));
 
 		cls.state = ca_disconnected;
+		cls.protocol = 0;
 		if (Host_IsLocalGame ())
 			Host_ShutdownServer (false);
 
@@ -799,6 +800,7 @@ static void CL_FixupModelNames (void)
 void CL_Init (void)
 {
 	cls.state = ca_disconnected;
+	cls.protocol = 0;
 
 	CL_FixupModelNames ();
 

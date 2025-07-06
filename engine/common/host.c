@@ -185,6 +185,7 @@ static void Host_InitLocal (void)
 	else
 	{
 		cls.state = ca_disconnected;
+		cls.protocol = 0;
 	}
 
 	host_time = 1.0f; // so a think at time 0 won't get called

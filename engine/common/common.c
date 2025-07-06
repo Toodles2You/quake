@@ -1303,7 +1303,7 @@ void COM_Gamedir (char *dir)
 		com_searchpaths = next;
 	}
 
-	if (!strcmp (dir, QUAKE_BASEDIR))
+	if (!strcmp (dir, ENGINE_BASEDIR))
 		return;
 
 	sprintf (com_gamedir, "%s/%s", com_basedir, dir);
@@ -1339,7 +1339,7 @@ static void COM_InitFilesystem (void)
 
 	//
 	// -basedir <path>
-	// Overrides the system supplied base directory (under QUAKE_BASEDIR)
+	// Overrides the system supplied base directory (under ENGINE_BASEDIR)
 	//
 	i = COM_CheckParm ("-basedir");
 	if (i && i < com_argc - 1)
@@ -1374,16 +1374,16 @@ static void COM_InitFilesystem (void)
 		com_cachedir[0] = 0;
 
 	//
-	// start up with QUAKE_BASEDIR by default
+	// start up with ENGINE_BASEDIR by default
 	//
-	COM_AddGameDirectory (va ("%s/" QUAKE_BASEDIR, com_basedir));
+	COM_AddGameDirectory (va ("%s/" ENGINE_BASEDIR, com_basedir));
 
 	// any set gamedirs will be freed up to here
 	com_base_searchpaths = com_searchpaths;
 
-	if (COM_CheckParm ("-rogue"))
+	if (rogue)
 		COM_AddGameDirectory (va ("%s/rogue", com_basedir));
-	if (COM_CheckParm ("-hipnotic"))
+	if (hipnotic)
 		COM_AddGameDirectory (va ("%s/hipnotic", com_basedir));
 
 	//

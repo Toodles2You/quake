@@ -133,6 +133,7 @@ typedef struct
 	char userinfo[MAX_INFO_STRING];
 
 	char servername[MAX_OSPATH]; // name of server from original connect
+	int protocol;
 
 	int qport;
 
@@ -170,7 +171,6 @@ extern client_static_t cls;
 //
 typedef struct
 {
-	int serverprotocol;
 	int servercount; // server identification for prespawns
 
 	char serverinfo[MAX_SERVERINFO_STRING];
@@ -335,7 +335,7 @@ extern kbutton_t in_strafe;
 void CL_InitInput (void);
 void CL_SendCmd (void);
 
-void CL_ParseTEnt (void);
+void CL_ParseTEnt (bool quakeworld);
 void CL_UpdateTEnts (void);
 
 void CL_ClearState (void);

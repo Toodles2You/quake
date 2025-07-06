@@ -352,9 +352,9 @@ void Draw_Init (void)
 		Sys_Error ("Couldn't load gfx/conback.lmp");
 
 	// hack the version number directly into the pic
-	ver = QUAKE_VERSION;
-	dest = cb->data + 320 * 186 + 320 - 11 - 8 * (sizeof (QUAKE_VERSION) - 1);
-	y = sizeof (QUAKE_VERSION) - 1;
+	ver = ENGINE_VERSION;
+	dest = cb->data + 320 * 186 + 320 - 11 - 8 * (sizeof (ENGINE_VERSION) - 1);
+	y = sizeof (ENGINE_VERSION) - 1;
 	for (x = 0; x < y; x++)
 		Draw_CharToConback (draw_chars, ver[x], dest + (x << 3));
 

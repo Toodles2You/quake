@@ -241,23 +241,39 @@ static void SV_CalcPHS (void)
 
 static bool SV_LoadProgs (void)
 {
-	if (PR_LoadProgs (&sv.pr, "qwprogs.dat", PROG_VERSION_QUAKE, PROG_CRC_ANY) == 0)
-		svs.protocol = PROTOCOL_QUAKEWORLD;
-	else if (PR_LoadProgs (&sv.pr, "progs.dat", PROG_VERSION_QUAKE, PROG_CRC_ANY) == 0)
-		svs.protocol = PROTOCOL_NETQUAKE;
-	else
+	if (PR_LoadProgs (&sv.pr, "qwprogs.dat", PROG_VERSION_QUAKE, PROG_CRC_ANY) != 0 &&
+		PR_LoadProgs (&sv.pr, "progs.dat", PROG_VERSION_QUAKE, PROG_CRC_ANY) != 0)
+	{
 		return false;
+	}
+
+	switch (sv.pr.progs->crc)
+	{
+	case PROG_CRC_NETQUAKE:
+	{
+		svs.protocol = PROTOCOL_NETQUAKE;
+		break;
+	}
+	default:
+	{
+		svs.protocol = PROTOCOL_QUAKEWORLD;
+		break;
+	}
+	}
+	Con_DPrintf ("PR_LoadProgs: Using protocol %i\n", svs.protocol);
 
 #define PR_FIELD(_, name) {#name, false},
 #define PR_FIELD_OPTIONAL(_, name) {#name, true},
 
 	pr_field_t pr_globals[] = {
 #include "pr_globals.h"
-		{NULL, true}};
+		{NULL, true},
+	};
 
 	pr_field_t pr_fields[] = {
 #include "pr_fields.h"
-		{NULL, true}};
+		{NULL, true},
+	};
 
 #undef PR_FIELD
 #undef PR_FIELD_OPTIONAL
@@ -268,7 +284,7 @@ static bool SV_LoadProgs (void)
 	PR_BuildStructs (&sv.pr, pr_global_struct, pr_globals, pr_fields_struct, pr_fields);
 
 	sv.pr.builtins = pr_builtins;
-	sv.pr.numbuiltins = pr_numbuiltins;
+	sv.pr.numbuiltins = lengthof (pr_builtins);
 
 	return true;
 }
