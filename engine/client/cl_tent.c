@@ -46,6 +46,12 @@ typedef struct
 
 static explosion_t cl_explosions[MAX_EXPLOSIONS];
 
+static model_t *cl_model_s_explod;
+static model_t *cl_model_bolt;
+static model_t *cl_model_bolt2;
+static model_t *cl_model_bolt3;
+static model_t *cl_model_beam;
+
 static sfx_t *cl_sfx_wizhit;
 static sfx_t *cl_sfx_knighthit;
 static sfx_t *cl_sfx_tink1;
@@ -56,6 +62,12 @@ static sfx_t *cl_sfx_r_exp3;
 
 void CL_InitTEnts (void)
 {
+	cl_model_s_explod = Mod_ForName ("progs/s_explod.spr", false, false);
+	cl_model_bolt = Mod_ForName ("progs/bolt.mdl", false, false);
+	cl_model_bolt2 = Mod_ForName ("progs/bolt2.mdl", false, false);
+	cl_model_bolt3 = Mod_ForName ("progs/bolt3.mdl", false, false);
+	cl_model_beam = Mod_ForName ("progs/beam.mdl", false, false);
+
 	cl_sfx_wizhit = S_PrecacheSound ("wizard/hit.wav");
 	cl_sfx_knighthit = S_PrecacheSound ("hknight/hit.wav");
 	cl_sfx_tink1 = S_PrecacheSound ("weapons/tink1.wav");
@@ -69,6 +81,20 @@ void CL_ClearTEnts (void)
 {
 	memset (&cl_beams, 0, sizeof (cl_beams));
 	memset (&cl_explosions, 0, sizeof (cl_explosions));
+
+	cl_model_s_explod = NULL;
+	cl_model_bolt = NULL;
+	cl_model_bolt2 = NULL;
+	cl_model_bolt3 = NULL;
+	cl_model_beam = NULL;
+
+	cl_sfx_wizhit = NULL;
+	cl_sfx_knighthit = NULL;
+	cl_sfx_tink1 = NULL;
+	cl_sfx_ric1 = NULL;
+	cl_sfx_ric2 = NULL;
+	cl_sfx_ric3 = NULL;
+	cl_sfx_r_exp3 = NULL;
 }
 
 static explosion_t *CL_AllocExplosion (void)
@@ -106,6 +132,9 @@ static void CL_ParseBeam (model_t *m)
 	vec3_t start, end;
 	beam_t *b;
 	int i;
+
+	if (m == NULL)
+		return;
 
 	ent = MSG_ReadShort ();
 
@@ -216,7 +245,7 @@ void CL_ParseTEnt (void)
 		break;
 
 	case TE_EXPLOSION: // rocket explosion
-					   // particles
+		// particles
 		pos[0] = MSG_ReadCoord ();
 		pos[1] = MSG_ReadCoord ();
 		pos[2] = MSG_ReadCoord ();
@@ -237,12 +266,12 @@ void CL_ParseTEnt (void)
 		S_StartSound (-1, 0, cl_sfx_r_exp3, pos, 1, 1);
 
 		// sprite
-		if (cl.serverprotocol == PROTOCOL_QUAKEWORLD)
+		if (cl.serverprotocol == PROTOCOL_QUAKEWORLD && cl_model_s_explod != NULL)
 		{
 			ex = CL_AllocExplosion ();
 			VectorCopy (pos, ex->origin);
 			ex->start = cl.time;
-			ex->model = Mod_ForName ("progs/s_explod.spr", true, false);
+			ex->model = cl_model_s_explod;
 		}
 		break;
 
@@ -256,15 +285,15 @@ void CL_ParseTEnt (void)
 		break;
 
 	case TE_LIGHTNING1: // lightning bolts
-		CL_ParseBeam (Mod_ForName ("progs/bolt.mdl", true, false));
+		CL_ParseBeam (cl_model_bolt);
 		break;
 
 	case TE_LIGHTNING2: // lightning bolts
-		CL_ParseBeam (Mod_ForName ("progs/bolt2.mdl", true, false));
+		CL_ParseBeam (cl_model_bolt2);
 		break;
 
 	case TE_LIGHTNING3: // lightning bolts
-		CL_ParseBeam (Mod_ForName ("progs/bolt3.mdl", true, false));
+		CL_ParseBeam (cl_model_bolt3);
 		break;
 
 	case TE_LAVASPLASH:
@@ -324,7 +353,7 @@ void CL_ParseTEnt (void)
 		if (cl.serverprotocol == PROTOCOL_NETQUAKE)
 		{
 			// grappling hook beam
-			CL_ParseBeam (Mod_ForName ("progs/beam.mdl", true, false));
+			CL_ParseBeam (cl_model_beam);
 		}
 		else
 		{

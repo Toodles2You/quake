@@ -229,6 +229,8 @@ static void Model_NextDownload (void)
 		}
 	}
 
+	CL_InitTEnts ();
+
 	// all done
 	cl.worldmodel = cl.model_precache[1];
 	R_NewMap ();

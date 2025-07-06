@@ -807,7 +807,6 @@ void CL_Init (void)
 	Info_SetValueForKey (cls.userinfo, "msg", "1", MAX_INFO_STRING, true);
 
 	CL_InitInput ();
-	CL_InitTEnts ();
 	CL_InitPrediction ();
 	Pmove_Init ();
 
