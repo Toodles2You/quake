@@ -50,7 +50,7 @@ enum
 	PF_WEAPONFRAME = 1 << 8, // only sent for view player
 	PF_DEAD = 1 << 9,		 // don't block movement any more
 	PF_GIB = 1 << 10,		 // offset the view height differently
-	PF_NOGRAV = 1 << 11,	 // don't apply gravity for prediction
+	PF_ONGROUND = 1 << 11,	 // don't apply gravity for prediction
 
 	// if the high bit of the client to server byte is set, the low bits are
 	// client move cmd bits

@@ -91,7 +91,7 @@ static float V_CalcBob (void)
 	static float bob;
 	float cycle;
 
-	if (onground == -1)
+	if ((view_message->flags & PF_ONGROUND) == 0)
 		return bob; // just use old value
 
 	bobtime += host_frametime;
@@ -153,7 +153,7 @@ static void V_DriftPitch (void)
 {
 	float delta, move;
 
-	if (view_message->onground == -1 || cls.demoplayback)
+	if ((view_message->flags & PF_ONGROUND) == 0 || cls.demoplayback)
 	{
 		cl.driftmove = 0;
 		cl.pitchvel = 0;
@@ -695,7 +695,7 @@ static void V_CalcRefdef (void)
 	r_refdef.viewangles[PITCH] += cl.punchangle;
 
 	// smooth out stair step ups
-	if ((view_message->onground != -1) && (cl.simorg[2] - oldz > 0))
+	if ((view_message->flags & PF_ONGROUND) != 0 && (cl.simorg[2] - oldz > 0))
 	{
 		float steptime;
 

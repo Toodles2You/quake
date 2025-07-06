@@ -344,6 +344,8 @@ static void SV_WritePlayersToClient (client_t *client, edict_t *clent, byte *pvs
 			pflags |= PF_DEAD;
 		if (ed_vector (ent, mins)[2] != -24)
 			pflags |= PF_GIB;
+		if (((int)ed_float (ent, flags) & FL_ONGROUND) != 0)
+			pflags |= PF_ONGROUND;
 
 		if (ent == clent)
 		{ // don't send a lot of data on personal entity

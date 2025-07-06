@@ -92,6 +92,10 @@ void CL_PredictUsercmd (player_state_t *from, player_state_t *to, usercmd_t *u)
 	VectorCopy (pmove.angles, to->viewangles);
 	VectorCopy (pmove.velocity, to->velocity);
 	to->onground = onground;
+	if (onground != -1)
+		to->flags |= PF_ONGROUND;
+	else
+		to->flags &= ~PF_ONGROUND;
 
 	to->weaponframe = from->weaponframe;
 }
@@ -132,7 +136,7 @@ void CL_PredictMove (void)
 		// first update is the final signon stage
 		cls.state = ca_active;
 
-	if (cl_nopred.value)
+	if (cl_nopred.value || Host_IsLocalGame ())
 	{
 		VectorCopy (from->playerstate[cl.playernum].velocity, cl.simvel);
 		VectorCopy (from->playerstate[cl.playernum].origin, cl.simorg);
