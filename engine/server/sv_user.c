@@ -382,7 +382,7 @@ static void SV_Begin_f (void)
 		return; // don't begin again
 
 	host_client->state = cs_spawned;
-	host_client->netchan.ignore_rate = false;
+	host_client->netchan.ignore_rate = Host_IsLocalClient (host_client->userid);
 
 	// handle the case of a level changing while a client was connecting
 	if (atoi (Cmd_Argv (1)) != svs.spawncount)
