@@ -330,6 +330,7 @@ void VID_Init (char *palette)
 
 	// set the window attributes
 	SDL_GL_ResetAttributes ();
+	SDL_GL_SetAttribute (SDL_GL_STENCIL_SIZE, 1);
 
 	if (SDL_GL_SetAttribute (SDL_GL_CONTEXT_MAJOR_VERSION, 3) < 0 ||
 		SDL_GL_SetAttribute (SDL_GL_CONTEXT_MINOR_VERSION, 0) < 0 ||
