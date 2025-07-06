@@ -49,7 +49,7 @@ cvar_t sv_wateraccelerate = {"sv_wateraccelerate", "10"};
 cvar_t sv_friction = {"sv_friction", "4"};
 cvar_t sv_waterfriction = {"sv_waterfriction", "4"};
 
-cvar_t sv_ticrate = {"sv_ticrate", "0.025"};
+cvar_t sv_ticrate = {"sv_ticrate", "0"};
 
 void SV_CheckAllEnts (void)
 {
@@ -961,48 +961,61 @@ void SV_RunNewmis (void)
 	SV_RunEntity (ent);
 }
 
-void SV_Physics (void)
+void SV_RunPhysics (void)
 {
 	int i;
 	edict_t *ent;
 
+	SV_ProgStartFrame ();
+
+	//
+	// treat each object in turn
+	// even the world gets a chance to think
+	//
+	for (i = 0, ent = sv.edicts; i < sv.num_edicts; i++, ent = NEXT_EDICT (ent))
+	{
+		if (ent->free)
+			continue;
+
+		if (sv_pr_float (force_retouch))
+			SV_LinkEdict (ent, true); // force retouch even for stationary
+
+		if (i > 0 && i <= MAX_CLIENTS)
+			continue; // clients are run directly from packets
+
+		SV_RunEntity (ent);
+		SV_RunNewmis ();
+	}
+
+	if (sv_pr_float (force_retouch))
+	{
+		sv_pr_float (force_retouch)--;
+		if (sv_pr_float (force_retouch) < 0.0f)
+			sv_pr_float (force_retouch) = 0.0f;
+	}
+}
+
+void SV_Physics (void)
+{
 	// don't bother running a frame if sv_ticrate seconds haven't passed
 	sv.deltatime += sv.newtime - sv.oldtime;
 	sv.oldtime = sv.newtime;
+
+	if (sv_ticrate.value <= 0.0f)
+	{
+		sv.time = sv.newtime;
+		sv.frametime = sv.deltatime;
+		SV_RunPhysics ();
+		sv.deltatime = 0.0f;
+		return;
+	}
 
 	while (sv.deltatime >= sv_ticrate.value)
 	{
 		sv.deltatime -= sv_ticrate.value;
 		sv.time += sv_ticrate.value;
 		sv.frametime = sv_ticrate.value;
-
-		SV_ProgStartFrame ();
-
-		//
-		// treat each object in turn
-		// even the world gets a chance to think
-		//
-		for (i = 0, ent = sv.edicts; i < sv.num_edicts; i++, ent = NEXT_EDICT (ent))
-		{
-			if (ent->free)
-				continue;
-
-			if (sv_pr_float (force_retouch))
-				SV_LinkEdict (ent, true); // force retouch even for stationary
-
-			if (i > 0 && i <= MAX_CLIENTS)
-				continue; // clients are run directly from packets
-
-			SV_RunEntity (ent);
-			SV_RunNewmis ();
-		}
-
-		if (sv_pr_float (force_retouch))
-		{
-			sv_pr_float (force_retouch)--;
-			if (sv_pr_float (force_retouch) < 0.0f)
-				sv_pr_float (force_retouch) = 0.0f;
-		}
+		SV_RunPhysics ();
 	}
 }
 

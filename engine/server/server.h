@@ -354,6 +354,7 @@ void SV_SpawnServer (char *server, char *startspot);
 // sv_phys.c
 //
 void SV_ProgStartFrame (void);
+void SV_RunPhysics (void);
 void SV_Physics (void);
 bool SV_RunThink (edict_t *ent);
 void SV_RunNewmis (void);

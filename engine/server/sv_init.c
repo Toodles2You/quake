@@ -452,7 +452,16 @@ void SV_SpawnServer (char *server, char *startspot)
 	sv.active = true;
 
 	// run two frames to allow everything to settle
-	SV_Physics ();
+	if (sv_ticrate.value <= 0.0f)
+	{
+		sv.frametime = 0.1f;
+		SV_RunPhysics ();
+		SV_RunPhysics ();
+	}
+	else
+	{
+		SV_Physics ();
+	}
 
 	// save movement vars
 	SV_SetMoveVars ();
