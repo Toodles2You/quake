@@ -237,10 +237,13 @@ void CL_ParseTEnt (void)
 		S_StartSound (-1, 0, cl_sfx_r_exp3, pos, 1, 1);
 
 		// sprite
-		ex = CL_AllocExplosion ();
-		VectorCopy (pos, ex->origin);
-		ex->start = cl.time;
-		ex->model = Mod_ForName ("progs/s_explod.spr", true, false);
+		if (cl.serverprotocol == PROTOCOL_QUAKEWORLD)
+		{
+			ex = CL_AllocExplosion ();
+			VectorCopy (pos, ex->origin);
+			ex->start = cl.time;
+			ex->model = Mod_ForName ("progs/s_explod.spr", true, false);
+		}
 		break;
 
 	case TE_TAREXPLOSION: // tarbaby explosion
