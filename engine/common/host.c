@@ -646,3 +646,8 @@ bool Host_IsPaused (void)
 {
 	return sv.paused || (maxclients.value <= 1 && key_dest != key_game);
 }
+
+bool Host_IsDedicated (void)
+{
+	return cls.state == ca_dedicated;
+}
