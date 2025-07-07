@@ -664,10 +664,9 @@ void Host_SetPaused (bool paused)
 		return;
 	if (!pausable.value)
 		return;
-	sv.paused = paused;
-	if (cl.paused != paused)
+	if (sv.paused != paused)
 	{
-		cl.paused = paused;
-		S_SetSoundPaused (cl.paused);
+		MSG_WriteChar (&cls.netchan.message, clc_stringcmd);
+		MSG_WriteString (&cls.netchan.message, "pause");
 	}
 }

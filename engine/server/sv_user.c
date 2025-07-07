@@ -776,7 +776,13 @@ static void SV_Pause_f (void)
 		return;
 	}
 
-	if (sv.paused)
+	if (!Host_IsMultiplayer ())
+	{
+		SV_TogglePause (NULL);
+		return;
+	}
+
+	if (!sv.paused)
 		sprintf (st, "%s paused the game\n", host_client->name);
 	else
 		sprintf (st, "%s unpaused the game\n", host_client->name);
