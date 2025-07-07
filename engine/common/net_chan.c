@@ -286,7 +286,7 @@ void Netchan_Transmit (netchan_t *chan, int length, byte *data)
 		chan->cleartime = host_time + send.cursize * chan->rate;
 	else
 		chan->cleartime += send.cursize * chan->rate;
-	if (chan->socket == SERVER && Host_IsPaused ())
+	if (chan->socket == SERVER && sv.paused)
 		chan->cleartime = host_time;
 
 	if (showpackets.value)

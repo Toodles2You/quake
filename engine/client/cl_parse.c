@@ -1032,11 +1032,12 @@ static void SVC_TempEntity (void)
 
 static void SVC_SetPause (void)
 {
-	cl.paused = MSG_ReadByte ();
-	if (cl.paused)
-		Music_Pause ();
-	else
-		Music_Resume ();
+	const bool paused = MSG_ReadByte ();
+	if (cl.paused != paused)
+	{
+		cl.paused = paused;
+		S_SetSoundPaused (cl.paused);
+	}
 }
 
 static void SVC_CenterPrint (void)

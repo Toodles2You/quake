@@ -21,7 +21,6 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "clientdef.h"
 #include "serverdef.h"
 
-extern cvar_t maxclients;
 extern cvar_t pausable;
 
 int current_skill;
@@ -252,7 +251,7 @@ static void Host_Savegame_f (void)
 		return;
 	}
 
-	if (maxclients.value > 1)
+	if (Host_IsMultiplayer ())
 	{
 		Con_Printf ("Can't save multiplayer games.\n");
 		return;

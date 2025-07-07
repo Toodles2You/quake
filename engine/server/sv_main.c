@@ -473,9 +473,7 @@ static void SVC_DirectConnect (void)
 	}
 
 	// if at server limits, refuse connection
-	if (maxclients.value > MAX_CLIENTS)
-		Cvar_SetValue (src_server, "maxclients", MAX_CLIENTS);
-	if (clients >= (int)maxclients.value)
+	if (clients >= sv.maxclients)
 	{
 		Con_Printf ("%s:full connect\n", NET_AdrToString (adr));
 		Netchan_OutOfBandPrint (SERVER, adr, "%c\nserver is full\n\n", A2C_PRINT);
@@ -812,7 +810,7 @@ void SV_ExtractFromUserinfo (client_t *cl)
 
 	if (strncmp (val, cl->name, strlen (cl->name)))
 	{
-		if (!Host_IsPaused ())
+		if (!sv.paused)
 		{
 			if (!cl->lastnametime || host_time - cl->lastnametime > 5)
 			{
@@ -1148,7 +1146,7 @@ void SV_CheckTimeouts (void)
 		if (cl->state == cs_zombie && host_time - cl->connection_started > zombietime.value)
 			cl->state = cs_free; // can now be reused
 	}
-	if (Host_IsPaused () && !nclients)
+	if (sv.paused && !nclients)
 	{
 		// nobody left, unpause the server
 		SV_TogglePause ("Pause released since no players are left.\n");

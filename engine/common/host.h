@@ -44,8 +44,9 @@ void Host_InitServer (void);
 void Host_ShutdownServer (bool crash);
 bool Host_IsLocalGame (void);
 bool Host_IsLocalClient (int userid);
-bool Host_IsPaused (void);
 bool Host_IsDedicated (void);
+bool Host_IsMultiplayer (void);
+void Host_SetPaused (bool paused);
 
 extern int current_skill; // skill level for currently loaded level (in case
 						  //  the user changes the cvar while the level is

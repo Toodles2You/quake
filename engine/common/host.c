@@ -77,8 +77,6 @@ cvar_t coop = {"coop", "0"};			 // 0 or 1
 
 cvar_t pausable = {"pausable", "1"};
 
-extern cvar_t maxclients;
-
 extern int cl_framecount;
 
 /*
@@ -314,29 +312,21 @@ static void Host_FilterTime (double time)
 	if (host_timescale.value > 0.01)
 		host_frametime *= host_timescale.value;
 
-	if (!Host_IsPaused ())
+	if (cls.state == ca_active && !cl.paused)
 	{
-		if (cls.state == ca_active)
-		{
-			cl.time += host_frametime;
-			cl.frametime = host_frametime;
-		}
-		else
-			cl.frametime = 0.0f;
-
-		if (sv.state == ss_active)
-		{
-			sv.time += host_frametime;
-			sv.frametime = host_frametime;
-		}
-		else
-			sv.frametime = 0.0f;
+		cl.time += host_frametime;
+		cl.frametime = host_frametime;
 	}
 	else
-	{
 		cl.frametime = 0.0f;
-		sv.frametime = 0.0f;
+
+	if (sv.state == ss_active && !sv.paused)
+	{
+		sv.time += host_frametime;
+		sv.frametime = host_frametime;
 	}
+	else
+		sv.frametime = 0.0f;
 }
 
 /*
@@ -376,7 +366,7 @@ static void Host_ServerFrame (double time)
 	SV_CheckLog ();
 
 	// move autonomous things around if enough time has passed
-	if (!Host_IsPaused ())
+	if (!sv.paused)
 		SV_Physics ();
 
 	// get packets
@@ -474,7 +464,7 @@ void Host_Frame (double time)
 
 	if (cls.state >= ca_connected)
 	{
-		if (!Host_IsPaused ())
+		if (!cl.paused)
 		{
 			// Set up prediction for other players
 			CL_SetUpPlayerPrediction (false);
@@ -655,19 +645,26 @@ bool Host_IsLocalClient (int userid)
 	return Host_IsLocalGame () && cls.state != ca_dedicated && cl.userid == userid;
 }
 
-bool Host_IsPaused (void)
-{
-	if (Host_IsLocalGame ())
-	{
-		if (Host_IsDedicated ())
-			return sv.paused;
-		if (maxclients.value <= 1 && key_dest != key_game)
-			return true;
-	}
-	return cl.paused;
-}
-
 bool Host_IsDedicated (void)
 {
 	return cls.state == ca_dedicated;
+}
+
+bool Host_IsMultiplayer (void)
+{
+	return sv.maxclients > 1;
+}
+
+void Host_SetPaused (bool paused)
+{
+	if (!Host_IsLocalGame () || Host_IsMultiplayer ())
+		return;
+	if (!pausable.value)
+		return;
+	sv.paused = paused;
+	if (cl.paused != paused)
+	{
+		cl.paused = paused;
+		S_SetSoundPaused (cl.paused);
+	}
 }

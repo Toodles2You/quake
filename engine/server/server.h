@@ -160,6 +160,7 @@ typedef struct
 {
 	bool active;		  // false when server is going down
 	server_state_t state; // precache commands are only valid during load
+	int maxclients;
 
 	double time;
 	double frametime;

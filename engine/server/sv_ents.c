@@ -94,11 +94,10 @@ static edict_t *nails[MAX_NAILS];
 static int numnails;
 
 extern int sv_nailmodel, sv_supernailmodel, sv_playermodel;
-extern cvar_t maxclients;
 
 static bool SV_AddNailUpdate (edict_t *ent)
 {
-	if (!Host_IsDedicated () && maxclients.value <= 1)
+	if (!Host_IsDedicated () && !Host_IsMultiplayer ())
 		return false;
 
 	if (ed_float (ent, modelindex) != sv_nailmodel && ed_float (ent, modelindex) != sv_supernailmodel)

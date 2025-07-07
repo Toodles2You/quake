@@ -135,7 +135,7 @@ for a few moments
 void SCR_CenterPrint (char *str)
 {
 	strncpy (scr_centerstring, str, sizeof (scr_centerstring) - 1);
-	scr_centertime_off = scr_centertime.value;
+	scr_centertime_off = cl.time;
 	scr_centertime_start = cl.time;
 
 	// count the number of lines for centering
@@ -200,9 +200,9 @@ static void SCR_CheckDrawCenterString (void)
 	if (scr_center_lines > scr_erase_lines)
 		scr_erase_lines = scr_center_lines;
 
-	scr_centertime_off -= host_frametime;
-
-	if (scr_centertime_off <= 0 && !cl.intermission)
+	if (scr_centertime_off <= 0)
+		return;
+	if (!cl.intermission && scr_centertime_off + scr_centertime.value <= cl.time)
 		return;
 	if (key_dest != key_game)
 		return;
@@ -441,6 +441,9 @@ static void SCR_DrawPause (void)
 		return;
 
 	if (!cl.paused)
+		return;
+
+	if (key_dest != key_game)
 		return;
 
 	pic = Draw_CachePic ("gfx/pause.lmp");
@@ -724,6 +727,9 @@ needs almost the entire 256k of stack space!
 */
 void SCR_UpdateScreen (void)
 {
+	if (cls.state != ca_active)
+		scr_centertime_off = 0;
+	
 	if (scr_disabled_for_loading)
 	{
 		if (host_time - scr_disabled_time > 60)

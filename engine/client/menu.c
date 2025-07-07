@@ -206,6 +206,7 @@ void M_ToggleMenu_f (void)
 		}
 		key_dest = key_game;
 		m_state = m_none;
+		Host_SetPaused (false);
 		return;
 	}
 	if (key_dest == key_console)
@@ -228,6 +229,7 @@ void M_Menu_Main_f (void)
 	key_dest = key_menu;
 	m_state = m_main;
 	m_entersound = true;
+	Host_SetPaused (true);
 }
 
 static void M_Main_Draw (void)
@@ -255,6 +257,7 @@ static void M_Main_Key (int key)
 		cls.demonum = m_save_demonum;
 		if (cls.demonum != -1 && !cls.demoplayback && cls.state == ca_disconnected)
 			CL_NextDemo ();
+		Host_SetPaused (false);
 		break;
 
 	case K_DOWNARROW:
@@ -306,6 +309,7 @@ static void M_Menu_SinglePlayer_f (void)
 	key_dest = key_menu;
 	m_state = m_singleplayer;
 	m_entersound = true;
+	Host_SetPaused (true);
 }
 
 static void M_SinglePlayer_Draw (void)
@@ -410,6 +414,7 @@ static void M_Menu_Load_f (void)
 	m_entersound = true;
 	m_state = m_load;
 	key_dest = key_menu;
+	Host_SetPaused (true);
 	M_ScanSaves ();
 }
 
@@ -420,6 +425,7 @@ static void M_Menu_Save_f (void)
 	m_entersound = true;
 	m_state = m_save;
 	key_dest = key_menu;
+	Host_SetPaused (true);
 	M_ScanSaves ();
 }
 
@@ -506,6 +512,7 @@ static void M_Save_Key (int k)
 		m_state = m_none;
 		key_dest = key_game;
 		Cbuf_AddText (src_server, va ("save s%i\n", load_cursor));
+		Host_SetPaused (false);
 		return;
 
 	case K_UPARROW:
@@ -535,6 +542,7 @@ static void M_Menu_MultiPlayer_f (void)
 	key_dest = key_menu;
 	m_state = m_multiplayer;
 	m_entersound = true;
+	Host_SetPaused (true);
 }
 
 static void M_MultiPlayer_Draw (void)
@@ -609,6 +617,7 @@ static void M_Menu_Setup_f (void)
 	m_entersound = true;
 	strcpy (setup_myname, name.string);
 	strcpy (setup_hostname, hostname.string);
+	Host_SetPaused (true);
 }
 
 static void M_Setup_Draw (void)
@@ -740,6 +749,7 @@ static void M_Menu_Options_f (void)
 	key_dest = key_menu;
 	m_state = m_options;
 	m_entersound = true;
+	Host_SetPaused (true);
 }
 
 static void M_AdjustSliders (int dir)
@@ -993,6 +1003,7 @@ static void M_Menu_Keys_f (void)
 	key_dest = key_menu;
 	m_state = m_keys;
 	m_entersound = true;
+	Host_SetPaused (true);
 }
 
 static void M_FindKeysForCommand (const char *command, int *twokeys)
@@ -1153,6 +1164,7 @@ static void M_Menu_Video_f (void)
 	key_dest = key_menu;
 	m_state = m_video;
 	m_entersound = true;
+	Host_SetPaused (true);
 }
 
 static void M_Video_Draw (void)
@@ -1175,6 +1187,7 @@ static void M_Menu_Help_f (void)
 	m_state = m_help;
 	m_entersound = true;
 	help_page = 0;
+	Host_SetPaused (true);
 }
 
 static void M_Help_Draw (void)
@@ -1243,6 +1256,7 @@ static void M_Menu_Quit_f (void)
 	m_state = m_quit;
 	m_entersound = true;
 	msgNumber = rand () % (lengthof (quitMessage) / 4);
+	Host_SetPaused (true);
 }
 
 static void M_Quit_Key (int key)
@@ -1261,6 +1275,7 @@ static void M_Quit_Key (int key)
 		{
 			key_dest = key_game;
 			m_state = m_none;
+			Host_SetPaused (false);
 		}
 		break;
 
@@ -1323,6 +1338,7 @@ static void M_Menu_LanConfig_f (void)
 
 	m_return_onerror = false;
 	m_return_reason[0] = 0;
+	Host_SetPaused (true);
 }
 
 static void M_LanConfig_Draw (void)
@@ -1632,10 +1648,9 @@ static void M_Menu_GameOptions_f (void)
 	key_dest = key_menu;
 	m_state = m_gameoptions;
 	m_entersound = true;
-	if (maxplayers == 0)
-		maxplayers = MAX_CLIENTS;
 	if (maxplayers < 2)
 		maxplayers = MAX_CLIENTS;
+	Host_SetPaused (true);
 }
 
 static const int gameoptions_cursor_table[] = {40, 56, 64, 72, 80, 88, 96, 112, 120};

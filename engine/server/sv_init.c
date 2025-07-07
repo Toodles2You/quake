@@ -20,6 +20,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 
 #include "serverdef.h"
 
+extern cvar_t maxclients;
+
 server_t sv;
 server_static_t svs;
 
@@ -331,6 +333,12 @@ void SV_SpawnServer (char *server, char *startspot)
 
 	// wipe the entire per-level structure
 	memset (&sv, 0, sizeof (sv));
+
+	sv.maxclients = maxclients.value;
+	if (sv.maxclients < 1)
+		sv.maxclients = 1;
+	else if (sv.maxclients > MAX_CLIENTS)
+		sv.maxclients = MAX_CLIENTS;
 
 	sv.datagram.maxsize = sizeof (sv.datagram_buf);
 	sv.datagram.data = sv.datagram_buf;

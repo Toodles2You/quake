@@ -57,8 +57,6 @@ static vec3_t listener_origin;
 static bool snd_ambient = true;
 static sfx_t *ambient_sfx[NUM_AMBIENTS];
 
-static bool snd_paused;
-
 void S_SetAmbientActive (bool active)
 {
 	snd_ambient = active;
@@ -270,11 +268,9 @@ sfx_t *S_PrecacheSound (char *name)
 
 void S_SetSoundPaused (bool paused)
 {
-	snd_paused = paused;
-
 	ALint al_state;
 	void (*alSourceUpdate)(ALuint);
-	if (snd_paused)
+	if (paused)
 	{
 		al_state = AL_PLAYING;
 		alSourceUpdate = alSourcePause;
@@ -587,11 +583,7 @@ void S_Update (vec3_t origin, vec3_t forward, vec3_t right, vec3_t up)
 	VectorCopy (up, (orientation + 3));
 	alListenerfv (AL_ORIENTATION, orientation);
 
-	const bool paused = Host_IsPaused ();
-	if (snd_paused != paused)
-		S_SetSoundPaused (paused);
-	
-	if (snd_paused)
+	if (cl.paused)
 		return;
 
 	// update general area ambient sound sources

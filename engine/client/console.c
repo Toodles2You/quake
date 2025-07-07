@@ -70,6 +70,7 @@ void Con_ToggleConsole_f (void)
 			key_dest = key_game;
 			key_lines[edit_line][1] = 0; // clear any typing
 			key_linepos = 1;
+			Host_SetPaused (false);
 		}
 		else
 		{
@@ -77,7 +78,10 @@ void Con_ToggleConsole_f (void)
 		}
 	}
 	else
+	{
 		key_dest = key_console;
+		Host_SetPaused (true);
+	}
 
 	SCR_EndLoadingPlaque ();
 	memset (con_times, 0, sizeof (con_times));

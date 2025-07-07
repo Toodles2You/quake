@@ -643,7 +643,7 @@ static void SV_Say (bool team)
 
 	if (fp_messages)
 	{
-		if (!Host_IsPaused () && host_time < host_client->lockedtill)
+		if (!sv.paused && host_time < host_client->lockedtill)
 		{
 			SV_ClientPrintf (host_client, PRINT_CHAT, "You can't talk for %d more seconds\n", (int)(host_client->lockedtill - host_time));
 			return;
@@ -651,7 +651,7 @@ static void SV_Say (bool team)
 		tmp = host_client->whensaidhead - fp_messages + 1;
 		if (tmp < 0)
 			tmp = 10 + tmp;
-		if (!Host_IsPaused () && host_client->whensaid[tmp] && (host_time - host_client->whensaid[tmp] < fp_persecond))
+		if (!sv.paused && host_client->whensaid[tmp] && (host_time - host_client->whensaid[tmp] < fp_persecond))
 		{
 			host_client->lockedtill = host_time + fp_secondsdead;
 			if (fp_msg[0])
@@ -1425,7 +1425,7 @@ void SV_ExecuteClientMessage (client_t *cl)
 				return;
 			}
 
-			if (!Host_IsPaused ())
+			if (!sv.paused)
 			{
 				SV_PreRunCmd ();
 
