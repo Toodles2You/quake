@@ -163,6 +163,15 @@ void CL_CheckForResend (void)
 		return;
 	}
 
+	if (!NET_IsLocalHost (&adr))
+	{
+		if (!Host_InitClient ())
+		{
+			connect_time = -1;
+			return;
+		}
+	}
+
 	if (!adr.port)
 		adr.port = PORT_SERVER;
 

@@ -340,6 +340,15 @@ void SV_SpawnServer (char *server, char *startspot)
 	else if (sv.maxclients > MAX_CLIENTS)
 		sv.maxclients = MAX_CLIENTS;
 
+	if (sv.maxclients > 1)
+	{
+		if (!Host_InitServer ())
+		{
+			sv.active = false;
+			return;
+		}
+	}
+
 	sv.datagram.maxsize = sizeof (sv.datagram_buf);
 	sv.datagram.data = sv.datagram_buf;
 	sv.datagram.allowoverflow = true;

@@ -513,21 +513,18 @@ void Host_Frame (double time)
 	cl_framecount++;
 }
 
-extern cvar_t qport;
-
 static void Host_InitNet (void)
 {
-	int serverPort = PORT_SERVER;
+	int server_port = PORT_SERVER;
 	int p = COM_CheckParm ("-port");
 	if (p && p < com_argc)
 	{
-		serverPort = atoi (com_argv[p + 1]);
-		Con_Printf ("Server Port: %i\n", serverPort);
+		server_port = atoi (com_argv[p + 1]);
+		Con_Printf ("Server Port: %i\n", server_port);
 	}
 
 	NET_Init ();
 	Netchan_Init ();
-	NET_Open (CLIENT, qport.value);
 }
 
 void Host_Init (quakeparms_t *parms)
@@ -592,14 +589,20 @@ void Host_Init (quakeparms_t *parms)
 	Sys_Printf ("========Quake Initialized=========\n");
 }
 
-void Host_InitServer (void)
+extern cvar_t qport;
+
+bool Host_InitClient (void)
+{
+	return NET_Open (CLIENT, qport.value);
+}
+
+bool Host_InitServer (void)
 {
 	int port = PORT_SERVER;
 	int p = COM_CheckParm ("-port");
 	if (p && p < com_argc)
 		port = atoi (com_argv[p + 1]);
-
-	NET_Open (SERVER, port);
+	return NET_Open (SERVER, port);
 }
 
 /*

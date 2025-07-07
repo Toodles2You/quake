@@ -29,7 +29,7 @@ void NET_Init (void);
 void NET_Shutdown (void);
 bool NET_GetPacket (netsocket_e sock);
 void NET_SendPacket (netsocket_e sock, int length, void *data, netadr_t to);
-void NET_Open (netsocket_e sock, int port);
+bool NET_Open (netsocket_e sock, int port);
 void NET_Close (netsocket_e sock);
 netadr_t NET_GetLocalAddress (void);
 char *NET_GetPublicAddress (void);
@@ -39,6 +39,7 @@ bool NET_CompareBaseAdr (netadr_t a, netadr_t b);
 char *NET_AdrToString (netadr_t a);
 char *NET_BaseAdrToString (netadr_t a);
 bool NET_StringToAdr (char *s, netadr_t *a);
+bool NET_IsLocalHost (netadr_t *adr);
 bool NET_IsClientLegal (netadr_t *adr);
 
 //============================================================================

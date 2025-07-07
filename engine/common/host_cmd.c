@@ -107,7 +107,6 @@ static void Host_Map_f (void)
 		return;
 
 	Host_ShutdownServer (false);
-	Host_InitServer ();
 
 	svs.serverflags = 0;
 
@@ -378,8 +377,6 @@ static void Host_Loadgame_f (void)
 
 	fscanf (f, "%s\n", mapname);
 	fscanf (f, "%f\n", &time);
-
-	Host_InitServer ();
 
 	SV_SpawnServer (mapname, NULL);
 

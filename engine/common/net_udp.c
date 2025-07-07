@@ -30,6 +30,7 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <arpa/inet.h>
 #include <errno.h>
 #include <fcntl.h>
+#include <unistd.h>
 
 netadr_t net_from;
 sizebuf_t net_message[SOCKETS];
@@ -146,6 +147,11 @@ bool NET_StringToAdr (char *s, netadr_t *a)
 	return true;
 }
 
+bool NET_IsLocalHost (netadr_t *adr)
+{
+	return adr->ip[0] == 127 && adr->ip[1] == 0 && adr->ip[2] == 0 && adr->ip[3] == 1;
+}
+
 // Returns true if we can't bind the address locally--in other words, the IP is NOT one of our interfaces.
 bool NET_IsClientLegal (netadr_t *adr)
 {
@@ -157,8 +163,13 @@ bool NET_IsClientLegal (netadr_t *adr)
 
 	NetadrToSockadr (adr, &sadr);
 
-	if ((newsocket = socket (PF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
-		Sys_Error ("NET_IsClientLegal: socket:", strerror (errno));
+	newsocket = socket (PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+
+	if (newsocket == -1)
+	{
+		Con_Printf ("NET_IsClientLegal: socket: %s\n", strerror (errno));
+		return false;
+	}
 
 	sadr.sin_port = 0;
 
@@ -195,6 +206,9 @@ bool NET_GetPacket (netsocket_e sock)
 	if (NET_GetLoopbackPacket (sock))
 		return true;
 
+	if (net_socket[sock] == 0)
+		return false;
+
 	int ret;
 	struct sockaddr_in from;
 	int fromlen;
@@ -221,7 +235,7 @@ bool NET_GetPacket (netsocket_e sock)
 
 static bool NET_SendLoopbackPacket (netsocket_e sock, int length, void *data, netadr_t to)
 {
-	if (to.ip[0] != 127 || to.ip[1] != 0 || to.ip[2] != 0 || to.ip[3] != 1)
+	if (!NET_IsLocalHost (&to))
 		return false;
 
 	if (net_loopback_size[sock] + length <= MAX_UDP_PACKET)
@@ -236,6 +250,9 @@ static bool NET_SendLoopbackPacket (netsocket_e sock, int length, void *data, ne
 void NET_SendPacket (netsocket_e sock, int length, void *data, netadr_t to)
 {
 	if (NET_SendLoopbackPacket (sock, length, data, to))
+		return;
+
+	if (net_socket[sock] == 0)
 		return;
 
 	int ret;
@@ -262,11 +279,19 @@ static int UDP_OpenSocket (int port)
 	bool _true = true;
 	int i;
 
-	if ((newsocket = socket (PF_INET, SOCK_DGRAM, IPPROTO_UDP)) == -1)
-		Sys_Error ("UDP_OpenSocket: socket:", strerror (errno));
+	newsocket = socket (PF_INET, SOCK_DGRAM, IPPROTO_UDP);
+	if (newsocket == -1)
+	{
+		Con_Printf ("UDP_OpenSocket: socket: %s\n", strerror (errno));
+		return 0;
+	}
 
 	if (ioctl (newsocket, FIONBIO, (char *)&_true) == -1)
-		Sys_Error ("UDP_OpenSocket: ioctl FIONBIO:", strerror (errno));
+	{
+		Con_Printf ("UDP_OpenSocket: ioctl FIONBIO: %s\n", strerror (errno));
+		close (newsocket);
+		return 0;
+	}
 
 	address.sin_family = AF_INET;
 
@@ -285,7 +310,11 @@ static int UDP_OpenSocket (int port)
 		address.sin_port = htons (port);
 
 	if (bind (newsocket, (void *)&address, sizeof (address)) == -1)
-		Sys_Error ("UDP_OpenSocket: bind: %s", strerror (errno));
+	{
+		Con_Printf ("UDP_OpenSocket: bind: %s\n", strerror (errno));
+		close (newsocket);
+		return 0;
+	}
 
 	return newsocket;
 }
@@ -296,29 +325,32 @@ netadr_t NET_GetLocalAddress (void)
 	struct sockaddr_in address;
 	int namelen;
 
-	if (!net_local_adr.ip[0])
+	if (net_local_adr.ip[0])
+		return net_local_adr;
+
+	const bool is_open = net_socket[SERVER] != 0;
+	if (!is_open)
 	{
-		bool isOpen = net_socket[SERVER];
-		if (!isOpen)
-			Host_InitServer ();
-
-		gethostname (buff, MAXHOSTNAMELEN);
-		buff[MAXHOSTNAMELEN - 1] = 0;
-
-		NET_StringToAdr (buff, &net_local_adr);
-
-		namelen = sizeof (address);
-
-		if (getsockname (net_socket[SERVER], (struct sockaddr *)&address, &namelen) == -1)
-			Sys_Error ("NET_Init: getsockname:", strerror (errno));
-
-		net_local_adr.port = ntohs (address.sin_port);
-
-		Con_Printf ("IP address %s\n", NET_AdrToString (net_local_adr));
-
-		if (!isOpen)
-			NET_Close (SERVER);
+		if (!Host_InitServer ())
+			return net_local_adr;
 	}
+
+	gethostname (buff, MAXHOSTNAMELEN);
+	buff[MAXHOSTNAMELEN - 1] = 0;
+
+	NET_StringToAdr (buff, &net_local_adr);
+
+	namelen = sizeof (address);
+
+	if (getsockname (net_socket[SERVER], (struct sockaddr *)&address, &namelen) == -1)
+		Sys_Error ("NET_Init: getsockname:", strerror (errno));
+
+	net_local_adr.port = ntohs (address.sin_port);
+
+	Con_Printf ("Local IP address: %s\n", NET_AdrToString (net_local_adr));
+
+	if (!is_open)
+		NET_Close (SERVER);
 
 	return net_local_adr;
 }
@@ -416,21 +448,32 @@ char *NET_GetPublicAddress (void)
 
 void NET_Close (netsocket_e sock)
 {
-	if (net_socket[sock])
+	if (net_socket[sock] != 0)
 	{
 		close (net_socket[sock]);
 		net_socket[sock] = 0;
+		Con_Printf ("%s socket closed\n", (sock == SERVER) ? "Server" : "Client");
 	}
 }
 
-void NET_Open (netsocket_e sock, int port)
+bool NET_Open (netsocket_e sock, int port)
 {
+	if (net_socket[sock] != 0)
+		return true;
+
 	NET_Close (sock);
 
 	//
 	// open the communications socket
 	//
 	net_socket[sock] = UDP_OpenSocket (port);
+
+	if (net_socket[sock] == 0)
+		return false;
+
+	Con_Printf ("%s socket opened\n", (sock == SERVER) ? "Server" : "Client");
+
+	return true;
 }
 
 void NET_Init (void)
