@@ -8,7 +8,7 @@ typedef enum
 {
 	CLIENT,
 	SERVER,
-	NUM_SOCKETS,
+	SOCKETS,
 } netsocket_e;
 
 typedef struct
@@ -19,11 +19,11 @@ typedef struct
 } netadr_t;
 
 extern netadr_t net_from; // address of who sent the packet
-extern sizebuf_t net_message[NUM_SOCKETS];
+extern sizebuf_t net_message[SOCKETS];
 
 extern cvar_t hostname;
 
-extern int net_socket[NUM_SOCKETS];
+extern int net_socket[SOCKETS];
 
 void NET_Init (void);
 void NET_Shutdown (void);

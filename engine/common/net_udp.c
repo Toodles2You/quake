@@ -32,14 +32,17 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include <fcntl.h>
 
 netadr_t net_from;
-sizebuf_t net_message[NUM_SOCKETS];
-int net_socket[NUM_SOCKETS];
+sizebuf_t net_message[SOCKETS];
+int net_socket[SOCKETS];
 
 static netadr_t net_local_adr;
 static char net_public_adr[24];
 
 #define MAX_UDP_PACKET 8192
-static byte net_message_buffer[NUM_SOCKETS][MAX_UDP_PACKET];
+static byte net_message_buffer[SOCKETS][MAX_UDP_PACKET];
+
+static byte net_loopback_buffer[SOCKETS][MAX_UDP_PACKET];
+static size_t net_loopback_size[SOCKETS];
 
 static void NetadrToSockadr (netadr_t *a, struct sockaddr_in *s)
 {
@@ -105,6 +108,16 @@ bool NET_StringToAdr (char *s, netadr_t *a)
 	char *colon;
 	char copy[128];
 
+	if (strcmp (s, "localhost") == 0)
+	{
+		a->ip[0] = 127;
+		a->ip[1] = 0;
+		a->ip[2] = 0;
+		a->ip[3] = 1;
+		a->port = 0;
+		return true;
+	}
+
 	memset (&sadr, 0, sizeof (sadr));
 	sadr.sin_family = AF_INET;
 
@@ -160,8 +173,28 @@ bool NET_IsClientLegal (netadr_t *adr)
 	return false;
 }
 
+static bool NET_GetLoopbackPacket (netsocket_e sock)
+{
+	if (net_loopback_size[!sock] == 0)
+		return false;
+
+	memcpy (net_message_buffer[sock], net_loopback_buffer[!sock], net_loopback_size[!sock]);
+	net_message[sock].cursize = net_loopback_size[!sock];
+	net_loopback_size[!sock] = 0;
+
+	net_from.ip[0] = 127;
+	net_from.ip[1] = 0;
+	net_from.ip[2] = 0;
+	net_from.ip[3] = 1;
+	net_from.port = (sock == SERVER) ? PORT_CLIENT : PORT_SERVER;
+	return true;
+}
+
 bool NET_GetPacket (netsocket_e sock)
 {
+	if (NET_GetLoopbackPacket (sock))
+		return true;
+
 	int ret;
 	struct sockaddr_in from;
 	int fromlen;
@@ -186,8 +219,25 @@ bool NET_GetPacket (netsocket_e sock)
 	return ret;
 }
 
+static bool NET_SendLoopbackPacket (netsocket_e sock, int length, void *data, netadr_t to)
+{
+	if (to.ip[0] != 127 || to.ip[1] != 0 || to.ip[2] != 0 || to.ip[3] != 1)
+		return false;
+
+	if (net_loopback_size[sock] + length <= MAX_UDP_PACKET)
+	{
+		memcpy (net_loopback_buffer[sock] + net_loopback_size[sock], data, length);
+		net_loopback_size[sock] += length;
+	}
+
+	return true;
+}
+
 void NET_SendPacket (netsocket_e sock, int length, void *data, netadr_t to)
 {
+	if (NET_SendLoopbackPacket (sock, length, data, to))
+		return;
+
 	int ret;
 	struct sockaddr_in addr;
 
