@@ -64,13 +64,6 @@ int cl_numvisedicts, cl_oldnumvisedicts;
 entity_t *cl_visedicts, *cl_oldvisedicts;
 entity_t cl_visedicts_list[2][MAX_VISEDICTS];
 
-char prespawn_name[] = {'p' ^ 0xff, 'r' ^ 0xff, 'e' ^ 0xff, 's' ^ 0xff, 'p' ^ 0xff, 'a' ^ 0xff, 'w' ^ 0xff, 'n' ^ 0xff, ' ' ^ 0xff,
-						'%' ^ 0xff, 'i' ^ 0xff, ' ' ^ 0xff, '0' ^ 0xff, ' ' ^ 0xff, '%' ^ 0xff, 'i' ^ 0xff, 0};
-char modellist_name[] = {'m' ^ 0xff, 'o' ^ 0xff, 'd' ^ 0xff, 'e' ^ 0xff, 'l' ^ 0xff, 'l' ^ 0xff, 'i' ^ 0xff, 's' ^ 0xff,
-						 't' ^ 0xff, ' ' ^ 0xff, '%' ^ 0xff, 'i' ^ 0xff, ' ' ^ 0xff, '%' ^ 0xff, 'i' ^ 0xff, 0};
-char soundlist_name[] = {'s' ^ 0xff, 'o' ^ 0xff, 'u' ^ 0xff, 'n' ^ 0xff, 'd' ^ 0xff, 'l' ^ 0xff, 'i' ^ 0xff, 's' ^ 0xff,
-						 't' ^ 0xff, ' ' ^ 0xff, '%' ^ 0xff, 'i' ^ 0xff, ' ' ^ 0xff, '%' ^ 0xff, 'i' ^ 0xff, 0};
-
 static cvar_t cl_timeout = {"cl_timeout", "60"};
 
 static double connect_time = -1; // for connection retransmits
@@ -795,25 +788,10 @@ static void CL_Download_f (void)
 	SZ_Print (&cls.netchan.message, va ("download %s\n", Cmd_Argv (1)));
 }
 
-static void simple_crypt (char *buf, int len)
-{
-	while (len--)
-		*buf++ ^= 0xff;
-}
-
-static void CL_FixupModelNames (void)
-{
-	simple_crypt (prespawn_name, sizeof (prespawn_name) - 1);
-	simple_crypt (modellist_name, sizeof (modellist_name) - 1);
-	simple_crypt (soundlist_name, sizeof (soundlist_name) - 1);
-}
-
 void CL_Init (void)
 {
 	cls.state = ca_disconnected;
 	cls.protocol = 0;
-
-	CL_FixupModelNames ();
 
 	Info_SetValueForKey (cls.userinfo, "name", "Player", MAX_INFO_STRING, true);
 	Info_SetValueForKey (cls.userinfo, "rate", "2500", MAX_INFO_STRING, true);

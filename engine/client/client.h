@@ -318,8 +318,6 @@ extern int cl_numvisedicts, cl_oldnumvisedicts;
 extern entity_t *cl_visedicts, *cl_oldvisedicts;
 extern entity_t cl_visedicts_list[2][MAX_VISEDICTS];
 
-extern char prespawn_name[], modellist_name[], soundlist_name[];
-
 //
 // cl_input.c
 //
