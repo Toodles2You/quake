@@ -711,6 +711,8 @@ static void V_CalcRefdef (void)
 	}
 	else
 		oldz = cl.simorg[2];
+
+	Chase_Update ();
 }
 
 static void V_DropPunchAngle (void)

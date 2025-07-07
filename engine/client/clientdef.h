@@ -23,10 +23,8 @@
 #include "gl_model.h"
 #include "glquake.h"
 
-extern cvar_t chase_active;
-
 void Chase_Init (void);
-void Chase_Reset (void);
+bool Chase_Active (void);
 void Chase_Update (void);
 
 #endif /* !_CLIENTDEF_H */

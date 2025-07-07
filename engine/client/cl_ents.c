@@ -792,7 +792,7 @@ static void CL_LinkPlayers (void)
 			CL_NewDlight (j, state->origin[0], state->origin[1], state->origin[2], 200 + (rand () & 31), 0.1, 0);
 
 		// the player object never gets added
-		if (j == cl.playernum)
+		if (j == cl.playernum && !Chase_Active ())
 			continue;
 
 		if (!state->modelindex)
@@ -817,9 +817,16 @@ static void CL_LinkPlayers (void)
 		//
 		// angles
 		//
-		ent->angles[PITCH] = -state->viewangles[PITCH] / 3;
-		ent->angles[YAW] = state->viewangles[YAW];
-		ent->angles[ROLL] = 0;
+		if (j == cl.playernum)
+		{
+			ent->angles[PITCH] = -r_refdef.viewangles[PITCH] / 3;
+			ent->angles[YAW] = r_refdef.viewangles[YAW];
+		}
+		else
+		{
+			ent->angles[PITCH] = -state->viewangles[PITCH] / 3;
+			ent->angles[YAW] = state->viewangles[YAW];
+		}
 		ent->angles[ROLL] = V_CalcRoll (ent->angles, state->velocity) * 4;
 
 		// only predict half the move to minimize overruns

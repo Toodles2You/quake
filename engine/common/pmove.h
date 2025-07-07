@@ -79,6 +79,7 @@ int PM_HullPointContents (hull_t *hull, int num, vec3_t p);
 
 int PM_PointContents (vec3_t point);
 bool PM_TestPlayerPosition (vec3_t point);
-pmtrace_t PM_PlayerMove (vec3_t start, vec3_t stop);
+pmtrace_t PM_PlayerMove (vec3_t start, vec3_t end);
+pmtrace_t PM_TraceLine (vec3_t start, vec3_t end);
 
 #endif /* _PMOVE_H */
