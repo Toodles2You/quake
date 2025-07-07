@@ -331,6 +331,8 @@ void CL_Disconnect (void)
 		// completely kill the connection to prevent unwanted packets
 		memset (&cls.netchan, 0, sizeof (cls.netchan));
 
+		NET_Close (CLIENT);
+
 		cls.state = ca_disconnected;
 		cls.protocol = 0;
 		if (Host_IsLocalGame ())

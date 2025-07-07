@@ -454,6 +454,7 @@ void NET_Close (netsocket_e sock)
 		net_socket[sock] = 0;
 		Con_Printf ("%s socket closed\n", (sock == SERVER) ? "Server" : "Client");
 	}
+	net_loopback_size[sock] = 0;
 }
 
 bool NET_Open (netsocket_e sock, int port)
