@@ -26,9 +26,9 @@ extern ALCdevice *snd_device;
 extern ALCcontext *snd_context;
 
 cvar_t bgmvolume = {"bgmvolume", "1", CVAR_ARCHIVE};
-static cvar_t bgmbuffer = {"bgmbuffer", "4096"};
 
 #define BGM_BUFFERS 4
+#define BGM_SAMPLES 2048
 
 static short *data;
 static int buffer_size;
@@ -63,12 +63,11 @@ void Music_Stop (void)
 
 static void Music_PaintBuffer (ALuint buffer)
 {
-	int count = buffer_size / 2;
-	int recv = stb_vorbis_get_samples_short_interleaved (vorbis, channels, data, count) * channels;
-	if (recv < count)
+	int recv = stb_vorbis_get_samples_short_interleaved (vorbis, channels, data, BGM_SAMPLES) * channels;
+	if (recv < BGM_SAMPLES)
 	{
 		if (loop && stb_vorbis_seek_start (vorbis) >= 0)
-			recv += stb_vorbis_get_samples_short_interleaved (vorbis, channels, data + recv, count - recv);
+			recv += stb_vorbis_get_samples_short_interleaved (vorbis, channels, data + recv, BGM_SAMPLES - recv);
 		else
 			Music_Stop ();
 	}
@@ -218,10 +217,8 @@ void Music_Init (void)
 
 	Cmd_AddCommand (src_client, "cd", CD_f);
 	Cvar_RegisterVariable (src_client, &bgmvolume);
-	Cvar_RegisterVariable (src_client, &bgmbuffer);
 
-	buffer_size = ((int)bgmbuffer.value & ~1) * 2;
-	data = Hunk_AllocName (buffer_size, "bgm");
+	data = Hunk_AllocName (BGM_SAMPLES * 2, "bgm");
 
 	alGenBuffers (BGM_BUFFERS, al_buffers);
 	alGenSources (1, &al_source);

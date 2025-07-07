@@ -57,6 +57,8 @@ static vec3_t listener_origin;
 static bool snd_ambient = true;
 static sfx_t *ambient_sfx[NUM_AMBIENTS];
 
+static bool snd_paused;
+
 void S_SetAmbientActive (bool active)
 {
 	snd_ambient = active;
@@ -266,8 +268,39 @@ sfx_t *S_PrecacheSound (char *name)
 	return S_FindName (name);
 }
 
-// FIXME:
-void S_SetSoundPaused (bool paused) {}
+void S_SetSoundPaused (bool paused)
+{
+	snd_paused = paused;
+
+	ALint al_state;
+	void (*alSourceUpdate)(ALuint);
+	if (snd_paused)
+	{
+		al_state = AL_PLAYING;
+		alSourceUpdate = alSourcePause;
+		Music_Pause ();
+	}
+	else
+	{
+		al_state = AL_PAUSED;
+		alSourceUpdate = alSourcePlay;
+		Music_Resume ();
+	}
+
+	for (int i = 0; i < MAX_CHANNELS; i++)
+	{
+		channel_t *chan = channels + i;
+		if (chan->sfx == NULL)
+			continue;
+		if (chan->sfx == cl_sfx_menu1 || chan->sfx == cl_sfx_menu2 || chan->sfx == cl_sfx_menu3 || chan->sfx == cl_sfx_talk)
+			continue;
+		ALint state;
+		alGetSourcei (chan->al_source, AL_SOURCE_STATE, &state);
+		if (state != al_state)
+			continue;
+		alSourceUpdate (chan->al_source);
+	}
+}
 
 static channel_t *SND_PickChannel (int entnum, int entchannel)
 {
@@ -289,7 +322,7 @@ static channel_t *SND_PickChannel (int entnum, int entchannel)
 		if (chan->entnum == cl.playernum + 1 && entnum != cl.playernum + 1 && chan->sfx)
 			continue;
 
-		double remaining = chan->finished - host_time;
+		double remaining = chan->finished - cl.time;
 		if (remaining >= bestremaining)
 			continue;
 
@@ -361,7 +394,7 @@ void SND_Stop (channel_t *chan)
 void SND_Play (channel_t *chan)
 {
 	chan->looping = (chan->sfx->loopstart != -1) ? LOOP_INTRO : LOOP_NO;
-	chan->finished = host_time + chan->sfx->duration;
+	chan->finished = cl.time + chan->sfx->duration;
 
 	alSourceRewind (chan->al_source);
 	alSourcei (chan->al_source, AL_BUFFER, 0);
@@ -438,7 +471,7 @@ void S_StopSound (int entnum, int entchannel)
 		}
 }
 
-void S_StopAllSounds ()
+void S_StopAllSounds (void)
 {
 	if (!snd_context)
 		return;
@@ -482,7 +515,7 @@ void S_StaticSound (sfx_t *sfx, vec3_t origin, float fvol, float attenuation)
 static void S_UpdateAmbientSounds (void)
 {
 	// calc ambient sound levels
-	mleaf_t *leaf = (snd_ambient && cl.cmodel_precache[1]) ? CMod_PointInLeaf (listener_origin, cl.cmodel_precache[1]) : NULL;
+	mleaf_t *leaf = (snd_ambient && cl.cmodel_precache[1] != NULL) ? CMod_PointInLeaf (listener_origin, cl.cmodel_precache[1]) : NULL;
 
 	for (int i = 0; i < NUM_AMBIENTS; i++)
 	{
@@ -499,13 +532,13 @@ static void S_UpdateAmbientSounds (void)
 		// don't adjust volume too fast
 		if (chan->volume < vol)
 		{
-			chan->volume += (ambient_fade.value / 255.0f) * host_frametime;
+			chan->volume += (ambient_fade.value / 255.0f) * cl.frametime;
 			if (chan->volume > vol)
 				chan->volume = vol;
 		}
 		else if (chan->volume > vol)
 		{
-			chan->volume -= (ambient_fade.value / 255.0f) * host_frametime;
+			chan->volume -= (ambient_fade.value / 255.0f) * cl.frametime;
 			if (chan->volume < vol)
 				chan->volume = vol;
 		}
@@ -554,6 +587,13 @@ void S_Update (vec3_t origin, vec3_t forward, vec3_t right, vec3_t up)
 	VectorCopy (up, (orientation + 3));
 	alListenerfv (AL_ORIENTATION, orientation);
 
+	const bool paused = Host_IsPaused ();
+	if (snd_paused != paused)
+		S_SetSoundPaused (paused);
+	
+	if (snd_paused)
+		return;
+
 	// update general area ambient sound sources
 	S_UpdateAmbientSounds ();
 
@@ -568,11 +608,15 @@ void S_Update (vec3_t origin, vec3_t forward, vec3_t right, vec3_t up)
 		{
 			ALint processed;
 			alGetSourcei (chan->al_source, AL_BUFFERS_PROCESSED, &processed);
-			// FIXME: handle both already having been processed
-			if (processed == 1)
+			if (processed != 0)
 			{
 				ALuint buffer;
-				alSourceUnqueueBuffers (chan->al_source, 1, &buffer);
+				alSourceUnqueueBuffers (chan->al_source, processed, &buffer);
+				if (processed == 2)
+				{
+					alSourceQueueBuffers (chan->al_source, 1, &chan->sfx->al_buffers[1]);
+					alSourcePlay (chan->al_source);
+				}
 				alSourcei (chan->al_source, AL_LOOPING, AL_TRUE);
 				chan->looping = LOOP_LOOP;
 			}
