@@ -417,7 +417,10 @@ static void SCR_DrawFPS (void)
 	char st[80];
 
 	if (!cl_showfps.value)
+	{
+		cl_framecount = 0;
 		return;
+	}
 
 	t = Sys_FloatTime ();
 	if ((t - lastframetime) >= 1.0)

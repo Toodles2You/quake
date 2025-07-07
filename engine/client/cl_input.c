@@ -497,6 +497,9 @@ void CL_SendCmd (void)
 	int lost;
 	int seq_hash;
 
+	if (cls.state == ca_disconnected)
+		return;
+
 	if (cls.demoplayback)
 		return; // sendcmds come from the demo
 

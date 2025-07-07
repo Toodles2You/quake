@@ -95,19 +95,6 @@ typedef struct client_s
 	netchan_t netchan;
 } client_t;
 
-#define STATFRAMES 100
-typedef struct
-{
-	double active;
-	double idle;
-	int count;
-	int packets;
-
-	double latched_active;
-	double latched_idle;
-	int latched_packets;
-} svstats_t;
-
 // MAX_CHALLENGES is made large to prevent a denial
 // of service attack that could cycle all of them
 // out before legitimate users connected
@@ -130,7 +117,6 @@ typedef struct
 
 	double last_heartbeat;
 	int heartbeat_sequence;
-	svstats_t stats;
 
 	char info[MAX_SERVERINFO_STRING];
 

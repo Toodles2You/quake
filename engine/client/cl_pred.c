@@ -100,7 +100,7 @@ void CL_PredictUsercmd (player_state_t *from, player_state_t *to, usercmd_t *u)
 	to->weaponframe = from->weaponframe;
 }
 
-void CL_PredictMove (void)
+static void CL_PredictMove (void)
 {
 	int i;
 	float f;
@@ -109,9 +109,6 @@ void CL_PredictMove (void)
 
 	if (cl_pushlatency.value > 0)
 		Cvar_Set (src_client, "pushlatency", "0");
-
-	if (cl.paused)
-		return;
 
 	if (cl.intermission)
 		return;
@@ -193,6 +190,24 @@ void CL_PredictMove (void)
 		cl.simvel[i] =
 			from->playerstate[cl.playernum].velocity[i] + f * (to->playerstate[cl.playernum].velocity[i] - from->playerstate[cl.playernum].velocity[i]);
 	}
+}
+
+void CL_PredictPlayers (void)
+{
+	if (cls.state < ca_connected)
+		return;
+
+	if (cl.paused)
+		return;
+	
+	// Set up prediction for other players
+	CL_SetUpPlayerPrediction (false);
+
+	// do client side motion prediction
+	CL_PredictMove ();
+
+	// Set up prediction for other players
+	CL_SetUpPlayerPrediction (true);
 }
 
 void CL_InitPrediction (void)

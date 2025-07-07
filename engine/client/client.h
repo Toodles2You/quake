@@ -404,7 +404,7 @@ void CL_ParsePlayerinfo (void);
 // cl_pred.c
 //
 void CL_InitPrediction (void);
-void CL_PredictMove (void);
+void CL_PredictPlayers (void);
 void CL_PredictUsercmd (player_state_t *from, player_state_t *to, usercmd_t *u);
 
 #endif /* !_CLIENT_H */

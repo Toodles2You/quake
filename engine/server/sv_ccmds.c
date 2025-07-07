@@ -377,19 +377,9 @@ static void SV_Status_f (void)
 {
 	int i, j, l;
 	client_t *cl;
-	float cpu, avg, pak;
 	char *s;
 
-	cpu = (svs.stats.latched_active + svs.stats.latched_idle);
-	if (cpu)
-		cpu = 100 * svs.stats.latched_active / cpu;
-	avg = 1000 * svs.stats.latched_active / STATFRAMES;
-	pak = (float)svs.stats.latched_packets / STATFRAMES;
-
 	Con_Printf ("net address      : %s\n", NET_AdrToString (NET_GetLocalAddress ()));
-	Con_Printf ("cpu utilization  : %3i%%\n", (int)cpu);
-	Con_Printf ("avg response time: %i ms\n", (int)avg);
-	Con_Printf ("packets/frame    : %5.2f\n", pak);
 
 	// min fps lat drp
 	if (sv_redirected != RD_NONE)

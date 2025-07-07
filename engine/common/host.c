@@ -51,9 +51,7 @@ cvar_t rcon_address = {"rcon_address", ""};
 
 cvar_t password = {"password", "", CVAR_CLIENT_INFO};
 
-cvar_t host_framerate = {"host_framerate", "0"};
 cvar_t host_timescale = {"host_timescale", "0"}; // set for slow motion
-cvar_t host_speeds = {"host_speeds", "0"};		 // set for running times
 
 cvar_t sys_ticrate = {"sys_ticrate", "0.05"};
 cvar_t serverprofile = {"serverprofile", "0"};
@@ -155,9 +153,7 @@ static void Host_InitLocal (void)
 
 	Cvar_RegisterVariable (src_host, &password);
 
-	Cvar_RegisterVariable (src_host, &host_framerate);
 	Cvar_RegisterVariable (src_host, &host_timescale);
-	Cvar_RegisterVariable (src_host, &host_speeds);
 
 	Cvar_RegisterVariable (src_host, &sys_ticrate);
 	Cvar_RegisterVariable (src_server, &serverprofile);
@@ -291,39 +287,33 @@ void Host_ClearMemory (void)
 	memset (&cl, 0, sizeof (cl));
 }
 
-/*
-===================
-Host_FilterTime
-
-Returns false if the time is too short to run a frame
-===================
-*/
 static void Host_FilterTime (double time)
 {
 	host_frametime = time;
+	host_time += host_frametime;
 
-	if (host_framerate.value > 0)
-		host_frametime = host_framerate.value;
-	else if (host_frametime > 0.1) // don't allow really long or short frames
-		host_frametime = 0.1;
-	else if (host_frametime < 0.001)
-		host_frametime = 0.001;
+	// don't allow really long or short frames
+	double f = host_frametime;
+	if (f > 0.1)
+		f = 0.1;
+	else if (f < 0.001)
+		f = 0.001;
 
 	if (host_timescale.value > 0.01)
-		host_frametime *= host_timescale.value;
+		f *= host_timescale.value;
 
 	if (cls.state == ca_active && !cl.paused)
 	{
-		cl.time += host_frametime;
-		cl.frametime = host_frametime;
+		cl.frametime = f;
+		cl.time += f;
 	}
 	else
 		cl.frametime = 0.0f;
 
 	if (sv.state == ss_active && !sv.paused)
 	{
-		sv.time += host_frametime;
-		sv.frametime = host_frametime;
+		sv.frametime = f;
+		sv.time += f;
 	}
 	else
 		sv.frametime = 0.0f;
@@ -349,13 +339,8 @@ static void Host_GetConsoleCommands (void)
 	}
 }
 
-static void Host_ServerFrame (double time)
+static void Host_ServerFrame (void)
 {
-	static double start, end;
-
-	start = Sys_FloatTime ();
-	svs.stats.idle += start - end;
-
 	// keep the random time dependent
 	rand ();
 
@@ -384,29 +369,8 @@ static void Host_ServerFrame (double time)
 	Master_Heartbeat ();
 }
 
-/*
-==================
-Host_Frame
-
-Runs all active servers
-==================
-*/
-void Host_Frame (double time)
+static void Host_ClientPreFrame (void)
 {
-	static double time1 = 0;
-	static double time2 = 0;
-	static double time3 = 0;
-	int pass1, pass2, pass3;
-
-	if (setjmp (host_abortserver))
-		return; // something bad happened, or the server disconnected
-
-	// keep the random time dependent
-	rand ();
-
-	// decide the simulation time
-	Host_FilterTime (time);
-
 	// get new key events
 	Sys_SendKeyEvents ();
 
@@ -416,78 +380,35 @@ void Host_Frame (double time)
 	// process console commands
 	Cbuf_Execute (src_client);
 
-	// fetch results from server
-	CL_ReadPackets ();
-
-	// if running the server locally, make intentions now
-	if (cls.state == ca_disconnected)
-	{
-	}
-	else if (Host_IsLocalGame ())
-	{
-		CL_SendCmd ();
-	}
-
-	//-------------------
-	//
-	// server operations
-	//
-	//-------------------
-
-	// check for commands typed to the host
-	Host_GetConsoleCommands ();
+	if (!Host_IsLocalGame ())
+		// fetch results from server
+		CL_ReadPackets ();
 
 	if (Host_IsLocalGame ())
-		Host_ServerFrame (host_frametime);
-	else
-		Cbuf_Execute (src_server);
-
-	//-------------------
-	//
-	// client operations
-	//
-	//-------------------
-
-	// if running the server remotely, send intentions now after
-	// the incoming messages have been read
-	if (cls.state == ca_disconnected)
-	{
-		// resend a connection request if necessary
-		CL_CheckForResend ();
-	}
-	else if (!Host_IsLocalGame ())
-	{
+		// if running the server locally, make intentions now
 		CL_SendCmd ();
-	}
+}
 
-	host_time += host_frametime;
+static void Host_ClientPostFrame (void)
+{
+	if (Host_IsLocalGame ())
+		// fetch results from server
+		CL_ReadPackets ();
 
-	if (cls.state >= ca_connected)
-	{
-		if (!cl.paused)
-		{
-			// Set up prediction for other players
-			CL_SetUpPlayerPrediction (false);
+	// resend a connection request if necessary
+	CL_CheckForResend ();
 
-			// do client side motion prediction
-			CL_PredictMove ();
+	if (!Host_IsLocalGame ())
+		// if running the server remotely, send intentions now after the incoming messages have been read
+		CL_SendCmd ();
 
-			// Set up prediction for other players
-			CL_SetUpPlayerPrediction (true);
-		}
+	CL_PredictPlayers ();
 
-		// build a refresh entity list
-		CL_EmitEntities ();
-	}
+	// build a refresh entity list
+	CL_EmitEntities ();
 
 	// update video
-	if (host_speeds.value)
-		time1 = Sys_FloatTime ();
-
 	SCR_UpdateScreen ();
-
-	if (host_speeds.value)
-		time2 = Sys_FloatTime ();
 
 	// update audio
 	if (cls.state == ca_active)
@@ -499,15 +420,34 @@ void Host_Frame (double time)
 		S_Update (vec3_origin, (vec3_t){1, 0, 0}, (vec3_t){0, -1, 0}, (vec3_t){0, 0, 1});
 
 	Music_Update ();
+}
 
-	if (host_speeds.value)
-	{
-		pass1 = (time1 - time3) * 1000;
-		time3 = Sys_FloatTime ();
-		pass2 = (time2 - time1) * 1000;
-		pass3 = (time3 - time2) * 1000;
-		Con_Printf ("%3i tot %3i server %3i gfx %3i snd\n", pass1 + pass2 + pass3, pass1, pass2, pass3);
-	}
+/*
+==================
+Host_Frame
+
+Runs all active servers
+==================
+*/
+void Host_Frame (double time)
+{
+	if (setjmp (host_abortserver))
+		return; // something bad happened, or the server disconnected
+
+	Host_ClientPreFrame ();
+
+	// check for commands typed to the host
+	Host_GetConsoleCommands ();
+
+	// decide the simulation time
+	Host_FilterTime (time);
+
+	if (Host_IsLocalGame ())
+		Host_ServerFrame ();
+	else
+		Cbuf_Execute (src_server);
+
+	Host_ClientPostFrame ();
 
 	host_framecount++;
 	cl_framecount++;
