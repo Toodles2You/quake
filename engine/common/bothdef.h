@@ -28,8 +28,8 @@ enum
 
 #define ON_EPSILON 0.1 // point on plane side epsilon
 
-#define MAX_MSGLEN 1450	  // max length of a reliable message
-#define MAX_DATAGRAM 1450 // max length of unreliable message
+#define MAX_MSGLEN 4096	  // max length of a reliable message
+#define MAX_DATAGRAM 2048 // max length of unreliable message
 
 #define MAXPRINTMSG 4096
 
@@ -38,8 +38,8 @@ enum
 
 #define MIN_EDICTS 768
 #define MAX_LIGHTSTYLES 64
-#define MAX_MODELS 1024 // these are sent over the net as bytes
-#define MAX_SOUNDS 1024 // so they cannot be blindly increased
+#define MAX_MODELS 2048
+#define MAX_SOUNDS 2048
 
 #define SAVEGAME_COMMENT_LENGTH 39
 
