@@ -84,8 +84,6 @@ static void PF_objerror (progs_state_t *pr)
 	ed = PROG_TO_EDICT (pr_int (pr, self));
 	ED_Print (ed);
 	ED_Free (ed);
-
-	Host_Error ("Program error");
 }
 
 /*
