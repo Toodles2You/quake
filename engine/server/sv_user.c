@@ -27,7 +27,6 @@ usercmd_t cmd;
 
 static cvar_t sv_rollspeed = {"sv_rollspeed", "200"};
 static cvar_t sv_rollangle = {"sv_rollangle", "2.0"};
-static cvar_t sv_spectalk = {"sv_spectalk", "1"};
 
 static cvar_t sv_mapcheck = {"sv_mapcheck", "1"};
 
@@ -1475,6 +1474,5 @@ void SV_UserInit (void)
 {
 	Cvar_RegisterVariable (src_server, &sv_rollspeed);
 	Cvar_RegisterVariable (src_server, &sv_rollangle);
-	Cvar_RegisterVariable (src_server, &sv_spectalk);
 	Cvar_RegisterVariable (src_server, &sv_mapcheck);
 }
