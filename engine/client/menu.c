@@ -21,6 +21,8 @@ along with this program.  If not, see <https://www.gnu.org/licenses/>.
 #include "clientdef.h"
 #include "serverdef.h"
 
+typedef void (*confirm_callback_t) (bool);
+
 void (*vid_menudrawfn) ();
 void (*vid_menukeyfn) (int key);
 
@@ -40,6 +42,7 @@ enum
 	m_quit,
 	m_lanconfig,
 	m_gameoptions,
+	m_confirm,
 } m_state;
 
 void M_Menu_Main_f (void);
@@ -55,6 +58,7 @@ static void M_Menu_Help_f (void);
 static void M_Menu_Quit_f (void);
 static void M_Menu_LanConfig_f (void);
 static void M_Menu_GameOptions_f (void);
+static void M_Menu_Confirm (const char *m0, const char *m1, confirm_callback_t callback);
 
 static void M_Main_Draw (void);
 static void M_SinglePlayer_Draw (void);
@@ -69,6 +73,7 @@ static void M_Help_Draw (void);
 static void M_Quit_Draw (void);
 static void M_LanConfig_Draw (void);
 static void M_GameOptions_Draw (void);
+static void M_Confirm_Draw (void);
 
 static void M_Main_Key (int key);
 static void M_SinglePlayer_Key (int key);
@@ -83,9 +88,11 @@ static void M_Help_Key (int key);
 static void M_Quit_Key (int key);
 static void M_LanConfig_Key (int key);
 static void M_GameOptions_Key (int key);
+static void M_Confirm_Key (int key);
 
 static bool m_entersound; // play after drawing a frame, so caching won't disrupt the sound
-static bool m_recursiveDraw;
+static bool m_recursivedraw;
+static int m_recursivestate;
 
 static int m_return_state;
 static bool m_return_onerror;
@@ -110,7 +117,7 @@ static void M_Print (int cx, int cy, const char *str)
 {
 	while (*str)
 	{
-		M_DrawCharacter (cx, cy, (*str) + 128);
+		M_DrawCharacter (cx, cy, *str);
 		str++;
 		cx += 8;
 	}
@@ -327,6 +334,22 @@ static void M_SinglePlayer_Draw (void)
 	M_DrawTransPic (54, 32 + m_singleplayer_cursor * 20, Draw_CachePic (va ("gfx/menudot%i.lmp", f + 1)));
 }
 
+static void M_Confirm_SinglePlayer_f (bool result)
+{
+	if (!result)
+	{
+		m_state = m_singleplayer;
+		m_entersound = true;
+		return;
+	}
+	key_dest = key_game;
+	if (Host_IsLocalGame ())
+		Cbuf_AddText (src_client, "disconnect\n");
+	Cbuf_AddText (src_server, "maxplayers 1\n");
+	SCR_BeginLoadingPlaque ();
+	Cbuf_AddText (src_server, "map start\n");
+}
+
 static void M_SinglePlayer_Key (int key)
 {
 	switch (key)
@@ -354,13 +377,9 @@ static void M_SinglePlayer_Key (int key)
 		{
 		case 0:
 			if (Host_IsLocalGame ())
-				if (!SCR_ModalMessage ("Are you sure you want to\nstart a new game?\n"))
-					break;
-			key_dest = key_game;
-			if (Host_IsLocalGame ())
-				Cbuf_AddText (src_client, "disconnect\n");
-			Cbuf_AddText (src_server, "maxplayers 1\n");
-			Cbuf_AddText (src_server, "map start\n");
+				M_Menu_Confirm (" Are you sure you want  ", "  to start a new game?  ", M_Confirm_SinglePlayer_f);
+			else
+				M_Confirm_SinglePlayer_f (true);
 			break;
 
 		case 1:
@@ -1221,8 +1240,6 @@ static void M_Help_Key (int key)
 /* QUIT MENU */
 
 static int msgNumber;
-static int m_quit_prevstate;
-static bool wasInMenus;
 
 static const char *const quitMessage[] = {
 	"  Are you gonna quit    ", "  this game just like   ", "   everything else?     ", "                        ",
@@ -1250,9 +1267,8 @@ static void M_Menu_Quit_f (void)
 {
 	if (m_state == m_quit)
 		return;
-	wasInMenus = (key_dest == key_menu);
+	m_recursivestate = (key_dest == key_menu) ? m_state : -1;
 	key_dest = key_menu;
-	m_quit_prevstate = m_state;
 	m_state = m_quit;
 	m_entersound = true;
 	msgNumber = rand () % (lengthof (quitMessage) / 4);
@@ -1266,9 +1282,9 @@ static void M_Quit_Key (int key)
 	case K_ESCAPE:
 	case 'n':
 	case 'N':
-		if (wasInMenus)
+		if (m_recursivestate != -1)
 		{
-			m_state = m_quit_prevstate;
+			m_state = m_recursivestate;
 			m_entersound = true;
 		}
 		else
@@ -1292,10 +1308,10 @@ static void M_Quit_Key (int key)
 
 static void M_Quit_Draw (void)
 {
-	if (wasInMenus)
+	if (m_recursivestate != -1)
 	{
-		m_state = m_quit_prevstate;
-		m_recursiveDraw = true;
+		m_state = m_recursivestate;
+		m_recursivedraw = true;
 		M_Draw ();
 		m_state = m_quit;
 	}
@@ -1931,6 +1947,58 @@ static void M_GameOptions_Key (int key)
 	}
 }
 
+/* CONFIRMATION MENU */
+
+static char m_confirm_message[2][25];
+static confirm_callback_t M_Confirm_Callback_f;
+
+static void M_Menu_Confirm (const char *m0, const char *m1, confirm_callback_t callback)
+{
+	if (m_state == m_confirm)
+		return;
+	strncpy (m_confirm_message[0], m0, 24);
+	strncpy (m_confirm_message[1], m1, 24);
+	M_Confirm_Callback_f = callback;
+	m_recursivestate = (key_dest == key_menu) ? m_state : -1;
+	key_dest = key_menu;
+	m_state = m_confirm;
+	m_entersound = true;
+}
+
+static void M_Confirm_Key (int key)
+{
+	switch (key)
+	{
+	case K_ESCAPE:
+	case 'n':
+	case 'N':
+	{
+		M_Confirm_Callback_f (false);
+		break;
+	}
+	case 'Y':
+	case 'y':
+	{
+		M_Confirm_Callback_f (true);
+		break;
+	}
+	}
+}
+
+static void M_Confirm_Draw (void)
+{
+	if (m_recursivestate != -1)
+	{
+		m_state = m_recursivestate;
+		m_recursivedraw = true;
+		M_Draw ();
+		m_state = m_confirm;
+	}
+	M_DrawTextBox (56, 76, 24, 4);
+	M_Print (64, 92 , m_confirm_message[0]);
+	M_Print (64, 100, m_confirm_message[1]);
+}
+
 /* Menu Subsystem */
 
 void M_Init (void)
@@ -1948,6 +2016,9 @@ void M_Init (void)
 	Cmd_AddCommand (src_client, "menu_video", M_Menu_Video_f);
 	Cmd_AddCommand (src_client, "help", M_Menu_Help_f);
 	Cmd_AddCommand (src_client, "menu_quit", M_Menu_Quit_f);
+
+	M_Menu_Main_f ();
+	m_entersound = false;
 }
 
 void M_Draw (void)
@@ -1955,8 +2026,8 @@ void M_Draw (void)
 	if (m_state == m_none || key_dest != key_menu)
 		return;
 
-	if (m_recursiveDraw)
-		m_recursiveDraw = false;
+	if (m_recursivedraw)
+		m_recursivedraw = false;
 	else if (scr_con_current)
 		Draw_ConsoleBackground (vid.height);
 	else
@@ -2017,6 +2088,10 @@ void M_Draw (void)
 
 	case m_gameoptions:
 		M_GameOptions_Draw ();
+		break;
+	
+	case m_confirm:
+		M_Confirm_Draw ();
 		break;
 	}
 
@@ -2085,5 +2160,9 @@ void M_Keydown (int key)
 	case m_gameoptions:
 		M_GameOptions_Key (key);
 		return;
+	
+	case m_confirm:
+		M_Confirm_Key (key);
+		break;
 	}
 }
