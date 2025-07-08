@@ -493,9 +493,7 @@ void CL_SendCmd (void)
 	byte data[128];
 	int i;
 	usercmd_t *cmd, *oldcmd;
-	int checksumIndex;
 	int lost;
-	int seq_hash;
 
 	if (cls.state == ca_disconnected)
 		return;
@@ -508,9 +506,6 @@ void CL_SendCmd (void)
 	cmd = &cl.frames[i].cmd;
 	cl.frames[i].senttime = host_time;
 	cl.frames[i].receivedtime = -1; // we haven't gotten a reply yet
-
-	//	seq_hash = (cls.netchan.outgoing_sequence & 0xffff) ; // ^ QW_CHECK_HASH;
-	seq_hash = cls.netchan.outgoing_sequence;
 
 	// get basic movement from keyboard
 	CL_BaseMove (cmd);
@@ -527,10 +522,6 @@ void CL_SendCmd (void)
 	buf.data = data;
 
 	MSG_WriteByte (&buf, clc_move);
-
-	// save the position for a checksum byte
-	checksumIndex = buf.cursize;
-	MSG_WriteByte (&buf, 0);
 
 	// write our lossage percentage
 	lost = CL_CalcNet ();
@@ -549,9 +540,6 @@ void CL_SendCmd (void)
 	i = (cls.netchan.outgoing_sequence) & UPDATE_MASK;
 	cmd = &cl.frames[i].cmd;
 	MSG_WriteDeltaUsercmd (&buf, oldcmd, cmd);
-
-	// calculate a checksum over the move commands
-	buf.data[checksumIndex] = COM_BlockSequenceCRCByte (buf.data + checksumIndex + 1, buf.cursize - checksumIndex - 1, seq_hash);
 
 	// request delta compression of entities
 	if (cls.netchan.outgoing_sequence - cl.validsequence >= UPDATE_BACKUP - 1)

@@ -1340,11 +1340,6 @@ void SV_ExecuteClientMessage (client_t *cl)
 	char *s;
 	usercmd_t oldest, oldcmd, newcmd;
 	client_frame_t *frame;
-	vec3_t o;
-	bool move_issued = false; //only allow one move command
-	int checksumIndex;
-	byte checksum, calculatedChecksum;
-	int seq_hash;
 
 	// calc ping time
 	frame = &cl->frames[cl->netchan.incoming_acknowledged & UPDATE_MASK];
@@ -1363,9 +1358,6 @@ void SV_ExecuteClientMessage (client_t *cl)
 
 	host_client = cl;
 	sv_player = host_client->edict;
-
-	//	seq_hash = (cl->netchan.incoming_sequence & 0xffff) ; // ^ QW_CHECK_HASH;
-	seq_hash = cl->netchan.incoming_sequence;
 
 	// mark time so clients will know how much to predict
 	// other players
@@ -1403,14 +1395,6 @@ void SV_ExecuteClientMessage (client_t *cl)
 		}
 		case clc_move:
 		{
-			if (move_issued)
-				return; // someone is trying to cheat...
-
-			move_issued = true;
-
-			checksumIndex = MSG_GetReadCount ();
-			checksum = (byte)MSG_ReadByte ();
-
 			// read loss percentage
 			cl->lossage = MSG_ReadByte ();
 
@@ -1420,15 +1404,6 @@ void SV_ExecuteClientMessage (client_t *cl)
 
 			if (cl->state != cs_spawned)
 				break;
-
-			// if the checksum fails, ignore the rest of the packet
-			calculatedChecksum = COM_BlockSequenceCRCByte (net_message[SERVER].data + checksumIndex + 1, MSG_GetReadCount () - checksumIndex - 1, seq_hash);
-
-			if (calculatedChecksum != checksum)
-			{
-				Con_DPrintf ("Failed command checksum for %s(%d) (%d != %d)\n", cl->name, cl->netchan.incoming_sequence, checksum, calculatedChecksum);
-				return;
-			}
 
 			if (!sv.paused)
 			{
