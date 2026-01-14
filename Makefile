@@ -135,6 +135,7 @@ ENGINE_CFLAGS = \
 
 REL_ENGINE_CFLAGS = \
 	-O6 \
+	-DNDEBUG \
 	-funroll-loops \
 	-fexpensive-optimizations \
 	-fomit-frame-pointer \
@@ -188,5 +189,5 @@ clean :
 
 install :
 	@echo Installing to \'$(INSTALL_DIR)\'...
-	$(Q)mkdir $(INSTALL_DIR)
-	$(Q)cp --no-preserve=all $(REL_ENGINE) $(INSTALL_DIR)
+	$(Q)mkdir -p $(INSTALL_DIR)
+	$(Q)cp $(REL_ENGINE) $(INSTALL_DIR)
