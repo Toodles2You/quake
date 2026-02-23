@@ -1,8 +1,8 @@
-# Quake
+# Quake Source Port
 
-An experimental fork of Id Software's Quake engine.
+An experimental fork of Id Software's Quake engine, integrating all of the multiplayer enhancements of QuakeWorld into the original NetQuake engine!
 
-All of the multiplayer enhancements of QuakeWorld have been merged into the original engine!
+> :warning: **Warning:** Many features specific to Quake have been removed, making this engine unsuitable for playing many existing multiplayer games. The original intent of this engine was to be used for total conversions.
 
 <p align="center">
 <img src="screenshots/quake.png" width="23%" alt="Quake">
@@ -13,16 +13,20 @@ All of the multiplayer enhancements of QuakeWorld have been merged into the orig
 
 ## Features
 
+- 64-bit!
 - OGG music playback
 - Luminescent textures, a software feature omitted from the original OpenGL renderer
 - Virtual machine capable of running both Quake and QuakeWorld game code
+	- Custom network protocol to go along with it
 - GoldSrc/Half-Life level and texture support
 
 ## Building
 
 Install the dependencies:
 
-`apt-get install libsdl2-dev libopenal-dev`
+```
+apt-get install libsdl2-dev libopenal-dev
+```
 
 Clone the source code and compile the engine:
 

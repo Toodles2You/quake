@@ -1,108 +1,111 @@
-ENGINE_NAME ?= quake
-ENGINE_VERSION ?= 1.0.9
-ENGINE_BASEDIR ?= id1
-
-INSTALL_DIR ?= /opt/$(ENGINE_NAME)
-
-SDL_LIBS ?= $(shell pkg-config --libs sdl2)
-SDL_CFLAGS ?= $(shell pkg-config --cflags sdl2)
-
-AL_LIBS ?= $(shell pkg-config --libs openal)
-AL_CFLAGS ?= $(shell pkg-config --cflags openal)
-
 ifdef VERBOSE
 Q =
 else
 Q = @
 endif
 
-CC := gcc -std=gnu11
+CC := gcc
 
+DO_CC = $(CC) -std=gnu11
+EXEC =
+SHLIB = .so
 REL_DIR = build/release
 DBG_DIR = build/debug
+
+APP_DIR = app
+INSTALL_DIR := /opt/quake
 
 # ==============================================================
 
 COMMON_SRC = \
-	common/crc.c \
-	common/md4.c \
-	common/mathlib.c \
+	src/common/crc.c \
+	src/common/md4.c \
+	src/common/mathlib.c \
 
 COMMON_OBJ = $(patsubst %.c, %.o, $(COMMON_SRC))
 
 # ==============================================================
 
+ENGINE_NAME = quake
+ENGINE_VERSION = 1.0.9
+ENGINE_BASEDIR = id1
+
+PKG_LIBS = $(shell pkg-config --libs sdl2 openal)
+PKG_CFLAGS = $(shell pkg-config --cflags sdl2 openal)
+
+# ==============================================================
+
 ENGINE_COMMON_SRC = \
-	engine/common/cmd.c \
-	engine/common/cmodel.c \
-	engine/common/common.c \
-	engine/common/cvar.c \
-	engine/common/host_cmd.c \
-	engine/common/host.c \
-	engine/common/net_chan.c \
-	engine/common/net_udp.c \
-	engine/common/pmove.c \
-	engine/common/pmovetst.c \
-	engine/common/sys_linux.c \
-	engine/common/zone.c \
+	src/engine/common/cmd.c \
+	src/engine/common/cmodel.c \
+	src/engine/common/common.c \
+	src/engine/common/cvar.c \
+	src/engine/common/host_cmd.c \
+	src/engine/common/host.c \
+	src/engine/common/net_chan.c \
+	src/engine/common/net_udp.c \
+	src/engine/common/pmove.c \
+	src/engine/common/pmovetst.c \
+	src/engine/common/sys_linux.c \
+	src/engine/common/zone.c \
 
 ENGINE_COMMON_OBJ = $(patsubst %.c, %.o, $(ENGINE_COMMON_SRC))
 
 # ==============================================================
 
 ENGINE_CLIENT_SRC = \
-	engine/client/al_sound.c \
-	engine/client/al_vorbis.c \
-	engine/client/al_wave.c \
-	engine/client/chase.c \
-	engine/client/cl_demo.c \
-	engine/client/cl_ents.c \
-	engine/client/cl_input.c \
-	engine/client/cl_main.c \
-	engine/client/cl_parse.c \
-	engine/client/cl_pred.c \
-	engine/client/cl_tent.c \
-	engine/client/console.c \
-	engine/client/gl_draw.c \
-	engine/client/gl_mesh.c \
-	engine/client/gl_model.c \
-	engine/client/gl_ngraph.c \
-	engine/client/gl_refrag.c \
-	engine/client/gl_rlight.c \
-	engine/client/gl_rmain.c \
-	engine/client/gl_rmisc.c \
-	engine/client/gl_rsurf.c \
-	engine/client/gl_screen.c \
-	engine/client/gl_vidsdl.c \
-	engine/client/gl_warp.c \
-	engine/client/in_sdl.c \
-	engine/client/keys.c \
-	engine/client/menu.c \
-	engine/client/part.c \
-	engine/client/sbar.c \
-	engine/client/stb_vorbis.c \
-	engine/client/view.c \
-	engine/client/wad.c \
+	src/engine/client/al_sound.c \
+	src/engine/client/al_vorbis.c \
+	src/engine/client/al_wave.c \
+	src/engine/client/chase.c \
+	src/engine/client/cl_demo.c \
+	src/engine/client/cl_ents.c \
+	src/engine/client/cl_input.c \
+	src/engine/client/cl_main.c \
+	src/engine/client/cl_parse.c \
+	src/engine/client/cl_pred.c \
+	src/engine/client/cl_tent.c \
+	src/engine/client/console.c \
+	src/engine/client/gl_draw.c \
+	src/engine/client/gl_mesh.c \
+	src/engine/client/gl_model.c \
+	src/engine/client/gl_ngraph.c \
+	src/engine/client/gl_refrag.c \
+	src/engine/client/gl_rlight.c \
+	src/engine/client/gl_rmain.c \
+	src/engine/client/gl_rmisc.c \
+	src/engine/client/gl_rsurf.c \
+	src/engine/client/gl_screen.c \
+	src/engine/client/gl_vidsdl.c \
+	src/engine/client/gl_warp.c \
+	src/engine/client/in_sdl.c \
+	src/engine/client/keys.c \
+	src/engine/client/menu.c \
+	src/engine/client/part.c \
+	src/engine/client/sbar.c \
+	src/engine/client/stb_vorbis.c \
+	src/engine/client/view.c \
+	src/engine/client/wad.c \
 
 ENGINE_CLIENT_OBJ = $(patsubst %.c, %.o, $(ENGINE_CLIENT_SRC))
 
 # ==============================================================
 
 ENGINE_SERVER_SRC = \
-	engine/server/progs.c \
-	engine/server/pr_cmds.c \
-	engine/server/pr_edict.c \
-	engine/server/pr_exec.c \
-	engine/server/sv_ccmds.c \
-	engine/server/sv_ents.c \
-	engine/server/sv_init.c \
-	engine/server/sv_main.c \
-	engine/server/sv_move.c \
-	engine/server/sv_nchan.c \
-	engine/server/sv_phys.c \
-	engine/server/sv_send.c \
-	engine/server/sv_user.c \
-	engine/server/world.c \
+	src/engine/server/progs.c \
+	src/engine/server/pr_cmds.c \
+	src/engine/server/pr_edict.c \
+	src/engine/server/pr_exec.c \
+	src/engine/server/sv_ccmds.c \
+	src/engine/server/sv_ents.c \
+	src/engine/server/sv_init.c \
+	src/engine/server/sv_main.c \
+	src/engine/server/sv_move.c \
+	src/engine/server/sv_nchan.c \
+	src/engine/server/sv_phys.c \
+	src/engine/server/sv_send.c \
+	src/engine/server/sv_user.c \
+	src/engine/server/world.c \
 
 ENGINE_SERVER_OBJ = $(patsubst %.c, %.o, $(ENGINE_SERVER_SRC))
 
@@ -120,22 +123,19 @@ ENGINE_OBJ = \
 REL_ENGINE_OBJ = $(addprefix $(REL_DIR)/, $(ENGINE_OBJ))
 DBG_ENGINE_OBJ = $(addprefix $(DBG_DIR)/, $(ENGINE_OBJ))
 
-ENGINE_LIBS = -lm -lGL -ldl $(SDL_LIBS) $(AL_LIBS)
+ENGINE_LIBS = -lm -lGL -ldl $(PKG_LIBS)
 
 ENGINE_CFLAGS = \
 	-ffast-math \
 	-DENGINE_VERSION=\"$(ENGINE_VERSION)\" \
 	-DENGINE_BASEDIR=\"$(ENGINE_BASEDIR)\" \
-	-Icommon \
-	-Iengine/common \
-	-Iengine/client \
-	-Iengine/server \
-	$(SDL_CFLAGS) \
-	$(AL_LIBS) \
+	-Isrc/common \
+	-Isrc/engine/common \
+	-Isrc/engine/client \
+	-Isrc/engine/server \
+	$(PKG_CFLAGS) \
 
 REL_ENGINE_CFLAGS = \
-	-O6 \
-	-DNDEBUG \
 	-funroll-loops \
 	-fexpensive-optimizations \
 	-fomit-frame-pointer \
@@ -155,33 +155,38 @@ release : dirs $(REL_ENGINE)
 
 $(REL_ENGINE) : $(REL_ENGINE_OBJ)
 	@echo $<
-	$(Q)$(CC) -o $@ $(REL_ENGINE_OBJ) $(ENGINE_LIBS)
+	$(Q)$(DO_CC) -DNDEBUG -o $@ $(REL_ENGINE_OBJ) $(ENGINE_LIBS)
+	$(Q)cp $@ $(APP_DIR)
 
 $(REL_DIR)/%.o : %.c
 	@echo $@
-	$(Q)$(CC) $(REL_ENGINE_CFLAGS) -c $< -o $@
+	$(Q)$(DO_CC) -DNDEBUG $(REL_ENGINE_CFLAGS) -c $< -o $@
 
 debug : dirs $(DBG_ENGINE)
 
 $(DBG_ENGINE) : $(DBG_ENGINE_OBJ)
 	@echo $@
-	$(Q)$(CC) -o $@ $(DBG_ENGINE_OBJ) $(ENGINE_LIBS)
+	$(Q)$(DO_CC) -ggdb -o $@ $(DBG_ENGINE_OBJ) $(ENGINE_LIBS)
+	$(Q)cp $@ $(APP_DIR)
 
 $(DBG_DIR)/%.o : %.c
 	@echo $<
-	$(Q)$(CC) $(DBG_ENGINE_CFLAGS) -c $< -o $@
+	$(Q)$(DO_CC) -ggdb $(DBG_ENGINE_CFLAGS) -c $< -o $@
 
 dirs :
 	$(Q)mkdir -p $(REL_DIR)
-	$(Q)mkdir -p $(REL_DIR)/common
-	$(Q)mkdir -p $(REL_DIR)/engine/common
-	$(Q)mkdir -p $(REL_DIR)/engine/client
-	$(Q)mkdir -p $(REL_DIR)/engine/server
+	$(Q)mkdir -p $(REL_DIR)/src
+	$(Q)mkdir -p $(REL_DIR)/src/common
+	$(Q)mkdir -p $(REL_DIR)/src/engine/common
+	$(Q)mkdir -p $(REL_DIR)/src/engine/client
+	$(Q)mkdir -p $(REL_DIR)/src/engine/server
 	$(Q)mkdir -p $(DBG_DIR)
-	$(Q)mkdir -p $(DBG_DIR)/common
-	$(Q)mkdir -p $(DBG_DIR)/engine/common
-	$(Q)mkdir -p $(DBG_DIR)/engine/client
-	$(Q)mkdir -p $(DBG_DIR)/engine/server
+	$(Q)mkdir -p $(DBG_DIR)/src
+	$(Q)mkdir -p $(DBG_DIR)/src/common
+	$(Q)mkdir -p $(DBG_DIR)/src/engine/common
+	$(Q)mkdir -p $(DBG_DIR)/src/engine/client
+	$(Q)mkdir -p $(DBG_DIR)/src/engine/server
+	$(Q)mkdir -p $(APP_DIR)
 
 clean :
 	$(Q)-rm -rf $(REL_DIR)
@@ -190,4 +195,4 @@ clean :
 install :
 	@echo Installing to \'$(INSTALL_DIR)\'...
 	$(Q)mkdir -p $(INSTALL_DIR)
-	$(Q)cp $(REL_ENGINE) $(INSTALL_DIR)
+	$(Q)cp -rf $(APP_DIR) $(INSTALL_DIR)
