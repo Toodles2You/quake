@@ -290,7 +290,7 @@ extern double host_time;
 
 extern edict_t *sv_player;
 
-extern char localmodels[MAX_MODELS][5]; // inline model names for precache
+extern char localmodels[MAX_MODELS][8]; // inline model names for precache
 
 extern char localinfo[MAX_LOCALINFO_STRING + 1];
 

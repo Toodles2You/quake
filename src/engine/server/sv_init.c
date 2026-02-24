@@ -25,7 +25,7 @@ extern cvar_t maxclients;
 server_t sv;
 server_static_t svs;
 
-char localmodels[MAX_MODELS][5]; // inline model names for precache
+char localmodels[MAX_MODELS][8]; // inline model names for precache
 
 char localinfo[MAX_LOCALINFO_STRING + 1]; // local game info
 
